@@ -260,7 +260,7 @@
         }
 
         .collapse-panel.show {
-            max-height: 2000px; /* Nilai aman agar tidak terpotong saat dibuka */
+            max-height: 2000px;
             margin-top: 30px;
             opacity: 1;
         }
@@ -329,12 +329,13 @@
             box-shadow: 0 10px 25px rgba(46, 30, 18, 0.05);
         }
 
-        /* SLIDER COMPONENT */
+        /* SLIDER COMPONENT (Ditambahkan properti touch-action agar geser halus di HP) */
         .slider-container {
             position: relative;
             width: 100%;
             height: 250px;
             overflow: hidden;
+            touch-action: pan-y; 
         }
 
         .slider-track {
@@ -350,9 +351,11 @@
             object-fit: cover;
             flex-shrink: 0;
             display: block;
+            user-select: none;
+            -webkit-user-drag: none;
         }
 
-        /* NAVIGATION ARROWS (FIXED COMPATIBILITY) */
+        /* NAVIGATION ARROWS */
         .slider-btn {
             position: absolute;
             top: 50%;
@@ -374,6 +377,7 @@
             transition: opacity 0.3s, background-color 0.3s;
         }
 
+        /* Tombol panah otomatis selalu terlihat di layar sentuh ponsel */
         .slider-container:hover .slider-btn {
             opacity: 1;
         }
@@ -442,7 +446,6 @@
             color: var(--text-dark);
         }
 
-        /* WADAH RESPONSIF EMBED GOOGLE FORM */
         .google-form-container {
             position: relative;
             width: 100%;
@@ -594,6 +597,11 @@
             .price-table th, .price-table td {
                 padding: 12px 15px;
                 font-size: 13px;
+            }
+            
+            /* Pada layar HP, buat tombol panah permanen terlihat sedikit transparan agar memudahkan pengguna */
+            .slider-btn {
+                opacity: 0.6 !important;
             }
         }
 
@@ -872,7 +880,7 @@
     </footer>
 
     <script>
-        // Fungsi Geser Slider Gambar Portofolio
+        // Fungsi Utama Geser Gambar Slider
         function moveSlide(button, direction) {
             const container = button.parentElement;
             const track = container.querySelector('.slider-track');
@@ -903,7 +911,7 @@
             navMenu.classList.remove('active');
         }
     
-        // GABUNGAN FUNGSI ANIMASI: Buka & Tutup Panel (Harga / Galeri)
+        // Fungsi Animasi Buka & Tutup Panel (Harga / Galeri)
         function togglePanel(panelId, button, textShow, textHide) {
             const panel = document.getElementById(panelId);
             button.classList.toggle('active');
@@ -916,6 +924,44 @@
                 textSpan.innerText = textShow;
             }
         }
+
+        // ==========================================================================
+        // SISTEM SENSOR SENTUH (SWIPE EVENT LISTENERS) UNTUK HANDPHONE
+        // ==========================================================================
+        document.addEventListener("DOMContentLoaded", function() {
+            const containers = document.querySelectorAll('.slider-container');
+            
+            containers.forEach(container => {
+                let startX = 0;
+                let endX = 0;
+                
+                // Mendeteksi awal titik koordinat sentuhan jari di layar
+                container.addEventListener('touchstart', function(e) {
+                    startX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                
+                // Mendeteksi akhir titik koordinat ketika jari diangkat dari layar
+                container.addEventListener('touchend', function(e) {
+                    endX = e.changedTouches[0].screenX;
+                    handleSwipeGesture(container);
+                }, { passive: true });
+                
+                // Fungsi menghitung arah pergeseran koordinat jari
+                function handleSwipeGesture(sliderElement) {
+                    const threshold = 40; // Jarak minimal geser jari (dalam piksel) agar dianggap "menggeser"
+                    const nextButton = sliderElement.querySelector('.slider-btn.next');
+                    const prevButton = sliderElement.querySelector('.slider-btn.prev');
+                    
+                    if (startX - endX > threshold) {
+                        // Geser jari ke KIRI -> memicu slide MAJU (Next)
+                        if(nextButton) moveSlide(nextButton, 1);
+                    } else if (endX - startX > threshold) {
+                        // Geser jari ke KANAN -> memicu slide MUNDUR (Prev)
+                        if(prevButton) moveSlide(prevButton, -1);
+                    }
+                }
+            });
+        });
     </script>
 
 </body>
