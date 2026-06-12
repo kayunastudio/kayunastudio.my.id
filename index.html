@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- KODE FAVICON -->
+    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+    <title>Kayuna Studio | Modern, Minimalist & Luxury Architecture</title>
+    <style>
+        /* ==========================================================================
+           PALET WARNA PREMIUM (Warm Terracotta, Luxury Cream, & Matte Espresso)
+           ========================================================================== */
+        :root {
+            --bg-cream: #FAF7F2;
+            --accent-terracotta: #CD7F54;
+            --accent-terracotta-hover: #B5693F;
+            --text-dark: #2E1E12;
+            --text-muted: #6B5E53;
+            --white: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', 'Segoe UI', sans-serif;
+            background-color: var(--bg-cream);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* NAVIGATION BAR */
+        header {
+            background-color: rgba(250, 247, 242, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(46, 30, 18, 0.08);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: table;
+            width: 100%;
+        }
+
+        .logo {
+            display: table-cell;
+            vertical-align: middle;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: var(--accent-terracotta);
+        }
+
+        .nav-menu {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;
+        }
+
+        .nav-menu a {
+            color: var(--text-dark);
+            text-decoration: none;
+            margin-left: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: var(--accent-terracotta);
+        }
+
+        .btn-hubungi {
+            background-color: var(--accent-terracotta);
+            color: var(--white) !important;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600 !important;
+        }
+
+        .btn-hubungi:hover {
+            background-color: var(--accent-terracotta-hover);
+        }
+
+        /* HERO SECTION */
+        .hero {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+        }
+
+        .hero-img-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(46, 30, 18, 0.1);
+            margin-bottom: 60px;
+        }
+
+        .hero-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* SECTION LAYOUT SYSTEM */
+        .section-container {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 2px;
+            background-color: var(--accent-terracotta);
+            margin: 15px auto 0 auto;
+        }
+
+        /* LAYOUT TABLE FOR COLUMNS */
+        .grid-table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 20px 0;
+        }
+
+        .grid-cell {
+            display: table-cell;
+            vertical-align: top;
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(46, 30, 18, 0.03);
+        }
+
+        /* LAYANAN / SERVICES */
+        .service-card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            margin-top: 10px;
+        }
+
+        .service-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .service-icon-container {
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .service-icon-img {
+            height: 44px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        /* TOMBOL PANAH HARGA (PRICING TOGGLE) */
+        .price-toggle-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn-price-toggle {
+            background: none;
+            border: none;
+            color: var(--accent-terracotta);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        .btn-price-toggle:hover {
+            color: var(--accent-terracotta-hover);
+        }
+
+        .arrow-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            transition: transform 0.4s ease;
+        }
+
+        /* Ketika aktif, panah akan berputar ke atas */
+        .btn-price-toggle.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        /* AREA HARGA TERSEMBUNYI (COLLAPSIBLE AREA) */
+        .price-collapse-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, margin-top 0.5s ease;
+            opacity: 0;
+            transition: all 0.5s ease-in-out;
+        }
+
+        .price-collapse-panel.show {
+            max-height: 1000px;
+            margin-top: 30px;
+            opacity: 1;
+        }
+
+        /* TABEL HARGA MEWAH */
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(46, 30, 18, 0.05);
+        }
+
+        .price-table th, .price-table td {
+            padding: 18px 24px;
+            text-align: left;
+        }
+
+        .price-table th {
+            background-color: var(--text-dark);
+            color: var(--bg-cream);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .price-table tr {
+            border-bottom: 1px solid rgba(46, 30, 18, 0.06);
+            transition: background-color 0.2s;
+        }
+
+        .price-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .price-table tr:hover {
+            background-color: rgba(205, 127, 84, 0.03);
+        }
+
+        .price-table td strong {
+            color: var(--accent-terracotta);
+            font-size: 16px;
+        }
+
+        /* GALERI PORTOFOLIO DENGAN SLIDER */
+        .gallery-table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 20px 20px;
+        }
+
+        .gallery-row {
+            display: table-row;
+        }
+
+        .gallery-cell {
+            display: table-cell;
+            vertical-align: top;
+            background-color: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(46, 30, 18, 0.05);
+        }
+
+        /* SLIDER COMPONENT */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .slider-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .slider-track img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        /* NAVIGATION ARROWS (FIXED COMPATIBILITY) */
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(46, 30, 18, 0.7);
+            color: var(--white);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.3s, background-color 0.3s;
+        }
+
+        .slider-container:hover .slider-btn {
+            opacity: 1;
+        }
+
+        .slider-btn:hover {
+            background-color: var(--accent-terracotta);
+        }
+
+        .slider-btn.prev { left: 15px; }
+        .slider-btn.next { right: 15px; }
+
+        .gallery-info {
+            padding: 20px;
+        }
+
+        .gallery-info h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .gallery-info p {
+            font-size: 13px;
+            color: var(--accent-terracotta);
+            font-weight: 600;
+        }
+
+        /* KONTAK & STRUKTUR GOOGLE FORM */
+        .contact-table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .contact-info-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 45%;
+            padding-right: 40px;
+        }
+
+        .contact-form-cell {
+            display: table-cell;
+            vertical-align: top;
+            width: 55%;
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(46, 30, 18, 0.05);
+            overflow: hidden;
+        }
+
+        .contact-item {
+            margin-bottom: 25px;
+        }
+
+        .contact-item h4 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-terracotta);
+            margin-bottom: 5px;
+        }
+
+        .contact-item p {
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+
+        /* WADAH RESPONSIF EMBED GOOGLE FORM */
+        .google-form-container {
+            position: relative;
+            width: 100%;
+            height: 560px; /* Tinggi ideal panel formulir */
+            border: none;
+        }
+
+        .google-form-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* FOOTER */
+        footer {
+            background-color: #2E1E12;
+            color: #FAF7F2;
+            padding: 60px 20px 30px 20px;
+            margin-top: 100px;
+        }
+
+        .footer-table {
+            display: table;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            table-layout: fixed;
+            border-bottom: 1px solid rgba(250, 247, 242, 0.1);
+            padding-bottom: 40px;
+        }
+
+        .footer-cell {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .footer-brand h3 {
+            font-size: 22px;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .footer-brand p {
+            color: #A3968C;
+            font-size: 14px;
+            max-width: 280px;
+        }
+
+        .footer-links h4 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            color: var(--accent-terracotta);
+        }
+
+        .footer-links a {
+            display: block;
+            color: #A3968C;
+            text-decoration: none;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .footer-links a:hover {
+            color: var(--white);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            font-size: 13px;
+            color: #A3968C;
+        }
+
+        /* MOBILE RESPONSIVE BANDS */
+        @media (max-width: 768px) {
+            .grid-table, .grid-cell, .gallery-table, .gallery-row, .gallery-cell, .contact-table, .contact-info-cell, .contact-form-cell, .footer-table, .footer-cell {
+                display: block !important;
+                width: 100% !important;
+                margin-bottom: 20px;
+                padding-right: 0 !important;
+            }
+            .nav-container {
+                display: block;
+                text-align: center;
+            }
+            .logo, .nav-menu {
+                display: block;
+                text-align: center;
+                width: 100%;
+            }
+            .nav-menu {
+                margin-top: 15px;
+            }
+            .nav-menu a {
+                margin: 0 10px;
+                display: inline-block;
+                margin-top: 10px;
+            }
+            .price-table th, .price-table td {
+                padding: 12px 15px;
+                font-size: 13px;
+            }
+        }
+
+        .logo-img {
+            height: 32px;
+            width: auto;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVIGASI UTAMA -->
+    <header>
+        <div class="nav-container">
+            <div class="logo"><img src="logo.png" alt="Kayuna Studio Logo" class="logo-img">Kayuna<span>Studio</span></div>
+            <div class="nav-menu">
+                <a href="#beranda">Beranda</a>
+                <a href="#layanan">Layanan</a>
+                <a href="#galeri">Galeri</a>
+                <a href="#kontak">Kontak</a>
+                <a href="https://wa.me/6281283069369" target="_blank" class="btn-hubungi">Hubungi</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- BERANDA (HERO SECTION) -->
+    <section class="hero" id="beranda">
+        <h1>Mewujudkan Harmoni Ruang Mewah &<br>Minimalis Impian Anda</h1>
+        <p>Studio arsitektural dan desain interior dengan sentuhan estetika, memadukan kehangatan alam kayu dengan kemewahan modern.</p>
+        
+        <div class="hero-img-container">
+            <img src="home.jpg" alt="Kayuna Studio Interior">
+        </div>
+    </section>
+
+    <!-- LAYANAN & ESTIMASI HARGA -->
+    <section class="section-container" id="layanan">
+        <h2 class="section-title">Layanan Kami</h2>
+        <div class="grid-table">
+            
+            <!-- Layanan 1: Desain Arsitektur -->
+            <div class="grid-cell service-card">
+                <div class="service-icon-container">
+                    <img src="arsitektur.png" alt="Ikon Arsitektur" class="service-icon-img">
+                </div>
+                <h3>Desain Arsitektur</h3>
+                <p>Perencanaan eksterior bangunan mulai dari konsep denah struktural hingga fasad bangunan modern dengan akurasi presisi tinggi.</p>
+            </div>
+
+            <!-- Layanan 2: Desain Interior -->
+            <div class="grid-cell service-card">
+                <div class="service-icon-container">
+                    <img src="interior.png" alt="Ikon Interior" class="service-icon-img">
+                </div>
+                <h3>Desain Interior</h3>
+                <p>Transformasi ruang dalam rumah menggunakan kombinasi warna earth-tone mewah, penataan furnitur kustom, and pencahayaan hangat.</p>
+            </div>
+
+            <!-- Layanan 3: Konsultasi & Pengawasan -->
+            <div class="grid-cell service-card">
+                <div class="service-icon-container">
+                    <img src="supervisi.png" alt="Ikon Pengawasan" class="service-icon-img">
+                </div>
+                <h3>Konsultasi & Pengawasan</h3>
+                <p>Pendampingan proyek konstruksi secara berkala untuk memastikan hasil akhir bangunan 100% presisi sesuai desain.</p>
+            </div>
+
+        </div>
+
+        <!-- TOMBOL PANAH TERSEMBUNYI UNTUK DAFTAR HARGA -->
+        <div class="price-toggle-container">
+            <button class="btn-price-toggle" onclick="togglePricingPanel(this)">
+                <span>Lihat Estimasi Harga</span>
+                <svg class="arrow-icon" viewBox="0 0 24 24">
+                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- AREA HARGA YANG COLLAPSIBLE -->
+        <div class="price-collapse-panel" id="pricingPanel">
+            <table class="price-table">
+                <thead>
+                    <tr>
+                        <th>Jenis Layanan</th>
+                        <th>Cakupan Kerja</th>
+                        <th>Estimasi Biaya</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Desain Arsitektur</strong></td>
+                        <td>Denah 2D, Fasad 3D, Gambar Kerja Teknis (DED), & Rencana Anggaran Biaya (RAB)</td>
+                        <td>Mulai dari Rp 35.000 / m²</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Desain Interior</strong></td>
+                        <td>Konsep Moodboard, 3D Rendering Realistis, Tata Letak Furnitur, & Detail Konstruksi Mebel</td>
+                        <td>Mulai dari Rp 45.000 / m²</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Konsultasi & Pengawasan</strong></td>
+                        <td>Kunjungan Lapangan Berkala, Manajemen Kontrol Material, & Supervisi Akurasi Tukang</td>
+                        <td>Mulai dari Rp 2.500.000 / Bulan</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- GALERI PORTOFOLIO DENGAN FITUR SLIDE -->
+    <section class="section-container" id="galeri">
+        <h2 class="section-title">Galeri Proyek</h2>
+        
+        <div class="gallery-table">
+            <div class="gallery-row">
+                
+                <div class="gallery-cell">
+                    <div class="slider-container">
+                        <button class="slider-btn prev" onclick="moveSlide(this, -1)">&#10094;</button>
+                        <div class="slider-track" data-index="0">
+                            <img src="interior.jpg" alt="Interior 1">
+                            <img src="interior-2.jpg" alt="Interior 2">
+                            <img src="interior-3.jpg" alt="Interior 3">
+                        </div>
+                        <button class="slider-btn next" onclick="moveSlide(this, 1)">&#10095;</button>
+                    </div>
+                    <div class="gallery-info">
+                        <h4>Residence</h4>
+                        <p>Desain Interior / 2025</p>
+                    </div>
+                </div>
+
+                <div class="gallery-cell">
+                    <div class="slider-container">
+                        <button class="slider-btn prev" onclick="moveSlide(this, -1)">&#10094;</button>
+                        <div class="slider-track" data-index="0">
+                            <img src="mebel.jpg" alt="Furniture 1">
+                            <img src="interior.jpg" alt="Furniture 2">
+                        </div>
+                        <button class="slider-btn next" onclick="moveSlide(this, 1)">&#10095;</button>
+                    </div>
+                    <div class="gallery-info">
+                        <h4>Modern Furniture</h4>
+                        <p>Modern Furniture / 2026</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="gallery-row">
+                
+                <div class="gallery-cell">
+                    <div class="slider-container">
+                        <button class="slider-btn prev" onclick="moveSlide(this, -1)">&#10094;</button>
+                        <div class="slider-track" data-index="0">
+                            <img src="eksterior-1.jpg" alt="Desain Eksterior 1">
+                            <img src="eksterior-2.jpg" alt="Desain Eksterior 2">
+                            <img src="eksterior-3.png" alt="Desain Eksterior 3">
+                        </div>
+                        <button class="slider-btn next" onclick="moveSlide(this, 1)">&#10095;</button>
+                    </div>
+                    <div class="gallery-info">
+                        <h4>Desain Eksterior</h4>
+                        <p>Desain Eksterior / 2026</p>
+                    </div>
+                </div>
+
+                <div class="gallery-cell">
+                    <div class="slider-container">
+                        <button class="slider-btn prev" onclick="moveSlide(this, -1)">&#10094;</button>
+                        <div class="slider-track" data-index="0">
+                            <img src="struktur-1.jpg" alt="Struktur 1">
+                            <img src="struktur-2.jpg" alt="Struktur 2">
+                        </div>
+                        <button class="slider-btn next" onclick="moveSlide(this, 1)">&#10095;</button>
+                    </div>
+                    <div class="gallery-info">
+                        <h4>Analisis Struktur</h4>
+                        <p>Perencanaan Struktur / 2026</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- KONTAK & AREA GOOGLE FORM EMBED -->
+    <section class="section-container" id="kontak">
+        <h2 class="section-title">Mulai Proyek Anda</h2>
+        
+        <div class="contact-table">
+            <div class="contact-info-cell">
+                <div class="contact-item">
+                    <h4>Studio Utama</h4>
+                    <p>Jl. Sariwangi Selatan, Kec. Parongpong, Kab. Bandung Barat</p>
+                </div>
+                <div class="contact-item">
+                    <h4>Email Informasi</h4>
+                    <p>kayunastudio@gmail.com</p>
+                </div>
+                <div class="contact-item">
+                    <h4>WhatsApp / Telepon</h4>
+                    <p>+62 812-8306-9369</p>
+                </div>
+            </div>
+
+            <!-- AREA GOOGLE FORM YANG TERINTEGRASI -->
+            <div class="contact-form-cell">
+                <div class="google-form-container">
+                    <!-- CATATAN: Ganti tautan src di bawah ini dengan tautan Sematkan (Embed HTML) Google Form milik Anda -->
+                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSf7I8GrfVyspwaDE5CA8xDNRri5_LVQSR7Q8_58BvIxAOROqA/viewform?usp=publish-editor" class="google-form-iframe" loading="lazy">Memuat formulir...</iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-table">
+            <div class="footer-cell footer-brand">
+                <h3>KAYUNA</h3>
+                <p>Menciptakan harmoni antara kemewahan modern dengan kehangatan material premium.</p>
+            </div>
+            <div class="footer-cell footer-links">
+                <h4>Menu</h4>
+                <a href="#beranda">Beranda</a>
+                <a href="#layanan">Layanan</a>
+                <a href="#galeri">Galeri</a>
+            </div>
+            <div class="footer-cell footer-links">
+                <h4>Media Sosial</h4>
+                <a href="https://www.instagram.com/kayunastd/" target="_blank">Instagram</a>
+                <a href="https://www.tiktok.com/@kayuna.studio" target="_blank">Tiktok</a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2026 Kayuna Studio. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- LOGIKA JAVASCRIPT SLIDER & HARGA PANEL -->
+    <script>
+        // Fungsi Geser Slider Gambar Portofolio
+        function moveSlide(button, direction) {
+            const container = button.parentElement;
+            const track = container.querySelector('.slider-track');
+            const slides = track.querySelectorAll('img');
+            const totalSlides = slides.length;
+            
+            let currentIndex = parseInt(track.getAttribute('data-index')) || 0;
+            currentIndex += direction;
+            
+            if (currentIndex >= totalSlides) {
+                currentIndex = 0;
+            } else if (currentIndex < 0) {
+                currentIndex = totalSlides - 1;
+            }
+            
+            track.setAttribute('data-index', currentIndex);
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        // Fungsi Buka & Tutup Panel Harga Dengan Animasi Panah
+        function togglePricingPanel(button) {
+            const panel = document.getElementById('pricingPanel');
+            button.classList.toggle('active');
+            panel.classList.toggle('show');
+            
+            const textSpan = button.querySelector('span');
+            if (panel.classList.contains('show')) {
+                textSpan.innerText = "Sembunyikan Estimasi Harga";
+            } else {
+                textSpan.innerText = "Lihat Estimasi Harga Layanan";
+            }
+        }
+    </script>
+
+</body>
+</html>
