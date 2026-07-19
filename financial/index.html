@@ -1,1 +1,615 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Finance Tracker — Fincheck Mobile Responsive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .fin-shadow { box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.08), 0 8px 10px -6px rgba(148, 163, 184, 0.08); }
+        @media print { .no-print { display: none !important; } .print-area { width: 100% !important; margin: 0 !important; } }
+    </style>
+</head>
+<body class="bg-[#ECEFF5] text-slate-800 min-h-screen font-sans flex flex-col md:flex-row antialiased">
 
+    <aside class="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-slate-200 p-4 sm:p-6 flex flex-row md:flex-col justify-between items-center md:items-start no-print shrink-0 sticky top-0 z-50 shadow-sm md:shadow-none">
+        <div class="flex md:flex-col items-center md:items-start justify-between w-full md:space-y-8">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 text-sm sm:text-base">F</div>
+                <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight">Family Tracker</span>
+            </div>
+            <nav class="hidden sm:flex md:flex flex-row md:flex-col gap-1 md:space-y-1 w-full md:w-auto">
+                <a href="#" class="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 bg-blue-50 text-blue-600 font-bold rounded-xl text-xs md:text-sm transition">🟢 Dashboard</a>
+                <a href="#section-jurnal" class="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 text-slate-500 hover:bg-slate-50 rounded-xl text-xs md:text-sm font-semibold transition">📄 Koran</a>
+                <a href="#section-wishlist" class="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 text-slate-500 hover:bg-slate-50 rounded-xl text-xs md:text-sm font-semibold transition">🎯 Wishlist</a>
+            </nav>
+        </div>
+        <div class="flex flex-row md:flex-col gap-1.5 md:w-full md:border-t md:pt-4 md:border-slate-100">
+            <button onclick="muatDataKeuangan(); perbaruiPasarBibit();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 md:py-2.5 md:px-4 rounded-xl shadow text-[10px] md:text-xs transition flex items-center justify-center gap-1 font-mono">🔄 Sync</button>
+            <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-1.5 px-3 md:py-2.5 md:px-4 rounded-xl text-[10px] md:text-xs transition hidden sm:flex items-center justify-center gap-1">🖨️ Cetak</button>
+        </div>
+    </aside>
+
+    <main class="flex-grow p-3 sm:p-8 overflow-y-auto max-w-7xl mx-auto w-full print-area">
+        
+        <header class="mb-5 sm:mb-8 no-print">
+            <h1 class="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">Hi Family Team,</h1>
+            <p class="text-[10px] sm:text-xs text-slate-400 font-medium">Welcome back to your financial monitoring tracker center.</p>
+        </header>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
+            <div class="bg-gradient-to-br from-[#2DD4BF] to-[#0D9488] p-3 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+                <div>
+                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-teal-100 block tracking-wider">Saldo Buku Aktif</span>
+                    <span id="statSaldoKas" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
+                </div>
+                <div class="mt-1 flex items-center justify-between"><span id="labelKondisiKas" class="text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/20">Sehat</span></div>
+            </div>
+            <div class="bg-gradient-to-br from-[#60A5FA] to-[#2563EB] p-3 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+                <div>
+                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-blue-100 block tracking-wider">Total Inflow (Debit)</span>
+                    <span id="statTotalPemasukan" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
+                </div>
+                <span class="text-[8px] sm:text-[9px] font-bold text-blue-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">cloud sync</span>
+            </div>
+            <div class="bg-gradient-to-br from-[#FB7185] to-[#E11D48] p-3 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+                <div>
+                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-rose-100 block tracking-wider">Total Outflow (Kredit)</span>
+                    <span id="statTotalPengeluaran" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
+                </div>
+                <span class="text-[8px] sm:text-[9px] font-bold text-rose-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">live stream</span>
+            </div>
+            <div class="bg-gradient-to-br from-[#C084FC] to-[#7C3AED] p-3 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+                <div>
+                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-purple-100 block tracking-wider">Top Alokasi Biaya</span>
+                    <span id="txtTopKategori" class="text-xs sm:text-sm font-black block mt-0.5 sm:mt-1 truncate tracking-tight">Menganalisis...</span>
+                </div>
+                <p id="txtKesimpulanPengeluaran" class="text-[8px] sm:text-[9px] font-medium text-purple-100/90 leading-tight truncate">Membaca data...</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col items-center justify-center min-h-[180px] sm:min-h-[220px]">
+                <div class="w-full flex justify-between items-center mb-2 border-b border-slate-50 pb-1">
+                    <h3 class="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">📊 Kategori Rasio Global</h3>
+                    <span class="text-[9px] sm:text-[10px] text-slate-400 font-semibold">Bulan Ini</span>
+                </div>
+                <div class="w-full flex items-center gap-3 sm:gap-4">
+                    <div class="w-20 h-20 sm:w-28 sm:h-28 shrink-0 relative"><canvas id="kategoriPieChart"></canvas></div>
+                    <div class="text-[10px] sm:text-[11px] text-slate-400 leading-relaxed">Diagram pembagian segmentasi alokasi biaya pengeluaran domestik.</div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col justify-between gap-2">
+                <div class="w-full flex justify-between items-center border-b border-slate-50 pb-1 mb-1">
+                    <h3 class="text-[11px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">🏛️ Macroeconomic Insight & Advisor</h3>
+                    <span class="text-[8px] sm:text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold">Live</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] sm:text-[11px] text-slate-500 leading-relaxed">
+                    <div>
+                        <span class="font-bold text-slate-800 block mb-0.5">📈 Sentimen Inflasi Nasional:</span>
+                        <p>Laju inflasi domestik terkendali. Disarankan mempertahankan porsi dana darurat likuid minimal 20% dari total aset kas.</p>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-800 block mb-0.5">🏢 Suku Bunga Global (BI / Fed):</span>
+                        <p>Proyeksi stabilitas suku bunga acuan. Optimalkan instrumen reksa dana pendapatan tetap.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
+            
+            <div class="lg:col-span-1 space-y-4 sm:space-y-6 no-print">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm">
+                    <h2 id="formTitle" class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 border-b pb-1.5">Catat Mutasi Keuangan</h2>
+                    <form id="financeForm" onsubmit="event.preventDefault(); eksekusiSimpanTransaksi();" class="space-y-2.5">
+                        <input type="hidden" id="txId">
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Tanggal Transaksi</label>
+                            <input type="date" id="txTanggal" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Anggota (PIC)</label>
+                                <select id="txPic" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-medium">
+                                    <option value="Bersama">👥 Bersama</option>
+                                    <option value="Irfan">👨 Irfan</option>
+                                    <option value="Hana">👩 Hana</option>
+                                    <option value="Anak">👦 Anak</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Jenis Arus</label>
+                                <select id="txJenis" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-bold text-emerald-600">
+                                    <option value="Pemasukan" class="text-emerald-600">💰 Pemasukan</option>
+                                    <option value="Pengeluaran" class="text-rose-600">💸 Pengeluaran</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Kategori Alokasi Detail</label>
+                            <select id="txKategori" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                                <option value="Gaji & Bisnis">💼 Gaji & Bisnis</option>
+                                <option value="Makanan & Bahan Dapur">🍳 Makanan & Bahan Dapur</option>
+                                <option value="Edukasi & Sekolah">📚 Edukasi & Sekolah</option>
+                                <option value="Utilitas & Tagihan Bulanan">⚡ Utilitas & Tagihan Bulanan</option>
+                                <option value="Akomodasi & Transportasi">🚗 Akomodasi & Transportasi</option>
+                                <option value="Kesehatan & Medis">🏥 Kesehatan & Medis</option>
+                                <option value="Perawatan Diri">🧴 Perawatan Diri</option>
+                                <option value="Keperluan Anak">🍼 Keperluan Anak</option>
+                                <option value="Hiburan & Rekreasi">🏕️ Hiburan & Rekreasi</option>
+                                <option value="Investasi & Tabungan">📈 Investasi & Tabungan</option>
+                                <option value="Pajak & Asuransi">📄 Pajak & Asuransi</option>
+                                <option value="Cicilan & Utang">💸 Cicilan & Utang</option>
+                                <option value="Lain-lain">📦 Lain-lain</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Deskripsi Keperluan</label>
+                            <input type="text" id="txDeskripsi" required placeholder="Contoh: Belanja Bulanan" class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Nominal Rupiah (Rp)</label>
+                            <input type="number" id="txNominal" required placeholder="0" min="1" class="w-full border border-slate-200 p-2 text-xs font-bold rounded-xl bg-slate-50 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Upload Bukti Lampiran</label>
+                            <input type="file" id="txFileBukti" accept="image/*,application/pdf" class="w-full text-[10px] text-slate-500 bg-slate-50 border border-slate-200 p-1 rounded-xl file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:bg-slate-200 file:text-slate-700 cursor-pointer">
+                        </div>
+                        <div class="flex gap-1.5 pt-1.5">
+                            <button type="submit" id="btnSubmitForm" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-xl shadow text-xs transition">💾 Simpan Kas</button>
+                            <button type="button" id="btnBatalEdit" onclick="resetFormMutasi()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 rounded-xl text-xs transition">Batal</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/60 shadow-sm space-y-2.5">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Arus Kas Anggota Keluarga</span>
+                    <div class="grid grid-cols-3 gap-1.5 text-center text-[9px]">
+                        <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Bersama</div><div id="txtTotalBersama" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartBersama"></canvas></div></div>
+                        <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Irfan</div><div id="txtTotalIrfan" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartIrfan"></canvas></div></div>
+                        <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Hana</div><div id="txtTotalHana" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartHana"></canvas></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-4 sm:space-y-6 w-full">
+                
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between">
+                    <div class="w-full flex flex-col">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b pb-2">
+                            <div>
+                                <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📝 Rekening Koran Kas Domestik</h2>
+                                <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tren balance berjalan terintegrasi log form mutasi</p>
+                            </div>
+                            <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm">
+                        </div>
+
+                        <div class="w-full h-28 sm:h-36 mb-3 bg-slate-50/50 rounded-xl p-1.5 border border-slate-100">
+                            <canvas id="chartMutasiLine"></canvas>
+                        </div>
+
+                        <div class="overflow-x-auto overflow-y-auto max-h-60 border rounded-xl border-slate-150 custom-scroll">
+                            <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[550px]">
+                                <thead class="sticky top-0 bg-slate-50 text-slate-500 font-bold border-b border-slate-200 z-10 text-[9px] sm:text-[10px] uppercase tracking-wider">
+                                    <tr>
+                                        <th class="p-2 w-14">Tanggal</th>
+                                        <th class="p-2 w-14">PIC</th>
+                                        <th class="p-2">Keterangan / Pos</th>
+                                        <th class="p-2 text-right w-20 text-emerald-600">Debit (+)</th>
+                                        <th class="p-2 text-right w-20 text-rose-600">Kredit (-)</th>
+                                        <th class="p-2 text-right w-24 bg-slate-50/50 border-x">Saldo Buku</th>
+                                        <th class="p-2 text-center w-16 no-print">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="jurnal-rows" class="divide-y text-slate-600 bg-white font-medium">
+                                    <tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Memuat mutasi kas koran...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-wishlist" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm space-y-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-2 gap-2">
+                        <div>
+                            <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">🎯 Wishlist & Rencana Target Finansial</h2>
+                            <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tabel inventaris data lengkap rencana impian jangka panjang</p>
+                        </div>
+                        
+                        <form id="targetForm" onsubmit="event.preventDefault(); eksekusiSimpanTargetCloud();" class="flex flex-wrap items-center gap-1.5 no-print w-full sm:w-auto justify-end">
+                            <input type="text" id="targetNama" required placeholder="Nama Impian..." class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none w-24 sm:w-28">
+                            <input type="number" id="targetNominal" required placeholder="Target Rp" class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none w-20 sm:w-24">
+                            <input type="date" id="targetDeadline" required class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 text-slate-400 focus:outline-none w-24 sm:w-28">
+                            <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] sm:text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow transition">➕ Add</button>
+                        </form>
+                    </div>
+
+                    <div class="overflow-x-auto border rounded-xl border-slate-150 custom-scroll">
+                        <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[500px]">
+                            <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[9px] sm:text-[10px] uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-2">Nama Rencana Impian</th>
+                                    <th class="p-2 w-20 text-right">Target Rupiah</th>
+                                    <th class="p-2 w-16 text-center">Deadline</th>
+                                    <th class="p-2 w-28 text-center">Progress Terpenuhi</th>
+                                    <th class="p-2 w-14 text-center no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wishlist-table-rows" class="divide-y text-slate-600 bg-white font-medium">
+                                <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat wishlist cloud...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slate-900 to-slate-950 text-gray-100 p-3.5 rounded-2xl shadow-sm border border-slate-800 flex flex-col no-print">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
+                        <div class="flex items-center gap-1.5">
+                            <h3 class="text-[10px] sm:text-xs font-bold text-emerald-400 uppercase tracking-wider">🟢 Live Bibit Ticker</h3>
+                            <span class="text-[8px] sm:text-[9px] text-slate-500 font-medium font-mono" id="lblBibitTimestamp">Sync...</span>
+                        </div>
+                        <button onclick="perbaruiPasarBibit()" class="text-[8px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded-md transition">🔄</button>
+                    </div>
+                    <div id="bibit-ticker-container" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const SPREADSHEET_API_URL = "https://sheetdb.io/api/v1/z5j7ohq973uwz"; 
+
+        let logArusKeuanganKeluarga = [];
+        let logTargetWishlistCloud = [];
+        let stringFileBase64 = "";
+        let totalSaldoAktifGlobal = 0;
+        let chartInstances = { Bersama: null, Irfan: null, Hana: null, Kategori: null, MutasiLine: null };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            resetFormMutasi();
+            document.getElementById('txFileBukti').addEventListener('change', konversiFileKeBase64);
+            muatDataKeuangan();
+            perbaruiPasarBibit();
+        });
+
+        function konversiFileKeBase64(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) { stringFileBase64 = event.target.result; };
+            reader.readAsDataURL(file);
+        }
+
+        function perbaruiPasarBibit() {
+            const container = document.getElementById('bibit-ticker-container');
+            const stamp = document.getElementById('lblBibitTimestamp');
+            stamp.innerText = `${new Date().toLocaleTimeString('id-ID')} WIB`;
+
+            const daftarAsetBibit = [
+                { tipe: "SAHAM", nama: "IHSG (Indeks)", nilai: "7,245.80", return: "+1.25%", naik: true },
+                { tipe: "RDPU", nama: "Sucor Sharia Money", nilai: "1,640.20", return: "+4.65%", naik: true },
+                { tipe: "RDPU", nama: "Batavia Dana Kas", nilai: "1,580.45", return: "+4.30%", naik: true },
+                { tipe: "OBLIGASI", nama: "ABF Indo Bond", nilai: "5,120.10", return: "+6.85%", naik: true },
+                { tipe: "SAHAM", nama: "Sucor Equity Fund", nilai: "2,450.35", return: "+11.40%", naik: true },
+                { tipe: "BLUECHIP", nama: "BBCA - Bank Central", nilai: "Rp 10,250", return: "+0.98%", naik: true }
+            ];
+
+            container.innerHTML = "";
+            daftarAsetBibit.forEach(aset => {
+                const div = document.createElement('div');
+                div.className = "bg-slate-900/60 p-2 rounded-xl border border-slate-800/80 text-[10px]";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center text-[7px] font-bold text-slate-400 tracking-wider mb-0.5">
+                        <span>${aset.tipe}</span>
+                        <span class="${aset.naik ? 'text-emerald-400' : 'text-rose-400'} font-bold font-mono">${aset.return}</span>
+                    </div>
+                    <div class="font-semibold text-slate-200 truncate">${aset.nama}</div>
+                    <div class="font-mono font-bold text-slate-400 text-[9px] mt-0.5">${aset.nilai}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function muatDataKeuangan() {
+            fetch(SPREADSHEET_API_URL)
+            .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+            .then(data => {
+                let tempTransaksi = []; let tempTarget = [];
+                data.forEach(row => {
+                    let parsed = null;
+                    if(row.datajson && row.datajson !== "") {
+                        try { parsed = JSON.parse(row.datajson); } catch(e) {}
+                    }
+                    if ((row.noinvoice && row.noinvoice.startsWith("GOAL-")) || (parsed && parsed.id && parsed.id.startsWith("GOAL-"))) {
+                        tempTarget.push({
+                            id: row.noinvoice || (parsed ? parsed.id : "GOAL-UNKNOWN"),
+                            nama: row.deskripsi || (parsed ? parsed.nama : "Rencana Impian"),
+                            nominal: parseFloat(row.total) || (parsed ? parsed.nominal : 0),
+                            deadline: row.tanggal || (parsed ? parsed.deadline : new Date().toISOString().split('T')[0])
+                        });
+                    } else {
+                        tempTransaksi.push({
+                            id: row.noinvoice || "TX-UNKNOWN", pic: row.pelanggan || "Bersama", tanggal: row.tanggal || new Date().toISOString().split('T')[0],
+                            nominal: parseFloat(row.total) || 0, jenis: row.status || "Pengeluaran", deskripsi: row.deskripsi || "Mutasi Kas",
+                            kategori: row.kategori || "Lain-lain", buktiUrl: row.buktiurl || ""
+                        });
+                    }
+                });
+
+                logArusKeuanganKeluarga = tempTransaksi.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+                logTargetWishlistCloud = tempTarget;
+
+                kalkulasiDasborStatistik();
+                updateSegalaPieCharts(); 
+                buatKesimpulanPengeluaranOtomatis();
+                renderTabelJurnal(logArusKeuanganKeluarga);
+                renderTabelWishlist(logTargetWishlistCloud);
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('jurnal-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-600 italic text-[11px]">Koneksi terputus.</td></tr>`;
+            });
+        }
+
+        function kalkulasiDasborStatistik() {
+            let totalInflow = 0; let totalOutflow = 0;
+            logArusKeuanganKeluarga.forEach(tx => {
+                if (tx.jenis === "Pemasukan") totalInflow += tx.nominal;
+                else totalOutflow += tx.nominal;
+            });
+
+            totalSaldoAktifGlobal = totalInflow - totalOutflow;
+            let rasio = totalInflow > 0 ? Math.min(Math.round((totalOutflow / totalInflow) * 100), 100) : 0;
+
+            document.getElementById('statSaldoKas').innerText = (totalSaldoAktifGlobal < 0 ? "-" : "") + "Rp " + Math.abs(totalSaldoAktifGlobal).toLocaleString('id-ID');
+            document.getElementById('statTotalPemasukan').innerText = "Rp " + totalInflow.toLocaleString('id-ID');
+            document.getElementById('statTotalPengeluaran').innerText = "Rp " + totalOutflow.toLocaleString('id-ID');
+
+            const lblStatus = document.getElementById('labelKondisiKas');
+            if (totalSaldoAktifGlobal < 0) {
+                lblStatus.innerText = "Defisit"; lblStatus.className = "text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white";
+            } else {
+                lblStatus.innerText = rasio > 80 ? "Waspada" : "Kas Sehat";
+                lblStatus.className = rasio > 80 ? "text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white" : "text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white";
+            }
+        }
+
+        function buatKesimpulanPengeluaranOtomatis() {
+            let ringkasanKategori = {};
+            logArusKeuanganKeluarga.forEach(tx => {
+                if (tx.jenis === "Pengeluaran") { ringkasanKategori[tx.kategori] = (ringkasanKategori[tx.kategori] || 0) + tx.nominal; }
+            });
+            let namaKategoriTerbesar = ""; let nilaiTerbesar = 0;
+            for (const [kategori, total] of Object.entries(ringkasanKategori)) {
+                if (total > nilaiTerbesar) { nilaiTerbesar = total; namaKategoriTerbesar = kategori; }
+            }
+            const lblTopKategori = document.getElementById('txtTopKategori');
+            const txtKesimpulan = document.getElementById('txtKesimpulanPengeluaran');
+            if (nilaiTerbesar > 0) {
+                lblTopKategori.innerText = namaKategoriTerbesar;
+                txtKesimpulan.innerHTML = `Terbanyak: Rp ${nilaiTerbesar.toLocaleString('id-ID')}`;
+            } else {
+                lblTopKategori.innerText = "Belum Ada"; txtKesimpulan.innerText = "Belum ada log kas.";
+            }
+        }
+
+        function eksekusiSimpanTargetCloud() {
+            const uniqueId = "GOAL-" + Date.now();
+            const payloadTarget = {
+                id: uniqueId, nama: document.getElementById('targetNama').value.trim(),
+                nominal: parseFloat(document.getElementById('targetNominal').value) || 0,
+                deadline: document.getElementById('targetDeadline').value
+            };
+            const dataSheetdb = {
+                noinvoice: uniqueId, pelanggan: "Bersama", tanggal: payloadTarget.deadline, total: payloadTarget.nominal,
+                status: "Pengeluaran", deskripsi: payloadTarget.nama, kategori: "Investasi & Tabungan", buktiurl: "", datajson: JSON.stringify(payloadTarget)
+            };
+            fetch(SPREADSHEET_API_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [dataSheetdb] })
+            })
+            .then(res => res.json())
+            .then(() => {
+                document.getElementById('targetNama').value = ""; document.getElementById('targetNominal').value = ""; document.getElementById('targetDeadline').value = "";
+                muatDataKeuangan(); alert("Target impian tersimpan ke cloud Spreadsheet!");
+            })
+            .catch(err => alert("Gagal menyimpan target: " + err));
+        }
+
+        function renderTabelWishlist(targetArrayData) {
+            const tbody = document.getElementById('wishlist-table-rows'); tbody.innerHTML = "";
+            if(targetArrayData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-400 italic text-[11px]">Wishlist cloud kosong.</td></tr>`; return;
+            }
+            targetArrayData.forEach(target => {
+                let persen = totalSaldoAktifGlobal > 0 ? Math.min(Math.round((totalSaldoAktifGlobal / target.nominal) * 100), 100) : 0;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-500 text-[11px] sm:text-xs";
+                tr.innerHTML = `
+                    <td class="p-2 font-bold text-slate-800">${target.nama}</td>
+                    <td class="p-2 text-right font-mono font-bold text-slate-900">Rp ${target.nominal.toLocaleString('id-ID')}</td>
+                    <td class="p-2 text-center text-slate-400 font-mono">${formatTanggalPendek(target.deadline)}</td>
+                    <td class="p-2">
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden"><div class="bg-blue-500 h-1.5 rounded-full" style="width: ${persen}%"></div></div>
+                            <span class="font-bold font-mono text-blue-600 text-[9px]">${persen}%</span>
+                        </div>
+                    </td>
+                    <td class="p-2 text-center no-print">
+                        <button onclick="hapusTransaksiDariCloud('${target.id}')" class="text-rose-500 hover:text-rose-700 font-bold hover:underline">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateSegalaPieCharts() {
+            let rekap = { Bersama: { masuk: 0, keluar: 0 }, Irfan: { masuk: 0, keluar: 0 }, Hana: { masuk: 0, keluar: 0 } };
+            let ringkasanKategori = {};
+
+            logArusKeuanganKeluarga.forEach(tx => {
+                if (rekap[tx.pic]) {
+                    if (tx.jenis === "Pemasukan") rekap[tx.pic].masuk += tx.nominal;
+                    else rekap[tx.pic].keluar += tx.nominal;
+                }
+                if (tx.jenis === "Pengeluaran") { ringkasanKategori[tx.kategori] = (ringkasanKategori[tx.kategori] || 0) + tx.nominal; }
+            });
+
+            bikinSinglePieChart('chartBersama', 'txtTotalBersama', rekap.Bersama, 'Bersama');
+            bikinSinglePieChart('chartIrfan', 'txtTotalIrfan', rekap.Irfan, 'Irfan');
+            bikinSinglePieChart('chartHana', 'txtTotalHana', rekap.Hana, 'Hana');
+
+            const labelsKategori = Object.keys(ringkasanKategori); const dataKategori = Object.values(ringkasanKategori);
+            if (chartInstances.Kategori) { chartInstances.Kategori.destroy(); }
+            const ctxKat = document.getElementById('kategoriPieChart').getContext('2d');
+            if(labelsKategori.length > 0) {
+                chartInstances.Kategori = new Chart(ctxKat, {
+                    type: 'doughnut',
+                    data: { labels: labelsKategori, datasets: [{ data: dataKategori, backgroundColor: ['#2DD4BF', '#60A5FA', '#FB7185', '#C084FC', '#F59E0B'], borderWidth: 1 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
+                });
+            }
+        }
+
+        function bikinSinglePieChart(canvasId, textId, dataObj, key) {
+            const netValue = dataObj.masuk - dataObj.keluar;
+            document.getElementById(textId).innerText = `Rp ${netValue.toLocaleString('id-ID')}`;
+            if (chartInstances[key]) { chartInstances[key].destroy(); }
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            chartInstances[key] = new Chart(ctx, {
+                type: 'pie',
+                data: { datasets: [{ data: [dataObj.masuk || 1, dataObj.keluar || 0], backgroundColor: ['#34d399', '#f43f5e'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function bukaModeEditTransaksi(idTx) {
+            const target = logArusKeuanganKeluarga.find(tx => tx.id === idTx); if(!target) return;
+            document.getElementById('txId').value = target.id; document.getElementById('txTanggal').value = target.tanggal;
+            document.getElementById('txPic').value = target.pic; document.getElementById('txJenis').value = target.jenis;
+            document.getElementById('txKategori').value = target.kategori; document.getElementById('txDeskripsi').value = target.deskripsi;
+            document.getElementById('txNominal').value = target.nominal; stringFileBase64 = target.buktiUrl || ""; 
+            document.getElementById('formTitle').innerText = "✏️ Ubah Transaksi"; document.getElementById('btnSubmitForm').innerText = "💾 Perbarui & Sinkron";
+            document.getElementById('btnBatalEdit').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetFormMutasi() {
+            document.getElementById('txId').value = ""; document.getElementById('txTanggal').value = new Date().toISOString().split('T')[0];
+            document.getElementById('txPic').value = "Bersama"; document.getElementById('txJenis').value = "Pengeluaran";
+            document.getElementById('txKategori').value = "Makanan & Bahan Dapur"; document.getElementById('txDeskripsi').value = "";
+            document.getElementById('txNominal').value = ""; document.getElementById('txFileBukti').value = ""; stringFileBase64 = "";
+            document.getElementById('formTitle').innerText = "Catat Mutasi Keuangan"; document.getElementById('btnSubmitForm').innerText = "💾 Simpan Transaksi";
+            document.getElementById('btnBatalEdit').classList.add('hidden');
+        }
+
+        function saringJurnalKeuangan(kataKunci) {
+            const query = kataKunci.toLowerCase().trim();
+            if (query === "") { renderTabelJurnal(logArusKeuanganKeluarga); return; }
+            const dataTerfilter = logArusKeuanganKeluarga.filter(tx => {
+                return (tx.deskripsi || "").toLowerCase().includes(query) || (tx.pic || "").toLowerCase().includes(query) || (tx.kategori || "").toLowerCase().includes(query);
+            });
+            renderTabelJurnal(dataTerfilter);
+        }
+
+        function eksekusiSimpanTransaksi() {
+            const currentId = document.getElementById('txId').value; const isEditMode = currentId !== "";
+            const uniqueId = isEditMode ? currentId : "TX-" + Date.now();
+            const payload = { id: uniqueId, tanggal: document.getElementById('txTanggal').value, pic: document.getElementById('txPic').value, jenis: document.getElementById('txJenis').value, kategori: document.getElementById('txKategori').value, deskripsi: document.getElementById('txDeskripsi').value, nominal: parseFloat(document.getElementById('txNominal').value) || 0, buktiUrl: stringFileBase64 };
+            const dataSheetdb = { 
+                noinvoice: uniqueId, pelanggan: payload.pic, tanggal: payload.tanggal, total: payload.nominal, 
+                status: payload.jenis, deskripsi: payload.deskripsi, kategori: payload.kategori, buktiurl: payload.buktiUrl, datajson: JSON.stringify(payload) 
+            };
+            const reqUrl = isEditMode ? `${SPREADSHEET_API_URL}/noinvoice/${uniqueId}` : SPREADSHEET_API_URL;
+            const reqMethod = isEditMode ? 'PUT' : 'POST'; const reqBody = isEditMode ? JSON.stringify({ data: dataSheetdb }) : JSON.stringify({ data: [dataSheetdb] });
+
+            fetch(reqUrl, { method: reqMethod, headers: { 'Content-Type': 'application/json' }, body: reqBody })
+            .then(res => res.json())
+            .then(() => { resetFormMutasi(); muatDataKeuangan(); alert("Sinkronisasi cloud mutasi kas sukses!"); })
+            .catch(err => alert("Gagal menyimpan data: " + err));
+        }
+
+        function hapusTransaksiDariCloud(idTx) {
+            if (confirm(`Apakah Anda yakin ingin menghapus data dengan kode referensi ${idTx}?`)) {
+                fetch(`${SPREADSHEET_API_URL}/noinvoice/${idTx}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } })
+                .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+                .then(() => { muatDataKeuangan(); });
+            }
+        }
+
+        function formatTanggalPendek(stringTanggal) {
+            if (!stringTanggal) return "-"; const parts = stringTanggal.split('-');
+            if (parts.length !== 3) return stringTanggal; return `${parts[2]}/${parts[1]}`;
+        }
+
+        function bukaJendelaPratinjauBukti(stringBase64) {
+            const windowBaru = window.open();
+            windowBaru.document.write(`<title>Pratinjau Bukti</title><body style=\"margin:0; display:flex; justify-content:center; align-items:center; background:#eceff5;\"><img src=\"${stringBase64}\" style=\"max-width:100%; max-height:100vh;\"/></body>`);
+        }
+
+        function renderTabelJurnal(targetArrayData) {
+            const tbody = document.getElementById('jurnal-rows'); tbody.innerHTML = "";
+            if (targetArrayData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic text-[11px]">Buku kas kosong.</td></tr>`;
+                if(chartInstances.MutasiLine) chartInstances.MutasiLine.destroy(); return;
+            }
+
+            let runningBalance = 0; let rowsHtmlBuffer = [];
+            let labelGrafik = []; let dataSaldoGrafik = [];
+
+            targetArrayData.forEach(tx => {
+                const adalahInflow = tx.jenis === "Pemasukan"; let debitText = "-"; let kreditText = "-";
+                if (adalahInflow) { runningBalance += tx.nominal; debitText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; } 
+                else { runningBalance -= tx.nominal; kreditText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; }
+
+                labelGrafik.push(formatTanggalPendek(tx.tanggal)); dataSaldoGrafik.push(runningBalance);
+                let buktiHtml = tx.buktiUrl ? `<button onclick="bukaJendelaPratinjauBukti('${tx.buktiUrl}')" class="text-blue-500 font-bold hover:underline">🖼️</button>` : `<span class="text-slate-300 italic">-</span>`;
+
+                const trHtml = `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-600 text-[11px] sm:text-xs">
+                        <td class="p-2 font-mono text-slate-400">${formatTanggalPendek(tx.tanggal)}</td>
+                        <td class="p-2 text-slate-900 font-bold">${tx.pic}</td>
+                        <td class="p-2"><div class="text-slate-800 font-semibold leading-tight">${tx.deskripsi}</div><div class="text-[9px] text-slate-400 font-mono">${tx.kategori}</div></td>
+                        <td class="p-2 text-right font-semibold text-emerald-600 font-mono">${debitText}</td>
+                        <td class="p-2 text-right font-semibold text-rose-500 font-mono">${kreditText}</td>
+                        <td class="p-2 text-right font-bold text-slate-700 bg-slate-50/50 border-x font-mono">Rp ${runningBalance.toLocaleString('id-ID')}</td>
+                        <td class="p-2 text-center no-print">
+                            <div class="flex justify-center gap-2 font-bold text-[10px] sm:text-[11px]">
+                                <button onclick="bukaModeEditTransaksi('${tx.id}')" class="text-blue-600 hover:underline">✏️</button>
+                                <button onclick="hapusTransaksiDariCloud('${tx.id}')" class="text-rose-500 hover:underline">🗑️</button>
+                                ${tx.buktiUrl ? buktiHtml : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                rowsHtmlBuffer.push(trHtml);
+            });
+
+            tbody.innerHTML = rowsHtmlBuffer.reverse().join("");
+
+            if (chartInstances.MutasiLine) { chartInstances.MutasiLine.destroy(); }
+            const ctxLine = document.getElementById('chartMutasiLine').getContext('2d');
+            chartInstances.MutasiLine = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: labelGrafik,
+                    datasets: [{
+                        label: 'Saldo Buku Koran', data: dataSaldoGrafik, borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.05)', fill: true, tension: 0.35, borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#2563EB'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false }, ticks: { font: { size: 8 } } }, y: { ticks: { font: { size: 8 } } } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
