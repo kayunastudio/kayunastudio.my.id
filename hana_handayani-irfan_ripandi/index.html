@@ -1,1 +1,1328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undangan Pernikahan Digital - Hana & Irfan</title>
+    <!-- Google Fonts: Alex Brush (Calligraphy Formal & Readable) & Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           COLOR PALETTE & CORE STYLES (Tema: Emerald Green, Maroon & Cream Accent)
+           ========================================================================= */
+        :root {
+            /* KUSTOMISASI: Ubah kode hex warna di bawah ini jika ingin mengganti warna tema */
+            --bg-cream-accent: #F4EAE6; 
+            --bg-pure-white: #FFFFFF;
+            --primary-emerald: #0B4434; 
+            --primary-maroon: #4A2828;  
+            --dark-emerald-bg: #052B20; 
+            --accent-warm-gold: #C5A059;
+            --text-dark: #1E2A27;
+            --text-muted: #5F6E6A;
+            --white: #FFFFFF;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #031B14; 
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Pembatas Layar HP / Mobile Container */
+        .mobile-container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            background-color: var(--bg-cream-accent);
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
+            padding-bottom: 70px;
+        }
+
+        .mobile-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ==========================================================================
+           SISTEM ANIMASI SCROLL REVEAL
+           ========================================================================== */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s cubic-bezier(0.215, 0.610, 0.355, 1), 
+                        transform 1s cubic-bezier(0.215, 0.610, 0.355, 1);
+            will-change: transform, opacity;
+        }
+
+        .oval-reveal {
+            opacity: 0;
+            transform: translateY(30px) scale(0.97);
+            transition: opacity 1.2s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                        transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+            will-change: transform, opacity;
+        }
+
+        .scroll-reveal.reveal-active,
+        .oval-reveal.reveal-active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .delay-1 { transition-delay: 150ms; }
+        .delay-2 { transition-delay: 300ms; }
+        .delay-3 { transition-delay: 450ms; }
+
+        /* ==========================================================================
+           FIXED PERBAIKAN: INLINE SVG DAUN MELAYANG BERWARNA EMERALD GREEN
+           ========================================================================== */
+        .swaying-leaves {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.75;
+            will-change: transform;
+        }
+
+        .leaves-top-left {
+            top: 0;
+            left: 0;
+            background-image: url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/floral-left.PNG?raw=true');
+            transform-origin: top left;
+            animation: gentle-wind-left 5.5s ease-in-out infinite alternate;
+        }
+
+        .leaves-top-right {
+            top: 0;
+            right: 0;
+            background-image: url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/floral-right.png?raw=true');
+            transform-origin: top right;
+            animation: gentle-wind-right 5.5s ease-in-out infinite alternate;
+        }
+
+        .leaves-bottom-right {
+            bottom: 0;
+            right: 0;
+            background-image: url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/floral-right.png?raw=true');
+            transform-origin: bottom right;
+            animation: gentle-wind-right 5.5s ease-in-out infinite alternate;
+        }
+
+        .leaves-bottom-left {
+            bottom: 0;
+            left: 0;
+            background-image: url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/floral-left.PNG?raw=true');
+            transform-origin: bottom left;
+            animation: gentle-wind-left 5.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes gentle-wind-left {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(2deg) scale(1.02) skewX(0.5deg); }
+            100% { transform: rotate(-1deg) scale(0.99) skewY(-0.5deg); }
+        }
+
+        @keyframes gentle-wind-right {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(-2deg) scale(1.02) skewY(0.5deg); }
+            100% { transform: rotate(1deg) scale(0.99) skewX(-0.5deg); }
+        }
+
+        /* Typography & Custom Titles - Diperkecil & Proporsional */
+        .script-luxury {
+            font-family: 'Alex Brush', cursive;
+            color: var(--primary-maroon); 
+            font-size: 3.2rem; 
+            font-weight: 400;
+            line-height: 1.2;
+        }
+
+        .serif-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            color: var(--primary-emerald);
+            text-align: center;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .section-padding {
+            padding: 50px 22px;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider-line {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--primary-maroon), transparent);
+            margin: 12px auto;
+        }
+
+        .oval-frame {
+            width: 190px;
+            height: 260px;
+            margin: 0 auto 20px;
+            position: relative;
+            border-radius: 95px; 
+            padding: 4px;
+            background: var(--white);
+            box-shadow: 0 6px 16px rgba(11, 68, 52, 0.12);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .oval-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 91px;
+        }
+
+        /* ==========================================================================
+           COVER AWAL TRADISIONAL MODERN
+           ========================================================================== */
+        #invitation-cover {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            background: linear-gradient(rgba(244, 234, 230, 0.5), rgba(244, 234, 230, 0.8)), 
+                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true') no-repeat center center;
+            background-size: cover;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 45px 25px;
+            text-align: center;
+            transition: transform 1.1s cubic-bezier(0.77, 0, 0.175, 1);
+            overflow: hidden;
+        }
+
+        #invitation-cover.opened {
+            transform: translate(-50%, -100vh);
+        }
+
+        .cover-top p {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--primary-emerald);
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+
+        .cover-date {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin: 8px 0 25px 0;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .guest-box span.dear-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .guest-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--primary-emerald);
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 20px;
+        }
+
+        .btn-open-traditional {
+            background-color: var(--primary-emerald);
+            color: var(--white);
+            border: none;
+            padding: 12px 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(11, 68, 52, 0.25);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ==========================================================================
+           MAIN CONTENT
+           ========================================================================== */
+        #main-content {
+            display: none;
+        }
+
+        #main-content.show {
+            display: block;
+        }
+
+        .hero-interior-page {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(rgba(244, 234, 230, 0.5), rgba(244, 234, 230, 0.8)), 
+                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true') no-repeat center center;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 45px 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-interior-page .top-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--primary-emerald);
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        .hero-interior-page .interior-date {
+            font-size: 0.8rem;
+            font-weight: 300;
+            color: var(--text-dark);
+            margin-top: 8px;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        /* Halaman Ayat Quran */
+        .quran-verse-page {
+            width: 100%;
+            min-height: 80vh;
+            background-color: var(--bg-cream-accent);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 25px;
+            text-align: center;
+        }
+
+        .quran-arabic {
+            font-family: 'Traditional Arabic', 'Meiryo', 'Georgia', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--primary-emerald);
+            line-height: 2.1;
+            direction: rtl;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .quran-translation {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.82rem;
+            line-height: 1.65;
+            color: var(--text-dark);
+            font-weight: 400;
+            text-align: center;
+            padding: 0 5px;
+        }
+
+        .quran-surah-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: var(--primary-maroon);
+            margin-top: 20px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Bagian Mempelai */
+        .mempelai-section-bg {
+            background: linear-gradient(rgba(244, 234, 230, 0.8), rgba(244, 234, 230, 0.9)), 
+                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/cover-catin.jpg?raw=true') no-repeat center center;
+            background-size: cover;
+        }
+
+        .mempelai-intro-text {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+            padding: 0 5px;
+            margin-top: 12px;
+            margin-bottom: 35px;
+        }
+
+        .mempelai-card {
+            margin: 0 0 40px 0;
+            text-align: center;
+        }
+
+        .mempelai-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.15rem;
+            color: var(--primary-emerald);
+            font-weight: 700;
+            margin-top: 5px;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .mempelai-card .ortu {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .btn-instagram {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--primary-maroon);
+            color: var(--white);
+            text-decoration: none;
+            padding: 6px 20px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            border-radius: 20px;
+            transition: opacity 0.3s;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-instagram svg { width: 13px; height: 13px; fill: currentColor; }
+
+        .catin-separator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+            margin: 0 auto 40px auto;
+            color: var(--primary-maroon);
+            font-family: 'Alex Brush', cursive;
+            font-size: 2.2rem;
+            font-weight: 400;
+        }
+
+        .catin-separator::before,
+        .catin-separator::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background-color: var(--primary-emerald);
+            opacity: 0.25;
+        }
+
+        .catin-separator span { padding: 0 12px; margin-top: -8px; }
+
+        /* Bagian Detail Acara & Countdown */
+        .event-section-bg {
+            background-color: var(--dark-emerald-bg);
+            color: var(--white);
+        }
+
+        .save-the-date-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--bg-cream-accent);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .countdown-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 35px;
+            padding: 0 5px;
+        }
+
+        .countdown-item {
+            width: 60px;
+            height: 60px;
+            background-color: var(--bg-cream-accent);
+            border-radius: 12px;
+            color: var(--primary-emerald);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .countdown-item span {
+            display: block;
+            font-size: 1.15rem;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.1;
+        }
+
+        .countdown-item label {
+            font-size: 0.65rem;
+            color: var(--primary-maroon);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            margin-top: 1px;
+            text-transform: uppercase;
+        }
+
+        .arch-event-container {
+            width: 100%;
+            border: 1px solid rgba(244, 234, 230, 0.3);
+            border-radius: 30px;
+            padding: 45px 20px 35px 20px;
+            background: linear-gradient(rgba(5, 43, 32, 0.4), rgba(5, 43, 32, 0.75)), 
+                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/cover-acara.jpg?raw=true') no-repeat center center;
+            background-size: cover;
+            text-align: center;
+        }
+
+        .event-block { margin-bottom: 35px; }
+        .event-block h3 { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: 1.5px; color: var(--bg-cream-accent); text-transform: uppercase; margin-bottom: 10px; }
+        .event-block .horizontal-line { width: 75%; height: 1px; background-color: rgba(244, 234, 230, 0.25); margin: 0 auto 16px auto; }
+        .event-detail-row { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 0.85rem; margin-bottom: 8px; font-family: 'Montserrat', sans-serif; color: var(--white); font-weight: 500; }
+        .event-detail-row svg { width: 16px; height: 16px; fill: var(--accent-warm-gold); }
+        .event-address { font-size: 0.8rem; line-height: 1.5; color: rgba(244, 234, 230, 0.85); max-width: 250px; margin: 10px auto 0 auto; font-weight: 400; }
+        
+        .btn-lihat-lokasi { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            background-color: var(--bg-cream-accent); 
+            color: var(--primary-emerald);           
+            text-decoration: none; 
+            padding: 8px 24px; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            border-radius: 20px; 
+            margin-top: 14px; 
+            border: 1px solid var(--accent-warm-gold); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            transition: transform 0.2s, opacity 0.2s;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-lihat-lokasi svg { width: 14px; height: 14px; fill: var(--primary-emerald); }
+        .btn-lihat-lokasi:active { transform: scale(0.97); opacity: 0.9; }
+
+        .flower-separator-svg { 
+            width: 100px; 
+            height: auto; 
+            margin: 20px auto 25px auto; 
+            display: block; 
+            color: var(--accent-warm-gold);
+        }
+
+        /* Bagian Galeri Kebahagiaan */
+        .gallery-section-bg {
+            background: linear-gradient(rgba(244, 234, 230, 0.85), rgba(244, 234, 230, 0.9)), 
+                        url('https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=600&auto=format&fit=crop') no-repeat center center;
+            background-size: cover;
+        }
+
+        .gallery-intro-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+            max-width: 320px;
+            margin: 8px auto 28px auto;
+            font-weight: 400;
+        }
+
+        .gallery-portrait-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0 4px;
+        }
+
+        .gallery-item {
+            position: relative;
+            width: 100%;
+            padding-top: 140%; 
+            overflow: hidden;
+            border-radius: 14px;
+            box-shadow: 0 5px 12px rgba(11, 68, 52, 0.06);
+            background-color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .gallery-item:hover { transform: scale(1.02); }
+        .gallery-item img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .gsc-lightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(3, 27, 20, 0.95); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
+        .gsc-lightbox.active { display: flex; opacity: 1; }
+        .gsc-lightbox img { max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2); }
+        .gsc-lightbox-close { position: absolute; top: 25px; right: 25px; color: var(--white); font-size: 2rem; cursor: pointer; background: none; border: none; }
+
+        /* Bagian Love Story */
+        .story-section-bg {
+            background: linear-gradient(rgba(244, 234, 230, 0.9), rgba(244, 234, 230, 0.95)), 
+                        url('https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=600&auto=format&fit=crop') no-repeat center center;
+            background-size: cover;
+        }
+
+        .clean-timeline { position: relative; width: 100%; margin-top: 30px; padding: 10px 0; }
+        .clean-timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: var(--primary-emerald); opacity: 0.22; transform: translateX(-50%); }
+        .timeline-node { position: relative; width: 100%; margin-bottom: 35px; }
+        .node-circle { position: absolute; left: 50%; top: 0; width: 8px; height: 8px; background-color: var(--primary-maroon); border-radius: 50%; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg-cream-accent); }
+        .node-header { text-align: center; margin-bottom: 12px; padding-top: 16px; }
+        .node-header h3 { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; color: var(--primary-emerald); letter-spacing: 0.3px; display: inline-block; position: relative; text-transform: uppercase; }
+        .node-body-card { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(11, 68, 52, 0.04); border: 1px solid rgba(255, 255, 255, 0.6); text-align: justify; }
+        .node-body-card p { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; line-height: 1.6; color: var(--text-dark); font-weight: 400; }
+
+        /* Section Wedding Gift */
+        .gift-section-bg {
+            background-color: var(--dark-emerald-bg);
+            color: var(--white);
+        }
+
+        .gift-section-bg .header-with-lines { display: flex; align-items: center; width: 100%; margin-bottom: 20px; }
+        .gift-section-bg .header-with-lines h2 { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; color: var(--bg-cream-accent); font-weight: 700; white-space: nowrap; padding: 0 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .gift-section-bg .header-with-lines .horizontal-line { flex: 1; height: 1px; background-color: rgba(244, 234, 230, 0.25); }
+        .gift-intro-narrative { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; line-height: 1.5; color: rgba(244, 234, 230, 0.85); margin-bottom: 25px; padding: 0 4px; text-align: center; font-style: italic; }
+        
+        .white-address-card { background-color: var(--bg-cream-accent); border-radius: 12px; padding: 18px 16px; color: var(--primary-emerald); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        .white-address-card h4 { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--primary-maroon); margin-bottom: 8px; }
+        .white-address-card p { font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 0.8rem; line-height: 1.5; color: #444444; }
+        
+        .bank-cards-container { width: 100%; display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+        .bank-inline-card { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(244, 234, 230, 0.12); border-radius: 10px; padding: 16px; text-align: center; position: relative; }
+        .bank-inline-card .bank-name { font-size: 0.95rem; font-weight: 700; color: var(--accent-warm-gold); letter-spacing: 0.5px; margin-bottom: 2px; }
+        .bank-inline-card .account-number { font-size: 1.15rem; font-weight: 700; color: var(--white); letter-spacing: 0.5px; margin: 2px 0; }
+        .bank-inline-card .account-holder { font-size: 0.78rem; color: rgba(244, 234, 230, 0.65); margin-bottom: 10px; font-weight: 400; }
+        
+        .btn-copy-instant { background-color: var(--bg-cream-accent); color: var(--primary-emerald); border: none; padding: 6px 14px; font-size: 0.75rem; font-weight: 600; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-family: 'Montserrat', sans-serif; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: background-color 0.2s; text-transform: uppercase; }
+        .btn-copy-instant:active { background-color: #e5dad5; }
+        
+        .qris-payment-block { background: var(--bg-cream-accent); border-radius: 12px; padding: 18px; color: #111111; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-top: 5px; }
+        .qris-logo-header { width: 50px; height: auto; margin: 0 auto 12px auto; display: block; }
+        .qris-image-frame { width: 160px; height: 160px; margin: 0 auto 10px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 6px; display: flex; justify-content: center; align-items: center; }
+        .qris-image-frame img { width: 100%; height: 100%; object-fit: contain; }
+        .qris-payment-block p { font-size: 0.75rem; color: #444444; line-height: 1.4; font-family: 'Montserrat', sans-serif; font-weight: 400; }
+
+        /* Section RSVP */
+        .rsvp-section-bg {
+            background-color: var(--dark-emerald-bg);
+            color: var(--white);
+        }
+
+        .rsvp-section-bg .header-with-lines { display: flex; align-items: center; width: 100%; margin-bottom: 30px; }
+        .rsvp-section-bg .header-with-lines h2 { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; color: var(--bg-cream-accent); font-weight: 700; white-space: nowrap; padding: 0 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .rsvp-section-bg .header-with-lines .horizontal-line { flex: 1; height: 1px; background-color: rgba(244, 234, 230, 0.25); }
+        .rsvp-clean-form { width: 100%; text-align: left; }
+        .rsvp-clean-form .form-group { margin-bottom: 18px; }
+        .rsvp-clean-form label { display: block; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--bg-cream-accent); margin-bottom: 6px; }
+        .rsvp-clean-form .form-control { width: 100%; padding: 10px 12px; border: none; border-radius: 4px; background-color: var(--bg-cream-accent); font-size: 0.85rem; color: var(--text-dark); font-family: 'Montserrat', sans-serif; }
+        .rsvp-clean-form .form-control::placeholder { color: #9faeab; font-weight: 400; }
+        .rsvp-clean-form select.form-control { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%230B4434'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; background-size: 18px; padding-right: 30px; color: var(--primary-emerald); font-weight: 600; }
+        
+        .btn-rsvp-submit-custom { background-color: var(--primary-maroon); color: var(--white); border: none; padding: 10px 28px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; cursor: pointer; font-family: 'Montserrat', sans-serif; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-top: 8px; transition: background-color 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-rsvp-submit-custom:hover { opacity: 0.9; }
+        
+        .ucapan-feed-area { margin-top: 30px; max-height: 230px; overflow-y: auto; text-align: left; }
+        .ucapan-card-item { background: rgba(255, 255, 255, 0.06); padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(244, 234, 230, 0.08); }
+        .ucapan-card-title { font-size: 0.8rem; font-weight: 600; color: var(--accent-warm-gold); }
+        .ucapan-card-count { font-size: 0.65rem; background: rgba(244, 234, 230, 0.18); color: var(--white); padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 500; }
+        .ucapan-card-body { font-size: 0.8rem; color: rgba(244, 234, 230, 0.9); margin-top: 4px; line-height: 1.45; font-weight: 400; }
+
+        /* Section Penutup / Terima Kasih */
+        .thankyou-section-luxury {
+            width: 100%;
+            padding: 70px 25px 35px 25px;
+            text-align: center;
+            background: linear-gradient(rgba(244, 234, 230, 0.85), rgba(244, 234, 230, 0.88)), 
+                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .closing-capsule-frame {
+            width: 170px;
+            height: 240px;
+            margin: 0 auto 25px auto;
+            position: relative;
+            border-radius: 85px; 
+            padding: 4px;
+            background: var(--white);
+            box-shadow: 0 8px 20px rgba(11, 68, 52, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .closing-capsule-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 81px; }
+        .thankyou-paragraph-text { font-family: 'Montserrat', sans-serif; font-style: italic; font-size: 0.85rem; line-height: 1.65; color: var(--primary-emerald); max-width: 330px; margin: 0 auto 25px auto; text-align: center; font-weight: 500; }
+        .signature-intro-label { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 400; color: var(--text-muted); margin-bottom: 5px; }
+        .signature-couple-name { font-family: 'Alex Brush', cursive; color: var(--primary-maroon); font-size: 3.5rem; font-weight: 400; margin-top: 2px; line-height: 1.1; }
+
+        /* ==========================================================================
+           FOOTER ATRIBUSI LAYANAN KAYUNA STUDIO WITH SOCIAL LINKS
+           ========================================================================== */
+        .kayuna-branding-footer {
+            background-color: var(--primary-emerald);
+            color: var(--bg-cream-accent);
+            padding: 25px 20px 90px 20px;
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            font-family: 'Montserrat', sans-serif;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .kayuna-branding-footer p { opacity: 0.65; margin-bottom: 4px; }
+        .kayuna-branding-footer .studio-link { font-family: 'Montserrat', sans-serif; font-style: italic; font-weight: 600; font-size: 0.82rem; color: var(--accent-warm-gold); text-decoration: none; display: inline-block; margin-bottom: 10px; }
+        
+        .kayuna-social-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-top: 6px;
+        }
+        .kayuna-social-row a {
+            color: var(--bg-cream-accent);
+            opacity: 0.55;
+            text-decoration: none;
+            transition: opacity 0.2s, color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .kayuna-social-row a:hover {
+            opacity: 1;
+            color: var(--accent-warm-gold);
+        }
+        .kayuna-social-row svg {
+            width: 13px;
+            height: 13px;
+            fill: currentColor;
+        }
+
+        /* Controls & Navigation */
+        .music-control {
+            position: fixed;
+            bottom: 85px;
+            right: calc(50% - 200px);
+            z-index: 998;
+            background: rgba(11, 68, 52, 0.85);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            color: var(--white);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            border: none;
+        }
+        @media (max-width: 450px) { .music-control { right: 18px; } }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 450px;
+            background-color: var(--primary-emerald);
+            height: 64px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 999;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.25);
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(244, 234, 230, 0.45);
+            text-decoration: none;
+            font-size: 0.65rem;
+            gap: 4px;
+            flex: 1;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .nav-item svg { width: 18px; height: 18px; fill: currentColor; }
+        .nav-item.active { color: var(--white); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+
+        <!-- ==========================================================================
+           1. COVER DEPAN
+           ========================================================================== -->
+        <div id="invitation-cover">
+            <div class="swaying-leaves leaves-top-left"></div>
+            <div class="swaying-leaves leaves-top-right"></div>
+            <div class="swaying-leaves leaves-bottom-left"></div>
+            <div class="swaying-leaves leaves-bottom-right"></div>
+
+            <div class="cover-top">
+                <p>Our Wedding Invitation</p>
+            </div>
+            <div class="cover-middle">
+                <div class="oval-frame">
+                    <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true" alt="Foto Hana & Irfan">
+                </div>
+                <h1 class="script-luxury">Hana & Irfan</h1>
+                <p class="cover-date">Minggu, 25 Oktober 2026</p>
+                <div class="guest-box">
+                    <span class="dear-text">Dear:</span>
+                    <div class="guest-name" id="nama-tamu">Tamu yang Berbahagia</div>
+                    <button class="btn-open-traditional" onclick="openInvitation()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        Open Invitation
+                    </button>
+                </div>
+            </div>
+            <div></div>
+        </div>
+
+
+        <!-- ==========================================================================
+           2. INTERNAL ISI UTAMA
+           ========================================================================== -->
+        <div id="main-content">
+            
+            <div class="music-control" onclick="toggleMusic()" id="music-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            </div>
+
+            <!-- TAB 1: HOME PAGE UTAMA -->
+            <div id="section-home" class="hero-interior-page">
+                <div class="swaying-leaves leaves-top-left"></div>
+                <div class="swaying-leaves leaves-top-right"></div>
+
+                <p class="top-title scroll-reveal">Our Wedding Invitation</p>
+                <div class="oval-frame oval-reveal delay-1">
+                    <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true" alt="Foto Hana & Irfan">
+                </div>
+                <h1 class="script-luxury scroll-reveal delay-2">Hana & Irfan</h1>
+                <p class="interior-date scroll-reveal delay-3">Minggu, 25 Oktober 2026</p>
+            </div>
+
+            <!-- HALAMAN AYAT QURAN -->
+            <div class="quran-verse-page">
+                <div class="divider-line scroll-reveal"></div>
+                <div class="quran-arabic scroll-reveal delay-1">
+                   وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَع بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ
+                </div>
+                <div class="quran-translation scroll-reveal delay-2">
+                    "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir."
+                </div>
+                <div class="quran-surah-name scroll-reveal delay-3">
+                    ( QS. Ar-Rum : 21 )
+                </div>
+                <div class="divider-line scroll-reveal"></div>
+            </div>
+
+            <!-- TAB 2: MEMPELAI SECTION -->
+            <div id="section-mempelai" class="section-padding mempelai-section-bg">
+                <h2 class="serif-title scroll-reveal">Assalamu’alaikum Wr. Wb.</h2>
+                <div class="divider-line scroll-reveal"></div>
+                <p class="mempelai-intro-text scroll-reveal delay-1">
+                    Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i, serta kerabat sekalian, untuk menghadiri acara pernikahan kami:
+                </p>
+
+                <!-- Profil Mempelai Wanita -->
+                <div class="mempelai-card">
+                    <div class="oval-frame oval-reveal" style="width: 180px; height: 250px; border-radius: 90px; margin-bottom: 16px;">
+                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/catin-pw.JPG?raw=true" alt="Foto Hana Handayani">
+                    </div>
+                    <h3 class="scroll-reveal delay-1">Hana Handayani, S.T.</h3>
+                    <p class="ortu scroll-reveal delay-2">Putri Pertama Dari<br>Bapak Budrik &amp; Ibu Ida Parida</p>
+                    <div class="scroll-reveal delay-3" style="margin-top: 12px;">
+                        <a href="https://www.instagram.com/hanahanday_/" target="_blank" class="btn-instagram">
+                            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                            instagram
+                        </a>
+                    </div>
+                </div>
+
+                <div class="catin-separator scroll-reveal"><span>&</span></div>
+
+                <!-- Profil Mempelai Pria -->
+                <div class="mempelai-card">
+                    <div class="oval-frame oval-reveal" style="width: 180px; height: 250px; border-radius: 90px; margin-bottom: 16px;">
+                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/catin-pp.JPG?raw=true" alt="Foto Irfan Ripandi">
+                    </div>
+                    <h3 class="scroll-reveal delay-1">Ir. Irfan Ripandi, S.Pd.</h3>
+                    <p class="ortu scroll-reveal delay-2">Putra Pertama Dari<br>Bapak Tantan Rustandi<br>&amp; Ibu Jumsih</p>
+                    <div class="scroll-reveal delay-3" style="margin-top: 12px;">
+                        <a href="https://instagram.com/irfpn_/" target="_blank" class="btn-instagram">
+                            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                            instagram
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: EVENT/ACARA SECTION -->
+            <div id="section-event" class="section-padding event-section-bg">
+                <h2 class="save-the-date-title">Save The Date</h2>
+
+                <div class="countdown-container scroll-reveal delay-1">
+                    <div class="countdown-item"><span id="days">0</span><label>Hari</label></div>
+                    <div class="countdown-item"><span id="hours">0</span><label>Jam</label></div>
+                    <div class="countdown-item"><span id="minutes">0</span><label>Menit</label></div>
+                    <div class="countdown-item"><span id="seconds">0</span><label>Detik</label></div>
+                </div>
+
+                <div class="arch-event-container scroll-reveal delay-2">
+                    <div class="event-block">
+                        <h3>Akad Nikah</h3>
+                        <div class="horizontal-line"></div>
+                        <div class="event-detail-row">
+                            <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7v-5z"/></svg>
+                            <span>Minggu, 25 Oktober 2026</span>
+                        </div>
+                        <div class="event-detail-row">
+                            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+                            <span>Pukul : 08.00 - Selesai</span>
+                        </div>
+                        <p class="event-address">Kp. Rancapanggung RT 03/RW 09<br>Kec. Cililin Kab. Bandung Barat</p>
+                        <a href="https://maps.app.goo.gl/ky1oxmMaZ8Rz8wfVA" target="_blank" class="btn-lihat-lokasi">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Lihat Lokasi
+                        </a>
+                    </div>
+
+                    <!-- ORNAMEN BUNGA SVG MURNI ELEGAN -->
+                    <svg class="flower-separator-svg scroll-reveal" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 15h30M90 15h-30" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                        <circle cx="50" cy="15" r="3" fill="currentColor"/>
+                        <path d="M50 7c-2 3-5 5-5 8s3 5 5 8c2-3 5-5 5-8s-3-5-5-8z" fill="currentColor" opacity="0.7"/>
+                        <path d="M42 15c3-2 5-5 8-5s5 3 5 8-3 5-5 8-5-3-8-5z" fill="currentColor" opacity="0.7"/>
+                    </svg>
+
+                    <div class="event-block" style="margin-bottom: 10px;">
+                        <h3>Resepsi</h3>
+                        <div class="horizontal-line"></div>
+                        <div class="event-detail-row">
+                            <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7v-5z"/></svg>
+                            <span>Minggu, 25 Oktober 2026</span>
+                        </div>
+                        <div class="event-detail-row">
+                            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+                            <span>Pukul : 12.00 - Selesai</span>
+                        </div>
+                        <p class="event-address">Kp. Rancapanggung RT 03/RW 09<br>Kec. Cililin Kab. Bandung Barat</p>
+                        <a href="https://maps.app.goo.gl/ky1oxmMaZ8Rz8wfVA" target="_blank" class="btn-lihat-lokasi">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Lihat Lokasi
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: GALLERY SECTION -->
+            <div id="section-gallery" class="section-padding gallery-section-bg">
+                <h2 class="serif-title">Gallery</h2>
+                <div class="divider-line scroll-reveal"></div>
+                <p class="gallery-intro-text scroll-reveal delay-1">
+                    Kami bersyukur, dipertemukan Allah diwaktu terbaik, Kini kami menanti hari istimewa kami.
+                </p>
+                
+                <div class="gallery-portrait-grid">
+                    <div class="gallery-item oval-reveal" onclick="openLightbox('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-1.JPG?raw=true')">
+                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-1.JPG?raw=true" alt="Galeri Pernikahan 1">
+                    </div>
+                    <div class="gallery-item oval-reveal delay-1" onclick="openLightbox('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-2.JPG?raw=true')">
+                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-2.JPG?raw=true" alt="Galeri Pernikahan 2">
+                    </div>
+                    <div class="gallery-item oval-reveal" onclick="openLightbox('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-3.JPG?raw=true')">
+                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-3.JPG?raw=true" alt="Galeri Pernikahan 3">
+                    </div>
+                    <div class="gallery-item oval-reveal delay-1" onclick="openLightbox('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-4.JPG?raw=true')">
+                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-4.JPG?raw=true" alt="Galeri Pernikahan 4">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: LOVE STORY SECTION -->
+            <div id="section-story" class="section-padding story-section-bg" style="padding-top: 30px;">
+                <h2 class="serif-title scroll-reveal">Love Story</h2>
+                <div class="divider-line scroll-reveal"></div>
+                
+                <div class="clean-timeline">
+                    <div class="timeline-node scroll-reveal">
+                        <div class="node-circle"></div>
+                        <div class="node-header"><h3>Perkenalan</h3></div>
+                        <div class="node-body-card">
+                            <p>Siapa sangka, sebuah interaksi sederhana melalui media sosial Instagram menjadi pembuka dari lembaran cerita hidup kami. Setelah beberapa hari saling bertukar cerita, kami baru menyadari bahwa takdir sebenarnya telah mempertemukan kami jauh sebelum hari itu. Kami adalah alumni dari sekolah menengah pertama (SMP) yang sama, di mana kami pernah menghabiskan masa remaja di lingkungan yang serupa, meski hanya terpaut satu tingkat kelas.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-node scroll-reveal">
+                        <div class="node-circle"></div>
+                        <div class="node-header"><h3>Menjalin Hubungan</h3></div>
+                        <div class="node-body-card">
+                            <p>Masa pendekatan kami terhitung singkat tapi sangat berkesan. Dalam sebulan, kami sudah merasa punya chemistry yang kuat. Tak terasa, perjalanan itu berlanjut hingga lima tahun lamanya. Selama itu, kami belajar banyak tentang kedewasaan, melewati berbagai tantangan, dan perlahan membangun pondasi kepercayaan yang kuat satu sama lain.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-node scroll-reveal" style="margin-bottom: 10px;">
+                        <div class="node-circle"></div>
+                        <div class="node-header"><h3>Pernikahan</h3></div>
+                        <div class="node-body-card">
+                            <p>Setelah lima tahun merajut kasih dan memastikan kesiapan hati, kami akhirnya sampai pada sebuah ketetapan indah. Dengan restu dari orang tua dan keyakinan akan masa depan bersama, kami memutuskan untuk mengakhiri masa pencarian kami dan memulai perjalanan baru sebagai sepasang suami istri. Pernikahan ini bukan sekadar akhir dari masa pacaran, melainkan awal dari ibadah panjang yang akan kami jalani selamanya.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: WEDDING GIFT SECTION -->
+            <div id="section-gift" class="section-padding gift-section-bg">
+                <div class="header-with-lines scroll-reveal">
+                    <div class="horizontal-line"></div>
+                    <h2>Wedding Gift</h2>
+                    <div class="horizontal-line"></div>
+                </div>
+
+                <p class="gift-intro-narrative scroll-reveal delay-1">
+                    Kehadiran Anda merupakan sebuah do'a serta rasa syukur bagi kami, namun jika memberi adalah bentuk Do'a &amp; cinta kasih bagi Anda, Anda dapat memberi kado secara cashless dan kami akan senang hati menerimanya dan tentu semakin melengkapi kebahagiaan kami.
+                </p>
+
+                <div class="white-address-card scroll-reveal delay-2">
+                    <h4>Penerima Kado: Hana Handayani</h4>
+                    <p>Kp. Rancapanggung RT 03/RW 09, Kec. Cililin, Kab. Bandung Barat</p>
+                </div>
+
+                <div class="bank-cards-container">
+                    <div class="bank-inline-card scroll-reveal">
+                        <div class="bank-name">BANK MANDIRI</div>
+                        <div class="account-number">1300026871866</div>
+                        <div class="account-holder">a.n. Hana Handayani</div>
+                        <button class="btn-copy-instant" onclick="copyAccountText('1300026871866')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Salin Rekening
+                        </button>
+                    </div>
+
+                    <div class="bank-inline-card scroll-reveal">
+                        <div class="bank-name">BANK BSI</div>
+                        <div class="account-number">7212898362</div>
+                        <div class="account-holder">a.n. Irfan Ripandi</div>
+                        <button class="btn-copy-instant" onclick="copyAccountText('7212898362')">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                            Salin Rekening
+                        </button>
+                    </div>
+                </div>
+
+                <div class="qris-payment-block scroll-reveal">
+                    <img src="https://github.com/kayunastudio/QRIS/blob/main/gpn.svg?raw=true" class="qris-logo-header" alt="Logo GPN QRIS">
+                    <div class="qris-image-frame">
+                        <img src="https://github.com/kayunastudio/QRIS/blob/main/qris.JPG?raw=true" alt="Barcode QRIS">
+                    </div>
+                    <p>Silakan pindai atau simpan kode QRIS di atas untuk melakukan transfer amplop digital melalui e-wallet maupun mobile banking Anda.</p>
+                </div>
+            </div>
+
+            <!-- TAB 7: RSVP SECTION -->
+            <div id="section-wishes" class="section-padding rsvp-section-bg">
+                <div class="header-with-lines scroll-reveal">
+                    <div class="horizontal-line"></div>
+                    <h2>RSVP</h2>
+                    <div class="horizontal-line"></div>
+                </div>
+
+                <div class="rsvp-clean-form scroll-reveal delay-1">
+                    <form id="rsvp-form" onsubmit="kirimUcapan(event)">
+                        <div class="form-group">
+                            <label for="input-nama">Nama</label>
+                            <input type="text" id="input-nama" class="form-control" placeholder="masukan nama lengkap anda" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-jumlah">Jumlah Yang Akan Hadir</label>
+                            <select id="input-jumlah" class="form-control">
+                                <option value="1 orang">1 orang</option>
+                                <option value="2 orang">2 orang</option>
+                                <option value="3 orang">3 orang</option>
+                                <option value="4 orang">4 orang</option>
+                                <option value="5 orang">5 orang</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-kehadiran">Konfirmasi</label>
+                            <select id="input-kehadiran" class="form-control">
+                                <option value="Iya, Saya akan hadir">Iya, Saya akan hadir</option>
+                                <option value="Maaf, Saya tidak bisa hadir">Maaf, Saya tidak bisa hadir</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-pesan">Ucapan Doa &amp; Pesan</label>
+                            <textarea id="input-pesan" class="form-control" rows="3" placeholder="Tulis ucapan selamat &amp; doa restu Anda di sini..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-rsvp-submit-custom">Kirim</button>
+                    </form>
+                </div>
+
+                <div class="ucapan-feed-area scroll-reveal delay-2" id="box-ucapan">
+                    <div class="ucapan-card-item">
+                        <span class="ucapan-card-title">Kayuna Studio</span>
+                        <span class="ucapan-card-count">1 orang</span>
+                        <p class="ucapan-card-body">Selamat menempuh hidup baru untuk kedua mempelai! Semoga bahagia dunia dan akhirat.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POP-UP LIGHTBOX LAYOUT FOR GALLERY -->
+            <div id="gsc-lightbox-modal" class="gsc-lightbox">
+                <button class="gsc-lightbox-close" onclick="closeLightbox()">&times;</button>
+                <img id="gsc-lightbox-img" src="" alt="Pembesar Gambar">
+            </div>
+
+            <!-- TAB 8: PENUTUP UCAPAN TERIMA KASIH -->
+            <div class="thankyou-section-luxury">
+                <div class="swaying-leaves leaves-top-left"></div>
+                <div class="swaying-leaves leaves-top-right"></div>
+
+                <div class="closing-capsule-frame oval-reveal">
+                    <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true" alt="Foto Bersanding Hana & Irfan">
+                </div>
+
+                <p class="thankyou-paragraph-text scroll-reveal delay-1">
+                    Suatu kehormatan dan kebahagiaan bagi kami atas kehadiran dan doa restunya, kami mengucapkan terima kasih.
+                </p>
+
+                <div class="signature-intro-label scroll-reveal delay-2">Kami yang berbahagia,</div>
+                <div class="signature-couple-name scroll-reveal delay-3">Hana &amp; Irfan</div>
+            </div>
+
+            <!-- SECTION BRANDING ATRIBUSI KAYUNA STUDIO ELEGAN WITH SOCIAL LINKS -->
+            <footer class="kayuna-branding-footer scroll-reveal">
+                <p>Designed &amp; Crafted with Love by</p>
+                <a href="https://kayunastudio.my.id" target="_blank" class="studio-link">Kayuna Studio</a>
+                
+                <div class="kayuna-social-row">
+                    <a href="https://kayunastudio.my.id" target="_blank" title="Website Resmi">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.53c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.4z"/></svg>
+                        kayunastudio
+                    </a>
+                    <a href="https://instagram.com/kayunastd/" target="_blank" title="Instagram">
+                        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        kayunastd
+                    </a>
+                    <a href="https://tiktok.com/@kayuna.studio" target="_blank" title="TikTok">
+                        <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31.01 2.61-.01 3.91.02.08 1.53.63 3.02 1.73 4.09.91.91 2.14 1.47 3.42 1.62V9.61c-1.39-.12-2.74-.75-3.72-1.74-.15-.15-.29-.31-.41-.47v6.33c.09 2.12-.91 4.23-2.67 5.43-1.89 1.34-4.47 1.5-6.52.42-2.22-1.12-3.63-3.63-3.48-6.13.11-2.42 1.84-4.57 4.22-5.07.95-.21 1.95-.12 2.85.25V4.76c-1.21-.38-2.25-1.19-2.92-2.27V.02h3.01z"/></svg>
+                        kayuna.studio
+                    </a>
+                </div>
+            </footer>
+
+            <!-- BOTTOM NAVIGATION BAR -->
+            <nav class="bottom-nav">
+                <a href="#section-home" class="nav-item active" onclick="setNavActive(this)">
+                    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                    <span>Home</span>
+                </a>
+                <a href="#section-mempelai" class="nav-item" onclick="setNavActive(this)">
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <span>Mempelai</span>
+                </a>
+                <a href="#section-event" class="nav-item" onclick="setNavActive(this)">
+                    <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7v-5z"/></svg>
+                    <span>Event</span>
+                </a>
+                <a href="#section-gallery" class="nav-item" onclick="setNavActive(this)">
+                    <svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>
+                    <span>Gallery</span>
+                </a>
+                <a href="#section-wishes" class="nav-item" onclick="setNavActive(this)">
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                    <span>Wishes</span>
+                </a>
+            </nav>
+
+        </div>
+
+    </div>
+
+    <!-- AUDIO BACKGROUND TRADISIONAL AKUSTIK -->
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/lagu-pernikahan-kita.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const namaTamuParam = urlParams.get('to');
+        if (namaTamuParam) {
+            document.getElementById('nama-tamu').innerText = namaTamuParam;
+            document.getElementById('input-nama').value = namaTamuParam;
+        }
+
+        const cover = document.getElementById('invitation-cover');
+        const mainContent = document.getElementById('main-content');
+        const music = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-btn');
+
+        function openInvitation() {
+            cover.classList.add('opened');
+            mainContent.classList.add('show');
+            
+            setTimeout(initScrollReveal, 100);
+
+            music.play().then(() => { 
+                musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; 
+            });
+        }
+
+        function initScrollReveal() {
+            const itemsToReveal = document.querySelectorAll('.scroll-reveal, .oval-reveal');
+            
+            const revealCallback = (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('reveal-active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            };
+
+            const options = {
+                root: null, 
+                rootMargin: '0px 0px -40px 0px', 
+                threshold: 0.12 
+            };
+
+            const observer = new IntersectionObserver(revealCallback, options);
+            itemsToReveal.forEach(item => observer.observe(item));
+        }
+
+        function toggleMusic() {
+            if (music.paused) { 
+                music.play(); 
+                musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+            } else { 
+                music.pause(); 
+                musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+            }
+        }
+
+        function setNavActive(element) {
+            const items = document.querySelectorAll('.nav-item');
+            items.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        const lightboxModal = document.getElementById('gsc-lightbox-modal');
+        const lightboxImg = document.getElementById('gsc-lightbox-img');
+        
+        function openLightbox(imgUrl) {
+            lightboxImg.src = imgUrl;
+            lightboxModal.classList.add('active');
+        }
+        function closeLightbox() {
+            lightboxModal.classList.remove('active');
+        }
+
+        function copyAccountText(text) {
+            navigator.clipboard.writeText(text).then(() => { 
+                alert("Nomor rekening berhasil disalin: " + text); 
+            }).catch(err => {
+                console.error('Gagal menyalin text: ', err);
+            });
+        }
+
+        const targetDate = new Date(2026, 9, 25, 08, 00, 00).getTime(); 
+        
+        setInterval(function() {
+            const distance = targetDate - new Date().getTime();
+            if (distance < 0) {
+                document.getElementById("days").innerText = "0";
+                document.getElementById("hours").innerText = "0";
+                document.getElementById("minutes").innerText = "0";
+                document.getElementById("seconds").innerText = "0";
+                return;
+            }
+            document.getElementById("days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24));
+            document.getElementById("hours").innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            document.getElementById("minutes").innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById("seconds").innerText = Math.floor((distance % (1000 * 60)) / 1000);
+        }, 1000);
+
+        function kirimUcapan(event) {
+            event.preventDefault();
+            const nama = document.getElementById('input-nama').value;
+            const jumlah = document.getElementById('input-jumlah').value;
+            const pesan = document.getElementById('input-pesan').value;
+            
+            const item = document.createElement('div');
+            item.classList.add('ucapan-card-item');
+            item.innerHTML = `<span class="ucapan-card-title">${nama}</span><span class="ucapan-card-count">${jumlah}</span><p class="ucapan-card-body">${pesan}</p>`;
+            
+            document.getElementById('box-ucapan').insertBefore(item, document.getElementById('box-ucapan').firstChild);
+            document.getElementById('input-pesan').value = "";
+        }
+    </script>
+</body>
+</html>
