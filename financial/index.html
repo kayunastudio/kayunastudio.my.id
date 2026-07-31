@@ -3,67 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Finance Tracker — Fincheck Mobile Responsive</title>
+    <title>Family Finance Tracker — Single Page Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .fin-shadow { box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.08), 0 8px 10px -6px rgba(148, 163, 184, 0.08); }
-        @media print { .no-print { display: none !important; } .print-area { width: 100% !important; margin: 0 !important; } }
+        
+        /* CSS KHUSUS ATURAN CETAK (PRINT) */
+        @media print { 
+            .no-print, .print-hide-macro { display: none !important; } 
+            .print-area { width: 100% !important; margin: 0 !important; padding: 0 !important; } 
+            body { background-color: #ffffff !important; }
+            .print-scroll-auto { overflow: visible !important; max-height: none !important; }
+        }
     </style>
 </head>
-<body class="bg-[#ECEFF5] text-slate-800 min-h-screen font-sans flex flex-col md:flex-row antialiased">
+<body class="bg-[#ECEFF5] text-slate-800 min-h-screen font-sans antialiased flex flex-col">
 
-    <aside class="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-slate-200 p-4 sm:p-6 flex flex-row md:flex-col justify-between items-center md:items-start no-print shrink-0 sticky top-0 z-50 shadow-sm md:shadow-none">
-        <div class="flex md:flex-col items-center md:items-start justify-between w-full md:space-y-8">
-            <div class="flex items-center gap-2 sm:gap-3">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 text-sm sm:text-base">F</div>
-                <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight">Family Tracker</span>
+    <!-- HEADER NAVIGATION ATAS -->
+    <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 sticky top-0 z-50 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto flex flex-row justify-between items-center w-full">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 text-base">F</div>
+                <div>
+                    <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight block leading-tight">Family Finance Tracker</span>
+                    <span class="text-[10px] text-slate-400 font-medium hidden sm:block">Unified Dashboard Financial Management</span>
+                </div>
             </div>
-            <nav class="hidden sm:flex md:flex flex-row md:flex-col gap-1 md:space-y-1 w-full md:w-auto">
-                <a href="#" class="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 bg-blue-50 text-blue-600 font-bold rounded-xl text-xs md:text-sm transition">🟢 Dashboard</a>
-                <a href="#section-jurnal" class="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 text-slate-500 hover:bg-slate-50 rounded-xl text-xs md:text-sm font-semibold transition">📄 Koran</a>
-                <a href="#section-wishlist" class="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 text-slate-500 hover:bg-slate-50 rounded-xl text-xs md:text-sm font-semibold transition">🎯 Wishlist</a>
-            </nav>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="muatDataKeuangan(); perbaruiPasarBibit();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded-xl shadow text-xs transition flex items-center gap-1.5 font-mono">
+                    <span>🔄</span> <span class="hidden sm:inline">Sync Cloud</span>
+                </button>
+                <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3.5 rounded-xl text-xs transition flex items-center gap-1.5">
+                    <span>🖨️</span> <span class="hidden sm:inline">Cetak</span>
+                </button>
+            </div>
         </div>
-        <div class="flex flex-row md:flex-col gap-1.5 md:w-full md:border-t md:pt-4 md:border-slate-100">
-            <button onclick="muatDataKeuangan(); perbaruiPasarBibit();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 md:py-2.5 md:px-4 rounded-xl shadow text-[10px] md:text-xs transition flex items-center justify-center gap-1 font-mono">🔄 Sync</button>
-            <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-1.5 px-3 md:py-2.5 md:px-4 rounded-xl text-[10px] md:text-xs transition hidden sm:flex items-center justify-center gap-1">🖨️ Cetak</button>
-        </div>
-    </aside>
+    </header>
 
-    <main class="flex-grow p-3 sm:p-8 overflow-y-auto max-w-7xl mx-auto w-full print-area">
+    <!-- KONTEN UTAMA SINGLE PAGE -->
+    <main class="flex-grow p-3 sm:p-8 max-w-7xl mx-auto w-full print-area">
         
-        <header class="mb-5 sm:mb-8 no-print">
-            <h1 class="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">Hi Family Team,</h1>
-            <p class="text-[10px] sm:text-xs text-slate-400 font-medium">Welcome back to your financial monitoring tracker center.</p>
-        </header>
+        <div class="mb-5 no-print">
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Hi Family Team,</h1>
+            <p class="text-xs text-slate-400 font-medium">Berikut laporan terpadu dan rekapitulasi mutasi keuangan keluarga Anda.</p>
+        </div>
 
+        <!-- METRIK UTAMA STATISTIK -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
-            <div class="bg-gradient-to-br from-[#2DD4BF] to-[#0D9488] p-3 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+            <div class="bg-gradient-to-br from-[#2DD4BF] to-[#0D9488] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
                 <div>
                     <span class="text-[9px] sm:text-[10px] uppercase font-bold text-teal-100 block tracking-wider">Saldo Buku Aktif</span>
                     <span id="statSaldoKas" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
                 </div>
                 <div class="mt-1 flex items-center justify-between"><span id="labelKondisiKas" class="text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/20">Sehat</span></div>
             </div>
-            <div class="bg-gradient-to-br from-[#60A5FA] to-[#2563EB] p-3 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+            <div class="bg-gradient-to-br from-[#60A5FA] to-[#2563EB] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
                 <div>
                     <span class="text-[9px] sm:text-[10px] uppercase font-bold text-blue-100 block tracking-wider">Total Inflow (Debit)</span>
                     <span id="statTotalPemasukan" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
                 </div>
                 <span class="text-[8px] sm:text-[9px] font-bold text-blue-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">cloud sync</span>
             </div>
-            <div class="bg-gradient-to-br from-[#FB7185] to-[#E11D48] p-3 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+            <div class="bg-gradient-to-br from-[#FB7185] to-[#E11D48] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
                 <div>
                     <span class="text-[9px] sm:text-[10px] uppercase font-bold text-rose-100 block tracking-wider">Total Outflow (Kredit)</span>
                     <span id="statTotalPengeluaran" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
                 </div>
                 <span class="text-[8px] sm:text-[9px] font-bold text-rose-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">live stream</span>
             </div>
-            <div class="bg-gradient-to-br from-[#C084FC] to-[#7C3AED] p-3 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+            <div class="bg-gradient-to-br from-[#C084FC] to-[#7C3AED] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
                 <div>
                     <span class="text-[9px] sm:text-[10px] uppercase font-bold text-purple-100 block tracking-wider">Top Alokasi Biaya</span>
                     <span id="txtTopKategori" class="text-xs sm:text-sm font-black block mt-0.5 sm:mt-1 truncate tracking-tight">Menganalisis...</span>
@@ -72,6 +86,7 @@
             </div>
         </div>
 
+        <!-- KATEGORI RASIO & MACROECONOMIC INSIGHT -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col items-center justify-center min-h-[180px] sm:min-h-[220px]">
                 <div class="w-full flex justify-between items-center mb-2 border-b border-slate-50 pb-1">
@@ -84,7 +99,8 @@
                 </div>
             </div>
 
-            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col justify-between gap-2">
+            <!-- MACROECONOMIC INSIGHT (AUTOMATICALLY HIDDEN ON PRINT) -->
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col justify-between gap-2 print-hide-macro">
                 <div class="w-full flex justify-between items-center border-b border-slate-50 pb-1 mb-1">
                     <h3 class="text-[11px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">🏛️ Macroeconomic Insight & Advisor</h3>
                     <span class="text-[8px] sm:text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold">Live</span>
@@ -102,6 +118,7 @@
             </div>
         </div>
 
+        <!-- FORM & TABEL REKENING KORAN + WISHLIST -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
             
             <div class="lg:col-span-1 space-y-4 sm:space-y-6 no-print">
@@ -158,7 +175,7 @@
                             <input type="number" id="txNominal" required placeholder="0" min="1" class="w-full border border-slate-200 p-2 text-xs font-bold rounded-xl bg-slate-50 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Upload Bukti Lampiran</label>
+                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Upload Bukti Lampiran (Gambar / PDF)</label>
                             <input type="file" id="txFileBukti" accept="image/*,application/pdf" class="w-full text-[10px] text-slate-500 bg-slate-50 border border-slate-200 p-1 rounded-xl file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:bg-slate-200 file:text-slate-700 cursor-pointer">
                         </div>
                         <div class="flex gap-1.5 pt-1.5">
@@ -180,18 +197,22 @@
 
             <div class="lg:col-span-2 space-y-4 sm:space-y-6 w-full">
                 
+                <!-- REKENING KORAN & GRAFIK DENGAN SCROLL/SLIDE KIRI KANAN ATAS BAWAH -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between">
                     <div class="w-full flex flex-col">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b pb-2">
                             <div>
                                 <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📝 Rekening Koran Kas Domestik</h2>
-                                <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tren balance berjalan terintegrasi log form mutasi</p>
+                                <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tren balance berjalan terintegrasi log form mutasi (Gunakan scroll untuk geser grafik)</p>
                             </div>
-                            <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm">
+                            <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm no-print">
                         </div>
 
-                        <div class="w-full h-28 sm:h-36 mb-3 bg-slate-50/50 rounded-xl p-1.5 border border-slate-100">
-                            <canvas id="chartMutasiLine"></canvas>
+                        <!-- CONTAINER GRAFIK INTERAKTIF MULTI-DIRECTION SCROLL -->
+                        <div class="w-full overflow-x-auto overflow-y-auto max-h-64 sm:max-h-80 mb-3 bg-slate-50/50 rounded-xl p-2 border border-slate-100 custom-scroll print-scroll-auto">
+                            <div id="chartWrapper" class="h-48 sm:h-64 relative min-w-[600px]">
+                                <canvas id="chartMutasiLine"></canvas>
+                            </div>
                         </div>
 
                         <div class="overflow-x-auto overflow-y-auto max-h-60 border rounded-xl border-slate-150 custom-scroll">
@@ -204,7 +225,7 @@
                                         <th class="p-2 text-right w-20 text-emerald-600">Debit (+)</th>
                                         <th class="p-2 text-right w-20 text-rose-600">Kredit (-)</th>
                                         <th class="p-2 text-right w-24 bg-slate-50/50 border-x">Saldo Buku</th>
-                                        <th class="p-2 text-center w-16 no-print">Aksi</th>
+                                        <th class="p-2 text-center w-20 no-print">Aksi & Lampiran</th>
                                     </tr>
                                 </thead>
                                 <tbody id="jurnal-rows" class="divide-y text-slate-600 bg-white font-medium">
@@ -215,6 +236,7 @@
                     </div>
                 </div>
 
+                <!-- WISHLIST -->
                 <div id="section-wishlist" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm space-y-3">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-2 gap-2">
                         <div>
@@ -248,6 +270,7 @@
                     </div>
                 </div>
 
+                <!-- LIVE BIBIT TICKER -->
                 <div class="bg-gradient-to-br from-slate-900 to-slate-950 text-gray-100 p-3.5 rounded-2xl shadow-sm border border-slate-800 flex flex-col no-print">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
                         <div class="flex items-center gap-1.5">
@@ -263,6 +286,22 @@
 
         </div>
     </main>
+
+    <!-- MODAL POPUP PRATINJAU DOKUMEN / BUKTI MUTASI -->
+    <div id="previewModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-4 shadow-2xl relative flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center border-b pb-2 mb-3">
+                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2"><span>🖼️</span> Pratinjau Dokumen Lampiran</h3>
+                <button onclick="tutupModalPreview()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
+            </div>
+            <div class="flex-grow overflow-auto flex items-center justify-center bg-slate-100 rounded-xl p-2 min-h-[250px]" id="previewContainer">
+                <!-- Konten gambar/PDF dirender otomatis -->
+            </div>
+            <div class="mt-3 text-right">
+                <button onclick="tutupModalPreview()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-xl transition">Tutup</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const SPREADSHEET_API_URL = "https://sheetdb.io/api/v1/z5j7ohq973uwz"; 
@@ -548,9 +587,22 @@
             if (parts.length !== 3) return stringTanggal; return `${parts[2]}/${parts[1]}`;
         }
 
+        /* POPUP PRATINJAU BUKTI BERKAS LAMPIRAN */
         function bukaJendelaPratinjauBukti(stringBase64) {
-            const windowBaru = window.open();
-            windowBaru.document.write(`<title>Pratinjau Bukti</title><body style=\"margin:0; display:flex; justify-content:center; align-items:center; background:#eceff5;\"><img src=\"${stringBase64}\" style=\"max-width:100%; max-height:100vh;\"/></body>`);
+            const container = document.getElementById('previewContainer');
+            const modal = document.getElementById('previewModal');
+            
+            if (stringBase64.startsWith('data:application/pdf')) {
+                container.innerHTML = `<iframe src="${stringBase64}" class="w-full h-[60vh] rounded-lg border-0"></iframe>`;
+            } else {
+                container.innerHTML = `<img src="${stringBase64}" class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-md" alt="Bukti Lampiran"/>`;
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function tutupModalPreview() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('previewContainer').innerHTML = "";
         }
 
         function renderTabelJurnal(targetArrayData) {
@@ -569,7 +621,12 @@
                 else { runningBalance -= tx.nominal; kreditText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; }
 
                 labelGrafik.push(formatTanggalPendek(tx.tanggal)); dataSaldoGrafik.push(runningBalance);
-                let buktiHtml = tx.buktiUrl ? `<button onclick="bukaJendelaPratinjauBukti('${tx.buktiUrl}')" class="text-blue-500 font-bold hover:underline">🖼️</button>` : `<span class="text-slate-300 italic">-</span>`;
+                
+                let buktiHtml = tx.buktiUrl ? `
+                    <button onclick="bukaJendelaPratinjauBukti('${tx.buktiUrl}')" title="Preview Bukti Lampiran" class="text-slate-600 hover:text-blue-600 p-1 bg-slate-100 hover:bg-blue-50 rounded-lg transition">
+                        🔍
+                    </button>
+                ` : `<span class="text-slate-300 italic">-</span>`;
 
                 const trHtml = `
                     <tr class="hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-600 text-[11px] sm:text-xs">
@@ -580,10 +637,10 @@
                         <td class="p-2 text-right font-semibold text-rose-500 font-mono">${kreditText}</td>
                         <td class="p-2 text-right font-bold text-slate-700 bg-slate-50/50 border-x font-mono">Rp ${runningBalance.toLocaleString('id-ID')}</td>
                         <td class="p-2 text-center no-print">
-                            <div class="flex justify-center gap-2 font-bold text-[10px] sm:text-[11px]">
-                                <button onclick="bukaModeEditTransaksi('${tx.id}')" class="text-blue-600 hover:underline">✏️</button>
-                                <button onclick="hapusTransaksiDariCloud('${tx.id}')" class="text-rose-500 hover:underline">🗑️</button>
-                                ${tx.buktiUrl ? buktiHtml : ''}
+                            <div class="flex items-center justify-center gap-1.5 font-bold text-[10px] sm:text-[11px]">
+                                ${buktiHtml}
+                                <button onclick="bukaModeEditTransaksi('${tx.id}')" title="Edit Transaksi" class="text-blue-600 hover:text-blue-800 p-1 hover:bg-blue-50 rounded-lg">✏️</button>
+                                <button onclick="hapusTransaksiDariCloud('${tx.id}')" title="Hapus Transaksi" class="text-rose-500 hover:text-rose-700 p-1 hover:bg-rose-50 rounded-lg">🗑️</button>
                             </div>
                         </td>
                     </tr>
@@ -593,6 +650,11 @@
 
             tbody.innerHTML = rowsHtmlBuffer.reverse().join("");
 
+            // ATUR LEBAR WRAPPER GRAFIK DINAMIS AGAR TIDAK MEPET SAMA BANYAKNYA DATA
+            const wrapper = document.getElementById('chartWrapper');
+            const calculatedWidth = Math.max(600, targetArrayData.length * 45);
+            wrapper.style.width = calculatedWidth + "px";
+
             if (chartInstances.MutasiLine) { chartInstances.MutasiLine.destroy(); }
             const ctxLine = document.getElementById('chartMutasiLine').getContext('2d');
             chartInstances.MutasiLine = new Chart(ctxLine, {
@@ -601,12 +663,15 @@
                     labels: labelGrafik,
                     datasets: [{
                         label: 'Saldo Buku Koran', data: dataSaldoGrafik, borderColor: '#2563EB',
-                        backgroundColor: 'rgba(37, 99, 235, 0.05)', fill: true, tension: 0.35, borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#2563EB'
+                        backgroundColor: 'rgba(37, 99, 235, 0.05)', fill: true, tension: 0.35, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#2563EB'
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false }, ticks: { font: { size: 8 } } }, y: { ticks: { font: { size: 8 } } } }
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } }, 
+                        y: { ticks: { font: { size: 9 } } } 
+                    }
                 }
             });
         }
