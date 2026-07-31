@@ -214,7 +214,7 @@
             object-fit: contain;
         }
 
-        /* TOMBOL PANAH TOGGLE (LAYANAN & GALERI) */
+        /* TOGGLE CONTAINER */
         .toggle-container {
             text-align: center;
             margin-top: 30px;
@@ -329,7 +329,6 @@
             box-shadow: 0 10px 25px rgba(46, 30, 18, 0.05);
         }
 
-        /* SLIDER COMPONENT (Ditambahkan properti touch-action agar geser halus di HP) */
         .slider-container {
             position: relative;
             width: 100%;
@@ -355,7 +354,6 @@
             -webkit-user-drag: none;
         }
 
-        /* NAVIGATION ARROWS */
         .slider-btn {
             position: absolute;
             top: 50%;
@@ -377,7 +375,6 @@
             transition: opacity 0.3s, background-color 0.3s;
         }
 
-        /* Tombol panah otomatis selalu terlihat di layar sentuh ponsel */
         .slider-container:hover .slider-btn {
             opacity: 1;
         }
@@ -404,7 +401,7 @@
             font-weight: 600;
         }
 
-        /* KONTAK & STRUKTUR GOOGLE FORM */
+        /* KONTAK & FORMULIR SURVEI */
         .contact-table {
             display: table;
             width: 100%;
@@ -413,20 +410,19 @@
 
         .contact-info-cell {
             display: table-cell;
-            vertical-align: middle;
-            width: 45%;
-            padding-right: 40px;
+            vertical-align: top;
+            width: 38%;
+            padding-right: 30px;
         }
 
         .contact-form-cell {
             display: table-cell;
             vertical-align: top;
-            width: 55%;
+            width: 62%;
             background-color: var(--white);
-            padding: 15px;
+            padding: 30px;
             border-radius: 16px;
             box-shadow: 0 15px 35px rgba(46, 30, 18, 0.05);
-            overflow: hidden;
         }
 
         .contact-item {
@@ -442,21 +438,115 @@
         }
 
         .contact-item p {
-            font-size: 16px;
+            font-size: 15px;
             color: var(--text-dark);
         }
 
-        .google-form-container {
-            position: relative;
-            width: 100%;
-            height: 560px;
-            border: none;
+        /* FORM STYLING */
+        .custom-survey-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .google-form-iframe {
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
             width: 100%;
-            height: 100%;
+            padding: 11px 14px;
+            border: 1px solid rgba(46, 30, 18, 0.15);
+            border-radius: 6px;
+            background-color: var(--bg-cream);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input[type="file"] {
+            padding: 8px 10px;
+            background-color: var(--white);
+            cursor: pointer;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            border-color: var(--accent-terracotta);
+            box-shadow: 0 0 0 3px rgba(205, 127, 84, 0.15);
+        }
+
+        .upload-hint {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* BOX KALKULATOR HARGA ESTIMASI */
+        .calc-result-box {
+            background-color: rgba(205, 127, 84, 0.08);
+            border: 1px dashed var(--accent-terracotta);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .calc-result-box span {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .calc-result-box strong {
+            font-size: 22px;
+            color: var(--accent-terracotta);
+            font-weight: 800;
+            margin-top: 2px;
+            display: block;
+        }
+
+        .btn-submit-form {
+            background-color: var(--accent-terracotta);
+            color: var(--white);
             border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit-form:hover {
+            background-color: var(--accent-terracotta-hover);
         }
 
         /* FOOTER */
@@ -521,7 +611,6 @@
             color: #A3968C;
         }
 
-        /* MOBILE RESPONSIVE BANDS */
         @media (max-width: 768px) {
             .nav-container {
                 display: flex !important;
@@ -594,12 +683,16 @@
                 padding-right: 0 !important;
             }
             
+            .form-row {
+                flex-direction: column;
+                gap: 16px;
+            }
+
             .price-table th, .price-table td {
                 padding: 12px 15px;
                 font-size: 13px;
             }
             
-            /* Pada layar HP, buat tombol panah permanen terlihat sedikit transparan agar memudahkan pengguna */
             .slider-btn {
                 opacity: 0.6 !important;
             }
@@ -692,37 +785,8 @@
                         <th>Estimasi Biaya</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Desain Arsitektur A</strong></td>
-                        <td>Denah 2D, Fasad 3D, & Denah 3D</td>
-                        <td>Mulai dari Rp 25.000 / m²</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Desain Arsitektur B</strong></td>
-                        <td>Denah 2D, Denah+Fasad 3D, & Gambar Kerja (DED)</td>
-                        <td>Mulai dari Rp 35.000 / m²</td>   
-                    </tr>
-                    <tr>
-                        <td><strong>Desain Arsitektur C</strong></td>
-                        <td>Denah 2D, Denah+Fasad 3D, Gambar Kerja (DED), & Rencana Anggaran Biaya (RAB)</td>
-                        <td>Mulai dari Rp 45.000 / m²</td>   
-                    </tr>
-                    <tr>
-                        <td><strong>Desain Arsitektur D</strong></td>
-                        <td>Denah 2D, Denah+Fasad 3D, Gambar Kerja (DED), Rencana Anggaran Biaya (RAB), & Interior</td>
-                        <td>Mulai dari Rp 75.000 / m²</td>   
-                    </tr>
-                    <tr>
-                        <td><strong>Desain Interior</strong></td>
-                        <td>3D Rendering, Tata Letak Furnitur, & Detail Konstruksi Mebel</td>
-                        <td>Mulai dari Rp 45.000 / m²</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Konsultasi & Pengawasan</strong></td>
-                        <td>Kunjungan Lapangan Berkala, Manajemen Kontrol Material, & Supervisi Tukang</td>
-                        <td>Mulai dari Rp 2.500.000 / Bulan</td>
-                    </tr>
+                <tbody id="priceTableBody">
+                    <!-- Dynamic Rows Rendered Here -->
                 </tbody>
             </table>
         </div>
@@ -852,8 +916,9 @@
         </div>
     </section>
 
+    <!-- KONTAK & FORMULIR SURVEI KHUSUS INTEGRASI SHEETDB -->
     <section class="section-container" id="kontak">
-        <h2 class="section-title">Mulai Proyek Anda</h2>
+        <h2 class="section-title">Konsultasi & Survei Awal</h2>
         
         <div class="contact-table">
             <div class="contact-info-cell">
@@ -869,12 +934,106 @@
                     <h4>WhatsApp / Telepon</h4>
                     <p>+62 812-8306-9369</p>
                 </div>
+                <div class="contact-item">
+                    <h4>Jam Operasional</h4>
+                    <p>Senin - Sabtu: 08.00 - 17.00 WIB</p>
+                </div>
             </div>
 
             <div class="contact-form-cell">
-                <div class="google-form-container">
-                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSf7I8GrfVyspwaDE5CA8xDNRri5_LVQSR7Q8_58BvIxAOROqA/viewform?usp=publish-editor" class="google-form-iframe" loading="lazy">Memuat formulir...</iframe>
-                </div>
+                <form id="surveyForm" onsubmit="handleSurveyFormSubmit(event)" class="custom-survey-form">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nama">Nama Lengkap *</label>
+                            <input type="text" id="nama" name="Nama" placeholder="Nama Anda" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="handphone">Nomor WhatsApp / HP *</label>
+                            <input type="tel" id="handphone" name="Handphone" placeholder="08xxxxxxxxxx" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Alamat Email *</label>
+                            <input type="email" id="email" name="Email" placeholder="email@domain.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="jenisProyek">Jenis Proyek *</label>
+                            <select id="jenisProyek" name="Jenis_Proyek" required>
+                                <option value="Rumah Tinggal">Rumah Tinggal</option>
+                                <option value="Cafe / Restoran">Cafe / Restoran</option>
+                                <option value="Ruko / Toko">Ruko / Toko</option>
+                                <option value="Kantor">Kantor</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="statusLahan">Status Kondisi Lahan/Bangunan *</label>
+                            <select id="statusLahan" name="Status_Lahan" required>
+                                <option value="Lahan Kosong (Bangun Baru)">Lahan Kosong (Bangun Baru)</option>
+                                <option value="Bangunan Lama (Renovasi Total)">Bangunan Lama (Renovasi Total)</option>
+                                <option value="Bangunan Lama (Renovasi Parsial)">Bangunan Lama (Renovasi Parsial)</option>
+                                <option value="Interior Saja">Interior Saja</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="jumlahLantai">Rencana Jumlah Lantai *</label>
+                            <select id="jumlahLantai" name="Jumlah_Lantai" required>
+                                <option value="1 Lantai">1 Lantai</option>
+                                <option value="2 Lantai">2 Lantai</option>
+                                <option value="3 Lantai / Lebih">3 Lantai / Lebih</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lokasi">Lokasi Proyek (Kota / Kecamatan) *</label>
+                        <input type="text" id="lokasi" name="Lokasi_Proyek" placeholder="Contoh: Bandung Barat / Parongpong" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="luasBangunan">Estimasi Luas Bangunan (m²) *</label>
+                            <input type="number" id="luasBangunan" name="Luas_Bangunan_m2" placeholder="Contoh: 120" min="1" oninput="hitungKalkulatorHarga()" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="paketDesain">Pilihan Paket Desain *</label>
+                            <select id="paketDesain" name="Paket_Desain" onchange="hitungKalkulatorHarga()" required>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hargaPerMeter">Harga per m² Kustom (Opsional - Rp)</label>
+                        <input type="number" id="hargaPerMeter" name="Harga_per_m2" placeholder="Biarkan kosong jika mengikuti pilihan paket di atas" min="0" oninput="hitungKalkulatorHarga()">
+                    </div>
+
+                    <div class="calc-result-box">
+                        <span>Estimasi Total Biaya Desain:</span>
+                        <strong id="displayEstimasiTotal">Rp 0</strong>
+                        <input type="hidden" id="hiddenEstimasiTotal" name="Total_Estimasi_Biaya" value="Rp 0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="catatan">Catatan Tambahan / Keinginan Khusus</label>
+                        <textarea id="catatan" name="Catatan_Khusus" rows="3" placeholder="Tuliskan gaya desain pilihan (Modern/Minimalis/Industrial) atau kebutuhan ruang khusus..."></textarea>
+                    </div>
+
+                    <!-- AREA UPLOAD DOKUMEN / SKETSA / REFERENSI -->
+                    <div class="form-group">
+                        <label for="dokumenFile">Upload Dokumen / Referensi / Sketsa (Opsional)</label>
+                        <input type="file" id="dokumenFile" accept="image/*,.pdf,.doc,.docx" onchange="convertFileToBase64()">
+                        <span class="upload-hint">Format yang didukung: Gambar (.jpg, .png), PDF, atau Sketsa Denah (Maksimal 3MB).</span>
+                        <input type="hidden" id="hiddenDokumenBase64" name="Link_Dokumen_Upload" value="">
+                    </div>
+
+                    <button type="submit" id="btnSubmitForm" class="btn-submit-form">Kirim Formulir Survei</button>
+                </form>
             </div>
         </div>
     </section>
@@ -903,7 +1062,138 @@
     </footer>
 
     <script>
-        // Fungsi Utama Geser Gambar Slider
+        const SHEETDB_FORM_API_URL = "https://sheetdb.io/api/v1/sfkz7fgnnjzfk?sheet=form";
+
+        // MASTER DATA PAKET DESAIN & HARGA SINKRON
+        const PAKET_DESAIN_DATA = [
+            { id: "A", nama: "Desain Arsitektur A", cakupan: "Denah 2D, Fasad 3D, & Denah 3D", harga: 25000, tipe: "m2" },
+            { id: "B", nama: "Desain Arsitektur B", cakupan: "Denah 2D, Denah+Fasad 3D, & Gambar Kerja (DED)", harga: 35000, tipe: "m2" },
+            { id: "C", nama: "Desain Arsitektur C", cakupan: "Denah 2D, Denah+Fasad 3D, Gambar Kerja (DED), & Rencana Anggaran Biaya (RAB)", harga: 45000, tipe: "m2" },
+            { id: "D", nama: "Desain Arsitektur D", cakupan: "Denah 2D, Denah+Fasad 3D, Gambar Kerja (DED), Rencana Anggaran Biaya (RAB), & Interior", harga: 75000, tipe: "m2" },
+            { id: "INT", nama: "Desain Interior", cakupan: "3D Rendering, Tata Letak Furnitur, & Detail Konstruksi Mebel", harga: 45000, tipe: "m2" },
+            { id: "SUPERVISI", nama: "Konsultasi & Pengawasan", cakupan: "Kunjungan Lapangan Berkala, Manajemen Kontrol Material, & Supervisi Tukang", harga: 2500000, tipe: "bulan" }
+        ];
+
+        // RENDER TABEL HARGA & DROPDOWN SINKRON
+        function initDynamicPricingAndForm() {
+            const tableBody = document.getElementById('priceTableBody');
+            const selectDropdown = document.getElementById('paketDesain');
+
+            tableBody.innerHTML = '';
+            selectDropdown.innerHTML = '';
+
+            PAKET_DESAIN_DATA.forEach((item) => {
+                const row = document.createElement('tr');
+                const hargaFormatted = "Mulai dari Rp " + item.harga.toLocaleString('id-ID') + (item.tipe === "m2" ? " / m²" : " / Bulan");
+                
+                row.innerHTML = `
+                    <td><strong>${item.nama}</strong></td>
+                    <td>${item.cakupan}</td>
+                    <td>${hargaFormatted}</td>
+                `;
+                tableBody.appendChild(row);
+
+                if (item.tipe === "m2") {
+                    const option = document.createElement('option');
+                    option.value = item.harga;
+                    option.text = `${item.nama} (Rp ${item.harga.toLocaleString('id-ID')} / m²)`;
+                    if (item.id === "C") option.selected = true; 
+                    selectDropdown.appendChild(option);
+                }
+            });
+        }
+
+        // FUNGSI KONVERSI BERKAS KE BASE64
+        function convertFileToBase64() {
+            const fileInput = document.getElementById('dokumenFile');
+            const hiddenInput = document.getElementById('hiddenDokumenBase64');
+            const file = fileInput.files[0];
+
+            if (file) {
+                if (file.size > 3 * 1024 * 1024) {
+                    alert("Ukuran berkas terlalu besar. Maksimal 3MB.");
+                    fileInput.value = "";
+                    hiddenInput.value = "";
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    hiddenInput.value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                hiddenInput.value = "";
+            }
+        }
+
+        // KALKULATOR ESTIMASI HARGA
+        function hitungKalkulatorHarga() {
+            const luas = parseFloat(document.getElementById('luasBangunan').value) || 0;
+            const hargaKustom = parseFloat(document.getElementById('hargaPerMeter').value);
+            
+            let tarifPerMeter = 0;
+            if (!isNaN(hargaKustom) && hargaKustom > 0) {
+                tarifPerMeter = hargaKustom;
+            } else {
+                tarifPerMeter = parseFloat(document.getElementById('paketDesain').value) || 0;
+            }
+
+            const total = luas * tarifPerMeter;
+            const formattedTotal = "Rp " + total.toLocaleString('id-ID');
+
+            document.getElementById('displayEstimasiTotal').innerText = formattedTotal;
+            document.getElementById('hiddenEstimasiTotal').value = formattedTotal;
+        }
+
+        // SEND DATA FORMULIR BESERTA BERKAS BASE64
+        function handleSurveyFormSubmit(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('btnSubmitForm');
+            btn.innerText = "Mengirim Data Survei...";
+            btn.disabled = true;
+
+            const selectedOptionText = document.getElementById('paketDesain').selectedOptions[0] ? document.getElementById('paketDesain').selectedOptions[0].text : "Custom";
+
+            const formData = {
+                "Timestamp": new Date().toLocaleString('id-ID'),
+                "Nama": document.getElementById('nama').value,
+                "Handphone": document.getElementById('handphone').value,
+                "Email": document.getElementById('email').value,
+                "Jenis_Proyek": document.getElementById('jenisProyek').value,
+                "Status_Lahan": document.getElementById('statusLahan').value,
+                "Jumlah_Lantai": document.getElementById('jumlahLantai').value,
+                "Lokasi_Proyek": document.getElementById('lokasi').value,
+                "Luas_Bangunan_m2": document.getElementById('luasBangunan').value,
+                "Paket_Desain": selectedOptionText,
+                "Total_Estimasi_Biaya": document.getElementById('hiddenEstimasiTotal').value,
+                "Catatan_Khusus": document.getElementById('catatan').value,
+                "Link_Dokumen_Upload": document.getElementById('hiddenDokumenBase64').value
+            };
+
+            fetch(SHEETDB_FORM_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [formData] })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Terima kasih! Formulir survei awal proyek beserta dokumen referensi Anda berhasil tersimpan. Tim Kayuna Studio akan segera menghubungi Anda.");
+                document.getElementById('surveyForm').reset();
+                document.getElementById('hiddenDokumenBase64').value = "";
+                hitungKalkulatorHarga();
+                btn.innerText = "Kirim Formulir Survei";
+                btn.disabled = false;
+            })
+            .catch(err => {
+                console.error("Error mengirim survei:", err);
+                alert("Gagal mengirim data formulir. Silakan coba beberapa saat lagi.");
+                btn.innerText = "Kirim Formulir Survei";
+                btn.disabled = false;
+            });
+        }
+
         function moveSlide(button, direction) {
             const container = button.parentElement;
             const track = container.querySelector('.slider-track');
@@ -923,7 +1213,6 @@
             track.style.transform = `translateX(-${currentIndex * 100}%)`;
         }
 
-        // Fungsi Kontrol Dropdown Menu Hamburger / Pie Mobile
         function toggleMobileMenu() {
             const navMenu = document.getElementById('navMenu');
             navMenu.classList.toggle('active');
@@ -934,7 +1223,6 @@
             navMenu.classList.remove('active');
         }
     
-        // Fungsi Animasi Buka & Tutup Panel (Harga / Galeri)
         function togglePanel(panelId, button, textShow, textHide) {
             const panel = document.getElementById(panelId);
             button.classList.toggle('active');
@@ -948,38 +1236,33 @@
             }
         }
 
-        // ==========================================================================
-        // SISTEM SENSOR SENTUH (SWIPE EVENT LISTENERS) UNTUK HANDPHONE
-        // ==========================================================================
         document.addEventListener("DOMContentLoaded", function() {
+            initDynamicPricingAndForm();
+            hitungKalkulatorHarga();
+
             const containers = document.querySelectorAll('.slider-container');
             
             containers.forEach(container => {
                 let startX = 0;
                 let endX = 0;
                 
-                // Mendeteksi awal titik koordinat sentuhan jari di layar
                 container.addEventListener('touchstart', function(e) {
                     startX = e.changedTouches[0].screenX;
                 }, { passive: true });
                 
-                // Mendeteksi akhir titik koordinat ketika jari diangkat dari layar
                 container.addEventListener('touchend', function(e) {
                     endX = e.changedTouches[0].screenX;
                     handleSwipeGesture(container);
                 }, { passive: true });
                 
-                // Fungsi menghitung arah pergeseran koordinat jari
                 function handleSwipeGesture(sliderElement) {
-                    const threshold = 40; // Jarak minimal geser jari (dalam piksel) agar dianggap "menggeser"
+                    const threshold = 40;
                     const nextButton = sliderElement.querySelector('.slider-btn.next');
                     const prevButton = sliderElement.querySelector('.slider-btn.prev');
                     
                     if (startX - endX > threshold) {
-                        // Geser jari ke KIRI -> memicu slide MAJU (Next)
                         if(nextButton) moveSlide(nextButton, 1);
                     } else if (endX - startX > threshold) {
-                        // Geser jari ke KANAN -> memicu slide MUNDUR (Prev)
                         if(prevButton) moveSlide(prevButton, -1);
                     }
                 }
