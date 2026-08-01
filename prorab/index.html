@@ -160,7 +160,7 @@
                                     <span class="text-slate-400 text-[10px] ml-1">▼</span>
                                 </button>
 
-                                <div id="popoverAhspMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-2 space-y-2">
+                                <div id="popoverAhspMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 space-y-2">
                                     <div class="relative">
                                         <input type="text" id="searchAhspDropdownInput" oninput="filterAhspDropdownOptions()" placeholder="🔍 Cari kode / nama AHSP..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
                                         <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
@@ -528,7 +528,8 @@
                                 <label class="block text-[10px] font-bold text-slate-700 uppercase">Komponen Penyusun (A, B, C)</label>
                                 <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
                             </div>
-                            <div id="containerKomponenBuilder" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1">
+                            <!-- Container komponen builder tanpa overflow-hidden agar popover bisa mengambang keluar -->
+                            <div id="containerKomponenBuilder" class="space-y-2 max-h-60 overflow-y-visible pr-1">
                             </div>
                         </div>
 
@@ -893,7 +894,8 @@
                         <label class="block text-[10px] font-bold text-slate-700 uppercase">Edit Rincian Komponen Penyusun (A, B, C)</label>
                         <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenEditBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
                     </div>
-                    <div id="containerKomponenEditBuilder" class="space-y-2 max-h-52 overflow-y-auto custom-scroll pr-1">
+                    <!-- Container tanpa overflow hidden -->
+                    <div id="containerKomponenEditBuilder" class="space-y-2 max-h-60 overflow-y-visible pr-1">
                     </div>
                 </div>
 
@@ -988,10 +990,19 @@
             tambahBarisKomponenBuilder('containerKomponenBuilder');
 
             document.addEventListener('click', (e) => {
+                // Tutup dropdown AHSP
                 const container = document.getElementById('dropdownAhspContainer');
                 if (container && !container.contains(e.target)) {
                     document.getElementById('popoverAhspMenu').classList.add('hidden');
                 }
+
+                // Tutup semua popover dropdown HSD di komponen builder jika klik di luar
+                document.querySelectorAll('.popover-hsd-menu').forEach(popover => {
+                    const inputTarget = popover.previousElementSibling;
+                    if (!popover.contains(e.target) && !inputTarget.contains(e.target)) {
+                        popover.classList.add('hidden');
+                    }
+                });
             });
         });
 
@@ -1105,6 +1116,74 @@
             fetch(API_SCHEDULE).then(res => res.json()).then(data => {
                 listScheduleMaster = data;
             }).catch(() => { listScheduleMaster = []; });
+        }
+
+        // ================= LOGIKA CUSTOM DROPDOWN REKOMENDASI HSD =================
+        function filterHsdDropdownOptions(inputElem) {
+            const wrapper = inputElem.closest('.relative');
+            if(!wrapper) return;
+
+            const popover = wrapper.querySelector('.popover-hsd-menu');
+            const container = wrapper.querySelector('.list-hsd-options-container');
+            const kw = inputElem.value.toLowerCase().trim();
+
+            if(!kw) {
+                popover.classList.add('hidden');
+                return;
+            }
+
+            // Dapatkan item unik HSD berdasarkan nama
+            let uniqueItemsMap = {};
+            listHSDMaster.forEach(hsd => {
+                let nama = hsd.nama_item || hsd.uraian || "";
+                let kode = hsd.kode || "";
+                let matchNama = nama.toLowerCase().includes(kw);
+                let matchKode = kode.toLowerCase().includes(kw);
+
+                if(nama && (matchNama || matchKode) && !uniqueItemsMap[nama.toLowerCase().trim()]) {
+                    uniqueItemsMap[nama.toLowerCase().trim()] = {
+                        nama: nama,
+                        kode: kode,
+                        satuan: hsd.satuan || ''
+                    };
+                }
+            });
+
+            const filteredList = Object.values(uniqueItemsMap);
+
+            if(filteredList.length === 0) {
+                popover.classList.add('hidden');
+                return;
+            }
+
+            container.innerHTML = "";
+            filteredList.slice(0, 15).forEach(item => {
+                const div = document.createElement('div');
+                div.className = "p-1.5 hover:bg-amber-50 rounded-lg cursor-pointer transition flex justify-between items-center text-xs";
+                div.innerHTML = `
+                    <div class="truncate pr-2">
+                        <span class="font-bold text-slate-800 block truncate">${item.nama}</span>
+                        <span class="font-mono text-[10px] text-blue-600 font-bold">${item.kode || '-'}</span>
+                    </div>
+                    <span class="font-mono text-[10px] text-slate-500 shrink-0 font-bold">${item.satuan}</span>
+                `;
+                div.onclick = () => {
+                    inputElem.value = item.nama;
+                    const row = inputElem.closest('.row-komponen-builder');
+                    if (row) {
+                        const kodeInput = row.querySelector('.builder-kode');
+                        const satInput = row.querySelector('.builder-satuan');
+
+                        if(kodeInput && item.kode) kodeInput.value = item.kode;
+                        if(satInput && item.satuan) satInput.value = item.satuan;
+                    }
+
+                    popover.classList.add('hidden');
+                };
+                container.appendChild(div);
+            });
+
+            popover.classList.remove('hidden');
         }
 
         // ================= LOGIKA HAPUS & ARSIP PROYEK =================
@@ -2201,16 +2280,27 @@
             const valKoef = dataPreset ? (dataPreset.koefisien || '') : '';
 
             div.innerHTML = `
-                <select class="builder-tipe border p-1 text-[11px] rounded bg-white font-bold w-16 sm:w-20">
+                <select class="builder-tipe border p-1 text-[11px] rounded bg-white font-bold w-16 sm:w-20 shrink-0">
                     <option value="Upah" ${valTipe === 'Upah' ? 'selected' : ''}>Upah</option>
                     <option value="Bahan" ${valTipe === 'Bahan' ? 'selected' : ''}>Bahan</option>
                     <option value="Alat" ${valTipe === 'Alat' ? 'selected' : ''}>Alat</option>
                 </select>
-                <input type="text" placeholder="Kode" value="${valKode}" class="builder-kode border p-1 text-[11px] rounded bg-white w-16 sm:w-20 font-mono">
-                <input type="text" placeholder="Uraian Komponen" value="${valUraian}" class="builder-uraian border p-1 text-[11px] rounded bg-white flex-1">
-                <input type="text" placeholder="Sat" value="${valSatuan}" class="builder-satuan border p-1 text-[11px] rounded bg-white w-10 sm:w-12 font-mono text-center">
-                <input type="number" step="any" placeholder="Koef" value="${valKoef}" class="builder-koefisien border p-1 text-[11px] rounded bg-white w-14 sm:w-16 font-bold text-right">
-                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 font-bold px-1 text-xs" title="Hapus Komponen">✕</button>
+                <input type="text" placeholder="Kode" value="${valKode}" class="builder-kode border p-1 text-[11px] rounded bg-white w-16 sm:w-20 font-mono shrink-0">
+                
+                <!-- Wrapper dengan posisi relative dan z-index tinggi agar popover HSD mengambang di luar frame -->
+                <div class="relative flex-1 min-w-0">
+                    <input type="text" placeholder="Uraian Komponen / Ketik HSD..." value="${valUraian}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian border p-1 text-[11px] rounded bg-white w-full">
+                    
+                    <!-- Popover dropdown mengambang bebas di luar frame tepat di bawah input Uraian Komponen -->
+                    <div class="popover-hsd-menu hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-[9999] p-1.5 space-y-1">
+                        <div class="list-hsd-options-container max-h-48 overflow-y-auto custom-scroll divide-y divide-slate-100">
+                        </div>
+                    </div>
+                </div>
+
+                <input type="text" placeholder="Sat" value="${valSatuan}" class="builder-satuan border p-1 text-[11px] rounded bg-white w-10 sm:w-12 font-mono text-center shrink-0">
+                <input type="number" step="any" placeholder="Koef" value="${valKoef}" class="builder-koefisien border p-1 text-[11px] rounded bg-white w-14 sm:w-16 font-bold text-right shrink-0">
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 font-bold px-1 text-xs shrink-0" title="Hapus Komponen">✕</button>
             `;
             container.appendChild(div);
         }
@@ -2296,7 +2386,7 @@
             if (n < 12) return satuan[n];
             if (n < 20) return terbilang(n - 10) + " Belas";
             if (n < 100) return terbilang(Math.floor(n / 10)) + " Puluh " + terbilang(n % 10);
-            if (n < 200) return "Seratus " + terbilang(n - 100);
+            if (n < 1000) return "Seratus " + terbilang(n - 100);
             if (n < 1000) return terbilang(Math.floor(n / 100)) + " Ratus " + terbilang(n % 100);
             if (n < 2000) return "Seribu " + terbilang(n - 1000);
             if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " Ribu " + terbilang(n % 1000);
