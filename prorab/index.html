@@ -2,7 +2,12 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- PWA / Fullscreen Experience Tags for Mobile Browsers -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
     <title>ProRAB System — AHSP & Regional HSD Estimator</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,10 +29,10 @@
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen min-h-dvh flex flex-col selection:bg-amber-500 selection:text-slate-950">
 
     <!-- HEADER TOPBAR (RESPONSIVE) -->
-    <header class="bg-slate-900 text-white border-b border-slate-800 px-3 sm:px-6 py-3 sticky top-0 z-50 shadow-md no-print">
+    <header class="bg-slate-900 text-white border-b border-slate-800 px-3 sm:px-6 py-3 sticky top-0 z-50 shadow-md no-print pt-safe">
         <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-3">
             
             <div class="flex items-center justify-between w-full lg:w-auto">
@@ -73,7 +78,7 @@
     </header>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-6">
+    <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-6 pb-safe">
 
         <!-- ================= PAGE 1: ESTIMATOR & RAB PROYEK ================= -->
         <div id="pageRAB" class="space-y-6">
@@ -522,6 +527,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
+                <!-- MONITOR MASTER HSD (SCROLLABLE TALL) -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
                         <div>
@@ -536,16 +542,16 @@
                         <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
                     </div>
 
-                    <div class="max-h-72 overflow-y-auto custom-scroll border rounded-xl">
+                    <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
                         <table class="w-full text-left border-collapse text-xs min-w-[450px]">
-                            <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase">
+                            <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase shadow-sm">
                                 <tr>
-                                    <th class="p-2 border-b">KODE</th>
-                                    <th class="p-2 border-b">NAMA ITEM</th>
-                                    <th class="p-2 border-b text-center">SAT</th>
-                                    <th class="p-2 border-b text-right">HARGA (RP)</th>
-                                    <th class="p-2 border-b text-center">LOKASI</th>
-                                    <th class="p-2 border-b text-center w-20">AKSI</th>
+                                    <th class="p-2 border-b bg-slate-100">KODE</th>
+                                    <th class="p-2 border-b bg-slate-100">NAMA ITEM</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
+                                    <th class="p-2 border-b bg-slate-100 text-right">HARGA (RP)</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center">LOKASI</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center w-20">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelMasterHSDMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
@@ -555,6 +561,7 @@
                     </div>
                 </div>
 
+                <!-- MONITOR MASTER AHSP (SCROLLABLE TALL) -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
                         <div>
@@ -569,15 +576,15 @@
                         <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
                     </div>
 
-                    <div class="max-h-72 overflow-y-auto custom-scroll border rounded-xl">
+                    <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
                         <table class="w-full text-left border-collapse text-xs min-w-[450px]">
-                            <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase">
+                            <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase shadow-sm">
                                 <tr>
-                                    <th class="p-2 border-b">KODE</th>
-                                    <th class="p-2 border-b">NAMA PEKERJAAN</th>
-                                    <th class="p-2 border-b text-center">SAT</th>
-                                    <th class="p-2 border-b text-center">OVERHEAD</th>
-                                    <th class="p-2 border-b text-center w-24">AKSI</th>
+                                    <th class="p-2 border-b bg-slate-100">KODE</th>
+                                    <th class="p-2 border-b bg-slate-100">NAMA PEKERJAAN</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center">OVERHEAD</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center w-24">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelMasterAHSPMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
@@ -1164,7 +1171,7 @@
                 return (item.kode_ahsp || "").toLowerCase().includes(kw) || (item.nama_pekerjaan || "").toLowerCase().includes(kw);
             });
 
-            // LOGIKA BARU: Pengurutan berdasarkan kode AHSP secara natural/alfabetis
+            // Pengurutan berdasarkan kode AHSP secara natural/alfabetis
             filtered.sort((a, b) => (a.kode_ahsp || "").localeCompare(b.kode_ahsp || "", undefined, { numeric: true, sensitivity: 'base' }));
 
             if (filtered.length === 0) {
@@ -1683,7 +1690,7 @@
             tbody.innerHTML = "";
 
             if(!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu dan tambahkan item BQ.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu di tab 'Dashboard & RAB Proyek'.</td></tr>`;
                 return;
             }
 
