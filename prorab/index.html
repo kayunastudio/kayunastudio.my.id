@@ -1,1 +1,2295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ProRAB System — AHSP & Regional HSD Estimator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS, html2pdf & Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* CSS Untuk Memaksa Page Break pada PDF / Print */
+        .page-break-before {
+            page-break-before: always !important;
+            break-before: page !important;
+        }
 
+        @media print { .no-print { display: none !important; } }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- HEADER TOPBAR (RESPONSIVE) -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 px-3 sm:px-6 py-3 sticky top-0 z-50 shadow-md no-print">
+        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-3">
+            
+            <div class="flex items-center justify-between w-full lg:w-auto">
+                <div class="flex items-center gap-2.5">
+                    <img src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Kayuna Logo" class="w-8 h-8 sm:w-9 sm:h-9 object-contain bg-white p-1 rounded-lg shrink-0">
+                    <div>
+                        <h1 class="font-bold text-sm sm:text-base tracking-tight leading-none">ProRAB System</h1>
+                        <span class="text-[9px] sm:text-[10px] text-slate-400 font-medium block mt-0.5">Permen PUPR & Regional HSD Estimator</span>
+                    </div>
+                </div>
+
+                <div class="flex lg:hidden items-center gap-1">
+                    <button onclick="exportToExcelSummary()" class="bg-emerald-600 text-white p-2 rounded-lg text-xs" title="Excel">📊</button>
+                    <button onclick="exportToPDFSummary()" class="bg-rose-600 text-white p-2 rounded-lg text-xs" title="PDF">📄</button>
+                </div>
+            </div>
+            
+            <!-- NAVIGASI TAB MENU RESPONSIVE -->
+            <div class="flex items-center bg-slate-800 p-1 rounded-xl w-full lg:w-auto overflow-x-auto custom-scroll gap-1">
+                <button id="btnTabRAB" onclick="switchTab('rab')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow">
+                    📊 Dashboard & RAB
+                </button>
+                <button id="btnTabMaster" onclick="switchTab('master')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
+                    ➕ Kelola AHSP & HSD
+                </button>
+                <button id="btnTabSchedule" onclick="switchTab('schedule')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
+                    📈 Jadwal & Kurva S
+                </button>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-2">
+                <button onclick="muatDataProyekSemua()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
+                    <span>🔄</span> Sync Cloud
+                </button>
+                <button onclick="exportToExcelSummary()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
+                    <span>📊</span> Excel
+                </button>
+                <button onclick="exportToPDFSummary()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
+                    <span>📄</span> PDF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-6">
+
+        <!-- ================= PAGE 1: ESTIMATOR & RAB PROYEK ================= -->
+        <div id="pageRAB" class="space-y-6">
+            
+            <!-- SECTION DAFTAR PROYEK ACTIVE / ARCHIVED -->
+            <section class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm no-print">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 border-b pb-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">📁 Daftar Proyek</h2>
+                            <!-- FILTER TAB STATUS PROYEK -->
+                            <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 ml-2 text-[10px] font-bold">
+                                <button id="btnFilterActive" onclick="setProjectStatusFilter('active')" class="px-2 py-0.5 rounded bg-white text-slate-900 shadow">🟢 Aktif</button>
+                                <button id="btnFilterArchived" onclick="setProjectStatusFilter('archived')" class="px-2 py-0.5 rounded text-slate-500 hover:text-slate-900">📦 Terarsip</button>
+                            </div>
+                        </div>
+                        <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Klik proyek untuk memilih dan menyinkronkan HSD serta AHSP PUPR</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button id="btnUnselectProject" onclick="unselectProyek()" class="hidden flex-1 sm:flex-none bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-xs py-2 px-3 rounded-xl transition text-center">
+                            ❌ Unselect Proyek
+                        </button>
+                        <button onclick="bukaModalBuatProyek()" class="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow transition text-center">
+                            ➕ Buat Proyek Baru
+                        </button>
+                    </div>
+                </div>
+
+                <div id="projectCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    <div class="p-4 text-center text-slate-400 italic text-xs col-span-full">Memuat database proyek dari SheetDB...</div>
+                </div>
+            </section>
+
+            <!-- INPUT BQ & HASIL REKAPITULASI -->
+            <div id="activeProjectSection" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- KIRI: INPUT ITEM PEKERJAAN (AHSP & LUMPSUM) -->
+                <div class="lg:col-span-1 space-y-4 no-print">
+                    
+                    <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 sm:p-4 rounded-2xl">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider">📍 HSD Lokasi Proyek</span>
+                            <span id="lblLokasiProyekAktif" class="text-xs font-mono font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded">-</span>
+                        </div>
+                        <p class="text-[10px] sm:text-[11px] text-slate-600 leading-relaxed">Perhitungan AHSP mengacu pada database dan wilayah proyek.</p>
+                    </div>
+
+                    <!-- FORM 1: PILIH DARI ANALISA STANDAR AHSP PUPR -->
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">📐 Pilih Analisa AHSP PUPR</h3>
+                            <span id="lblActiveProjectBadge" class="text-[9px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">PILIH PROYEK</span>
+                        </div>
+
+                        <form id="formItemPekerjaan" onsubmit="event.preventDefault(); simpanItemKeProyek();" class="space-y-3">
+                            
+                            <!-- CUSTOM SEARCHABLE DROPDOWN AHSP -->
+                            <div class="relative" id="dropdownAhspContainer">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Standard AHSP Pekerjaan</label>
+                                
+                                <button type="button" id="btnAhspDropdownToggle" onclick="toggleAhspDropdownMenu()" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold text-slate-800 flex justify-between items-center text-left focus:ring-2 focus:ring-slate-900 focus:outline-none">
+                                    <span id="lblAhspDropdownSelected" class="truncate">-- Pilih Standar AHSP --</span>
+                                    <span class="text-slate-400 text-[10px] ml-1">▼</span>
+                                </button>
+
+                                <div id="popoverAhspMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-2 space-y-2">
+                                    <div class="relative">
+                                        <input type="text" id="searchAhspDropdownInput" oninput="filterAhspDropdownOptions()" placeholder="🔍 Cari kode / nama AHSP..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                                    </div>
+                                    <div id="listAhspOptionsContainer" class="max-h-48 overflow-y-auto custom-scroll divide-y divide-slate-100 text-xs">
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="selectedAhspKodeValue" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Divisi Pekerjaan Utama</label>
+                                <input type="text" id="inpKategori" readonly required class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-100 font-bold text-slate-600">
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Uraian Pekerjaan Detail</label>
+                                <input type="text" id="inpSubPekerjaan" required placeholder="Nama Pekerjaan..." class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none font-medium">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Volume QTO</label>
+                                    <input type="number" step="0.01" id="inpVolume" required placeholder="0.00" oninput="hitungPreviewHargaItem()" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan Pekerjaan</label>
+                                    <input type="text" id="inpSatuan" readonly required class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-100 font-mono text-center font-bold">
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase">Harga Satuan AHSP (Rp)</label>
+                                    <button type="button" onclick="bukaModalDetailAHSP()" id="btnDetailAHSP" class="hidden text-[10px] text-blue-600 font-bold hover:underline">🔍 Preview Rincian Standar</button>
+                                </div>
+                                <input type="number" id="inpHargaSatuan" readonly required placeholder="0" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-100 font-bold text-slate-800 cursor-not-allowed">
+                                <p class="text-[9px] text-slate-400 mt-0.5">* Otomatis terhitung dari HSD termurah lokasi proyek</p>
+                            </div>
+
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Subtotal Item:</span>
+                                <span id="txtSubtotalPreview" class="font-mono font-bold text-xs text-amber-600">Rp 0</span>
+                            </div>
+
+                            <button type="submit" id="btnSimpanItem" disabled class="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
+                                ➕ Tambah AHSP Ke BQ Proyek
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- FORM 2: FORM PEKERJAAN LUMPSUM / CUSTOM PRICE -->
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="border-b pb-2 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">💼 Pekerjaan Lumpsum / Custom Price</h3>
+                                <p class="text-[10px] text-slate-400">Input pekerjaan dengan harga langsung tanpa AHSP</p>
+                            </div>
+                            <span class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">CUSTOM</span>
+                        </div>
+
+                        <form id="formLumpsumPekerjaan" onsubmit="event.preventDefault(); simpanItemLumpsumKeProyek();" class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Divisi Pekerjaan Utama</label>
+                                <input type="text" id="inpLsKategori" required placeholder="Contoh: I. PEKERJAAN PERSIAPAN / X. LAIN-LAIN" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none font-bold text-slate-800">
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Uraian Pekerjaan / Lumpsum</label>
+                                <input type="text" id="inpLsSubPekerjaan" required placeholder="Contoh: Pembersihan Lapangan & Mobilisasi" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none font-medium">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Volume QTO</label>
+                                    <input type="number" step="0.01" id="inpLsVolume" value="1" required oninput="hitungPreviewLumpsum()" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan Pekerjaan</label>
+                                    <input type="text" id="inpLsSatuan" required placeholder="Ls / Unit / Paket" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono text-center font-bold">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga Satuan / Lumpsum (Rp)</label>
+                                <input type="number" id="inpLsHargaSatuan" required placeholder="0" oninput="hitungPreviewLumpsum()" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold text-slate-800 focus:outline-none">
+                            </div>
+
+                            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Subtotal Lumpsum:</span>
+                                <span id="txtSubtotalLsPreview" class="font-mono font-bold text-xs text-emerald-600">Rp 0</span>
+                            </div>
+
+                            <button type="submit" id="btnSimpanLsItem" disabled class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
+                                ➕ Tambah Lumpsum Ke BQ
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- KANAN: REKAPITULASI DOKUMEN CETAK -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <div id="exportArea" class="bg-white p-4 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6 text-slate-800">
+                        
+                        <!-- HALAMAN 1: DOKUMEN UTAMA -->
+                        <div class="space-y-6">
+                            <div class="border-b-4 border-slate-900 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <div class="flex items-center gap-3 sm:gap-4">
+                                    <img src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Kayuna Studio Logo" class="h-10 sm:h-14 w-auto object-contain">
+                                    <div>
+                                        <h1 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase leading-none">KAYUNA STUDIO</h1>
+                                        <p class="text-[10px] sm:text-[11px] font-bold text-amber-600 mt-1">Architecture & Construction Consultant</p>
+                                        <p class="text-[9px] sm:text-[10px] text-slate-500">Website: kayunastudio.my.id | Email: kayunastudio@gmail.com</p>
+                                    </div>
+                                </div>
+                                <div class="text-left sm:text-right border-l-2 sm:border-l-2 border-slate-200 pl-3 sm:pl-4">
+                                    <span class="text-[9px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono uppercase tracking-wider block mb-1">DOKUMEN PENAWARAN</span>
+                                    <span id="docTanggal" class="text-[10px] font-mono font-bold text-slate-700">Tanggal: -</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">INFORMASI PROYEK</span>
+                                    <h2 id="docNamaProyek" class="font-bold text-slate-900 text-sm mt-0.5">(Pilih Proyek Terlebih Dahulu)</h2>
+                                    <p id="docLokasiProyek" class="text-slate-600 font-medium">Lokasi: -</p>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">INFORMASI KLIEN / PEMILIK</span>
+                                    <p id="docPemilikKlien" class="font-bold text-slate-800 text-sm mt-0.5">Klien: -</p>
+                                    <p id="docKodeProyek" class="text-slate-500 font-mono text-[11px]">ID Proyek: -</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <div class="text-center py-1.5 bg-slate-900 text-white rounded-lg">
+                                    <h2 class="text-xs font-black uppercase tracking-widest">REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)</h2>
+                                </div>
+
+                                <div class="overflow-x-auto custom-scroll">
+                                    <table class="w-full text-left border-collapse text-xs min-w-[450px]">
+                                        <thead>
+                                            <tr class="bg-slate-100 text-slate-700 font-bold border-y-2 border-slate-300 text-[10px] uppercase tracking-wider">
+                                                <th class="p-2.5 w-12 text-center">NO</th>
+                                                <th class="p-2.5">DIVISI PEKERJAAN UTAMA</th>
+                                                <th class="p-2.5 text-right w-36 sm:w-44">JUMLAH HARGA (RP)</th>
+                                                <th class="p-2.5 text-right w-20 sm:w-24">% BOBOT</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabelRekapUmumRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                                            <tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Belum ada rincian divisi.</td></tr>
+                                        </tbody>
+                                        <tfoot class="border-t-2 border-slate-900 font-bold bg-slate-50 text-slate-900">
+                                            <tr>
+                                                <td colspan="2" class="p-2.5 text-right uppercase">JUMLAH (DPA):</td>
+                                                <td id="txtGrandTotalDPA" class="p-2.5 text-right font-mono font-bold text-xs sm:text-sm">Rp 0</td>
+                                                <td id="txtTotalBobot" class="p-2.5 text-right font-mono text-xs sm:text-sm">0.00%</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" class="p-2.5 text-right uppercase">PPN 11%:</td>
+                                                <td id="txtGrandTotalPPN" class="p-2.5 text-right font-mono font-bold text-xs sm:text-sm text-slate-600">Rp 0</td>
+                                                <td></td>
+                                            </tr>
+                                            <tr class="bg-amber-100/50 text-slate-950">
+                                                <td colspan="2" class="p-2.5 text-right uppercase font-black">TOTAL BIAYA + PPN:</td>
+                                                <td id="txtGrandTotalPlusPPN" class="p-2.5 text-right font-mono font-black text-xs sm:text-sm text-amber-700">Rp 0</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+                                    <span class="font-bold text-slate-500 uppercase text-[10px] block">TERBILANG:</span>
+                                    <p id="txtTerbilangTotal" class="font-bold italic text-slate-800 mt-0.5">Zero Rupiah</p>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 border-t border-slate-200 flex justify-end">
+                                <div class="text-center w-48 sm:w-64 space-y-12">
+                                    <div>
+                                        <p id="txtKotaTanggalTTD" class="text-xs text-slate-600 font-medium">Bandung, 1 Agustus 2026</p>
+                                        <p class="text-xs font-bold text-slate-900 uppercase mt-0.5">Pengusul / Perencana:</p>
+                                        <p class="text-[11px] font-bold text-amber-600">KAYUNA STUDIO</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-900 underline uppercase">Tim Perencana Kayuna Studio</p>
+                                        <p class="text-[10px] text-slate-400">kayunastudio.my.id</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- HALAMAN 2: LAMPIRAN 1 - BQ -->
+                        <div class="page-break-before pt-6 space-y-4">
+                            <div class="flex justify-between items-center border-b-2 border-slate-900 pb-2">
+                                <div>
+                                    <span class="text-[10px] font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-mono uppercase">LAMPIRAN 1</span>
+                                    <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider mt-1">RINCIAN BILL OF QUANTITIES (BQ) PEKERJAAN</h3>
+                                </div>
+                                <span class="text-[10px] font-mono text-slate-400">Kayuna Studio</span>
+                            </div>
+
+                            <div class="overflow-x-auto custom-scroll">
+                                <table class="w-full text-left border-collapse text-xs min-w-[600px]">
+                                    <thead>
+                                        <tr class="bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider">
+                                            <th class="p-2 w-8 text-center">NO</th>
+                                            <th class="p-2">DIVISI / URAIAN PEKERJAAN</th>
+                                            <th class="p-2 text-center w-16">VOL</th>
+                                            <th class="p-2 text-center w-12">SAT</th>
+                                            <th class="p-2 text-right w-28">HARGA SAT. (RP)</th>
+                                            <th class="p-2 text-right w-32">TOTAL BIAYA (RP)</th>
+                                            <th class="p-2 text-center w-20 no-print">AKSI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabelBQDetailRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                                        <tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek untuk melihat item BQ.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- HALAMAN 3: LAMPIRAN 2 - AHSP -->
+                        <div class="page-break-before pt-6 space-y-4">
+                            <div class="flex justify-between items-center border-b-2 border-slate-900 pb-2">
+                                <div>
+                                    <span class="text-[10px] font-bold bg-blue-600 text-white px-2 py-0.5 rounded font-mono uppercase">LAMPIRAN 2</span>
+                                    <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider mt-1">DETAIL RINCIAN ANALISA AHSP TERPAKAI</h3>
+                                </div>
+                                <span class="text-[10px] font-mono text-slate-400">Kayuna Studio</span>
+                            </div>
+
+                            <div id="containerLampiranAHSPDetail" class="space-y-4">
+                                <p class="text-xs text-slate-400 italic text-center py-4">Pilih proyek untuk melihat rincian koefisien AHSP.</p>
+                            </div>
+                        </div>
+
+                        <!-- HALAMAN 4: LAMPIRAN 3 - HSD -->
+                        <div class="page-break-before pt-6 space-y-4">
+                            <div class="flex justify-between items-center border-b-2 border-slate-900 pb-2">
+                                <div>
+                                    <span class="text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded font-mono uppercase">LAMPIRAN 3</span>
+                                    <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider mt-1">DAFTAR HARGA SATUAN DASAR (HSD) TERPAKAI PROYEK</h3>
+                                </div>
+                                <span class="text-[10px] font-mono text-slate-400">Kayuna Studio</span>
+                            </div>
+
+                            <div class="overflow-x-auto custom-scroll">
+                                <table class="w-full text-left border-collapse text-xs min-w-[550px]">
+                                    <thead>
+                                        <tr class="bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider">
+                                            <th class="p-2 w-8 text-center">NO</th>
+                                            <th class="p-2 w-20 text-center">TIPE</th>
+                                            <th class="p-2 w-24">KODE</th>
+                                            <th class="p-2">NAMA ITEM / BAHAN / UPAH / ALAT</th>
+                                            <th class="p-2 text-center w-16">SATUAN</th>
+                                            <th class="p-2 text-right w-32">HARGA SAT. LOKASI (RP)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabelLampiranHSDDetailRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                                        <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Pilih proyek untuk melihat rincian HSD terpakai.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= PAGE 2: KELOLA MASTER AHSP & HSD ================= -->
+        <div id="pageMaster" class="hidden space-y-6">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="border-b pb-2 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-xs sm:text-sm text-slate-900 uppercase">📦 Form Tambah HSD Baru</h3>
+                            <p class="text-[10px] sm:text-[11px] text-slate-400">Menambahkan Upah, Bahan, atau Peralatan ke sheet <code class="bg-slate-100 px-1 rounded font-bold">Database</code></p>
+                        </div>
+                        <span class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">Database</span>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); simpanHSDBaru();" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Item</label>
+                                <input type="text" id="addHsdKode" required placeholder="L.01 / M.05" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan</label>
+                                <input type="text" id="addHsdSatuan" required placeholder="OH / kg / m3" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Item (Uraian)</label>
+                            <input type="text" id="addHsdNama" required placeholder="Semen Portland / Tukang Batu" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga Satuan (Rp)</label>
+                                <input type="number" id="addHsdHarga" required placeholder="0" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Wilayah</label>
+                                <input type="text" id="addHsdLokasi" required placeholder="Bandung / Jakarta" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
+                            💾 Simpan Ke Database
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="border-b pb-2 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-xs sm:text-sm text-slate-900 uppercase">🏗️ Form Tambah AHSP Pekerjaan Baru</h3>
+                            <p class="text-[10px] sm:text-[11px] text-slate-400">Menambahkan analisis & komponen ke sheet <code class="bg-slate-100 px-1 rounded font-bold">Database</code></p>
+                        </div>
+                        <span class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">Database</span>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); simpanAHSPBaru();" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode AHSP</label>
+                                <input type="text" id="addAhspKode" required placeholder="A.4.4.1.9" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan Pekerjaan</label>
+                                <input type="text" id="addAhspSatuan" required placeholder="m2 / m3 / m1" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Pekerjaan</label>
+                            <input type="text" id="addAhspNama" required placeholder="Pemasangan 1 m2 Dinding Bata Merah" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kategori Divisi</label>
+                                <input type="text" id="addAhspKategori" required placeholder="III. PEKERJAAN DINDING" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Overhead (%)</label>
+                                <input type="number" id="addAhspOverhead" value="15" required placeholder="15" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold">
+                            </div>
+                        </div>
+
+                        <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="block text-[10px] font-bold text-slate-700 uppercase">Komponen Penyusun (A, B, C)</label>
+                                <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
+                            </div>
+                            <div id="containerKomponenBuilder" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs shadow transition">
+                            💾 Simpan Ke Database
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
+                        <div>
+                            <h3 class="font-bold text-xs text-slate-900 uppercase">📋 Master HSD Tersimpan</h3>
+                            <p class="text-[10px] text-slate-400">Database Upah, Bahan, dan Peralatan (<code class="font-bold">Database</code>)</p>
+                        </div>
+                        <span id="badgeCountHsd" class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold w-fit">0 Item</span>
+                    </div>
+
+                    <div class="relative">
+                        <input type="text" id="searchHsdInput" oninput="renderTabelMonitorHSD()" placeholder="🔍 Cari kode, nama item, atau lokasi HSD..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium">
+                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                    </div>
+
+                    <div class="max-h-72 overflow-y-auto custom-scroll border rounded-xl">
+                        <table class="w-full text-left border-collapse text-xs min-w-[450px]">
+                            <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase">
+                                <tr>
+                                    <th class="p-2 border-b">KODE</th>
+                                    <th class="p-2 border-b">NAMA ITEM</th>
+                                    <th class="p-2 border-b text-center">SAT</th>
+                                    <th class="p-2 border-b text-right">HARGA (RP)</th>
+                                    <th class="p-2 border-b text-center">LOKASI</th>
+                                    <th class="p-2 border-b text-center w-20">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelMasterHSDMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                                <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Memuat database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
+                        <div>
+                            <h3 class="font-bold text-xs text-slate-900 uppercase">📋 Master AHSP Pekerjaan</h3>
+                            <p class="text-[10px] text-slate-400">Database Standar Pekerjaan PUPR (<code class="font-bold">Database</code>)</p>
+                        </div>
+                        <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold w-fit">0 Item</span>
+                    </div>
+
+                    <div class="relative">
+                        <input type="text" id="searchAhspInput" oninput="renderTabelMonitorAHSP()" placeholder="🔍 Cari kode AHSP, nama pekerjaan, atau kategori..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium">
+                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                    </div>
+
+                    <div class="max-h-72 overflow-y-auto custom-scroll border rounded-xl">
+                        <table class="w-full text-left border-collapse text-xs min-w-[450px]">
+                            <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase">
+                                <tr>
+                                    <th class="p-2 border-b">KODE</th>
+                                    <th class="p-2 border-b">NAMA PEKERJAAN</th>
+                                    <th class="p-2 border-b text-center">SAT</th>
+                                    <th class="p-2 border-b text-center">OVERHEAD</th>
+                                    <th class="p-2 border-b text-center w-24">AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelMasterAHSPMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                                <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat database ...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= PAGE 3: MANAJEMEN JADWAL & KURVA S ================= -->
+        <div id="pageSchedule" class="hidden space-y-6">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 gap-3">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                            <span>📈</span> MANAJEMEN JADWAL & GRAFIK KURVA S
+                        </h2>
+                        <p class="text-xs text-slate-500">Penjadwalan Proyek & Tracking Realisasi ala MS Project dengan Kalender Kerja & Hari Libur Nasional</p>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <span id="badgeScheduleProject" class="text-xs bg-amber-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold font-mono truncate max-w-[150px] sm:max-w-none">PILIH PROYEK</span>
+                        <button onclick="simpanJadwalSemua()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition whitespace-nowrap">
+                            💾 Simpan Rencana
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex flex-wrap justify-between items-center gap-2 text-xs text-amber-900">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="font-bold flex items-center gap-1">📅 Kalender Kerja:</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-rose-200 border border-rose-400 rounded-sm inline-block"></span> Sabtu & Minggu</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-sm inline-block"></span> Libur Nasional</span>
+                    </div>
+                    <span class="font-mono text-[10px] sm:text-[11px] text-amber-700 font-bold">* Durasi Otomatis Memotong Hari Libur</span>
+                </div>
+
+                <div class="overflow-x-auto custom-scroll border rounded-xl">
+                    <table class="w-full text-left border-collapse text-xs min-w-[850px]">
+                        <thead>
+                            <tr class="bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider">
+                                <th class="p-2.5 w-8 text-center">NO</th>
+                                <th class="p-2.5">TASK NAME (NAMA PEKERJAAN BQ)</th>
+                                <th class="p-2.5 text-center w-16">BOBOT (%)</th>
+                                <th class="p-2.5 text-center w-28">START DATE</th>
+                                <th class="p-2.5 text-center w-28">FINISH DATE</th>
+                                <th class="p-2.5 text-center w-20">WORK DAYS</th>
+                                <th class="p-2.5 text-center w-16">PRED</th>
+                                <th class="p-2.5 text-center w-20">ACTUAL %</th>
+                                <th class="p-2.5 text-center w-24">STATUS</th>
+                                <th class="p-2.5 text-center w-28">TRACKING REAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelScheduleRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                            <tr><td colspan="10" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu di tab 'Dashboard & RAB Proyek'.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                        <span>📊</span> GRAFIK KURVA S (RENCANA VS REALISASI LAPANGAN)
+                    </h3>
+                    <div class="relative w-full h-64 sm:h-80">
+                        <canvas id="kurvaSChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL POPUP UPDATE TRACKING REAL -->
+    <div id="modalTrackingReal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 class="font-bold text-sm text-slate-900">📝 Update Progres Pelaksanaan Real (Aktual)</h3>
+                    <p id="modalTrackingTaskName" class="text-xs font-bold text-amber-600 mt-0.5">Pekerjaan...</p>
+                </div>
+                <button onclick="tutupModalTrackingReal()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); simpanTrackingReal();" class="space-y-3 text-xs">
+                <input type="hidden" id="trackBqId">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase mb-1">Actual Start Date</label>
+                        <input type="date" id="trackActualStart" class="w-full border p-2 rounded-lg font-mono">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase mb-1">Actual Finish Date</label>
+                        <input type="date" id="trackActualFinish" class="w-full border p-2 rounded-lg font-mono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase mb-1">Progress Realisasi (%)</label>
+                        <input type="number" min="0" max="100" id="trackProgress" required class="w-full border p-2 rounded-lg font-bold text-blue-600 text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase mb-1">Status Pekerjaan</label>
+                        <select id="trackStatus" class="w-full border p-2 rounded-lg font-bold">
+                            <option value="Not Started">⚪ Not Started</option>
+                            <option value="In Progress">🔵 In Progress</option>
+                            <option value="Completed">🟢 Completed</option>
+                            <option value="Delayed">🔴 Delayed (Terlambat)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase mb-1">Actual Duration (Hari)</label>
+                        <input type="number" id="trackActualDuration" placeholder="0" class="w-full border p-2 rounded-lg font-bold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase mb-1">Remaining Duration</label>
+                        <input type="number" id="trackRemainingDuration" placeholder="0" class="w-full border p-2 rounded-lg font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-500 uppercase mb-1">Catatan Kendala / Progres Lapangan</label>
+                    <textarea id="trackNotes" rows="2" placeholder="Tulis catatan harian/kendala cuaca/bahan..." class="w-full border p-2 rounded-lg"></textarea>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="submit" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">💾 Simpan Tracking Real</button>
+                    <button type="button" onclick="tutupModalTrackingReal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP PREVIEW MASTER AHSP -->
+    <div id="modalAHSPPUPR" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 id="modalAHSPTitle" class="font-black text-xs sm:text-sm text-slate-900 uppercase">Analisa Koefisien AHSP PUPR</h3>
+                    <p class="text-[10px] text-slate-400">Rincian Komponen, Satuan, dan Koefisien Standar</p>
+                </div>
+                <button onclick="tutupModalDetailAHSP()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
+            </div>
+
+            <div class="border rounded-xl p-2 sm:p-3 bg-slate-50 space-y-3 text-xs overflow-x-auto custom-scroll">
+                <table class="w-full border-collapse border border-slate-300 bg-white text-[11px] min-w-[400px]">
+                    <thead>
+                        <tr class="bg-slate-800 text-white font-bold border-b border-slate-300 text-[10px] text-center uppercase">
+                            <th class="p-2 border border-slate-300 w-10">NO</th>
+                            <th class="p-2 border border-slate-300 text-left">URAIAN KOMPONEN</th>
+                            <th class="p-2 border border-slate-300 w-20">KODE</th>
+                            <th class="p-2 border border-slate-300 w-16">SATUAN</th>
+                            <th class="p-2 border border-slate-300 w-24">KOEFISIEN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelAHSPDetailRows" class="divide-y divide-slate-200">
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="modalAHSPFooterInfo" class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl flex justify-between items-center text-[11px] text-amber-900 font-bold">
+                <span>Overhead Standar: <strong id="modalAhspOverheadVal">15%</strong></span>
+                <button onclick="tutupModalDetailAHSP()" class="bg-slate-900 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT ITEM BQ PROYEK -->
+    <div id="modalEditBQ" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-slate-900">✏️ Edit Item BQ Proyek</h3>
+                <button onclick="tutupModalEditBQ()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); eksekusiSimpanEditBQ();" class="space-y-3">
+                <input type="hidden" id="editBqId">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Uraian Pekerjaan</label>
+                    <input type="text" id="editBqSub" required class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Volume QTO</label>
+                        <input type="number" step="0.01" id="editBqVol" required class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan</label>
+                        <input type="text" id="editBqSat" readonly class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-100 font-mono text-center font-bold">
+                    </div>
+                </div>
+                <div class="pt-2 flex gap-2">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs transition">💾 Simpan Perubahan</button>
+                    <button type="button" onclick="tutupModalEditBQ()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT MASTER HSD -->
+    <div id="modalEditHSD" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-slate-900">✏️ Edit Master HSD (Sheet Database)</h3>
+                <button onclick="tutupModalEditHSD()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); eksekusiSimpanEditHSD();" class="space-y-3">
+                <input type="hidden" id="editHsdOldKode">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Item</label>
+                        <input type="text" id="editHsdKode" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan</label>
+                        <input type="text" id="editHsdSatuan" required class="w-full border p-2 text-xs rounded-lg bg-slate-50">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Item</label>
+                    <input type="text" id="editHsdNama" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-medium">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga (Rp)</label>
+                        <input type="number" id="editHsdHarga" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Wilayah</label>
+                        <input type="text" id="editHsdLokasi" required class="w-full border p-2 text-xs rounded-lg bg-slate-50">
+                    </div>
+                </div>
+                <div class="pt-2 flex gap-2">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs transition">💾 Update HSD</button>
+                    <button type="button" onclick="tutupModalEditHSD()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT MASTER AHSP -->
+    <div id="modalEditAHSP" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 class="font-bold text-sm text-slate-900 uppercase">✏️ Edit Master AHSP Pekerjaan</h3>
+                    <p class="text-[10px] text-slate-400">Ubah info & rincian komponen penyusun di Sheet <code class="font-bold">Database</code></p>
+                </div>
+                <button onclick="tutupModalEditAHSP()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); eksekusiSimpanEditAHSP();" class="space-y-3">
+                <input type="hidden" id="editAhspOldKode">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode AHSP</label>
+                        <input type="text" id="editAhspKode" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan Pekerjaan</label>
+                        <input type="text" id="editAhspSatuan" required class="w-full border p-2 text-xs rounded-lg bg-slate-50">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Pekerjaan</label>
+                    <input type="text" id="editAhspNama" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-medium">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kategori Divisi</label>
+                        <input type="text" id="editAhspKategori" required class="w-full border p-2 text-xs rounded-lg bg-slate-50">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Overhead (%)</label>
+                        <input type="number" id="editAhspOverhead" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-bold">
+                    </div>
+                </div>
+
+                <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase">Edit Rincian Komponen Penyusun (A, B, C)</label>
+                        <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenEditBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
+                    </div>
+                    <div id="containerKomponenEditBuilder" class="space-y-2 max-h-52 overflow-y-auto custom-scroll pr-1">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs shadow transition">💾 Update Master AHSP</button>
+                    <button type="button" onclick="tutupModalEditAHSP()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL BUAT PROYEK BARU -->
+    <div id="modalProyek" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-slate-900">➕ Tambah Proyek Konstruksi Baru</h3>
+                <button onclick="tutupModalBuatProyek()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); eksekusiSimpanProyekBaru();" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Proyek</label>
+                    <input type="text" id="modalNamaProyek" required placeholder="Contoh: Pembangunan Ruko 2 Lantai" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Pemilik / Klien</label>
+                    <input type="text" id="modalPemilik" required placeholder="Contoh: Bapak Ahmad" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Proyek (Kota / Wilayah HSD)</label>
+                    <input type="text" id="modalLokasi" required placeholder="Contoh: Bandung / Jakarta / KBB" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none">
+                </div>
+                <div class="pt-2 flex gap-2">
+                    <button type="submit" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold p-2.5 rounded-xl text-xs transition">💾 Simpan Proyek</button>
+                    <button type="button" onclick="tutupModalBuatProyek()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & SHEETDB API INTEGRATION -->
+    <script>
+        const BASE_API = "https://sheetdb.io/api/v1/sfkz7fgnnjzfk";
+        const API_PROJECT = `${BASE_API}?sheet=project`;
+        const API_AHSP = `${BASE_API}?sheet=01_ahsp`;
+        const API_HSD = `${BASE_API}?sheet=02_hsd`;
+        const API_SCHEDULE = `${BASE_API}?sheet=03_schedule`;
+
+        const HARI_LIBUR_NASIONAL_2026 = [
+            "2026-01-01", "2026-01-16", "2026-02-17", "2026-03-19",
+            "2026-03-20", "2026-03-21", "2026-04-03", "2026-05-01",
+            "2026-05-14", "2026-05-27", "2026-06-01", "2026-06-16",
+            "2026-08-17", "2026-08-25", "2026-12-25"
+        ];
+
+        let listProyek = [];
+        let listAHSPMaster = [];
+        let listHSDMaster = [];
+        let listScheduleMaster = [];
+        let ahspTerpilih = null;
+        let proyekAktif = null;
+        let filterStatusProyek = 'active'; // default: 'active'
+        let kurvaSChartInstance = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            muatDataProyekSemua();
+            tambahBarisKomponenBuilder('containerKomponenBuilder');
+
+            document.addEventListener('click', (e) => {
+                const container = document.getElementById('dropdownAhspContainer');
+                if (container && !container.contains(e.target)) {
+                    document.getElementById('popoverAhspMenu').classList.add('hidden');
+                }
+            });
+        });
+
+        function switchTab(tabName) {
+            const pageRAB = document.getElementById('pageRAB');
+            const pageMaster = document.getElementById('pageMaster');
+            const pageSchedule = document.getElementById('pageSchedule');
+            const btnTabRAB = document.getElementById('btnTabRAB');
+            const btnTabMaster = document.getElementById('btnTabMaster');
+            const btnTabSchedule = document.getElementById('btnTabSchedule');
+
+            pageRAB.classList.add('hidden');
+            pageMaster.classList.add('hidden');
+            pageSchedule.classList.add('hidden');
+
+            btnTabRAB.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
+            btnTabMaster.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
+            btnTabSchedule.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
+
+            if(tabName === 'rab') {
+                pageRAB.classList.remove('hidden');
+                btnTabRAB.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+            } else if(tabName === 'master') {
+                pageMaster.classList.remove('hidden');
+                btnTabMaster.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+            } else if(tabName === 'schedule') {
+                pageSchedule.classList.remove('hidden');
+                btnTabSchedule.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+                renderTabelPenjadwalan();
+            }
+        }
+
+        function formatTanggalIndoFormal(dateStr) {
+            if(!dateStr) return "1 Agustus 2026";
+            let d = new Date(dateStr);
+            if(isNaN(d.getTime())) {
+                const parts = dateStr.split('/');
+                if(parts.length === 3) d = new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+            if(isNaN(d.getTime())) return dateStr;
+
+            const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            return `${d.getDate()} ${bulanIndo[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function isHariLibur(date) {
+            const dayOfWeek = date.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) return true;
+            const formattedDate = date.toISOString().split('T')[0];
+            return HARI_LIBUR_NASIONAL_2026.includes(formattedDate);
+        }
+
+        function hitungHariKerjaEfektif(startStr, finishStr) {
+            if(!startStr || !finishStr) return 0;
+            let current = new Date(startStr);
+            let end = new Date(finishStr);
+            if(current > end) return 0;
+
+            let countWorkingDays = 0;
+            while(current <= end) {
+                if(!isHariLibur(current)) {
+                    countWorkingDays++;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+            return countWorkingDays;
+        }
+
+        function setProjectStatusFilter(status) {
+            filterStatusProyek = status;
+            const btnActive = document.getElementById('btnFilterActive');
+            const btnArchived = document.getElementById('btnFilterArchived');
+
+            if(status === 'active') {
+                btnActive.className = "px-2 py-0.5 rounded bg-white text-slate-900 shadow";
+                btnArchived.className = "px-2 py-0.5 rounded text-slate-500 hover:text-slate-900";
+            } else {
+                btnArchived.className = "px-2 py-0.5 rounded bg-white text-slate-900 shadow";
+                btnActive.className = "px-2 py-0.5 rounded text-slate-500 hover:text-slate-900";
+            }
+            renderDaftarProyekKartu();
+        }
+
+        function muatDataProyekSemua() {
+            fetch(API_PROJECT)
+            .then(res => res.json())
+            .then(data => {
+                listProyek = data.map(item => {
+                    let parsedBQ = [];
+                    if (item.data_bq) { try { parsedBQ = JSON.parse(item.data_bq); } catch(e){} }
+                    return { ...item, status: item.status || 'active', data_bq: parsedBQ };
+                });
+                renderDaftarProyekKartu();
+                if(proyekAktif) {
+                    const reRefreshed = listProyek.find(p => p.id === proyekAktif.id);
+                    if(reRefreshed) pilihProyek(reRefreshed.id);
+                }
+            });
+
+            fetch(API_AHSP).then(res => res.json()).then(data => { 
+                listAHSPMaster = data; 
+                renderAhspCustomDropdownOptions();
+                renderTabelMonitorAHSP();
+            });
+
+            fetch(API_HSD).then(res => res.json()).then(data => { 
+                listHSDMaster = data; 
+                renderTabelMonitorHSD();
+            });
+
+            fetch(API_SCHEDULE).then(res => res.json()).then(data => {
+                listScheduleMaster = data;
+            }).catch(() => { listScheduleMaster = []; });
+        }
+
+        // ================= LOGIKA HAPUS & ARSIP PROYEK =================
+        function arsipkanProyek(idProyek, event) {
+            if(event) event.stopPropagation();
+            const prj = listProyek.find(p => p.id === idProyek);
+            if(!prj) return;
+
+            const isCurrentlyArchived = prj.status === 'archived';
+            const newStatus = isCurrentlyArchived ? 'active' : 'archived';
+            const pesan = isCurrentlyArchived ? "Buka arsip proyek ini?" : "Arsipkan proyek ini?";
+
+            if(!confirm(pesan)) return;
+
+            fetch(`${BASE_API}/id/${idProyek}?sheet=project`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: { status: newStatus } })
+            })
+            .then(res => res.json())
+            .then(() => {
+                if(proyekAktif && proyekAktif.id === idProyek) { unselectProyek(); }
+                muatDataProyekSemua();
+            });
+        }
+
+        function hapusProyekPermanen(idProyek, event) {
+            if(event) event.stopPropagation();
+            const prj = listProyek.find(p => p.id === idProyek);
+            if(!prj) return;
+
+            if(!confirm(`⚠️ Yakin ingin menghapus permanen proyek "${prj.nama_proyek}"? Data BQ akan hilang.`)) return;
+
+            fetch(`${BASE_API}/id/${idProyek}?sheet=project`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(() => {
+                if(proyekAktif && proyekAktif.id === idProyek) { unselectProyek(); }
+                muatDataProyekSemua();
+            });
+        }
+
+        function renderDaftarProyekKartu() {
+            const container = document.getElementById('projectCardsContainer');
+            container.innerHTML = "";
+
+            let displayList = listProyek.filter(p => (p.status || 'active') === filterStatusProyek);
+
+            if(displayList.length === 0) {
+                container.innerHTML = `<div class="p-4 text-center text-slate-400 italic text-xs col-span-full">Tidak ada proyek dalam kategori ini.</div>`;
+                return;
+            }
+
+            displayList.forEach(prj => {
+                const isSelected = proyekAktif && proyekAktif.id === prj.id;
+                const card = document.createElement('div');
+                card.className = `p-3.5 sm:p-4 rounded-xl border transition cursor-pointer flex flex-col justify-between space-y-2 ${isSelected ? 'bg-amber-50 border-amber-500 shadow-md ring-2 ring-amber-400/30' : 'bg-slate-50 border-slate-200 hover:border-slate-300'}`;
+                const totalFormatted = parseFloat(prj.total_biaya || 0).toLocaleString('id-ID');
+                const isArchived = prj.status === 'archived';
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <span class="text-[9px] font-bold font-mono px-1.5 py-0.5 rounded ${isSelected ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600'}">${prj.id}</span>
+                            <span class="text-[10px] text-slate-400">${prj.tanggal || '-'}</span>
+                        </div>
+                        <h3 class="font-bold text-xs sm:text-sm text-slate-900 mt-1.5 leading-tight">${prj.nama_proyek}</h3>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Pemilik: ${prj.pemilik} | 📍 ${prj.lokasi}</p>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200/60 flex justify-between items-center gap-2">
+                        <div>
+                            <span class="text-[9px] uppercase font-bold text-slate-400 block">Total RAB:</span>
+                            <span class="font-mono font-bold text-xs text-amber-600">Rp ${totalFormatted}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="arsipkanProyek('${prj.id}', event)" class="p-1 rounded hover:bg-slate-200 text-slate-600 font-bold text-xs" title="${isArchived ? 'Buka Arsip Proyek' : 'Arsipkan Proyek'}">
+                                ${isArchived ? '📂' : '📦'}
+                            </button>
+                            <button onclick="hapusProyekPermanen('${prj.id}', event)" class="p-1 rounded hover:bg-rose-100 text-rose-600 font-bold text-xs" title="Hapus Permanen">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => pilihProyek(prj.id);
+                container.appendChild(card);
+            });
+        }
+
+        // ================= LOGIKA SEARCHABLE DROPDOWN AHSP =================
+        function toggleAhspDropdownMenu() {
+            const popover = document.getElementById('popoverAhspMenu');
+            popover.classList.toggle('hidden');
+            if (!popover.classList.contains('hidden')) {
+                document.getElementById('searchAhspDropdownInput').focus();
+            }
+        }
+
+        function renderAhspCustomDropdownOptions(filterText = "") {
+            const container = document.getElementById('listAhspOptionsContainer');
+            container.innerHTML = "";
+
+            let filtered = listAHSPMaster.filter(item => {
+                let kw = filterText.toLowerCase().trim();
+                return (item.kode_ahsp || "").toLowerCase().includes(kw) || (item.nama_pekerjaan || "").toLowerCase().includes(kw);
+            });
+
+            // LOGIKA BARU: Pengurutan berdasarkan kode AHSP secara natural/alfabetis
+            filtered.sort((a, b) => (a.kode_ahsp || "").localeCompare(b.kode_ahsp || "", undefined, { numeric: true, sensitivity: 'base' }));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="p-3 text-center text-slate-400 italic">AHSP tidak ditemukan.</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "p-2 hover:bg-amber-50 rounded-lg cursor-pointer transition flex flex-col justify-center";
+                div.innerHTML = `
+                    <span class="font-mono font-bold text-amber-700 text-[11px]">${item.kode_ahsp}</span>
+                    <span class="font-bold text-slate-800 text-xs">${item.nama_pekerjaan}</span>
+                `;
+                div.onclick = () => eksekusiPilihAhspCustom(item.kode_ahsp);
+                container.appendChild(div);
+            });
+        }
+
+        function filterAhspDropdownOptions() {
+            const kw = document.getElementById('searchAhspDropdownInput').value;
+            renderAhspCustomDropdownOptions(kw);
+        }
+
+        function eksekusiPilihAhspCustom(kode) {
+            ahspTerpilih = listAHSPMaster.find(a => a.kode_ahsp === kode);
+            if(!ahspTerpilih) return;
+
+            document.getElementById('selectedAhspKodeValue').value = ahspTerpilih.kode_ahsp;
+            document.getElementById('lblAhspDropdownSelected').innerText = `[${ahspTerpilih.kode_ahsp}] ${ahspTerpilih.nama_pekerjaan}`;
+            document.getElementById('popoverAhspMenu').classList.add('hidden');
+
+            document.getElementById('inpKategori').value = ahspTerpilih.kategori || 'I. PEKERJAAN PERSIAPAN';
+            document.getElementById('inpSubPekerjaan').value = ahspTerpilih.nama_pekerjaan;
+            document.getElementById('inpSatuan').value = ahspTerpilih.satuan || 'm²';
+
+            let totalHSP = hitungKalkulasiAHSPPUPR(ahspTerpilih);
+            document.getElementById('inpHargaSatuan').value = Math.round(totalHSP);
+            document.getElementById('btnDetailAHSP').classList.remove('hidden');
+            hitungPreviewHargaItem();
+        }
+
+        function cariHargaHSD(itemKomponen, lokasiProyek) {
+            let matchLokasiItems = listHSDMaster.filter(h => {
+                let matchKode = itemKomponen.kode && h.kode && h.kode.toString().trim().toLowerCase() === itemKomponen.kode.toString().trim().toLowerCase();
+                let matchUraian = (h.nama_item || h.uraian || "").toLowerCase().trim() === (itemKomponen.uraian || "").toLowerCase().trim();
+                let matchLokasi = !lokasiProyek || (h.lokasi || "").toLowerCase().trim() === lokasiProyek;
+                return (matchKode || matchUraian) && matchLokasi;
+            });
+
+            if (matchLokasiItems.length > 0) {
+                let hargaTerendah = Math.min(...matchLokasiItems.map(item => parseFloat(item.harga) || 0));
+                return hargaTerendah;
+            }
+
+            let matchAllItems = listHSDMaster.filter(h => {
+                let matchKode = itemKomponen.kode && h.kode && h.kode.toString().trim().toLowerCase() === itemKomponen.kode.toString().trim().toLowerCase();
+                let matchUraian = (h.nama_item || h.uraian || "").toLowerCase().trim() === (itemKomponen.uraian || "").toLowerCase().trim();
+                return matchKode || matchUraian;
+            });
+
+            if (matchAllItems.length > 0) {
+                let hargaTerendah = Math.min(...matchAllItems.map(item => parseFloat(item.harga) || 0));
+                return hargaTerendah;
+            }
+
+            return parseFloat(itemKomponen.hargaFallback) || 0;
+        }
+
+        function hitungKalkulasiAHSPPUPR(ahspObj) {
+            let lokasiProyek = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase().trim() : "";
+            let components = [];
+            if (ahspObj.komponen_json) {
+                try { components = JSON.parse(ahspObj.komponen_json); } catch(e){}
+            }
+
+            let totalA = 0, totalB = 0, totalC = 0;
+
+            components.filter(c => c.tipe === "Upah").forEach(c => {
+                totalA += parseFloat(c.koefisien) * cariHargaHSD(c, lokasiProyek);
+            });
+            components.filter(c => c.tipe === "Bahan").forEach(c => {
+                totalB += parseFloat(c.koefisien) * cariHargaHSD(c, lokasiProyek);
+            });
+            components.filter(c => c.tipe === "Alat").forEach(c => {
+                totalC += parseFloat(c.koefisien) * cariHargaHSD(c, lokasiProyek);
+            });
+
+            let totalD = totalA + totalB + totalC;
+            let persenOverhead = parseFloat(ahspObj.overhead_persen || 15);
+            let totalE = (persenOverhead / 100) * totalD;
+            return totalD + totalE;
+        }
+
+        function previewStrukturAHSP(ahspObj) {
+            let components = [];
+            if (ahspObj.komponen_json) {
+                try { components = JSON.parse(ahspObj.komponen_json); } catch(e){}
+            }
+
+            let rowsHtml = "";
+
+            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">A</td><td colspan="4" class="p-1.5 border border-slate-300">Tenaga Kerja</td></tr>`;
+            let upahList = components.filter(c => c.tipe === "Upah");
+            if(upahList.length === 0) {
+                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="4" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen upah)</td></tr>`;
+            } else {
+                upahList.forEach(c => {
+                    rowsHtml += `<tr><td class="p-1.5 border text-center"></td><td class="p-1.5 border font-medium">${c.uraian}</td><td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td><td class="p-1.5 border text-center font-mono">${c.satuan}</td><td class="p-1.5 border text-center font-mono font-bold text-slate-800">${c.koefisien}</td></tr>`;
+                });
+            }
+
+            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">B</td><td colspan="4" class="p-1.5 border border-slate-300">Bahan</td></tr>`;
+            let bahanList = components.filter(c => c.tipe === "Bahan");
+            if(bahanList.length === 0) {
+                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="4" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen bahan)</td></tr>`;
+            } else {
+                bahanList.forEach(c => {
+                    rowsHtml += `<tr><td class="p-1.5 border text-center"></td><td class="p-1.5 border font-medium">${c.uraian}</td><td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td><td class="p-1.5 border text-center font-mono">${c.satuan}</td><td class="p-1.5 border text-center font-mono font-bold text-slate-800">${c.koefisien}</td></tr>`;
+                });
+            }
+
+            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">C</td><td colspan="4" class="p-1.5 border border-slate-300">Peralatan</td></tr>`;
+            let alatList = components.filter(c => c.tipe === "Alat");
+            if(alatList.length === 0) {
+                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="4" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen peralatan)</td></tr>`;
+            } else {
+                alatList.forEach(c => {
+                    rowsHtml += `<tr><td class="p-1.5 border text-center"></td><td class="p-1.5 border font-medium">${c.uraian}</td><td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td><td class="p-1.5 border text-center font-mono">${c.satuan}</td><td class="p-1.5 border text-center font-mono font-bold text-slate-800">${c.koefisien}</td></tr>`;
+                });
+            }
+
+            document.getElementById('modalAHSPTitle').innerText = `${ahspObj.kode_ahsp || 'AHSP'} — ${ahspObj.nama_pekerjaan}`;
+            document.getElementById('modalAhspOverheadVal').innerText = `${ahspObj.overhead_persen || 15}%`;
+            document.getElementById('tabelAHSPDetailRows').innerHTML = rowsHtml;
+            document.getElementById('modalAHSPPUPR').classList.remove('hidden');
+        }
+
+        function bukaModalDetailAHSP() { if(ahspTerpilih) previewStrukturAHSP(ahspTerpilih); }
+        function tutupModalDetailAHSP() { document.getElementById('modalAHSPPUPR').classList.add('hidden'); }
+
+        function pilihProyek(idProyek) {
+            proyekAktif = listProyek.find(p => p.id === idProyek);
+            if(!proyekAktif) return;
+
+            renderDaftarProyekKartu();
+            document.getElementById('btnUnselectProject').classList.remove('hidden');
+            document.getElementById('lblActiveProjectBadge').innerText = proyekAktif.id;
+            document.getElementById('badgeScheduleProject').innerText = `${proyekAktif.id} — ${proyekAktif.nama_proyek}`;
+            document.getElementById('lblLokasiProyekAktif').innerText = proyekAktif.lokasi || "Nasional";
+            
+            document.getElementById('btnSimpanItem').disabled = false;
+            document.getElementById('btnSimpanLsItem').disabled = false;
+
+            document.getElementById('docNamaProyek').innerText = proyekAktif.nama_proyek;
+            document.getElementById('docLokasiProyek').innerText = "Lokasi: " + (proyekAktif.lokasi || '-');
+            document.getElementById('docPemilikKlien').innerText = "Klien: " + (proyekAktif.pemilik || '-');
+            document.getElementById('docKodeProyek').innerText = "ID Proyek: " + proyekAktif.id;
+            document.getElementById('docTanggal').innerText = "Tanggal: " + formatTanggalIndoFormal(proyekAktif.tanggal);
+            
+            document.getElementById('txtKotaTanggalTTD').innerText = `Bandung, ${formatTanggalIndoFormal(proyekAktif.tanggal)}`;
+
+            renderBQDanRekapitulasi(proyekAktif.data_bq || []);
+        }
+
+        function unselectProyek() {
+            proyekAktif = null;
+            document.getElementById('btnUnselectProject').classList.add('hidden');
+            document.getElementById('lblActiveProjectBadge').innerText = 'PILIH PROYEK';
+            document.getElementById('badgeScheduleProject').innerText = 'PILIH PROYEK';
+            document.getElementById('lblLokasiProyekAktif').innerText = '-';
+
+            document.getElementById('btnSimpanItem').disabled = true;
+            document.getElementById('btnSimpanLsItem').disabled = true;
+
+            document.getElementById('docNamaProyek').innerText = "(Pilih Proyek Terlebih Dahulu)";
+            document.getElementById('docLokasiProyek').innerText = "Lokasi: -";
+            document.getElementById('docPemilikKlien').innerText = "Klien: -";
+            document.getElementById('docKodeProyek').innerText = "ID Proyek: -";
+
+            renderDaftarProyekKartu();
+            renderBQDanRekapitulasi([]);
+        }
+
+        function hitungPreviewHargaItem() {
+            const vol = parseFloat(document.getElementById('inpVolume').value) || 0;
+            const hrg = parseFloat(document.getElementById('inpHargaSatuan').value) || 0;
+            document.getElementById('txtSubtotalPreview').innerText = "Rp " + (vol * hrg).toLocaleString('id-ID');
+        }
+
+        function hitungPreviewLumpsum() {
+            const vol = parseFloat(document.getElementById('inpLsVolume').value) || 0;
+            const hrg = parseFloat(document.getElementById('inpLsHargaSatuan').value) || 0;
+            document.getElementById('txtSubtotalLsPreview').innerText = "Rp " + (vol * hrg).toLocaleString('id-ID');
+        }
+
+        function simpanItemKeProyek() {
+            if(!proyekAktif) return;
+            const kat = document.getElementById('inpKategori').value;
+            const sub = document.getElementById('inpSubPekerjaan').value;
+            const vol = parseFloat(document.getElementById('inpVolume').value) || 0;
+            const sat = document.getElementById('inpSatuan').value;
+            const hrg = parseFloat(document.getElementById('inpHargaSatuan').value) || 0;
+
+            let updatedBQ = proyekAktif.data_bq || [];
+            updatedBQ.push({ 
+                id: Date.now(), 
+                kode_ahsp: ahspTerpilih ? ahspTerpilih.kode_ahsp : '',
+                kategori: kat, 
+                sub: sub, 
+                vol: vol, 
+                sat: sat, 
+                hargaSatuan: hrg 
+            });
+            simpanBQKeSheetDB(updatedBQ);
+        }
+
+        function simpanItemLumpsumKeProyek() {
+            if(!proyekAktif) return;
+            const kat = document.getElementById('inpLsKategori').value;
+            const sub = document.getElementById('inpLsSubPekerjaan').value;
+            const vol = parseFloat(document.getElementById('inpLsVolume').value) || 0;
+            const sat = document.getElementById('inpLsSatuan').value;
+            const hrg = parseFloat(document.getElementById('inpLsHargaSatuan').value) || 0;
+
+            let updatedBQ = proyekAktif.data_bq || [];
+            updatedBQ.push({ 
+                id: Date.now(), 
+                kode_ahsp: 'LUMPSUM',
+                kategori: kat, 
+                sub: sub, 
+                vol: vol, 
+                sat: sat, 
+                hargaSatuan: hrg 
+            });
+            simpanBQKeSheetDB(updatedBQ);
+        }
+
+        function previewItemBQ(itemId) {
+            const itemBQ = (proyekAktif.data_bq || []).find(i => i.id === itemId);
+            if(!itemBQ) return;
+            const objAhsp = listAHSPMaster.find(a => a.kode_ahsp === itemBQ.kode_ahsp) || {
+                kode_ahsp: itemBQ.kode_ahsp || 'CUSTOM',
+                nama_pekerjaan: itemBQ.sub,
+                overhead_persen: 15,
+                komponen_json: "[]"
+            };
+            previewStrukturAHSP(objAhsp);
+        }
+
+        function editItemBQ(itemId) {
+            const itemBQ = (proyekAktif.data_bq || []).find(i => i.id === itemId);
+            if(!itemBQ) return;
+            document.getElementById('editBqId').value = itemBQ.id;
+            document.getElementById('editBqSub').value = itemBQ.sub;
+            document.getElementById('editBqVol').value = itemBQ.vol;
+            document.getElementById('editBqSat').value = itemBQ.sat;
+            document.getElementById('modalEditBQ').classList.remove('hidden');
+        }
+
+        function tutupModalEditBQ() { document.getElementById('modalEditBQ').classList.add('hidden'); }
+
+        function eksekusiSimpanEditBQ() {
+            const id = parseFloat(document.getElementById('editBqId').value);
+            const newSub = document.getElementById('editBqSub').value;
+            const newVol = parseFloat(document.getElementById('editBqVol').value) || 0;
+
+            let updatedBQ = (proyekAktif.data_bq || []).map(item => {
+                if(item.id === id) {
+                    return { ...item, sub: newSub, vol: newVol };
+                }
+                return item;
+            });
+
+            tutupModalEditBQ();
+            simpanBQKeSheetDB(updatedBQ);
+        }
+
+        function hapusItemBQ(itemId) {
+            if(!confirm("Hapus item pekerjaan ini dari BQ Proyek?")) return;
+            if(!proyekAktif) return;
+            let updatedBQ = (proyekAktif.data_bq || []).filter(item => item.id !== itemId);
+            simpanBQKeSheetDB(updatedBQ);
+        }
+
+        function simpanBQKeSheetDB(bqArray) {
+            let grandTotalKasar = bqArray.reduce((sum, item) => sum + (item.vol * item.hargaSatuan), 0);
+            let totalPlusPPN = grandTotalKasar * 1.11;
+
+            const payloadUpdate = { data_bq: JSON.stringify(bqArray), total_biaya: totalPlusPPN };
+
+            fetch(`${BASE_API}/id/${proyekAktif.id}?sheet=project`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: payloadUpdate })
+            })
+            .then(res => res.json())
+            .then(() => {
+                document.getElementById('formItemPekerjaan').reset();
+                document.getElementById('formLumpsumPekerjaan').reset();
+                document.getElementById('lblAhspDropdownSelected').innerText = "-- Pilih Standar AHSP --";
+                document.getElementById('txtSubtotalPreview').innerText = "Rp 0";
+                document.getElementById('txtSubtotalLsPreview').innerText = "Rp 0";
+                muatDataProyekSemua();
+            });
+        }
+
+        function renderBQDanRekapitulasi(bqArray) {
+            const tbodyBQ = document.getElementById('tabelBQDetailRows');
+            tbodyBQ.innerHTML = "";
+
+            if(!bqArray || bqArray.length === 0) {
+                tbodyBQ.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada item BQ. Pilih AHSP atau Lumpsum untuk menambahkan.</td></tr>`;
+            } else {
+                bqArray.forEach((item, idx) => {
+                    const subtotal = item.vol * item.hargaSatuan;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 border-b border-slate-200";
+                    tr.innerHTML = `
+                        <td class="p-2 text-center font-bold text-slate-400">${idx + 1}</td>
+                        <td class="p-2 font-bold text-slate-800">${item.sub}<br><span class="text-[10px] font-normal text-slate-400">${item.kategori} ${item.kode_ahsp === 'LUMPSUM' ? '(Lumpsum)' : ''}</span></td>
+                        <td class="p-2 text-center font-mono font-bold">${item.vol}</td>
+                        <td class="p-2 text-center font-mono text-slate-500">${item.sat}</td>
+                        <td class="p-2 text-right font-mono">Rp ${item.hargaSatuan.toLocaleString('id-ID')}</td>
+                        <td class="p-2 text-right font-mono font-bold text-slate-900">Rp ${subtotal.toLocaleString('id-ID')}</td>
+                        <td class="p-2 text-center no-print flex justify-center gap-1">
+                            ${item.kode_ahsp !== 'LUMPSUM' ? `<button onclick="previewItemBQ(${item.id})" class="text-blue-600 hover:text-blue-800 font-bold p-1" title="Preview Koefisien AHSP">🔍</button>` : ''}
+                            <button onclick="editItemBQ(${item.id})" class="text-amber-600 hover:text-amber-800 font-bold p-1" title="Edit Item">✏️</button>
+                            <button onclick="hapusItemBQ(${item.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="Hapus Item">✕</button>
+                        </td>
+                    `;
+                    tbodyBQ.appendChild(tr);
+                });
+            }
+
+            let rekapMap = {};
+            let totalBiayaKasar = 0;
+            if(bqArray) {
+                bqArray.forEach(item => {
+                    const totalItem = item.vol * item.hargaSatuan;
+                    totalBiayaKasar += totalItem;
+                    if (!rekapMap[item.kategori]) { rekapMap[item.kategori] = 0; }
+                    rekapMap[item.kategori] += totalItem;
+                });
+            }
+
+            const tbodyRekap = document.getElementById('tabelRekapUmumRows');
+            tbodyRekap.innerHTML = "";
+
+            if (Object.keys(rekapMap).length === 0) {
+                tbodyRekap.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic text-xs">Belum ada ringkasan divisi.</td></tr>`;
+            } else {
+                let idx = 1;
+                for (const [kategoriUtama, totalBiayaDivisi] of Object.entries(rekapMap)) {
+                    const bobot = totalBiayaKasar > 0 ? ((totalBiayaDivisi / totalBiayaKasar) * 100).toFixed(2) : 0;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 border-b border-slate-200";
+                    tr.innerHTML = `
+                        <td class="p-2.5 text-center font-bold font-mono text-slate-400">${idx++}</td>
+                        <td class="p-2.5 font-bold text-slate-800">${kategoriUtama}</td>
+                        <td class="p-2.5 text-right font-mono font-bold text-slate-900">Rp ${totalBiayaDivisi.toLocaleString('id-ID')}</td>
+                        <td class="p-2.5 text-right font-mono font-semibold text-slate-500">${bobot}%</td>
+                    `;
+                    tbodyRekap.appendChild(tr);
+                }
+            }
+
+            const ppn = totalBiayaKasar * 0.11;
+            const totalPlusPPN = totalBiayaKasar + ppn;
+
+            document.getElementById('txtGrandTotalDPA').innerText = "Rp " + totalBiayaKasar.toLocaleString('id-ID');
+            document.getElementById('txtGrandTotalPPN').innerText = "Rp " + ppn.toLocaleString('id-ID');
+            document.getElementById('txtGrandTotalPlusPPN').innerText = "Rp " + totalPlusPPN.toLocaleString('id-ID');
+            document.getElementById('txtTotalBobot').innerText = totalBiayaKasar > 0 ? "100.00%" : "0.00%";
+            document.getElementById('txtTerbilangTotal').innerText = terbilang(Math.round(totalPlusPPN)) + " Rupiah";
+
+            renderLampiranAHSPDetailProyek(bqArray || []);
+            renderLampiranHSDDetailProyek(bqArray || []);
+        }
+
+        function renderLampiranAHSPDetailProyek(bqArray) {
+            const container = document.getElementById('containerLampiranAHSPDetail');
+            container.innerHTML = "";
+
+            if(!bqArray || bqArray.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Belum ada item BQ dalam proyek ini.</p>`;
+                return;
+            }
+
+            bqArray.forEach((bqItem, index) => {
+                if(bqItem.kode_ahsp === 'LUMPSUM') return;
+
+                const ahspObj = listAHSPMaster.find(a => a.kode_ahsp === bqItem.kode_ahsp);
+                let components = [];
+                if (ahspObj && ahspObj.komponen_json) {
+                    try { components = JSON.parse(ahspObj.komponen_json); } catch(e){}
+                }
+
+                const divBox = document.createElement('div');
+                divBox.className = "border rounded-xl p-3 bg-slate-50 space-y-2 text-xs";
+
+                let rowsCompHtml = "";
+                if(components.length === 0) {
+                    rowsCompHtml = `<tr><td colspan="5" class="p-2 text-center text-slate-400 italic">Rincian standar tidak ditemukan dalam database.</td></tr>`;
+                } else {
+                    components.forEach(c => {
+                        rowsCompHtml += `
+                            <tr class="border-b border-slate-100">
+                                <td class="p-1 text-center font-bold text-slate-500">${c.tipe}</td>
+                                <td class="p-1 font-medium">${c.uraian}</td>
+                                <td class="p-1 text-center font-mono text-blue-600 font-bold">${c.kode || '-'}</td>
+                                <td class="p-1 text-center font-mono">${c.satuan}</td>
+                                <td class="p-1 text-right font-mono font-bold text-slate-800">${c.koefisien}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                divBox.innerHTML = `
+                    <div class="flex justify-between items-center bg-slate-200 p-2 rounded-lg font-bold text-slate-800">
+                        <span>#${index + 1} [${bqItem.kode_ahsp || 'AHSP'}] ${bqItem.sub}</span>
+                        <span class="font-mono text-amber-700">Volume: ${bqItem.vol} ${bqItem.sat}</span>
+                    </div>
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-left bg-white rounded border border-slate-200 text-[11px] min-w-[400px]">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600 font-bold border-b text-[10px] uppercase">
+                                    <th class="p-1.5 w-16 text-center">TIPE</th>
+                                    <th class="p-1.5">URAIAN KOMPONEN</th>
+                                    <th class="p-1.5 text-center w-20">KODE</th>
+                                    <th class="p-1.5 text-center w-16">SATUAN</th>
+                                    <th class="p-1.5 text-right w-20">KOEFISIEN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsCompHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(divBox);
+            });
+        }
+
+        function renderLampiranHSDDetailProyek(bqArray) {
+            const tbody = document.getElementById('tabelLampiranHSDDetailRows');
+            tbody.innerHTML = "";
+
+            if(!bqArray || bqArray.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Belum ada item BQ terpasang.</td></tr>`;
+                return;
+            }
+
+            let lokasiProyek = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase().trim() : "";
+            let uniqueHsdMap = {};
+
+            bqArray.forEach(bqItem => {
+                if(bqItem.kode_ahsp === 'LUMPSUM') return;
+
+                const ahspObj = listAHSPMaster.find(a => a.kode_ahsp === bqItem.kode_ahsp);
+                let components = [];
+                if (ahspObj && ahspObj.komponen_json) {
+                    try { components = JSON.parse(ahspObj.komponen_json); } catch(e){}
+                }
+
+                components.forEach(c => {
+                    let key = (c.kode || c.uraian || "").toString().trim().toLowerCase();
+                    if(!uniqueHsdMap[key]) {
+                        let hsdHarga = cariHargaHSD(c, lokasiProyek);
+                        uniqueHsdMap[key] = {
+                            tipe: c.tipe || 'Bahan',
+                            kode: c.kode || '-',
+                            uraian: c.uraian,
+                            satuan: c.satuan,
+                            harga: hsdHarga
+                        };
+                    }
+                });
+            });
+
+            const hsdArray = Object.values(uniqueHsdMap);
+            if(hsdArray.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Tidak ada item HSD yang terekstrak dari AHSP.</td></tr>`;
+                return;
+            }
+
+            hsdArray.forEach((hsd, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-200";
+                tr.innerHTML = `
+                    <td class="p-2 text-center font-bold text-slate-400">${idx + 1}</td>
+                    <td class="p-2 text-center font-bold text-slate-600">${hsd.tipe}</td>
+                    <td class="p-2 font-mono font-bold text-blue-600">${hsd.kode}</td>
+                    <td class="p-2 font-bold text-slate-800">${hsd.uraian}</td>
+                    <td class="p-2 text-center font-mono">${hsd.satuan}</td>
+                    <td class="p-2 text-right font-mono font-bold text-emerald-700">Rp ${hsd.harga.toLocaleString('id-ID')}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ================= LOGIKA MS PROJECT & TRACKING REAL =================
+        function updateWorkDaysRow(trElement) {
+            const startVal = trElement.querySelector('.inp-sch-start').value;
+            const finishVal = trElement.querySelector('.inp-sch-finish').value;
+            const workDaysCell = trElement.querySelector('.lbl-work-days');
+
+            if(startVal && finishVal) {
+                const workDays = hitungHariKerjaEfektif(startVal, finishVal);
+                workDaysCell.innerText = `${workDays} Hari`;
+            }
+        }
+
+        function renderTabelPenjadwalan() {
+            const tbody = document.getElementById('tabelScheduleRows');
+            tbody.innerHTML = "";
+
+            if(!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu dan tambahkan item BQ.</td></tr>`;
+                return;
+            }
+
+            let totalNilaiKasar = proyekAktif.data_bq.reduce((sum, item) => sum + (item.vol * item.hargaSatuan), 0);
+            let projSchedules = listScheduleMaster.filter(s => s.id_proyek === proyekAktif.id);
+
+            proyekAktif.data_bq.forEach((bq, idx) => {
+                let subtotal = bq.vol * bq.hargaSatuan;
+                let bobot = totalNilaiKasar > 0 ? ((subtotal / totalNilaiKasar) * 100).toFixed(2) : 0;
+                
+                let todayStr = new Date().toISOString().split('T')[0];
+                let nextWeekStr = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+
+                let sch = projSchedules.find(s => s.id_bq == bq.id) || {
+                    tgl_mulai: todayStr,
+                    tgl_selesai: nextWeekStr,
+                    predecessor: idx > 0 ? (idx) : '-',
+                    progress_persen: 0,
+                    actual_start: '',
+                    actual_finish: '',
+                    status: 'Not Started',
+                    notes: ''
+                };
+
+                let effectiveWorkDays = hitungHariKerjaEfektif(sch.tgl_mulai, sch.tgl_selesai);
+
+                let statusBadgeClass = "bg-slate-100 text-slate-600";
+                if(sch.status === 'Completed') statusBadgeClass = "bg-emerald-100 text-emerald-800";
+                else if(sch.status === 'In Progress') statusBadgeClass = "bg-blue-100 text-blue-800";
+                else if(sch.status === 'Delayed') statusBadgeClass = "bg-rose-100 text-rose-800";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-200 row-schedule-item";
+                tr.dataset.bqid = bq.id;
+                tr.dataset.bobot = bobot;
+                tr.dataset.sub = bq.sub;
+
+                tr.innerHTML = `
+                    <td class="p-2.5 text-center font-bold text-slate-400">${idx + 1}</td>
+                    <td class="p-2.5 font-bold text-slate-800">${bq.sub}<br><span class="text-[10px] text-slate-400 font-normal">${bq.kategori}</span></td>
+                    <td class="p-2.5 text-center font-mono font-bold text-amber-600">${bobot}%</td>
+                    <td class="p-2.5 text-center"><input type="date" value="${sch.tgl_mulai}" onchange="updateWorkDaysRow(this.closest('tr'))" class="inp-sch-start border rounded px-1.5 py-1 text-xs font-mono w-full"></td>
+                    <td class="p-2.5 text-center"><input type="date" value="${sch.tgl_selesai}" onchange="updateWorkDaysRow(this.closest('tr'))" class="inp-sch-finish border rounded px-1.5 py-1 text-xs font-mono w-full"></td>
+                    <td class="p-2.5 text-center font-bold text-slate-700 font-mono lbl-work-days">${effectiveWorkDays} Hari</td>
+                    <td class="p-2.5 text-center"><input type="text" value="${sch.predecessor || '-'}" class="inp-sch-pred border rounded px-1.5 py-1 text-xs font-mono text-center w-full"></td>
+                    <td class="p-2.5 text-center font-bold text-blue-600 font-mono text-xs lbl-progress-real">${sch.progress_persen || 0}%</td>
+                    <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${statusBadgeClass} lbl-status-real">${sch.status || 'Not Started'}</span></td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="bukaModalTrackingReal(${bq.id})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-2 py-1 rounded shadow transition">
+                            📝 Tracking Real
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            renderKurvaSChart();
+        }
+
+        function bukaModalTrackingReal(bqId) {
+            const tr = document.querySelector(`.row-schedule-item[data-bqid="${bqId}"]`);
+            if(!tr) return;
+
+            let projSchedules = listScheduleMaster.filter(s => s.id_proyek === proyekAktif.id);
+            let sch = projSchedules.find(s => s.id_bq == bqId) || {};
+
+            document.getElementById('trackBqId').value = bqId;
+            document.getElementById('modalTrackingTaskName').innerText = tr.dataset.sub;
+            document.getElementById('trackActualStart').value = sch.actual_start || tr.querySelector('.inp-sch-start').value;
+            document.getElementById('trackActualFinish').value = sch.actual_finish || tr.querySelector('.inp-sch-finish').value;
+            document.getElementById('trackProgress').value = sch.progress_persen || 0;
+            document.getElementById('trackStatus').value = sch.status || 'Not Started';
+            document.getElementById('trackActualDuration').value = sch.actual_duration || 0;
+            document.getElementById('trackRemainingDuration').value = sch.remaining_duration || 0;
+            document.getElementById('trackNotes').value = sch.notes || '';
+
+            document.getElementById('modalTrackingReal').classList.remove('hidden');
+        }
+
+        function tutupModalTrackingReal() {
+            document.getElementById('modalTrackingReal').classList.add('hidden');
+        }
+
+        function simpanTrackingReal() {
+            const bqId = document.getElementById('trackBqId').value;
+            const progressVal = parseFloat(document.getElementById('trackProgress').value) || 0;
+            const statusVal = document.getElementById('trackStatus').value;
+            const actualStart = document.getElementById('trackActualStart').value;
+            const actualFinish = document.getElementById('trackActualFinish').value;
+            const actDur = parseFloat(document.getElementById('trackActualDuration').value) || 0;
+            const remDur = parseFloat(document.getElementById('trackRemainingDuration').value) || 0;
+            const notesVal = document.getElementById('trackNotes').value;
+
+            let tr = document.querySelector(`.row-schedule-item[data-bqid="${bqId}"]`);
+            if(tr) {
+                tr.querySelector('.lbl-progress-real').innerText = `${progressVal}%`;
+                let badgeCell = tr.querySelector('.lbl-status-real');
+                badgeCell.innerText = statusVal;
+
+                let statusBadgeClass = "bg-slate-100 text-slate-600";
+                if(statusVal === 'Completed') statusBadgeClass = "bg-emerald-100 text-emerald-800";
+                else if(statusVal === 'In Progress') statusBadgeClass = "bg-blue-100 text-blue-800";
+                else if(statusVal === 'Delayed') statusBadgeClass = "bg-rose-100 text-rose-800";
+                badgeCell.className = `px-2 py-0.5 rounded text-[10px] font-bold ${statusBadgeClass} lbl-status-real`;
+            }
+
+            let existingIdx = listScheduleMaster.findIndex(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
+            let updatedObj = {
+                id: "SCH-" + bqId,
+                id_proyek: proyekAktif.id,
+                id_bq: bqId,
+                tgl_mulai: tr ? tr.querySelector('.inp-sch-start').value : actualStart,
+                tgl_selesai: tr ? tr.querySelector('.inp-sch-finish').value : actualFinish,
+                predecessor: tr ? tr.querySelector('.inp-sch-pred').value : '-',
+                progress_persen: progressVal,
+                actual_start: actualStart,
+                actual_finish: actualFinish,
+                actual_duration: actDur,
+                remaining_duration: remDur,
+                status: statusVal,
+                notes: notesVal
+            };
+
+            if(existingIdx >= 0) { listScheduleMaster[existingIdx] = updatedObj; }
+            else { listScheduleMaster.push(updatedObj); }
+
+            tutupModalTrackingReal();
+            renderKurvaSChart();
+        }
+
+        function simpanJadwalSemua() {
+            if(!proyekAktif) return;
+            const rows = document.querySelectorAll('.row-schedule-item');
+            let payloadSchedule = [];
+
+            rows.forEach(r => {
+                let bqId = r.dataset.bqid;
+                let existingSch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId) || {};
+
+                payloadSchedule.push({
+                    id: "SCH-" + bqId,
+                    id_proyek: proyekAktif.id,
+                    id_bq: bqId,
+                    tgl_mulai: r.querySelector('.inp-sch-start').value,
+                    tgl_selesai: r.querySelector('.inp-sch-finish').value,
+                    predecessor: r.querySelector('.inp-sch-pred').value,
+                    progress_persen: existingSch.progress_persen || 0,
+                    actual_start: existingSch.actual_start || '',
+                    actual_finish: existingSch.actual_finish || '',
+                    actual_duration: existingSch.actual_duration || 0,
+                    remaining_duration: existingSch.remaining_duration || 0,
+                    status: existingSch.status || 'Not Started',
+                    notes: existingSch.notes || ''
+                });
+            });
+
+            fetch(API_SCHEDULE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: payloadSchedule })
+            })
+            .then(res => res.json())
+            .then(() => {
+                alert("Rencana Jadwal & Tracking Realisasi Berhasil Disimpan!");
+                muatDataProyekSemua();
+            });
+        }
+
+        function renderKurvaSChart() {
+            const ctx = document.getElementById('kurvaSChart')?.getContext('2d');
+            if(!ctx) return;
+
+            if(kurvaSChartInstance) kurvaSChartInstance.destroy();
+
+            const rows = document.querySelectorAll('.row-schedule-item');
+            let labels = ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4", "Minggu 5", "Minggu 6", "Minggu 7", "Minggu 8"];
+            let planData = [0, 15, 35, 60, 80, 92, 98, 100];
+            
+            let totalProgressRealAcc = 0;
+            rows.forEach(r => {
+                let bobot = parseFloat(r.dataset.bobot) || 0;
+                let sch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == r.dataset.bqid);
+                let prog = sch ? parseFloat(sch.progress_persen || 0) : 0;
+                totalProgressRealAcc += (prog / 100) * bobot;
+            });
+
+            let actualData = [0, totalProgressRealAcc * 0.3, totalProgressRealAcc * 0.7, totalProgressRealAcc, null, null, null, null];
+
+            kurvaSChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Rencana (S-Curve Plan)',
+                            data: planData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2.5,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Realisasi Lapangan (Actual)',
+                            data: actualData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2.5,
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================= LOGIKA MONITOR MASTER DATABASE =================
+        function renderTabelMonitorHSD() {
+            const tbody = document.getElementById('tabelMasterHSDMasterRows');
+            const badge = document.getElementById('badgeCountHsd');
+            const keyword = (document.getElementById('searchHsdInput')?.value || "").toLowerCase().trim();
+            tbody.innerHTML = "";
+
+            let filteredList = listHSDMaster.filter(item => {
+                let matchKode = (item.kode || "").toLowerCase().includes(keyword);
+                let matchNama = (item.nama_item || item.uraian || "").toLowerCase().includes(keyword);
+                let matchLokasi = (item.lokasi || "").toLowerCase().includes(keyword);
+                return matchKode || matchNama || matchLokasi;
+            });
+
+            badge.innerText = `${filteredList.length} dari ${listHSDMaster.length} Item`;
+
+            if(filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Item HSD tidak ditemukan.</td></tr>`;
+                return;
+            }
+
+            filteredList.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-200";
+                const hr = parseFloat(item.harga || 0).toLocaleString('id-ID');
+                tr.innerHTML = `
+                    <td class="p-2 font-mono font-bold text-blue-600">${item.kode || '-'}</td>
+                    <td class="p-2 font-medium">${item.nama_item || item.uraian || '-'}</td>
+                    <td class="p-2 text-center font-mono">${item.satuan || '-'}</td>
+                    <td class="p-2 text-right font-mono font-bold">Rp ${hr}</td>
+                    <td class="p-2 text-center font-bold text-slate-500">${item.lokasi || 'Nasional'}</td>
+                    <td class="p-2 text-center flex justify-center gap-1">
+                        <button onclick="editBarisHSD('${item.kode}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs" title="Edit HSD">✏️</button>
+                        <button onclick="hapusBarisHSD('${item.kode}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs" title="Hapus HSD">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderTabelMonitorAHSP() {
+            const tbody = document.getElementById('tabelMasterAHSPMasterRows');
+            const badge = document.getElementById('badgeCountAhsp');
+            const keyword = (document.getElementById('searchAhspInput')?.value || "").toLowerCase().trim();
+            tbody.innerHTML = "";
+
+            let filteredList = listAHSPMaster.filter(item => {
+                let matchKode = (item.kode_ahsp || "").toLowerCase().includes(keyword);
+                let matchNama = (item.nama_pekerjaan || "").toLowerCase().includes(keyword);
+                let matchKat = (item.kategori || "").toLowerCase().includes(keyword);
+                return matchKode || matchNama || matchKat;
+            });
+
+            badge.innerText = `${filteredList.length} dari ${listAHSPMaster.length} Item`;
+
+            if(filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Item AHSP tidak ditemukan.</td></tr>`;
+                return;
+            }
+
+            filteredList.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-200";
+                tr.innerHTML = `
+                    <td class="p-2 font-mono font-bold text-amber-600">${item.kode_ahsp || '-'}</td>
+                    <td class="p-2 font-medium">${item.nama_pekerjaan || '-'}</td>
+                    <td class="p-2 text-center font-mono">${item.satuan || '-'}</td>
+                    <td class="p-2 text-center font-bold">${item.overhead_persen || 15}%</td>
+                    <td class="p-2 text-center flex justify-center gap-1">
+                        <button onclick="previewBarisAHSP('${item.kode_ahsp}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs" title="Preview Rincian Koefisien">🔍</button>
+                        <button onclick="editBarisAHSP('${item.kode_ahsp}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs" title="Edit Master AHSP">✏️</button>
+                        <button onclick="hapusBarisAHSP('${item.kode_ahsp}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs" title="Hapus Master AHSP">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editBarisHSD(kodeHSD) {
+            const item = listHSDMaster.find(h => h.kode === kodeHSD);
+            if(!item) return;
+            document.getElementById('editHsdOldKode').value = item.kode;
+            document.getElementById('editHsdKode').value = item.kode;
+            document.getElementById('editHsdNama').value = item.nama_item || item.uraian;
+            document.getElementById('editHsdSatuan').value = item.satuan;
+            document.getElementById('editHsdHarga').value = item.harga;
+            document.getElementById('editHsdLokasi').value = item.lokasi || '';
+            document.getElementById('modalEditHSD').classList.remove('hidden');
+        }
+
+        function tutupModalEditHSD() { document.getElementById('modalEditHSD').classList.add('hidden'); }
+
+        function eksekusiSimpanEditHSD() {
+            const oldKode = document.getElementById('editHsdOldKode').value;
+            const payload = {
+                kode: document.getElementById('editHsdKode').value,
+                nama_item: document.getElementById('editHsdNama').value,
+                satuan: document.getElementById('editHsdSatuan').value,
+                harga: parseFloat(document.getElementById('editHsdHarga').value) || 0,
+                lokasi: document.getElementById('editHsdLokasi').value
+            };
+
+            fetch(`${BASE_API}/kode/${oldKode}?sheet=02_hsd`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: payload })
+            })
+            .then(res => res.json())
+            .then(() => {
+                tutupModalEditHSD();
+                muatDataProyekSemua();
+            });
+        }
+
+        function hapusBarisHSD(kodeHSD) {
+            if(!confirm(`Yakin ingin menghapus item HSD [${kodeHSD}]?`)) return;
+            fetch(`${BASE_API}/kode/${kodeHSD}?sheet=02_hsd`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(() => { muatDataProyekSemua(); });
+        }
+
+        function previewBarisAHSP(kodeAHSP) {
+            const item = listAHSPMaster.find(a => a.kode_ahsp === kodeAHSP);
+            if(item) previewStrukturAHSP(item);
+        }
+
+        function editBarisAHSP(kodeAHSP) {
+            const item = listAHSPMaster.find(a => a.kode_ahsp === kodeAHSP);
+            if(!item) return;
+
+            document.getElementById('editAhspOldKode').value = item.kode_ahsp;
+            document.getElementById('editAhspKode').value = item.kode_ahsp;
+            document.getElementById('editAhspNama').value = item.nama_pekerjaan;
+            document.getElementById('editAhspKategori').value = item.kategori;
+            document.getElementById('editAhspSatuan').value = item.satuan;
+            document.getElementById('editAhspOverhead').value = item.overhead_persen || 15;
+
+            const container = document.getElementById('containerKomponenEditBuilder');
+            container.innerHTML = "";
+
+            let arrayKomponen = [];
+            if (item.komponen_json) {
+                try { arrayKomponen = JSON.parse(item.komponen_json); } catch(e){}
+            }
+
+            if(arrayKomponen.length === 0) {
+                tambahBarisKomponenBuilder('containerKomponenEditBuilder');
+            } else {
+                arrayKomponen.forEach(c => {
+                    tambahBarisKomponenBuilder('containerKomponenEditBuilder', c);
+                });
+            }
+
+            document.getElementById('modalEditAHSP').classList.remove('hidden');
+        }
+
+        function tutupModalEditAHSP() { document.getElementById('modalEditAHSP').classList.add('hidden'); }
+
+        function eksekusiSimpanEditAHSP() {
+            const oldKode = document.getElementById('editAhspOldKode').value;
+            const rows = document.querySelectorAll('#containerKomponenEditBuilder .row-komponen-builder');
+            let arrayKomponen = [];
+
+            rows.forEach(r => {
+                const tipe = r.querySelector('.builder-tipe').value;
+                const kode = r.querySelector('.builder-kode').value;
+                const uraian = r.querySelector('.builder-uraian').value;
+                const satuan = r.querySelector('.builder-satuan').value;
+                const koef = parseFloat(r.querySelector('.builder-koefisien').value) || 0;
+
+                if(uraian && koef) {
+                    arrayKomponen.push({ tipe: tipe, kode: kode, uraian: uraian, satuan: satuan, koefisien: koef });
+                }
+            });
+
+            const payload = {
+                kode_ahsp: document.getElementById('editAhspKode').value,
+                nama_pekerjaan: document.getElementById('editAhspNama').value,
+                kategori: document.getElementById('editAhspKategori').value,
+                satuan: document.getElementById('editAhspSatuan').value,
+                overhead_persen: parseFloat(document.getElementById('editAhspOverhead').value) || 15,
+                komponen_json: JSON.stringify(arrayKomponen)
+            };
+
+            fetch(`${BASE_API}/kode_ahsp/${oldKode}?sheet=01_ahsp`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: payload })
+            })
+            .then(res => res.json())
+            .then(() => {
+                tutupModalEditAHSP();
+                muatDataProyekSemua();
+            });
+        }
+
+        function hapusBarisAHSP(kodeAHSP) {
+            if(!confirm(`Yakin ingin menghapus item AHSP [${kodeAHSP}]?`)) return;
+            fetch(`${BASE_API}/kode_ahsp/${kodeAHSP}?sheet=01_ahsp`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(() => { muatDataProyekSemua(); });
+        }
+
+        function simpanHSDBaru() {
+            const payload = {
+                kode: document.getElementById('addHsdKode').value,
+                nama_item: document.getElementById('addHsdNama').value,
+                satuan: document.getElementById('addHsdSatuan').value,
+                harga: parseFloat(document.getElementById('addHsdHarga').value) || 0,
+                lokasi: document.getElementById('addHsdLokasi').value
+            };
+
+            fetch(API_HSD, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [payload] })
+            })
+            .then(res => res.json())
+            .then(() => {
+                alert("Berhasil menambahkan item HSD baru ke Sheet 02_hsd!");
+                document.getElementById('addHsdKode').value = "";
+                document.getElementById('addHsdNama').value = "";
+                document.getElementById('addHsdSatuan').value = "";
+                document.getElementById('addHsdHarga').value = "";
+                document.getElementById('addHsdLokasi').value = "";
+                muatDataProyekSemua();
+            });
+        }
+
+        function tambahBarisKomponenBuilder(containerId, dataPreset = null) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+
+            const div = document.createElement('div');
+            div.className = "flex gap-1.5 items-center row-komponen-builder";
+
+            const valTipe = dataPreset ? dataPreset.tipe : 'Upah';
+            const valKode = dataPreset ? (dataPreset.kode || '') : '';
+            const valUraian = dataPreset ? (dataPreset.uraian || '') : '';
+            const valSatuan = dataPreset ? (dataPreset.satuan || '') : '';
+            const valKoef = dataPreset ? (dataPreset.koefisien || '') : '';
+
+            div.innerHTML = `
+                <select class="builder-tipe border p-1 text-[11px] rounded bg-white font-bold w-16 sm:w-20">
+                    <option value="Upah" ${valTipe === 'Upah' ? 'selected' : ''}>Upah</option>
+                    <option value="Bahan" ${valTipe === 'Bahan' ? 'selected' : ''}>Bahan</option>
+                    <option value="Alat" ${valTipe === 'Alat' ? 'selected' : ''}>Alat</option>
+                </select>
+                <input type="text" placeholder="Kode" value="${valKode}" class="builder-kode border p-1 text-[11px] rounded bg-white w-16 sm:w-20 font-mono">
+                <input type="text" placeholder="Uraian Komponen" value="${valUraian}" class="builder-uraian border p-1 text-[11px] rounded bg-white flex-1">
+                <input type="text" placeholder="Sat" value="${valSatuan}" class="builder-satuan border p-1 text-[11px] rounded bg-white w-10 sm:w-12 font-mono text-center">
+                <input type="number" step="any" placeholder="Koef" value="${valKoef}" class="builder-koefisien border p-1 text-[11px] rounded bg-white w-14 sm:w-16 font-bold text-right">
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 font-bold px-1 text-xs" title="Hapus Komponen">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function simpanAHSPBaru() {
+            const rows = document.querySelectorAll('#containerKomponenBuilder .row-komponen-builder');
+            let arrayKomponen = [];
+
+            rows.forEach(r => {
+                const tipe = r.querySelector('.builder-tipe').value;
+                const kode = r.querySelector('.builder-kode').value;
+                const uraian = r.querySelector('.builder-uraian').value;
+                const satuan = r.querySelector('.builder-satuan').value;
+                const koef = parseFloat(r.querySelector('.builder-koefisien').value) || 0;
+
+                if(uraian && koef) {
+                    arrayKomponen.push({ tipe: tipe, kode: kode, uraian: uraian, satuan: satuan, koefisien: koef });
+                }
+            });
+
+            const payload = {
+                kode_ahsp: document.getElementById('addAhspKode').value,
+                nama_pekerjaan: document.getElementById('addAhspNama').value,
+                kategori: document.getElementById('addAhspKategori').value,
+                satuan: document.getElementById('addAhspSatuan').value,
+                overhead_persen: parseFloat(document.getElementById('addAhspOverhead').value) || 15,
+                komponen_json: JSON.stringify(arrayKomponen)
+            };
+
+            fetch(API_AHSP, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [payload] })
+            })
+            .then(res => res.json())
+            .then(() => {
+                alert("Berhasil menambahkan AHSP Pekerjaan baru ke Sheet 01_ahsp!");
+                document.getElementById('addAhspKode').value = "";
+                document.getElementById('addAhspNama').value = "";
+                document.getElementById('addAhspKategori').value = "";
+                document.getElementById('addAhspSatuan').value = "";
+                document.getElementById('containerKomponenBuilder').innerHTML = "";
+                tambahBarisKomponenBuilder('containerKomponenBuilder');
+                muatDataProyekSemua();
+            });
+        }
+
+        function bukaModalBuatProyek() { document.getElementById('modalProyek').classList.remove('hidden'); }
+        function tutupModalBuatProyek() { document.getElementById('modalProyek').classList.add('hidden'); }
+
+        function eksekusiSimpanProyekBaru() {
+            const newId = "PRJ-" + Date.now().toString().slice(-4);
+            const payload = {
+                id: newId,
+                nama_proyek: document.getElementById('modalNamaProyek').value,
+                pemilik: document.getElementById('modalPemilik').value,
+                lokasi: document.getElementById('modalLokasi').value,
+                tanggal: new Date().toLocaleDateString('id-ID'),
+                status: 'active',
+                total_biaya: 0,
+                data_bq: "[]"
+            };
+
+            fetch(API_PROJECT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [payload] })
+            })
+            .then(res => res.json())
+            .then(() => {
+                tutupModalBuatProyek();
+                document.getElementById('modalNamaProyek').value = "";
+                document.getElementById('modalPemilik').value = "";
+                document.getElementById('modalLokasi').value = "";
+                muatDataProyekSemua();
+            });
+        }
+
+        function terbilang(n) {
+            if (n < 0) return "Minus " + terbilang(-n);
+            if (n === 0) return "Nol";
+            const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+            if (n < 12) return satuan[n];
+            if (n < 20) return terbilang(n - 10) + " Belas";
+            if (n < 100) return terbilang(Math.floor(n / 10)) + " Puluh " + terbilang(n % 10);
+            if (n < 200) return "Seratus " + terbilang(n - 100);
+            if (n < 1000) return terbilang(Math.floor(n / 100)) + " Ratus " + terbilang(n % 100);
+            if (n < 2000) return "Seribu " + terbilang(n - 1000);
+            if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " Ribu " + terbilang(n % 1000);
+            if (n < 1000000000) return terbilang(Math.floor(n / 1000000)) + " Juta " + terbilang(n % 1000000);
+            if (n < 1000000000000) return terbilang(Math.floor(n / 1000000000)) + " Miliar " + terbilang(n % 1000000000);
+            return terbilang(Math.floor(n / 1000000000000)) + " Triliun " + terbilang(n % 1000000000000);
+        }
+
+        function buatElemenPrintClean() {
+            const clone = document.getElementById('exportArea').cloneNode(true);
+            clone.querySelectorAll('.no-print').forEach(el => el.remove());
+            return clone;
+        }
+
+        function exportToExcelSummary() {
+            if(!proyekAktif) { alert("Pilih proyek terlebih dahulu!"); return; }
+            const cleanClone = buatElemenPrintClean();
+            let wb = XLSX.utils.table_to_book(cleanClone, {sheet: "RAB Proyek"});
+            XLSX.writeFile(wb, `RAB_${proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_')}_KayunaStudio.xlsx`);
+        }
+
+        function exportToPDFSummary() {
+            if(!proyekAktif) { alert("Pilih proyek terlebih dahulu!"); return; }
+            const cleanClone = buatElemenPrintClean();
+            
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.padding = "10px";
+            pdfContainer.appendChild(cleanClone);
+
+            const opt = {
+                margin:       [0.3, 0.3, 0.3, 0.3],
+                filename:     `RAB_${proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_')}_KayunaStudio.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(pdfContainer).save();
+        }
+    </script>
+</body>
+</html>
