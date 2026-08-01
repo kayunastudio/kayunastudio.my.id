@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <!-- PWA / Fullscreen Experience Tags for Mobile Browsers -->
+    
+    <!-- PWA & FULLSCREEN EXPERIENCE META TAGS FOR MOBILE BROWSERS -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ProRAB System">
     <meta name="theme-color" content="#0f172a">
+    
+    <!-- Dynamic Web App Manifest via Data-URI for Standalone App Mode -->
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22ProRAB%20System%22%2C%22short_name%22%3A%22ProRAB%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
+
     <title>ProRAB System — AHSP & Regional HSD Estimator</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,6 +31,10 @@
             page-break-before: always !important;
             break-before: page !important;
         }
+
+        /* Safe area padding untuk notch/status bar HP */
+        .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
         @media print { .no-print { display: none !important; } }
     </style>
@@ -44,7 +54,9 @@
                     </div>
                 </div>
 
+                <!-- TOMBOL FULLSCREEN DI HEADER MOBILE -->
                 <div class="flex lg:hidden items-center gap-1">
+                    <button onclick="toggleAppFullScreen()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 p-2 rounded-lg text-xs font-bold" title="Mode Fullscreen / Layar Penuh HP">📱 Fullscreen</button>
                     <button onclick="exportToExcelSummary()" class="bg-emerald-600 text-white p-2 rounded-lg text-xs" title="Excel">📊</button>
                     <button onclick="exportToPDFSummary()" class="bg-rose-600 text-white p-2 rounded-lg text-xs" title="PDF">📄</button>
                 </div>
@@ -64,6 +76,9 @@
             </div>
 
             <div class="hidden lg:flex items-center gap-2">
+                <button onclick="toggleAppFullScreen()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow border border-slate-700">
+                    <span>📱</span> Fullscreen
+                </button>
                 <button onclick="muatDataProyekSemua()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
                     <span>🔄</span> Sync Cloud
                 </button>
@@ -942,6 +957,31 @@
         let proyekAktif = null;
         let filterStatusProyek = 'active'; // default: 'active'
         let kurvaSChartInstance = null;
+
+        // FUNGSI UNTUK MEMAKSA / MENGATUR FULLSCREEN LAYAR HP
+        function toggleAppFullScreen() {
+            const elem = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => {});
+                } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+                    elem.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        // Trik Otomatis Auto-hide Address Bar Browser HP
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+            }, 0);
+        });
 
         document.addEventListener("DOMContentLoaded", () => {
             muatDataProyekSemua();
