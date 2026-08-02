@@ -1086,7 +1086,43 @@
             renderDaftarProyekKartu();
         }
 
-        // FUNGSI SINKRONISASI SUPABASE DENGAN LOCALSTORAGE CACHING
+        // HELPER UNTUK MEMBACA SELURUH BARIS DARI TABEL SUPABASE TANPA LIMIT 1000 ITEM
+        async function fetchAllRows(tableName) {
+            let allRows = [];
+            let page = 0;
+            const pageSize = 1000;
+            let hasMore = true;
+
+            while (hasMore) {
+                const from = page * pageSize;
+                const to = from + pageSize - 1;
+
+                const { data, error } = await supabaseClient
+                    .from(tableName)
+                    .select('*')
+                    .range(from, to);
+
+                if (error) {
+                    console.error(`Error fetching ${tableName}:`, error);
+                    throw error;
+                }
+
+                if (data && data.length > 0) {
+                    allRows = allRows.concat(data);
+                    if (data.length < pageSize) {
+                        hasMore = false;
+                    } else {
+                        page++;
+                    }
+                } else {
+                    hasMore = false;
+                }
+            }
+
+            return allRows;
+        }
+
+        // FUNGSI SINKRONISASI SUPABASE DENGAN PAGINATION (BYPASS LIMIT 1000 ITEM)
         async function muatDataProyekSemua() {
             const cachedProject = localStorage.getItem('prorab_listProyek');
             const cachedAHSP = localStorage.getItem('prorab_listAHSP');
@@ -1111,18 +1147,15 @@
             }
 
             try {
-                const [resProject, resAHSP, resHSD, resSchedule] = await Promise.all([
-                    supabaseClient.from('project').select('*'),
-                    supabaseClient.from('01_ahsp').select('*'),
-                    supabaseClient.from('02_hsd').select('*'),
-                    supabaseClient.from('03_schedule').select('*')
+                // Mengambil SEMUA baris dari Supabase secara transparan menggunakan fetchAllRows
+                const [dataProject, dataAHSP, dataHSD, dataSchedule] = await Promise.all([
+                    fetchAllRows('project'),
+                    fetchAllRows('01_ahsp'),
+                    fetchAllRows('02_hsd'),
+                    fetchAllRows('03_schedule')
                 ]);
 
-                if (resProject.error) throw resProject.error;
-                if (resAHSP.error) throw resAHSP.error;
-                if (resHSD.error) throw resHSD.error;
-
-                listProyek = (resProject.data || []).map(item => {
+                listProyek = (dataProject || []).map(item => {
                     let parsedBQ = [];
                     if (item.data_bq) {
                         try {
@@ -1132,9 +1165,9 @@
                     return { ...item, status: item.status || 'active', data_bq: parsedBQ };
                 });
 
-                listAHSPMaster = resAHSP.data || [];
-                listHSDMaster = resHSD.data || [];
-                listScheduleMaster = resSchedule.data || [];
+                listAHSPMaster = dataAHSP || [];
+                listHSDMaster = dataHSD || [];
+                listScheduleMaster = dataSchedule || [];
 
                 localStorage.setItem('prorab_listProyek', JSON.stringify(listProyek));
                 localStorage.setItem('prorab_listAHSP', JSON.stringify(listAHSPMaster));
