@@ -528,8 +528,8 @@
                                 <label class="block text-[10px] font-bold text-slate-700 uppercase">Komponen Penyusun (A, B, C)</label>
                                 <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
                             </div>
-                            <!-- Container komponen builder tanpa overflow-hidden agar popover bisa mengambang keluar -->
-                            <div id="containerKomponenBuilder" class="space-y-2 max-h-60 overflow-y-visible pr-1">
+                            <!-- Container komponen builder dibuat scrollable dengan max-h-60 & overflow-y-auto -->
+                            <div id="containerKomponenBuilder" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1">
                             </div>
                         </div>
 
@@ -894,8 +894,8 @@
                         <label class="block text-[10px] font-bold text-slate-700 uppercase">Edit Rincian Komponen Penyusun (A, B, C)</label>
                         <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenEditBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
                     </div>
-                    <!-- Container tanpa overflow hidden -->
-                    <div id="containerKomponenEditBuilder" class="space-y-2 max-h-60 overflow-y-visible pr-1">
+                    <!-- Container komponen edit builder dibuat scrollable juga -->
+                    <div id="containerKomponenEditBuilder" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1">
                     </div>
                 </div>
 
