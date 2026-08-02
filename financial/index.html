@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Finance Tracker — Single Page Dashboard</title>
+    <title>Family Finance Tracker — Single Page Dashboard (Supabase)</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
@@ -31,13 +35,13 @@
                 <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 text-base">F</div>
                 <div>
                     <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight block leading-tight">Family Finance Tracker</span>
-                    <span class="text-[10px] text-slate-400 font-medium hidden sm:block">Unified Dashboard Financial Management</span>
+                    <span class="text-[10px] text-slate-400 font-medium hidden sm:block">Unified Dashboard Financial Management (Supabase Cloud)</span>
                 </div>
             </div>
             
             <div class="flex items-center gap-2">
                 <button onclick="muatDataKeuangan(); perbaruiPasarBibit();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded-xl shadow text-xs transition flex items-center gap-1.5 font-mono">
-                    <span>🔄</span> <span class="hidden sm:inline">Sync Cloud</span>
+                    <span>🔄</span> <span class="hidden sm:inline">Sync Supabase</span>
                 </button>
                 <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3.5 rounded-xl text-xs transition flex items-center gap-1.5">
                     <span>🖨️</span> <span class="hidden sm:inline">Cetak</span>
@@ -68,7 +72,7 @@
                     <span class="text-[9px] sm:text-[10px] uppercase font-bold text-blue-100 block tracking-wider">Total Inflow (Debit)</span>
                     <span id="statTotalPemasukan" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
                 </div>
-                <span class="text-[8px] sm:text-[9px] font-bold text-blue-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">cloud sync</span>
+                <span class="text-[8px] sm:text-[9px] font-bold text-blue-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">supabase sync</span>
             </div>
             <div class="bg-gradient-to-br from-[#FB7185] to-[#E11D48] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
                 <div>
@@ -99,7 +103,7 @@
                 </div>
             </div>
 
-            <!-- MACROECONOMIC INSIGHT (AUTOMATICALLY HIDDEN ON PRINT) -->
+            <!-- MACROECONOMIC INSIGHT -->
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col justify-between gap-2 print-hide-macro">
                 <div class="w-full flex justify-between items-center border-b border-slate-50 pb-1 mb-1">
                     <h3 class="text-[11px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">🏛️ Macroeconomic Insight & Advisor</h3>
@@ -197,18 +201,18 @@
 
             <div class="lg:col-span-2 space-y-4 sm:space-y-6 w-full">
                 
-                <!-- REKENING KORAN & GRAFIK DENGAN SCROLL/SLIDE KIRI KANAN ATAS BAWAH -->
+                <!-- REKENING KORAN & GRAFIK DENGAN SCROLL/SLIDE -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between">
                     <div class="w-full flex flex-col">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b pb-2">
                             <div>
                                 <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📝 Rekening Koran Kas Domestik</h2>
-                                <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tren balance berjalan terintegrasi log form mutasi (Gunakan scroll untuk geser grafik)</p>
+                                <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tren balance berjalan terintegrasi log form mutasi</p>
                             </div>
                             <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm no-print">
                         </div>
 
-                        <!-- CONTAINER GRAFIK INTERAKTIF MULTI-DIRECTION SCROLL -->
+                        <!-- CONTAINER GRAFIK INTERAKTIF -->
                         <div class="w-full overflow-x-auto overflow-y-auto max-h-64 sm:max-h-80 mb-3 bg-slate-50/50 rounded-xl p-2 border border-slate-100 custom-scroll print-scroll-auto">
                             <div id="chartWrapper" class="h-48 sm:h-64 relative min-w-[600px]">
                                 <canvas id="chartMutasiLine"></canvas>
@@ -295,7 +299,6 @@
                 <button onclick="tutupModalPreview()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
             </div>
             <div class="flex-grow overflow-auto flex items-center justify-center bg-slate-100 rounded-xl p-2 min-h-[250px]" id="previewContainer">
-                <!-- Konten gambar/PDF dirender otomatis -->
             </div>
             <div class="mt-3 text-right">
                 <button onclick="tutupModalPreview()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-xl transition">Tutup</button>
@@ -304,7 +307,12 @@
     </div>
 
     <script>
-        const SPREADSHEET_API_URL = "https://sheetdb.io/api/v1/z5j7ohq973uwz"; 
+        // CONFIG SUPABASE CREDENTIALS
+        const SUPABASE_URL = "https://spetgpwpkjfifgvclwyl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZXRncHdwa2pmaWZndmNsd3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjkwNzYsImV4cCI6MjEwMTIwNTA3Nn0.oQzAtPKKpdejAY1y5cjBRoNZIK2Yp-oZMDxmXDESOUk";
+
+        // Inisialisasi Supabase Client
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let logArusKeuanganKeluarga = [];
         let logTargetWishlistCloud = [];
@@ -357,45 +365,80 @@
             });
         }
 
-        function muatDataKeuangan() {
-            fetch(SPREADSHEET_API_URL)
-            .then(res => { if (!res.ok) throw new Error(); return res.json(); })
-            .then(data => {
-                let tempTransaksi = []; let tempTarget = [];
-                data.forEach(row => {
-                    let parsed = null;
-                    if(row.datajson && row.datajson !== "") {
-                        try { parsed = JSON.parse(row.datajson); } catch(e) {}
-                    }
-                    if ((row.noinvoice && row.noinvoice.startsWith("GOAL-")) || (parsed && parsed.id && parsed.id.startsWith("GOAL-"))) {
-                        tempTarget.push({
-                            id: row.noinvoice || (parsed ? parsed.id : "GOAL-UNKNOWN"),
-                            nama: row.deskripsi || (parsed ? parsed.nama : "Rencana Impian"),
-                            nominal: parseFloat(row.total) || (parsed ? parsed.nominal : 0),
-                            deadline: row.tanggal || (parsed ? parsed.deadline : new Date().toISOString().split('T')[0])
-                        });
-                    } else {
-                        tempTransaksi.push({
-                            id: row.noinvoice || "TX-UNKNOWN", pic: row.pelanggan || "Bersama", tanggal: row.tanggal || new Date().toISOString().split('T')[0],
-                            nominal: parseFloat(row.total) || 0, jenis: row.status || "Pengeluaran", deskripsi: row.deskripsi || "Mutasi Kas",
-                            kategori: row.kategori || "Lain-lain", buktiUrl: row.buktiurl || ""
-                        });
-                    }
-                });
+        // FUNCTION HELPER UNTUK MENGAMBIL SELURUH DATA TANPA TERBATAS LIMIT 1000 ROW SUPABASE
+        async function fetchAllRows(tableName) {
+            let allRows = [];
+            let page = 0;
+            const pageSize = 1000;
+            let hasMore = true;
 
-                logArusKeuanganKeluarga = tempTransaksi.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
-                logTargetWishlistCloud = tempTarget;
+            while (hasMore) {
+                const from = page * pageSize;
+                const to = from + pageSize - 1;
+
+                const { data, error } = await supabaseClient
+                    .from(tableName)
+                    .select('*')
+                    .range(from, to);
+
+                if (error) {
+                    console.error(`Error fetching ${tableName}:`, error);
+                    throw error;
+                }
+
+                if (data && data.length > 0) {
+                    allRows = allRows.concat(data);
+                    if (data.length < pageSize) {
+                        hasMore = false;
+                    } else {
+                        page++;
+                    }
+                } else {
+                    hasMore = false;
+                }
+            }
+
+            return allRows;
+        }
+
+        async function muatDataKeuangan() {
+            // 1. Membaca tabel financial_records secara fleksibel
+            try {
+                const dataKas = await fetchAllRows('financial_records');
+                logArusKeuanganKeluarga = (dataKas || []).map(row => ({
+                    id: row.noinvoice || row.id || "TX-UNKNOWN",
+                    pic: row.pelanggan || row.pic || row.member || "Bersama",
+                    tanggal: row.tanggal || row.created_at || new Date().toISOString().split('T')[0],
+                    nominal: parseFloat(row.total !== undefined ? row.total : (row.nominal || row.amount || 0)),
+                    jenis: row.status || row.jenis || row.type || "Pengeluaran",
+                    deskripsi: row.deskripsi || row.description || row.title || "Mutasi Kas",
+                    kategori: row.kategori || row.category || "Lain-lain",
+                    buktiUrl: row.buktiurl || row.bukti_url || row.attachment || ""
+                })).sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
 
                 kalkulasiDasborStatistik();
                 updateSegalaPieCharts(); 
                 buatKesimpulanPengeluaranOtomatis();
                 renderTabelJurnal(logArusKeuanganKeluarga);
+            } catch (err) {
+                console.error("Gagal membaca financial_records:", err);
+                document.getElementById('jurnal-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-600 italic text-[11px]">Tabel 'financial_records' belum ada di Supabase atau RLS belum dibuka. (${err.message || err})</td></tr>`;
+            }
+
+            // 2. Membaca tabel wishlist secara terpisah
+            try {
+                const dataWishlist = await fetchAllRows('wishlist');
+                logTargetWishlistCloud = (dataWishlist || []).map(row => ({
+                    id: row.noinvoice || row.id || "GOAL-UNKNOWN",
+                    nama: row.deskripsi || row.nama || row.target_name || "Rencana Impian",
+                    nominal: parseFloat(row.total !== undefined ? row.total : (row.nominal || row.target_amount || 0)),
+                    deadline: row.tanggal || row.deadline || new Date().toISOString().split('T')[0]
+                }));
                 renderTabelWishlist(logTargetWishlistCloud);
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('jurnal-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-600 italic text-[11px]">Koneksi terputus.</td></tr>`;
-            });
+            } catch (err) {
+                console.warn("Tabel wishlist tidak ditemukan di Supabase:", err);
+                document.getElementById('wishlist-table-rows').innerHTML = `<tr><td colspan="5" class="p-3 text-center text-amber-600 italic text-[11px]">Tabel 'wishlist' belum dibuat di Supabase. Silakan buat tabel 'wishlist'.</td></tr>`;
+            }
         }
 
         function kalkulasiDasborStatistik() {
@@ -440,26 +483,31 @@
             }
         }
 
-        function eksekusiSimpanTargetCloud() {
+        async function eksekusiSimpanTargetCloud() {
             const uniqueId = "GOAL-" + Date.now();
             const payloadTarget = {
-                id: uniqueId, nama: document.getElementById('targetNama').value.trim(),
-                nominal: parseFloat(document.getElementById('targetNominal').value) || 0,
-                deadline: document.getElementById('targetDeadline').value
+                noinvoice: uniqueId,
+                pelanggan: "Bersama",
+                tanggal: document.getElementById('targetDeadline').value,
+                total: parseFloat(document.getElementById('targetNominal').value) || 0,
+                status: "Target Wishlist",
+                deskripsi: document.getElementById('targetNama').value.trim(),
+                kategori: "Investasi & Tabungan"
             };
-            const dataSheetdb = {
-                noinvoice: uniqueId, pelanggan: "Bersama", tanggal: payloadTarget.deadline, total: payloadTarget.nominal,
-                status: "Pengeluaran", deskripsi: payloadTarget.nama, kategori: "Investasi & Tabungan", buktiurl: "", datajson: JSON.stringify(payloadTarget)
-            };
-            fetch(SPREADSHEET_API_URL, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [dataSheetdb] })
-            })
-            .then(res => res.json())
-            .then(() => {
-                document.getElementById('targetNama').value = ""; document.getElementById('targetNominal').value = ""; document.getElementById('targetDeadline').value = "";
-                muatDataKeuangan(); alert("Target impian tersimpan ke cloud Spreadsheet!");
-            })
-            .catch(err => alert("Gagal menyimpan target: " + err));
+
+            const { error } = await supabaseClient
+                .from('wishlist')
+                .insert([payloadTarget]);
+
+            if (!error) {
+                document.getElementById('targetNama').value = ""; 
+                document.getElementById('targetNominal').value = ""; 
+                document.getElementById('targetDeadline').value = "";
+                muatDataKeuangan(); 
+                alert("Target impian tersimpan ke Supabase Cloud!");
+            } else {
+                alert("Gagal menyimpan target ke Supabase. Pastikan tabel 'wishlist' sudah dibuat.\n\nError: " + error.message);
+            }
         }
 
         function renderTabelWishlist(targetArrayData) {
@@ -482,7 +530,7 @@
                         </div>
                     </td>
                     <td class="p-2 text-center no-print">
-                        <button onclick="hapusTransaksiDariCloud('${target.id}')" class="text-rose-500 hover:text-rose-700 font-bold hover:underline">Hapus</button>
+                        <button onclick="hapusWishlistDariCloud('${target.id}')" class="text-rose-500 hover:text-rose-700 font-bold hover:underline">Hapus</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -557,28 +605,70 @@
             renderTabelJurnal(dataTerfilter);
         }
 
-        function eksekusiSimpanTransaksi() {
-            const currentId = document.getElementById('txId').value; const isEditMode = currentId !== "";
+        async function eksekusiSimpanTransaksi() {
+            const currentId = document.getElementById('txId').value; 
+            const isEditMode = currentId !== "";
             const uniqueId = isEditMode ? currentId : "TX-" + Date.now();
-            const payload = { id: uniqueId, tanggal: document.getElementById('txTanggal').value, pic: document.getElementById('txPic').value, jenis: document.getElementById('txJenis').value, kategori: document.getElementById('txKategori').value, deskripsi: document.getElementById('txDeskripsi').value, nominal: parseFloat(document.getElementById('txNominal').value) || 0, buktiUrl: stringFileBase64 };
-            const dataSheetdb = { 
-                noinvoice: uniqueId, pelanggan: payload.pic, tanggal: payload.tanggal, total: payload.nominal, 
-                status: payload.jenis, deskripsi: payload.deskripsi, kategori: payload.kategori, buktiurl: payload.buktiUrl, datajson: JSON.stringify(payload) 
-            };
-            const reqUrl = isEditMode ? `${SPREADSHEET_API_URL}/noinvoice/${uniqueId}` : SPREADSHEET_API_URL;
-            const reqMethod = isEditMode ? 'PUT' : 'POST'; const reqBody = isEditMode ? JSON.stringify({ data: dataSheetdb }) : JSON.stringify({ data: [dataSheetdb] });
 
-            fetch(reqUrl, { method: reqMethod, headers: { 'Content-Type': 'application/json' }, body: reqBody })
-            .then(res => res.json())
-            .then(() => { resetFormMutasi(); muatDataKeuangan(); alert("Sinkronisasi cloud mutasi kas sukses!"); })
-            .catch(err => alert("Gagal menyimpan data: " + err));
+            const payload = { 
+                noinvoice: uniqueId, 
+                tanggal: document.getElementById('txTanggal').value, 
+                pelanggan: document.getElementById('txPic').value, 
+                status: document.getElementById('txJenis').value, 
+                kategori: document.getElementById('txKategori').value, 
+                deskripsi: document.getElementById('txDeskripsi').value, 
+                total: parseFloat(document.getElementById('txNominal').value) || 0, 
+                buktiurl: stringFileBase64 
+            };
+
+            let result;
+            if (isEditMode) {
+                result = await supabaseClient
+                    .from('financial_records')
+                    .update(payload)
+                    .eq('noinvoice', uniqueId);
+            } else {
+                result = await supabaseClient
+                    .from('financial_records')
+                    .insert([payload]);
+            }
+
+            if (!result.error) {
+                resetFormMutasi(); 
+                muatDataKeuangan(); 
+                alert("Sinkronisasi mutasi kas ke Supabase sukses!");
+            } else {
+                alert("Gagal menyimpan data ke Supabase: " + result.error.message);
+            }
         }
 
-        function hapusTransaksiDariCloud(idTx) {
-            if (confirm(`Apakah Anda yakin ingin menghapus data dengan kode referensi ${idTx}?`)) {
-                fetch(`${SPREADSHEET_API_URL}/noinvoice/${idTx}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } })
-                .then(res => { if (!res.ok) throw new Error(); return res.json(); })
-                .then(() => { muatDataKeuangan(); });
+        async function hapusTransaksiDariCloud(idTx) {
+            if (confirm(`Apakah Anda yakin ingin menghapus mutasi dengan kode referensi ${idTx}?`)) {
+                const { error } = await supabaseClient
+                    .from('financial_records')
+                    .delete()
+                    .eq('noinvoice', idTx);
+
+                if (!error) {
+                    muatDataKeuangan();
+                } else {
+                    alert("Gagal menghapus data dari Supabase: " + error.message);
+                }
+            }
+        }
+
+        async function hapusWishlistDariCloud(idWishlist) {
+            if (confirm(`Apakah Anda yakin ingin menghapus wishlist dengan kode referensi ${idWishlist}?`)) {
+                const { error } = await supabaseClient
+                    .from('wishlist')
+                    .delete()
+                    .eq('noinvoice', idWishlist);
+
+                if (!error) {
+                    muatDataKeuangan();
+                } else {
+                    alert("Gagal menghapus wishlist dari Supabase: " + error.message);
+                }
             }
         }
 
@@ -608,7 +698,7 @@
         function renderTabelJurnal(targetArrayData) {
             const tbody = document.getElementById('jurnal-rows'); tbody.innerHTML = "";
             if (targetArrayData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic text-[11px]">Buku kas kosong.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic text-[11px]">Buku kas kosong. Belum ada mutasi tersimpan.</td></tr>`;
                 if(chartInstances.MutasiLine) chartInstances.MutasiLine.destroy(); return;
             }
 
@@ -650,7 +740,7 @@
 
             tbody.innerHTML = rowsHtmlBuffer.reverse().join("");
 
-            // ATUR LEBAR WRAPPER GRAFIK DINAMIS AGAR TIDAK MEPET SAMA BANYAKNYA DATA
+            // LEBAR WRAPPER GRAFIK DINAMIS
             const wrapper = document.getElementById('chartWrapper');
             const calculatedWidth = Math.max(600, targetArrayData.length * 45);
             wrapper.style.width = calculatedWidth + "px";
