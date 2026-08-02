@@ -998,8 +998,8 @@
 
                 // Tutup semua popover dropdown HSD di komponen builder jika klik di luar
                 document.querySelectorAll('.popover-hsd-menu').forEach(popover => {
-                    const inputTarget = popover.previousElementSibling;
-                    if (!popover.contains(e.target) && !inputTarget.contains(e.target)) {
+                    const inputTarget = popover.dataset.targetInputId ? document.getElementById(popover.dataset.targetInputId) : null;
+                    if (!popover.contains(e.target) && (!inputTarget || !inputTarget.contains(e.target))) {
                         popover.classList.add('hidden');
                     }
                 });
@@ -1133,28 +1133,40 @@
 
         // ================= LOGIKA CUSTOM DROPDOWN REKOMENDASI HSD =================
         function filterHsdDropdownOptions(inputElem) {
-            const wrapper = inputElem.closest('.relative');
-            if(!wrapper) return;
+            const row = inputElem.closest('.row-komponen-builder');
+            if(!row) return;
 
-            const popover = wrapper.querySelector('.popover-hsd-menu');
-            const container = wrapper.querySelector('.list-hsd-options-container');
-            const kw = inputElem.value.toLowerCase().trim();
+            const popover = row.querySelector('.popover-hsd-menu');
+            const container = popover.querySelector('.list-hsd-options-container');
+            const rawKw = inputElem.value.toLowerCase().trim();
 
-            if(!kw) {
+            if(!rawKw) {
                 popover.classList.add('hidden');
                 return;
             }
 
-            // Dapatkan item unik HSD berdasarkan nama
+            // Posisikan popover tepat melayang di bawah input Uraian Komponen menggunakan fixed position
+            const rect = inputElem.getBoundingClientRect();
+            popover.style.top = `${rect.bottom + window.scrollY}px`;
+            popover.style.left = `${rect.left + window.scrollX}px`;
+            popover.style.width = `${rect.width}px`;
+
+            // Pecah kata kunci input menjadi beberapa suku kata agar pencarian lebih fleksibel & komprehensif
+            const searchTokens = rawKw.split(/\s+/).filter(t => t.length > 0);
+
+            // Filter semua item HSD yang cocok/berhubungan dengan kata kunci input
             let uniqueItemsMap = {};
             listHSDMaster.forEach(hsd => {
                 let nama = hsd.nama_item || hsd.uraian || "";
                 let kode = hsd.kode || "";
-                let matchNama = nama.toLowerCase().includes(kw);
-                let matchKode = kode.toLowerCase().includes(kw);
+                let namaLower = nama.toLowerCase();
+                let kodeLower = kode.toLowerCase();
 
-                if(nama && (matchNama || matchKode) && !uniqueItemsMap[nama.toLowerCase().trim()]) {
-                    uniqueItemsMap[nama.toLowerCase().trim()] = {
+                // Evaluasi kecocokan seluruh suku kata atau fraksi kode
+                let isMatch = searchTokens.every(token => namaLower.includes(token) || kodeLower.includes(token));
+
+                if(nama && isMatch && !uniqueItemsMap[namaLower.trim()]) {
+                    uniqueItemsMap[namaLower.trim()] = {
                         nama: nama,
                         kode: kode,
                         satuan: hsd.satuan || ''
@@ -1170,26 +1182,24 @@
             }
 
             container.innerHTML = "";
-            filteredList.slice(0, 15).forEach(item => {
+            // Tampilkan SELURUH item yang relevan tanpa pembatasan slice agar pengguna bisa memilih secara komprehensif
+            filteredList.forEach(item => {
                 const div = document.createElement('div');
-                div.className = "p-1.5 hover:bg-amber-50 rounded-lg cursor-pointer transition flex justify-between items-center text-xs";
+                div.className = "p-1.5 hover:bg-amber-50 rounded-lg cursor-pointer transition flex justify-between items-center text-xs border-b border-slate-50 last:border-none";
                 div.innerHTML = `
                     <div class="truncate pr-2">
                         <span class="font-bold text-slate-800 block truncate">${item.nama}</span>
                         <span class="font-mono text-[10px] text-blue-600 font-bold">${item.kode || '-'}</span>
                     </div>
-                    <span class="font-mono text-[10px] text-slate-500 shrink-0 font-bold">${item.satuan}</span>
+                    <span class="font-mono text-[10px] text-slate-500 shrink-0 font-bold bg-slate-100 px-1.5 py-0.5 rounded">${item.satuan}</span>
                 `;
                 div.onclick = () => {
                     inputElem.value = item.nama;
-                    const row = inputElem.closest('.row-komponen-builder');
-                    if (row) {
-                        const kodeInput = row.querySelector('.builder-kode');
-                        const satInput = row.querySelector('.builder-satuan');
+                    const kodeInput = row.querySelector('.builder-kode');
+                    const satInput = row.querySelector('.builder-satuan');
 
-                        if(kodeInput && item.kode) kodeInput.value = item.kode;
-                        if(satInput && item.satuan) satInput.value = item.satuan;
-                    }
+                    if(kodeInput && item.kode) kodeInput.value = item.kode;
+                    if(satInput && item.satuan) satInput.value = item.satuan;
 
                     popover.classList.add('hidden');
                 };
@@ -2293,6 +2303,8 @@
             const valSatuan = dataPreset ? (dataPreset.satuan || '') : '';
             const valKoef = dataPreset ? (dataPreset.koefisien || '') : '';
 
+            const uniqueInputId = 'builderUraian_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+
             div.innerHTML = `
                 <select class="builder-tipe border p-1 text-[11px] rounded bg-white font-bold w-16 sm:w-20 shrink-0">
                     <option value="Upah" ${valTipe === 'Upah' ? 'selected' : ''}>Upah</option>
@@ -2301,14 +2313,12 @@
                 </select>
                 <input type="text" placeholder="Kode" value="${valKode}" class="builder-kode border p-1 text-[11px] rounded bg-white w-16 sm:w-20 font-mono shrink-0">
                 
-                <!-- Wrapper dengan posisi relative dan z-index tinggi agar popover HSD mengambang di luar frame -->
-                <div class="relative flex-1 min-w-0">
-                    <input type="text" placeholder="Uraian Komponen / Ketik HSD..." value="${valUraian}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian border p-1 text-[11px] rounded bg-white w-full">
-                    
-                    <!-- Popover dropdown mengambang bebas di luar frame tepat di bawah input Uraian Komponen -->
-                    <div class="popover-hsd-menu hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-[9999] p-1.5 space-y-1">
-                        <div class="list-hsd-options-container max-h-48 overflow-y-auto custom-scroll divide-y divide-slate-100">
-                        </div>
+                <div class="flex-1 min-w-0">
+                    <input type="text" id="${uniqueInputId}" placeholder="Uraian Komponen / Ketik HSD..." value="${valUraian}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian border p-1 text-[11px] rounded bg-white w-full">
+                </div>
+
+                <div data-target-input-id="${uniqueInputId}" class="popover-hsd-menu hidden fixed z-[9999] bg-white border border-slate-200 rounded-xl shadow-2xl p-1.5 space-y-1">
+                    <div class="list-hsd-options-container max-h-48 overflow-y-auto custom-scroll divide-y divide-slate-100">
                     </div>
                 </div>
 
