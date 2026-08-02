@@ -345,7 +345,7 @@
                             <div class="pt-6 border-t border-slate-200 flex justify-end">
                                 <div class="text-center w-48 sm:w-64 space-y-12">
                                     <div>
-                                        <p id="txtKotaTanggalTTD" class="text-xs text-slate-600 font-medium">Bandung, 1 Agustus 2026</p>
+                                        <p id="txtKotaTanggalTTD" class="text-xs text-slate-600 font-medium">Bandung, 2 Agustus 2026</p>
                                         <p class="text-xs font-bold text-slate-900 uppercase mt-0.5">Perencana:</p>
                                         <p class="text-[11px] font-bold text-amber-600">KAYUNA STUDIO</p>
                                     </div>
@@ -1035,17 +1035,30 @@
             }
         }
 
-        function formatTanggalIndoFormal(dateStr) {
-            if(!dateStr) return "1 Agustus 2026";
-            let d = new Date(dateStr);
-            if(isNaN(d.getTime())) {
-                const parts = dateStr.split('/');
-                if(parts.length === 3) d = new Date(parts[2], parts[1] - 1, parts[0]);
+        function formatTanggalIndoFormal(dateObj = new Date()) {
+            let d = dateObj;
+            if (typeof dateObj === 'string') {
+                d = new Date(dateObj);
+                if (isNaN(d.getTime())) {
+                    const parts = dateObj.split('/');
+                    if (parts.length === 3) d = new Date(parts[2], parts[1] - 1, parts[0]);
+                }
             }
-            if(isNaN(d.getTime())) return dateStr;
+            if (isNaN(d.getTime())) d = new Date();
 
             const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             return `${d.getDate()} ${bulanIndo[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        // FUNGSI BARU: UPDATE TANGGAL & KOTA PERENCANA TTD SAAT DILAKUKAN EKSPOR
+        function perbaruiTanggalTtdEkspor() {
+            const lokasi = (proyekAktif && proyekAktif.lokasi) ? proyekAktif.lokasi : "Bandung";
+            const tanggalSekarangFormat = formatTanggalIndoFormal(new Date());
+            
+            const elemTTD = document.getElementById('txtKotaTanggalTTD');
+            if (elemTTD) {
+                elemTTD.innerText = `${lokasi}, ${tanggalSekarangFormat}`;
+            }
         }
 
         function isHariLibur(date) {
@@ -1451,7 +1464,8 @@
             document.getElementById('docKodeProyek').innerText = "ID Proyek: " + proyekAktif.id;
             document.getElementById('docTanggal').innerText = "Tanggal: " + formatTanggalIndoFormal(proyekAktif.tanggal);
             
-            document.getElementById('txtKotaTanggalTTD').innerText = `Bandung, ${formatTanggalIndoFormal(proyekAktif.tanggal)}`;
+            const lokasi = proyekAktif.lokasi || "Bandung";
+            document.getElementById('txtKotaTanggalTTD').innerText = `${lokasi}, ${formatTanggalIndoFormal(new Date())}`;
 
             renderBQDanRekapitulasi(proyekAktif.data_bq || []);
         }
@@ -2396,6 +2410,7 @@
         }
 
         function buatElemenPrintClean() {
+            perbaruiTanggalTtdEkspor(); // Perbarui tanggal TTD secara otomatis saat fungsi ekspor dipanggil
             const clone = document.getElementById('exportArea').cloneNode(true);
             clone.querySelectorAll('.no-print').forEach(el => el.remove());
             return clone;
