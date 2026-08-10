@@ -14,7 +14,7 @@
     <!-- Dynamic Web App Manifest via Data-URI for Standalone App Mode -->
     <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22ProRAB%20System%22%2C%22short_name%22%3A%22ProRAB%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
 
-    <title>ProRAB System — AHSP & Regional HSD Estimator (Supabase)</title>
+    <title>ProRAB System — AHSP & Regional HSD Estimator (Multi-User & Custom Branding)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client CDN -->
@@ -41,23 +41,45 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen min-h-dvh flex flex-col selection:bg-amber-500 selection:text-slate-950">
 
+    <!-- OVERLAY / HALAMAN LOGIN AKUN (ACCESS CONTROL) -->
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-[100] flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-5 shadow-2xl">
+            <div class="w-16 h-16 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
+                <span class="text-3xl">🔑</span>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-white tracking-tight">ProRAB Access Control</h2>
+                <p class="text-xs text-slate-400 mt-1">Masukkan PIN.</p>
+            </div>
+            <form onsubmit="event.preventDefault(); eksekusiLoginPasscode();" class="space-y-3">
+                <div>
+                    <input type="password" id="inpPasscode" required placeholder="PIN Akun" class="w-full text-center tracking-widest text-lg font-bold border border-slate-700 bg-slate-800 text-white p-3 rounded-xl focus:outline-none focus:border-amber-500 transition">
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-3 rounded-xl text-xs shadow-lg transition">
+                    🔓 Masuk Dashboard
+                </button>
+            </form>
+            <p id="lblLoginError" class="text-xs text-rose-400 font-bold hidden">PIN Akun tidak ditemukan!</p>
+        </div>
+    </div>
+
     <!-- HEADER TOPBAR (RESPONSIVE) -->
     <header class="bg-slate-900 text-white border-b border-slate-800 px-3 sm:px-6 py-3 sticky top-0 z-50 shadow-md no-print pt-safe">
         <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-3">
             
             <div class="flex items-center justify-between w-full lg:w-auto">
                 <div class="flex items-center gap-2.5">
-                    <img src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Kayuna Logo" class="w-8 h-8 sm:w-9 sm:h-9 object-contain bg-white p-1 rounded-lg shrink-0">
+                    <img id="imgHeaderLogo" src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Logo Perusahaan" class="w-8 h-8 sm:w-9 sm:h-9 object-contain bg-white p-1 rounded-lg shrink-0 border border-slate-700">
                     <div>
-                        <h1 class="font-bold text-sm sm:text-base tracking-tight leading-none">ProRAB System</h1>
-                        <span class="text-[9px] sm:text-[10px] text-slate-400 font-medium block mt-0.5">Permen PUPR & Supabase Database</span>
+                        <h1 id="txtHeaderTitle" class="font-bold text-sm sm:text-base tracking-tight leading-none">ProRAB System</h1>
+                        <span id="txtHeaderSubtitle" class="text-[9px] sm:text-[10px] text-amber-400 font-medium block mt-0.5">Permen PUPR & Supabase Database</span>
                     </div>
                 </div>
 
                 <div class="flex lg:hidden items-center gap-1">
-                    <button onclick="toggleAppFullScreen()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 p-2 rounded-lg text-xs font-bold" title="Mode Fullscreen / Layar Penuh HP">📱 Fullscreen</button>
-                    <button onclick="exportToExcelSummary()" class="bg-emerald-600 text-white p-2 rounded-lg text-xs" title="Excel">📊</button>
-                    <button onclick="exportToPDFSummary()" class="bg-rose-600 text-white p-2 rounded-lg text-xs" title="PDF">📄</button>
+                    <button onclick="bukaModalProfilAkun()" class="bg-slate-800 text-amber-400 border border-slate-700 font-bold px-2 py-1 rounded-lg text-[10px]" title="Setting Identitas">⚙️ Profil</button>
+                    <button onclick="toggleAppFullScreen()" class="bg-amber-500 text-slate-950 p-2 rounded-lg text-xs font-bold" title="Fullscreen">📱</button>
+                    <button onclick="eksekusiLogout()" class="bg-rose-800 text-white p-2 rounded-lg text-xs" title="Logout">🚪</button>
                 </div>
             </div>
             
@@ -68,23 +90,33 @@
                 <button id="btnTabMaster" onclick="switchTab('master')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
                     ➕ Kelola AHSP & HSD
                 </button>
+                <button id="btnTabDaily" onclick="switchTab('daily')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
+                    📋 Laporan Harian & Dokumentasi
+                </button>
                 <button id="btnTabSchedule" onclick="switchTab('schedule')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
                     📈 Jadwal & Kurva S
                 </button>
             </div>
 
             <div class="hidden lg:flex items-center gap-2">
+                <button onclick="bukaModalProfilAkun()" id="lblUserBadge" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 flex items-center gap-1.5 transition" title="Klik untuk Kustomisasi Logo & Identitas Perusahaan">
+                    <span>🏢</span> <span id="txtNamaUserAktif">Memuat...</span>
+                    <span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">⚙️ Custom</span>
+                </button>
                 <button onclick="toggleAppFullScreen()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow border border-slate-700">
                     <span>📱</span> Fullscreen
                 </button>
                 <button onclick="muatDataProyekSemua()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
-                    <span>⚡</span> Sync Supabase
+                    <span>⚡</span> Sync
                 </button>
                 <button onclick="exportToExcelSummary()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
                     <span>📊</span> Excel
                 </button>
                 <button onclick="exportToPDFSummary()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
                     <span>📄</span> PDF
+                </button>
+                <button onclick="eksekusiLogout()" class="bg-slate-800 hover:bg-rose-700 text-rose-300 hover:text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow border border-slate-700" title="Keluar">
+                    <span>🚪</span> Logout
                 </button>
             </div>
         </div>
@@ -101,13 +133,13 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 border-b pb-3">
                     <div>
                         <div class="flex items-center gap-2">
-                            <h2 class="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">📁 Daftar Proyek</h2>
+                            <h2 class="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">📁 Daftar Proyek Saya</h2>
                             <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 ml-2 text-[10px] font-bold">
                                 <button id="btnFilterActive" onclick="setProjectStatusFilter('active')" class="px-2 py-0.5 rounded bg-white text-slate-900 shadow">🟢 Aktif</button>
                                 <button id="btnFilterArchived" onclick="setProjectStatusFilter('archived')" class="px-2 py-0.5 rounded text-slate-500 hover:text-slate-900">📦 Terarsip</button>
                             </div>
                         </div>
-                        <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Klik proyek untuk memilih dan menyinkronkan HSD serta AHSP PUPR</p>
+                        <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Hanya menampilkan daftar proyek milik akun yang sedang aktif</p>
                     </div>
 
                     <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -121,7 +153,7 @@
                 </div>
 
                 <div id="projectCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    <div class="p-4 text-center text-slate-400 italic text-xs col-span-full">Memuat database proyek dari Supabase...</div>
+                    <div class="p-4 text-center text-slate-400 italic text-xs col-span-full">Memuat database proyek...</div>
                 </div>
             </section>
 
@@ -265,13 +297,14 @@
                         
                         <!-- HALAMAN 1: DOKUMEN UTAMA -->
                         <div class="space-y-6">
+                            <!-- DYNAMIC KOP SURAT PERUSAHAAN AKUN -->
                             <div class="border-b-4 border-slate-900 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                                 <div class="flex items-center gap-3 sm:gap-4">
-                                    <img src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Kayuna Studio Logo" class="h-10 sm:h-14 w-auto object-contain">
+                                    <img id="docCompanyLogo" src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Company Logo" class="h-10 sm:h-14 w-auto object-contain">
                                     <div>
-                                        <h1 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase leading-none">KAYUNA STUDIO</h1>
-                                        <p class="text-[10px] sm:text-[11px] font-bold text-amber-600 mt-1">Architecture & Construction Consultant</p>
-                                        <p class="text-[9px] sm:text-[10px] text-slate-500">Website: kayunastudio.my.id | Email: kayunastudio@gmail.com</p>
+                                        <h1 id="docCompanyName" class="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase leading-none">KAYUNA STUDIO</h1>
+                                        <p id="docCompanyTagline" class="text-[10px] sm:text-[11px] font-bold text-amber-600 mt-1">Architecture & Construction Consultant</p>
+                                        <p id="docCompanyContacts" class="text-[9px] sm:text-[10px] text-slate-500">Website: kayunastudio.my.id | Email: kayunastudio@gmail.com</p>
                                     </div>
                                 </div>
                                 <div class="text-left sm:text-right border-l-2 sm:border-l-2 border-slate-200 pl-3 sm:pl-4">
@@ -340,13 +373,13 @@
                             <div class="pt-6 border-t border-slate-200 flex justify-end">
                                 <div class="text-center w-48 sm:w-64 space-y-12">
                                     <div>
-                                        <p id="txtKotaTanggalTTD" class="text-xs text-slate-600 font-medium">Bandung, 2 Agustus 2026</p>
+                                        <p id="txtKotaTanggalTTD" class="text-xs text-slate-600 font-medium">Bandung, 10 Agustus 2026</p>
                                         <p class="text-xs font-bold text-slate-900 uppercase mt-0.5">Perencana:</p>
-                                        <p class="text-[11px] font-bold text-amber-600">KAYUNA STUDIO</p>
+                                        <p id="txtTTDPerusahaan" class="text-[11px] font-bold text-amber-600">KAYUNA STUDIO</p>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-bold text-slate-900 underline uppercase">Tim Perencana Kayuna Studio</p>
-                                        <p class="text-[10px] text-slate-400">kayunastudio.my.id</p>
+                                        <p id="txtTTDNamaPerencana" class="text-xs font-bold text-slate-900 underline uppercase">Tim Perencana Kayuna Studio</p>
+                                        <p id="txtTTDWebsite" class="text-[10px] text-slate-400">kayunastudio.my.id</p>
                                     </div>
                                 </div>
                             </div>
@@ -359,7 +392,7 @@
                                     <span class="text-[10px] font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-mono uppercase">LAMPIRAN 1</span>
                                     <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider mt-1">RINCIAN BILL OF QUANTITIES (BQ) PEKERJAAN</h3>
                                 </div>
-                                <span class="text-[10px] font-mono text-slate-400">Kayuna Studio</span>
+                                <span class="lblFooterCompanyName text-[10px] font-mono text-slate-400">Kayuna Studio</span>
                             </div>
 
                             <div class="overflow-x-auto custom-scroll">
@@ -389,7 +422,7 @@
                                     <span class="text-[10px] font-bold bg-blue-600 text-white px-2 py-0.5 rounded font-mono uppercase">LAMPIRAN 2</span>
                                     <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider mt-1">DETAIL RINCIAN ANALISA AHSP TERPAKAI</h3>
                                 </div>
-                                <span class="text-[10px] font-mono text-slate-400">Kayuna Studio</span>
+                                <span class="lblFooterCompanyName text-[10px] font-mono text-slate-400">Kayuna Studio</span>
                             </div>
 
                             <div id="containerLampiranAHSPDetail" class="space-y-4">
@@ -404,7 +437,7 @@
                                     <span class="text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded font-mono uppercase">LAMPIRAN 3</span>
                                     <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider mt-1">DAFTAR HARGA SATUAN DASAR (HSD) TERPAKAI PROYEK</h3>
                                 </div>
-                                <span class="text-[10px] font-mono text-slate-400">Kayuna Studio</span>
+                                <span class="lblFooterCompanyName text-[10px] font-mono text-slate-400">Kayuna Studio</span>
                             </div>
 
                             <div class="overflow-x-auto custom-scroll">
@@ -544,7 +577,10 @@
                             <h3 class="font-bold text-xs text-slate-900 uppercase">📋 Master HSD Tersimpan</h3>
                             <p class="text-[10px] text-slate-400">Database Upah, Bahan, dan Peralatan (<code class="font-bold">02_hsd</code>)</p>
                         </div>
-                        <span id="badgeCountHsd" class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold w-fit">0 Item</span>
+                        <div class="flex items-center gap-1">
+                            <button onclick="exportMasterHSD('csv')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export CSV</button>
+                            <span id="badgeCountHsd" class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
+                        </div>
                     </div>
 
                     <div class="relative">
@@ -561,7 +597,7 @@
                                     <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
                                     <th class="p-2 border-b bg-slate-100 text-right">HARGA (RP)</th>
                                     <th class="p-2 border-b bg-slate-100 text-center">LOKASI</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center w-20">AKSI</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center w-24">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelMasterHSDMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
@@ -578,7 +614,10 @@
                             <h3 class="font-bold text-xs text-slate-900 uppercase">📋 Master AHSP Pekerjaan</h3>
                             <p class="text-[10px] text-slate-400">Database Standar Pekerjaan PUPR (<code class="font-bold">01_ahsp</code>)</p>
                         </div>
-                        <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold w-fit">0 Item</span>
+                        <div class="flex items-center gap-1">
+                            <button onclick="exportMasterAHSP('csv')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export CSV</button>
+                            <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
+                        </div>
                     </div>
 
                     <div class="relative">
@@ -594,7 +633,7 @@
                                     <th class="p-2 border-b bg-slate-100">NAMA PEKERJAAN</th>
                                     <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
                                     <th class="p-2 border-b bg-slate-100 text-center">OVERHEAD</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center w-24">AKSI</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center w-28">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelMasterAHSPMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
@@ -606,6 +645,115 @@
 
             </div>
 
+        </div>
+
+        <!-- ================= PAGE 2.5: LAPORAN PROGRES HARIAN & DOKUMENTASI ================= -->
+        <div id="pageDaily" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- FORM INPUT LAPORAN HARIAN -->
+                <div class="lg:col-span-1 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="border-b pb-3 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-black text-sm text-slate-900 uppercase">📋 Input Laporan Harian Proyek</h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Catatan Progres, Tenaga Kerja, Material, & Foto</p>
+                        </div>
+                        <span id="badgeDailyProject" class="text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-bold font-mono truncate max-w-[100px]">PILIH PROYEK</span>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); simpanLaporanHarian();" class="space-y-3 text-xs">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block font-bold text-slate-500 uppercase mb-1">Tanggal Laporan</label>
+                                <input type="date" id="dailyTanggal" required class="w-full border p-2 rounded-lg bg-slate-50 font-mono">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-500 uppercase mb-1">Hari Kerja Ke-</label>
+                                <input type="number" id="dailyHariKe" min="1" placeholder="Ex: 12" required class="w-full border p-2 rounded-lg bg-slate-50 font-bold">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-500 uppercase mb-1">Kondisi Cuaca Lapangan</label>
+                            <select id="dailyCuaca" class="w-full border p-2 rounded-lg bg-slate-50 font-bold">
+                                <option value="Cerah">☀️ Cerah / Panas</option>
+                                <option value="Berawan">☁️ Berawan / Mendung</option>
+                                <option value="Hujan Ringan">🌧️ Hujan Ringan (Gerimis)</option>
+                                <option value="Hujan Lebat">⛈️ Hujan Lebat (Kerja Terhenti)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-500 uppercase mb-1">Jumlah Tenaga Kerja Lapangan</label>
+                            <input type="text" id="dailyTenaga" placeholder="Ex: 1 Mandor, 4 Tukang, 6 Pekerja" required class="w-full border p-2 rounded-lg bg-slate-50 font-medium">
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-500 uppercase mb-1">Material / Alat Utama Masuk</label>
+                            <input type="text" id="dailyMaterial" placeholder="Ex: Semen 50 Sak, Pasir 1 Truk, Excavator 1 Unit" class="w-full border p-2 rounded-lg bg-slate-50 font-medium">
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-500 uppercase mb-1">Uraian Pekerjaan Dilaksanakan</label>
+                            <textarea id="dailyKegiatan" rows="3" required placeholder="Detail aktivitas pekerjaan lapangan hari ini..." class="w-full border p-2 rounded-lg bg-slate-50 font-medium"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-500 uppercase mb-1">Kendala / Masalah Lapangan</label>
+                            <textarea id="dailyKendala" rows="2" placeholder="Tuliskan jika ada kendala cuaca, bahan, atau teknis..." class="w-full border p-2 rounded-lg bg-slate-50 font-medium"></textarea>
+                        </div>
+
+                        <!-- UPLOAD DOKUMENTASI FOTO -->
+                        <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
+                            <label class="block font-bold text-slate-700 uppercase">📷 Upload Foto Dokumentasi Lapangan</label>
+                            <input type="file" id="dailyFotoInput" accept="image/*" multiple onchange="handlePreviewFotoDaily(this)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800">
+                            
+                            <div id="previewFotoDailyContainer" class="grid grid-cols-3 gap-2 pt-2">
+                                <span class="text-[10px] text-slate-400 italic col-span-3">Belum ada foto dipilih.</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSimpanDaily" disabled class="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
+                            💾 Simpan Laporan Harian
+                        </button>
+                    </form>
+                </div>
+
+                <!-- RIWAYAT & DETAIL LAPORAN HARIAN -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-2">
+                            <div>
+                                <h3 class="font-black text-sm text-slate-900 uppercase">📚 Riwayat Laporan Harian Proyek</h3>
+                                <p class="text-[10px] text-slate-400">Daftar laporan harian tersimpan dalam database (<code class="font-bold">04_daily_report</code>)</p>
+                            </div>
+                            <button onclick="muatDataProyekSemua()" class="text-xs bg-slate-100 hover:bg-slate-200 font-bold px-3 py-1.5 rounded-lg text-slate-700 transition">
+                                🔄 Refresh Data
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto custom-scroll border rounded-xl">
+                            <table class="w-full text-left border-collapse text-xs min-w-[600px]">
+                                <thead>
+                                    <tr class="bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider">
+                                        <th class="p-2.5 w-10 text-center">NO</th>
+                                        <th class="p-2.5 w-24 text-center">TANGGAL</th>
+                                        <th class="p-2.5 w-16 text-center">HARI</th>
+                                        <th class="p-2.5 w-24 text-center">CUACA</th>
+                                        <th class="p-2.5">URAIAN PEKERJAAN</th>
+                                        <th class="p-2.5 text-center w-16">FOTO</th>
+                                        <th class="p-2.5 text-center w-28">AKSI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelDailyReportRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                                    <tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
         <!-- ================= PAGE 3: MANAJEMEN JADWAL & KURVA S ================= -->
@@ -671,6 +819,129 @@
         </div>
 
     </main>
+
+    <!-- MODAL CUSTOMISASI LOGO & IDENTITAS AKUN / PERUSAHAAN (NEW FEATURE) -->
+    <div id="modalProfilAkun" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <h3 class="font-black text-sm text-slate-900 uppercase flex items-center gap-2">
+                        <span>⚙️</span> Custom Identitas & Logo Perusahaan
+                    </h3>
+                    <p class="text-[10px] text-slate-500">Kustomisasi Kop Surat, Logo, & TTD Khusus Untuk Akun Ini (Terisolasi)</p>
+                </div>
+                <button onclick="tutupModalProfilAkun()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); simpanProfilAkun();" class="space-y-4 text-xs">
+                <!-- PREVIEW LOGO & UPLOAD -->
+                <div class="p-3 bg-slate-50 border rounded-xl flex flex-col sm:flex-row items-center gap-4">
+                    <div class="w-16 h-16 bg-white border p-1 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                        <img id="previewLogoModal" src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Preview Logo" class="w-full h-full object-contain">
+                    </div>
+                    <div class="flex-1 space-y-2 w-full">
+                        <label class="block font-bold text-slate-700 uppercase">Logo Perusahaan / Studio</label>
+                        <input type="file" id="inpLogoFileModal" accept="image/*" onchange="handleLogoUploadModal(this)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800">
+                        <div>
+                            <span class="text-[9px] text-slate-400 font-bold block">atau Gunakan URL Gambar Logo:</span>
+                            <input type="text" id="inpLogoUrlModal" oninput="handleLogoUrlInputModal(this)" placeholder="https://domain.com/logo.png" class="w-full border p-1.5 rounded-lg bg-white mt-1 text-[11px]">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 uppercase mb-1">Nama Perusahaan / Studio</label>
+                        <input type="text" id="inpProfileCompany" required placeholder="Ex: KAYUNA STUDIO / PT. KONTRAKTOR JAYA" class="w-full border p-2 rounded-lg bg-slate-50 font-bold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 uppercase mb-1">Tagline / Slogan</label>
+                        <input type="text" id="inpProfileTagline" placeholder="Ex: Architecture & Construction Consultant" class="w-full border p-2 rounded-lg bg-slate-50">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 uppercase mb-1">Website Perusahaan</label>
+                        <input type="text" id="inpProfileWebsite" placeholder="Ex: kayunastudio.my.id" class="w-full border p-2 rounded-lg bg-slate-50 font-mono">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 uppercase mb-1">Email Resmi</label>
+                        <input type="email" id="inpProfileEmail" placeholder="Ex: info@perusahaan.com" class="w-full border p-2 rounded-lg bg-slate-50 font-mono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 uppercase mb-1">Kota Asal / Domicile Surat</label>
+                        <input type="text" id="inpProfileCity" placeholder="Ex: Bandung" class="w-full border p-2 rounded-lg bg-slate-50">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 uppercase mb-1">Penanggung Jawab / Perencana</label>
+                        <input type="text" id="inpProfilePlannerName" placeholder="Ex: Tim Perencana Kayuna Studio" class="w-full border p-2 rounded-lg bg-slate-50 font-bold">
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t flex gap-2">
+                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs shadow transition">💾 Simpan Identitas Akun</button>
+                    <button type="button" onclick="tutupModalProfilAkun()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CETAK / DETAIL LAPORAN HARIAN -->
+    <div id="modalPrintDaily" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 class="font-bold text-sm text-slate-900">📄 Dokumen Laporan Harian Proyek</h3>
+                    <p class="text-xs text-slate-500">Preview siap cetak atau ekspor</p>
+                </div>
+                <button onclick="tutupModalPrintDaily()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
+            </div>
+
+            <div id="areaCetakDaily" class="p-4 bg-slate-50 border rounded-xl space-y-4 text-xs text-slate-800">
+                <div class="border-b-2 border-slate-900 pb-2 flex justify-between items-center">
+                    <div>
+                        <h2 class="font-black text-base text-slate-900 uppercase leading-none">LAPORAN HARIAN PROYEK</h2>
+                        <p id="viewDailyNamaProyek" class="font-bold text-amber-600 mt-1">Nama Proyek...</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="viewDailyTgl" class="font-mono font-bold block">00-00-0000</span>
+                        <span id="viewDailyHariKe" class="font-bold text-slate-500">Hari ke-0</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 bg-white p-2.5 rounded border">
+                    <div><strong>Cuaca:</strong> <span id="viewDailyCuaca">-</span></div>
+                    <div><strong>Tenaga Kerja:</strong> <span id="viewDailyTenaga">-</span></div>
+                    <div class="col-span-2"><strong>Material/Alat Masuk:</strong> <span id="viewDailyMaterial">-</span></div>
+                </div>
+
+                <div class="bg-white p-2.5 rounded border space-y-1">
+                    <strong>Uraian Pekerjaan:</strong>
+                    <p id="viewDailyKegiatan" class="text-slate-700 whitespace-pre-line">-</p>
+                </div>
+
+                <div class="bg-white p-2.5 rounded border space-y-1">
+                    <strong>Kendala Lapangan:</strong>
+                    <p id="viewDailyKendala" class="text-slate-700 italic">-</p>
+                </div>
+
+                <div class="space-y-1">
+                    <strong>Dokumentasi Foto Lapangan:</strong>
+                    <div id="viewDailyFotoGallery" class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <button onclick="cetakDokumenDailyPDF()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold p-2.5 rounded-xl text-xs transition">📄 Ekspor PDF Laporan</button>
+                <button onclick="tutupModalPrintDaily()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Tutup</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL POPUP UPDATE TRACKING REAL -->
     <div id="modalTrackingReal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
@@ -935,6 +1206,56 @@
         const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
 
+        // DEFAULT LOGO & DEFAULTS
+        const DEFAULT_LOGO = "https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true";
+
+        // LOKASI DAFTAR AKUN & PIN (MULTI-USER ISOLATION)
+        const LIST_AKUN = [
+            { 
+                pin: "2424", 
+                userId: "kayuna", 
+                nama: "Kayuna Studio",
+                defaultCompany: {
+                    logo: DEFAULT_LOGO,
+                    name: "KAYUNA STUDIO",
+                    tagline: "Architecture & Construction Consultant",
+                    website: "kayunastudio.my.id",
+                    email: "kayunastudio@gmail.com",
+                    city: "Bandung",
+                    plannerName: "Tim Perencana Kayuna Studio"
+                }
+            },
+            { 
+                pin: "123", 
+                userId: "tekmira", 
+                nama: "Tekmira",
+                defaultCompany: {
+                    logo: DEFAULT_LOGO,
+                    name: "TEKMIRA CONSULTANT",
+                    tagline: "Engineering & Mining Solutions",
+                    website: "tekmira.co.id",
+                    email: "contact@tekmira.co.id",
+                    city: "Bandung",
+                    plannerName: "Tim Engineering Tekmira"
+                } 
+            },
+            { 
+                pin: "246", 
+                userId: "admin", 
+                nama: "Administrator", 
+                isAdmin: true,
+                defaultCompany: {
+                    logo: DEFAULT_LOGO,
+                    name: "PRORAB SYSTEM ADMIN",
+                    tagline: "Central Construction Management",
+                    website: "prorab.app",
+                    email: "admin@prorab.app",
+                    city: "Jakarta",
+                    plannerName: "Administrator System"
+                } 
+            }
+        ];
+
         // Inisialisasi Supabase SDK Client
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -945,14 +1266,203 @@
             "2026-08-17", "2026-08-25", "2026-12-25"
         ];
 
+        let currentUser = null;
+        let userProfile = null; // Menyimpan Profil Kustom Akun Terisolasi
         let listProyek = [];
         let listAHSPMaster = [];
         let listHSDMaster = [];
         let listScheduleMaster = [];
+        let listDailyMaster = [];
+        let dailyFotoBase64Array = [];
         let ahspTerpilih = null;
         let proyekAktif = null;
         let filterStatusProyek = 'active';
         let kurvaSChartInstance = null;
+
+        // FUNGSI ACCESS CONTROL LOGIN PASSCODE (PER AKUN)
+        function periksaSesiLogin() {
+            const savedUser = localStorage.getItem('prorab_current_user');
+            const overlay = document.getElementById('loginOverlay');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                muatProfilIdentitasAkun();
+                overlay.classList.add('hidden');
+                perbaruiUIUser();
+                muatDataProyekSemua();
+            } else {
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        function eksekusiLoginPasscode() {
+            const inputVal = document.getElementById('inpPasscode').value.trim();
+            const errLbl = document.getElementById('lblLoginError');
+            
+            const akunDitemukan = LIST_AKUN.find(a => a.pin === inputVal);
+            if (akunDitemukan) {
+                currentUser = akunDitemukan;
+                localStorage.setItem('prorab_current_user', JSON.stringify(currentUser));
+                muatProfilIdentitasAkun();
+                document.getElementById('loginOverlay').classList.add('hidden');
+                errLbl.classList.add('hidden');
+                document.getElementById('inpPasscode').value = '';
+                perbaruiUIUser();
+                muatDataProyekSemua();
+            } else {
+                errLbl.classList.remove('hidden');
+            }
+        }
+
+        // FUNGSI UTAMA CUSTOMISASI PROFIL & IDENTITAS PER AKUN (MENCEGAH TUMPAH TINDIH)
+        function muatProfilIdentitasAkun() {
+            if (!currentUser) return;
+            const storageKey = `prorab_profile_${currentUser.userId}`;
+            const savedProfile = localStorage.getItem(storageKey);
+
+            if (savedProfile) {
+                try {
+                    userProfile = JSON.parse(savedProfile);
+                } catch(e) {
+                    userProfile = { ...currentUser.defaultCompany };
+                }
+            } else {
+                userProfile = { ...(currentUser.defaultCompany || {
+                    logo: DEFAULT_LOGO,
+                    name: currentUser.nama.toUpperCase(),
+                    tagline: "Construction & Engineering Consultant",
+                    website: "prorab.app",
+                    email: "info@prorab.app",
+                    city: "Bandung",
+                    plannerName: "Tim Perencana " + currentUser.nama
+                }) };
+            }
+            terapkanProfilIdentitasUI();
+        }
+
+        function terapkanProfilIdentitasUI() {
+            if (!userProfile) return;
+
+            // 1. Update Header Aplikasi
+            const imgHeader = document.getElementById('imgHeaderLogo');
+            const txtTitle = document.getElementById('txtHeaderTitle');
+            const txtSub = document.getElementById('txtHeaderSubtitle');
+            if(imgHeader) imgHeader.src = userProfile.logo || DEFAULT_LOGO;
+            if(txtTitle) txtTitle.innerText = userProfile.name || "ProRAB System";
+            if(txtSub) txtSub.innerText = userProfile.tagline || "Permen PUPR & Supabase Database";
+
+            // 2. Update Kop Surat Dokumen Cetak RAB
+            const docLogo = document.getElementById('docCompanyLogo');
+            const docName = document.getElementById('docCompanyName');
+            const docTag = document.getElementById('docCompanyTagline');
+            const docContacts = document.getElementById('docCompanyContacts');
+
+            if(docLogo) docLogo.src = userProfile.logo || DEFAULT_LOGO;
+            if(docName) docName.innerText = userProfile.name || "KAYUNA STUDIO";
+            if(docTag) docTag.innerText = userProfile.tagline || "";
+            if(docContacts) docContacts.innerText = `Website: ${userProfile.website || '-'} | Email: ${userProfile.email || '-'}`;
+
+            // 3. Update Kolom TTD / Signature
+            const txtTTDComp = document.getElementById('txtTTDPerusahaan');
+            const txtTTDName = document.getElementById('txtTTDNamaPerencana');
+            const txtTTDWeb = document.getElementById('txtTTDWebsite');
+
+            if(txtTTDComp) txtTTDComp.innerText = userProfile.name || "KAYUNA STUDIO";
+            if(txtTTDName) txtTTDName.innerText = userProfile.plannerName || "Tim Perencana";
+            if(txtTTDWeb) txtTTDWeb.innerText = userProfile.website || "";
+
+            // 4. Update Header Lampiran Footers
+            document.querySelectorAll('.lblFooterCompanyName').forEach(el => {
+                el.innerText = userProfile.name || "Kayuna Studio";
+            });
+
+            // 5. Update Tanggal TTD Kota Domicile
+            perbaruiTanggalTtdEkspor();
+        }
+
+        function bukaModalProfilAkun() {
+            if (!userProfile) muatProfilIdentitasAkun();
+
+            document.getElementById('previewLogoModal').src = userProfile.logo || DEFAULT_LOGO;
+            document.getElementById('inpLogoUrlModal').value = userProfile.logo && !userProfile.logo.startsWith('data:') ? userProfile.logo : '';
+            document.getElementById('inpProfileCompany').value = userProfile.name || '';
+            document.getElementById('inpProfileTagline').value = userProfile.tagline || '';
+            document.getElementById('inpProfileWebsite').value = userProfile.website || '';
+            document.getElementById('inpProfileEmail').value = userProfile.email || '';
+            document.getElementById('inpProfileCity').value = userProfile.city || '';
+            document.getElementById('inpProfilePlannerName').value = userProfile.plannerName || '';
+
+            document.getElementById('modalProfilAkun').classList.remove('hidden');
+        }
+
+        function tutupModalProfilAkun() {
+            document.getElementById('modalProfilAkun').classList.add('hidden');
+        }
+
+        function handleLogoUploadModal(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Img = e.target.result;
+                    document.getElementById('previewLogoModal').src = base64Img;
+                    document.getElementById('inpLogoUrlModal').value = ""; // Reset URL input
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function handleLogoUrlInputModal(input) {
+            const url = input.value.trim();
+            if(url) {
+                document.getElementById('previewLogoModal').src = url;
+            }
+        }
+
+        function simpanProfilAkun() {
+            if (!currentUser) return;
+
+            const logoSrc = document.getElementById('previewLogoModal').src;
+            const companyName = document.getElementById('inpProfileCompany').value.trim();
+            const tagline = document.getElementById('inpProfileTagline').value.trim();
+            const website = document.getElementById('inpProfileWebsite').value.trim();
+            const email = document.getElementById('inpProfileEmail').value.trim();
+            const city = document.getElementById('inpProfileCity').value.trim();
+            const plannerName = document.getElementById('inpProfilePlannerName').value.trim();
+
+            userProfile = {
+                logo: logoSrc,
+                name: companyName,
+                tagline: tagline,
+                website: website,
+                email: email,
+                city: city,
+                plannerName: plannerName
+            };
+
+            const storageKey = `prorab_profile_${currentUser.userId}`;
+            localStorage.setItem(storageKey, JSON.stringify(userProfile));
+
+            terapkanProfilIdentitasUI();
+            tutupModalProfilAkun();
+            alert("✅ Identitas & Logo Perusahaan berhasil diperbarui khusus untuk akun " + currentUser.nama + "!");
+        }
+
+        function perbaruiUIUser() {
+            if(!currentUser) return;
+            const nameElem = document.getElementById('txtNamaUserAktif');
+            const mobElem = document.getElementById('lblUserMobileBadge');
+            if (nameElem) nameElem.innerText = currentUser.nama;
+            if (mobElem) mobElem.innerText = `👤 ${currentUser.nama}`;
+        }
+
+        function eksekusiLogout() {
+            if (confirm("Apakah Anda yakin ingin keluar dari akun?")) {
+                localStorage.removeItem('prorab_current_user');
+                currentUser = null;
+                userProfile = null;
+                unselectProyek();
+                location.reload();
+            }
+        }
 
         function toggleAppFullScreen() {
             const elem = document.documentElement;
@@ -976,7 +1486,7 @@
         });
 
         document.addEventListener("DOMContentLoaded", () => {
-            muatDataProyekSemua();
+            periksaSesiLogin();
             tambahBarisKomponenBuilder('containerKomponenBuilder');
 
             document.addEventListener('click', (e) => {
@@ -997,17 +1507,21 @@
         function switchTab(tabName) {
             const pageRAB = document.getElementById('pageRAB');
             const pageMaster = document.getElementById('pageMaster');
+            const pageDaily = document.getElementById('pageDaily');
             const pageSchedule = document.getElementById('pageSchedule');
             const btnTabRAB = document.getElementById('btnTabRAB');
             const btnTabMaster = document.getElementById('btnTabMaster');
+            const btnTabDaily = document.getElementById('btnTabDaily');
             const btnTabSchedule = document.getElementById('btnTabSchedule');
 
             pageRAB.classList.add('hidden');
             pageMaster.classList.add('hidden');
+            pageDaily.classList.add('hidden');
             pageSchedule.classList.add('hidden');
 
             btnTabRAB.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
             btnTabMaster.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
+            btnTabDaily.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
             btnTabSchedule.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
 
             if(tabName === 'rab') {
@@ -1016,6 +1530,10 @@
             } else if(tabName === 'master') {
                 pageMaster.classList.remove('hidden');
                 btnTabMaster.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+            } else if(tabName === 'daily') {
+                pageDaily.classList.remove('hidden');
+                btnTabDaily.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+                renderTabelLaporanHarian();
             } else if(tabName === 'schedule') {
                 pageSchedule.classList.remove('hidden');
                 btnTabSchedule.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
@@ -1039,7 +1557,7 @@
         }
 
         function perbaruiTanggalTtdEkspor() {
-            const lokasi = (proyekAktif && proyekAktif.lokasi) ? proyekAktif.lokasi : "Bandung";
+            const lokasi = (proyekAktif && proyekAktif.lokasi) ? proyekAktif.lokasi : (userProfile && userProfile.city ? userProfile.city : "Bandung");
             const tanggalSekarangFormat = formatTanggalIndoFormal(new Date());
             
             const elemTTD = document.getElementById('txtKotaTanggalTTD');
@@ -1086,8 +1604,7 @@
             renderDaftarProyekKartu();
         }
 
-        // HELPER UNTUK MEMBACA SELURUH BARIS DARI TABEL SUPABASE TANPA LIMIT 1000 ITEM
-        async function fetchAllRows(tableName) {
+        async function fetchAllRowsWithUserFilter(tableName) {
             let allRows = [];
             let page = 0;
             const pageSize = 1000;
@@ -1097,10 +1614,13 @@
                 const from = page * pageSize;
                 const to = from + pageSize - 1;
 
-                const { data, error } = await supabaseClient
-                    .from(tableName)
-                    .select('*')
-                    .range(from, to);
+                let query = supabaseClient.from(tableName).select('*');
+                
+                if (tableName === 'project' && currentUser && !currentUser.isAdmin) {
+                    query = query.eq('user_id', currentUser.userId);
+                }
+
+                const { data, error } = await query.range(from, to);
 
                 if (error) {
                     console.error(`Error fetching ${tableName}:`, error);
@@ -1122,37 +1642,16 @@
             return allRows;
         }
 
-        // FUNGSI SINKRONISASI SUPABASE DENGAN PAGINATION (BYPASS LIMIT 1000 ITEM)
         async function muatDataProyekSemua() {
-            const cachedProject = localStorage.getItem('prorab_listProyek');
-            const cachedAHSP = localStorage.getItem('prorab_listAHSP');
-            const cachedHSD = localStorage.getItem('prorab_listHSD');
-            const cachedSchedule = localStorage.getItem('prorab_listSchedule');
-
-            if (cachedProject && cachedAHSP && cachedHSD) {
-                listProyek = JSON.parse(cachedProject);
-                listAHSPMaster = JSON.parse(cachedAHSP);
-                listHSDMaster = JSON.parse(cachedHSD);
-                if (cachedSchedule) listScheduleMaster = JSON.parse(cachedSchedule);
-
-                renderDaftarProyekKartu();
-                renderAhspCustomDropdownOptions();
-                renderTabelMonitorAHSP();
-                renderTabelMonitorHSD();
-
-                if (proyekAktif) {
-                    const reRefreshed = listProyek.find(p => p.id === proyekAktif.id);
-                    if (reRefreshed) pilihProyek(reRefreshed.id);
-                }
-            }
+            if (!currentUser) return;
 
             try {
-                // Mengambil SEMUA baris dari Supabase secara transparan menggunakan fetchAllRows
-                const [dataProject, dataAHSP, dataHSD, dataSchedule] = await Promise.all([
-                    fetchAllRows('project'),
-                    fetchAllRows('01_ahsp'),
-                    fetchAllRows('02_hsd'),
-                    fetchAllRows('03_schedule')
+                const [dataProject, dataAHSP, dataHSD, dataSchedule, dataDaily] = await Promise.all([
+                    fetchAllRowsWithUserFilter('project'),
+                    fetchAllRowsWithUserFilter('01_ahsp'),
+                    fetchAllRowsWithUserFilter('02_hsd'),
+                    fetchAllRowsWithUserFilter('03_schedule'),
+                    fetchAllRowsWithUserFilter('04_daily_report')
                 ]);
 
                 listProyek = (dataProject || []).map(item => {
@@ -1168,11 +1667,7 @@
                 listAHSPMaster = dataAHSP || [];
                 listHSDMaster = dataHSD || [];
                 listScheduleMaster = dataSchedule || [];
-
-                localStorage.setItem('prorab_listProyek', JSON.stringify(listProyek));
-                localStorage.setItem('prorab_listAHSP', JSON.stringify(listAHSPMaster));
-                localStorage.setItem('prorab_listHSD', JSON.stringify(listHSDMaster));
-                localStorage.setItem('prorab_listSchedule', JSON.stringify(listScheduleMaster));
+                listDailyMaster = dataDaily || [];
 
                 renderDaftarProyekKartu();
                 renderAhspCustomDropdownOptions();
@@ -1182,19 +1677,18 @@
                 if (proyekAktif) {
                     const reRefreshed = listProyek.find(p => p.id === proyekAktif.id);
                     if (reRefreshed) pilihProyek(reRefreshed.id);
+                    else unselectProyek();
                 }
             } catch (err) {
                 console.error("Gagal sinkronisasi data dari Supabase:", err);
-                if (!cachedProject) {
-                    const container = document.getElementById('projectCardsContainer');
-                    if (container) {
-                        container.innerHTML = `
-                            <div class="p-4 text-center text-rose-500 font-bold text-xs col-span-full">
-                                ⚠️ Gagal terhubung ke Database Supabase.<br>
-                                <button onclick="muatDataProyekSemua()" class="mt-2 bg-slate-800 text-white px-3 py-1 rounded-lg">🔄 Coba Lagi</button>
-                            </div>
-                        `;
-                    }
+                const container = document.getElementById('projectCardsContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="p-4 text-center text-rose-500 font-bold text-xs col-span-full">
+                            ⚠️ Gagal terhubung ke Database Supabase.<br>
+                            <button onclick="muatDataProyekSemua()" class="mt-2 bg-slate-800 text-white px-3 py-1 rounded-lg">🔄 Coba Lagi</button>
+                        </div>
+                    `;
                 }
             }
         }
@@ -1532,10 +2026,12 @@
             document.getElementById('btnUnselectProject').classList.remove('hidden');
             document.getElementById('lblActiveProjectBadge').innerText = proyekAktif.id;
             document.getElementById('badgeScheduleProject').innerText = `${proyekAktif.id} — ${proyekAktif.nama_proyek}`;
+            document.getElementById('badgeDailyProject').innerText = `${proyekAktif.id} — ${proyekAktif.nama_proyek}`;
             document.getElementById('lblLokasiProyekAktif').innerText = proyekAktif.lokasi || "Nasional";
             
             document.getElementById('btnSimpanItem').disabled = false;
             document.getElementById('btnSimpanLsItem').disabled = false;
+            document.getElementById('btnSimpanDaily').disabled = false;
 
             document.getElementById('docNamaProyek').innerText = proyekAktif.nama_proyek;
             document.getElementById('docLokasiProyek').innerText = "Lokasi: " + (proyekAktif.lokasi || '-');
@@ -1543,10 +2039,10 @@
             document.getElementById('docKodeProyek').innerText = "ID Proyek: " + proyekAktif.id;
             document.getElementById('docTanggal').innerText = "Tanggal: " + formatTanggalIndoFormal(proyekAktif.tanggal);
             
-            const lokasi = proyekAktif.lokasi || "Bandung";
-            document.getElementById('txtKotaTanggalTTD').innerText = `${lokasi}, ${formatTanggalIndoFormal(new Date())}`;
+            perbaruiTanggalTtdEkspor();
 
             renderBQDanRekapitulasi(proyekAktif.data_bq || []);
+            renderTabelLaporanHarian();
         }
 
         function unselectProyek() {
@@ -1554,10 +2050,12 @@
             document.getElementById('btnUnselectProject').classList.add('hidden');
             document.getElementById('lblActiveProjectBadge').innerText = 'PILIH PROYEK';
             document.getElementById('badgeScheduleProject').innerText = 'PILIH PROYEK';
+            document.getElementById('badgeDailyProject').innerText = 'PILIH PROYEK';
             document.getElementById('lblLokasiProyekAktif').innerText = '-';
 
             document.getElementById('btnSimpanItem').disabled = true;
             document.getElementById('btnSimpanLsItem').disabled = true;
+            document.getElementById('btnSimpanDaily').disabled = true;
 
             document.getElementById('docNamaProyek').innerText = "(Pilih Proyek Terlebih Dahulu)";
             document.getElementById('docLokasiProyek').innerText = "Lokasi: -";
@@ -1566,6 +2064,7 @@
 
             renderDaftarProyekKartu();
             renderBQDanRekapitulasi([]);
+            renderTabelLaporanHarian();
         }
 
         function hitungPreviewHargaItem() {
@@ -1891,6 +2390,186 @@
             });
         }
 
+        // ================= LOGIC LAPORAN HARIAN PROGRES & DOKUMENTASI =================
+        function handlePreviewFotoDaily(input) {
+            dailyFotoBase64Array = [];
+            const container = document.getElementById('previewFotoDailyContainer');
+            container.innerHTML = "";
+
+            if (input.files && input.files.length > 0) {
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const base64Str = e.target.result;
+                        dailyFotoBase64Array.push(base64Str);
+
+                        const imgDiv = document.createElement('div');
+                        imgDiv.className = "relative rounded-lg overflow-hidden border border-slate-200 aspect-square bg-slate-100";
+                        imgDiv.innerHTML = `<img src="${base64Str}" class="w-full h-full object-cover">`;
+                        container.appendChild(imgDiv);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                container.innerHTML = `<span class="text-[10px] text-slate-400 italic col-span-3">Belum ada foto dipilih.</span>`;
+            }
+        }
+
+        async function simpanLaporanHarian() {
+            if(!proyekAktif) {
+                alert("Pilih proyek terlebih dahulu!");
+                return;
+            }
+
+            const idReport = "DLY-" + Date.now();
+            const payload = {
+                id: idReport,
+                id_proyek: proyekAktif.id,
+                tanggal: document.getElementById('dailyTanggal').value,
+                hari_ke: parseInt(document.getElementById('dailyHariKe').value) || 1,
+                cuaca: document.getElementById('dailyCuaca').value,
+                tenaga_kerja: document.getElementById('dailyTenaga').value,
+                material_alat: document.getElementById('dailyMaterial').value,
+                kegiatan: document.getElementById('dailyKegiatan').value,
+                kendala: document.getElementById('dailyKendala').value,
+                foto_json: JSON.stringify(dailyFotoBase64Array)
+            };
+
+            const { error } = await supabaseClient
+                .from('04_daily_report')
+                .insert([payload]);
+
+            if(!error) {
+                alert("Laporan Harian Berhasil Disimpan!");
+                document.getElementById('dailyHariKe').value = "";
+                document.getElementById('dailyTenaga').value = "";
+                document.getElementById('dailyMaterial').value = "";
+                document.getElementById('dailyKegiatan').value = "";
+                document.getElementById('dailyKendala').value = "";
+                document.getElementById('dailyFotoInput').value = "";
+                document.getElementById('previewFotoDailyContainer').innerHTML = `<span class="text-[10px] text-slate-400 italic col-span-3">Belum ada foto dipilih.</span>`;
+                dailyFotoBase64Array = [];
+                muatDataProyekSemua();
+            } else {
+                alert("Gagal menyimpan laporan harian: " + error.message);
+            }
+        }
+
+        function renderTabelLaporanHarian() {
+            const tbody = document.getElementById('tabelDailyReportRows');
+            tbody.innerHTML = "";
+
+            if(!proyekAktif) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu di tab 'Dashboard & RAB Proyek'.</td></tr>`;
+                return;
+            }
+
+            const projDaily = listDailyMaster.filter(d => d.id_proyek === proyekAktif.id);
+
+            if(projDaily.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada laporan harian untuk proyek ini.</td></tr>`;
+                return;
+            }
+
+            projDaily.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            projDaily.forEach((item, idx) => {
+                let fotoList = [];
+                if(item.foto_json) {
+                    try { fotoList = typeof item.foto_json === 'string' ? JSON.parse(item.foto_json) : item.foto_json; } catch(e){}
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-200";
+                tr.innerHTML = `
+                    <td class="p-2.5 text-center font-bold text-slate-400">${idx + 1}</td>
+                    <td class="p-2.5 text-center font-mono font-bold">${item.tanggal || '-'}</td>
+                    <td class="p-2.5 text-center font-bold text-amber-600">Hari ke-${item.hari_ke || '-'}</td>
+                    <td class="p-2.5 text-center font-semibold text-slate-700">${item.cuaca || '-'}</td>
+                    <td class="p-2.5 font-medium text-slate-800">${item.kegiatan || '-'}<br><span class="text-[10px] text-slate-400 font-normal">Tenaga: ${item.tenaga_kerja || '-'}</span></td>
+                    <td class="p-2.5 text-center font-bold text-blue-600">${fotoList.length} 📷</td>
+                    <td class="p-2.5 text-center flex justify-center gap-1">
+                        <button onclick="bukaModalPrintDaily('${item.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-2 py-1 rounded shadow transition" title="Lihat/Cetak Dokumen">
+                            📄 Detail
+                        </button>
+                        <button onclick="hapusLaporanHarian('${item.id}')" class="text-rose-500 hover:text-rose-700 font-bold p-1" title="Hapus Laporan">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function bukaModalPrintDaily(idDaily) {
+            const item = listDailyMaster.find(d => d.id === idDaily);
+            if(!item) return;
+
+            let fotoList = [];
+            if(item.foto_json) {
+                try { fotoList = typeof item.foto_json === 'string' ? JSON.parse(item.foto_json) : item.foto_json; } catch(e){}
+            }
+
+            document.getElementById('viewDailyNamaProyek').innerText = proyekAktif ? proyekAktif.nama_proyek : '-';
+            document.getElementById('viewDailyTgl').innerText = "Tanggal: " + formatTanggalIndoFormal(item.tanggal);
+            document.getElementById('viewDailyHariKe').innerText = "Hari Kerja Ke-" + (item.hari_ke || '-');
+            document.getElementById('viewDailyCuaca').innerText = item.cuaca || '-';
+            document.getElementById('viewDailyTenaga').innerText = item.tenaga_kerja || '-';
+            document.getElementById('viewDailyMaterial').innerText = item.material_alat || '-';
+            document.getElementById('viewDailyKegiatan').innerText = item.kegiatan || '-';
+            document.getElementById('viewDailyKendala').innerText = item.kendala || 'Tidak ada kendala.';
+
+            const gallery = document.getElementById('viewDailyFotoGallery');
+            gallery.innerHTML = "";
+            if(fotoList.length === 0) {
+                gallery.innerHTML = `<span class="text-xs text-slate-400 italic">Tidak ada dokumentasi foto.</span>`;
+            } else {
+                fotoList.forEach(fotoBase64 => {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = "border rounded-lg overflow-hidden bg-slate-100 aspect-video";
+                    imgDiv.innerHTML = `<img src="${fotoBase64}" class="w-full h-full object-cover">`;
+                    gallery.appendChild(imgDiv);
+                });
+            }
+
+            document.getElementById('modalPrintDaily').classList.remove('hidden');
+        }
+
+        function tutupModalPrintDaily() {
+            document.getElementById('modalPrintDaily').classList.add('hidden');
+        }
+
+        function cetakDokumenDailyPDF() {
+            const clone = document.getElementById('areaCetakDaily').cloneNode(true);
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.padding = "10px";
+            pdfContainer.appendChild(clone);
+
+            const opt = {
+                margin:       [0.3, 0.3, 0.3, 0.3],
+                filename:     `Laporan_Harian_${proyekAktif ? proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_') : 'Proyek'}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(pdfContainer).save();
+        }
+
+        async function hapusLaporanHarian(idDaily) {
+            if(!confirm("Yakin ingin menghapus laporan harian ini?")) return;
+
+            const { error } = await supabaseClient
+                .from('04_daily_report')
+                .delete()
+                .eq('id', idDaily);
+
+            if(!error) {
+                muatDataProyekSemua();
+            } else {
+                alert("Gagal menghapus laporan: " + error.message);
+            }
+        }
+
+        // ================= PENJADWALAN & KURVA S =================
         function updateWorkDaysRow(trElement) {
             const startVal = trElement.querySelector('.inp-sch-start').value;
             const finishVal = trElement.querySelector('.inp-sch-finish').value;
@@ -2135,6 +2814,95 @@
             });
         }
 
+        async function duplikatBarisHSD(kodeHSD) {
+            const item = listHSDMaster.find(h => h.kode === kodeHSD);
+            if (!item) return;
+
+            const newKode = item.kode + "_COPY_" + Math.floor(Math.random() * 100);
+            const newNama = (item.nama_item || item.uraian || "") + " (Salinan)";
+
+            if (!confirm(`Duplikat HSD [${kodeHSD}] menjadi [${newKode}]?`)) return;
+
+            const payload = {
+                kode: newKode,
+                nama_item: newNama,
+                satuan: item.satuan,
+                harga: item.harga,
+                lokasi: item.lokasi
+            };
+
+            const { error } = await supabaseClient
+                .from('02_hsd')
+                .insert([payload]);
+
+            if (!error) {
+                alert("HSD berhasil diduplikat!");
+                muatDataProyekSemua();
+            } else {
+                alert("Gagal duplikat HSD: " + error.message);
+            }
+        }
+
+        async function duplikatBarisAHSP(kodeAHSP) {
+            const item = listAHSPMaster.find(a => a.kode_ahsp === kodeAHSP);
+            if (!item) return;
+
+            const newKode = item.kode_ahsp + "_COPY_" + Math.floor(Math.random() * 100);
+            const newNama = (item.nama_pekerjaan || "") + " (Salinan)";
+
+            if (!confirm(`Duplikat AHSP Pekerjaan [${kodeAHSP}] menjadi [${newKode}]?`)) return;
+
+            const payload = {
+                kode_ahsp: newKode,
+                nama_pekerjaan: newNama,
+                kategori: item.kategori,
+                satuan: item.satuan,
+                overhead_persen: item.overhead_persen,
+                komponen_json: item.komponen_json
+            };
+
+            const { error } = await supabaseClient
+                .from('01_ahsp')
+                .insert([payload]);
+
+            if (!error) {
+                alert("AHSP Pekerjaan berhasil diduplikat!");
+                muatDataProyekSemua();
+            } else {
+                alert("Gagal duplikat AHSP: " + error.message);
+            }
+        }
+
+        function exportMasterHSD(format = 'csv') {
+            if (listHSDMaster.length === 0) {
+                alert("Master HSD Kosong!");
+                return;
+            }
+            const ws = XLSX.utils.json_to_sheet(listHSDMaster);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Master_HSD");
+            XLSX.writeFile(wb, `Master_HSD_ProRAB.${format === 'csv' ? 'csv' : 'xlsx'}`);
+        }
+
+        function exportMasterAHSP(format = 'csv') {
+            if (listAHSPMaster.length === 0) {
+                alert("Master AHSP Kosong!");
+                return;
+            }
+            const dataFlat = listAHSPMaster.map(item => ({
+                kode_ahsp: item.kode_ahsp,
+                nama_pekerjaan: item.nama_pekerjaan,
+                kategori: item.kategori,
+                satuan: item.satuan,
+                overhead_persen: item.overhead_persen,
+                komponen_json: typeof item.komponen_json === 'object' ? JSON.stringify(item.komponen_json) : item.komponen_json
+            }));
+            const ws = XLSX.utils.json_to_sheet(dataFlat);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Master_AHSP");
+            XLSX.writeFile(wb, `Master_AHSP_ProRAB.${format === 'csv' ? 'csv' : 'xlsx'}`);
+        }
+
         function renderTabelMonitorHSD() {
             const tbody = document.getElementById('tabelMasterHSDMasterRows');
             const badge = document.getElementById('badgeCountHsd');
@@ -2166,6 +2934,7 @@
                     <td class="p-2 text-right font-mono font-bold">Rp ${hr}</td>
                     <td class="p-2 text-center font-bold text-slate-500">${item.lokasi || 'Nasional'}</td>
                     <td class="p-2 text-center flex justify-center gap-1">
+                        <button onclick="duplikatBarisHSD('${item.kode}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs" title="Duplikat Item HSD">📋</button>
                         <button onclick="editBarisHSD('${item.kode}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs" title="Edit HSD">✏️</button>
                         <button onclick="hapusBarisHSD('${item.kode}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs" title="Hapus HSD">✕</button>
                     </td>
@@ -2204,6 +2973,7 @@
                     <td class="p-2 text-center font-bold">${item.overhead_persen || 15}%</td>
                     <td class="p-2 text-center flex justify-center gap-1">
                         <button onclick="previewBarisAHSP('${item.kode_ahsp}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs" title="Preview Rincian Koefisien">🔍</button>
+                        <button onclick="duplikatBarisAHSP('${item.kode_ahsp}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs" title="Duplikat Master AHSP">📋</button>
                         <button onclick="editBarisAHSP('${item.kode_ahsp}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs" title="Edit Master AHSP">✏️</button>
                         <button onclick="hapusBarisAHSP('${item.kode_ahsp}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs" title="Hapus Master AHSP">✕</button>
                     </td>
@@ -2469,9 +3239,11 @@
         function tutupModalBuatProyek() { document.getElementById('modalProyek').classList.add('hidden'); }
 
         async function eksekusiSimpanProyekBaru() {
+            if(!currentUser) return;
             const newId = "PRJ-" + Date.now().toString().slice(-4);
             const payload = {
                 id: newId,
+                user_id: currentUser.userId,
                 nama_proyek: document.getElementById('modalNamaProyek').value,
                 pemilik: document.getElementById('modalPemilik').value,
                 lokasi: document.getElementById('modalLokasi').value,
@@ -2523,7 +3295,8 @@
             if(!proyekAktif) { alert("Pilih proyek terlebih dahulu!"); return; }
             const cleanClone = buatElemenPrintClean();
             let wb = XLSX.utils.table_to_book(cleanClone, {sheet: "RAB Proyek"});
-            XLSX.writeFile(wb, `RAB_${proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_')}_KayunaStudio.xlsx`);
+            const compName = (userProfile && userProfile.name ? userProfile.name : "ProRAB").replace(/[^a-zA-Z0-9]/g, '_');
+            XLSX.writeFile(wb, `RAB_${proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_')}_${compName}.xlsx`);
         }
 
         function exportToPDFSummary() {
@@ -2534,9 +3307,11 @@
             pdfContainer.style.padding = "10px";
             pdfContainer.appendChild(cleanClone);
 
+            const compName = (userProfile && userProfile.name ? userProfile.name : "ProRAB").replace(/[^a-zA-Z0-9]/g, '_');
+
             const opt = {
                 margin:       [0.3, 0.3, 0.3, 0.3],
-                filename:     `RAB_${proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_')}_KayunaStudio.pdf`,
+                filename:     `RAB_${proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_')}_${compName}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
