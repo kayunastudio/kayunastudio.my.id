@@ -100,9 +100,24 @@
                 </div>
             </div>
 
-            <div class="bg-[#F5EBE0] p-4 sm:p-6 rounded-xl shadow-md lg:col-span-1 border border-[#E3D5CA] flex flex-col justify-between h-full order-2 lg:order-1">
+            <div class="bg-[#F5EBE0] p-4 sm:p-6 rounded-xl shadow-md lg:col-span-1 border border-[#E3D5CA] flex flex-col justify-between h-full order-2 lg:order-1 relative overflow-hidden">
                 <div>
                     <h2 class="text-lg sm:text-xl font-bold text-[#78350F] mb-4 border-b border-[#E3D5CA] pb-2">1. Input Parameter Dokumen</h2>
+                    
+                    <!-- FITUR BARU: BANNER PENGINGAT OVERDUE ESTETIK -->
+                    <div id="overdueBanner" class="hidden mb-4 bg-gradient-to-r from-rose-50 to-white border-l-4 border-rose-600 p-3 rounded-r-xl shadow-sm flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-rose-600 text-lg animate-pulse">⚠️</span>
+                            <div>
+                                <h4 class="text-[11px] font-extrabold text-rose-800 uppercase tracking-wider">Perhatian: Jatuh Tempo!</h4>
+                                <p class="text-[10px] text-rose-600 font-medium">Invoice tertunda lebih dari <span id="txtOverdueDays">30</span> hari.</p>
+                            </div>
+                        </div>
+                        <button id="btnRemindWA" type="button" class="w-full bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-200 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 mt-1">
+                            <span>📱</span> Kirim Reminder WA
+                        </button>
+                    </div>
+
                     <form id="invoiceForm" onsubmit="event.preventDefault(); prosesDataInvoice();">
                         <div class="grid grid-cols-3 gap-2 mb-4">
                             <div class="col-span-2">
@@ -329,11 +344,9 @@
             document.getElementById('custHp').value = "";
             document.getElementById('custAlamat').value = "";
             document.getElementById('wrapper-item-transaksi').innerHTML = "";
+            document.getElementById('overdueBanner').classList.add('hidden'); // Sembunyikan banner overdue
         }
 
-        // =========================================================================
-        // PERBAIKAN: METODE EXPORT PDF DINAMIS DENGAN DELAY UNTUK SMARTPHONE
-        // =========================================================================
         function pemicuCetakPdfDinamis() {
             const nomorFaktur = document.getElementById('pdf-inv-no').innerText.trim();
             const namaKlien = document.getElementById('pdf-cust-nama').innerText.trim();
@@ -345,12 +358,9 @@
                 document.title = `Invoice_Kayuna_Studio`;
             }
 
-            // Memberikan sedikit jeda waktu (timeout) agar OS smartphone (Android/iOS)
-            // sempat menangkap penamaan judul title yang baru sebelum memicu print dialog.
             setTimeout(() => {
                 window.print();
                 
-                // Kembalikan judul halaman setelah proses dialog cetak selesai dipicu
                 setTimeout(() => {
                     document.title = judulAsliHalaman;
                 }, 1000);
@@ -406,7 +416,6 @@
             .then(data => {
                 listDatabaseInvoice = data.map(row => JSON.parse(row.datajson));
                 
-                // Jalankan update ringkasan statistik database
                 hitungDanTampilkanStatistik();
 
                 const searchVal = document.getElementById('dbSearchInput').value;
@@ -426,7 +435,6 @@
             });
         }
 
-        // FUNGSI BARU: MENGHITUNG STATISTIK KLIEN, NOMINAL TOTAL LUNAS & BELUM LUNAS
         function hitungDanTampilkanStatistik() {
             let totalKlien = listDatabaseInvoice.length;
             let totalLunas = 0;
@@ -653,8 +661,14 @@
                 if(currentInvoiceData && currentInvoiceData.noInvoice === noInvoice) {
                     document.getElementById('invStatus').value = newStatus;
                     perbaruiStatusStempelLive(newStatus);
+                    
+                    // Sembunyikan banner jika berubah ke Lunas dari menu cepat
+                    if(newStatus === 'Lunas') {
+                        document.getElementById('overdueBanner').classList.add('hidden');
+                    }
                 }
                 kirimKeSpreadsheetProxy(listDatabaseInvoice[index], true);
+                renderDatabaseTable(); // render ulang table untuk meng-update tag overdue
             }
         }
 
@@ -693,6 +707,32 @@
             document.getElementById('custAlamat').value = invoice.pelanggan?.alamat || '';
 
             perbaruiStatusStempelLive(invoice.status);
+
+            // LOGIKA PENGINGAT OVERDUE: Hitung selisih tanggal (Lebih dari 30 hari)
+            const banner = document.getElementById('overdueBanner');
+            if (invoice.tanggal && invoice.status !== 'Lunas') {
+                const invDate = new Date(invoice.tanggal);
+                const hariIni = new Date();
+                const selisihWaktu = Math.abs(hariIni - invDate);
+                const selisihHari = Math.ceil(selisihWaktu / (1000 * 60 * 60 * 24));
+                
+                if (selisihHari > 30) {
+                    banner.classList.remove('hidden');
+                    document.getElementById('txtOverdueDays').innerText = selisihHari;
+                    
+                    // Siapkan link pengingat WA Dinamis
+                    const waBtn = document.getElementById('btnRemindWA');
+                    const noHpMentah = invoice.pelanggan?.hp || "";
+                    const noHpWA = noHpMentah.startsWith('0') ? '62' + noHpMentah.substring(1) : noHpMentah;
+                    const pesanWa = `Halo ${invoice.pelanggan?.nama}, ini adalah pengingat dari Kayuna Studio. \n\nInvoice Anda dengan Nomor *${invoice.noInvoice}* tertanggal *${formatTanggalIndonesia(invoice.tanggal)}* telah melewati batas waktu pelunasan lebih dari 1 bulan (Total Sisa Pembayaran: *Rp ${invoice.total.toLocaleString('id-ID')}*).\n\nMohon konfirmasinya. Terima kasih!`;
+                    
+                    waBtn.onclick = () => window.open(`https://wa.me/${noHpWA}?text=${encodeURIComponent(pesanWa)}`, '_blank');
+                } else {
+                    banner.classList.add('hidden');
+                }
+            } else {
+                banner.classList.add('hidden');
+            }
 
             const subtotalVal = invoice.subtotal || invoice.total || 0;
             const dpVal = invoice.dpNominal || 0;
@@ -766,36 +806,56 @@
                 return;
             }
 
+            const hariIni = new Date();
+
             targetArrayData.forEach((invoice, idx) => {
                 const statusStr = invoice.status || "Belum Lunas";
                 const isLunas = statusStr === "Lunas";
+                
+                // Cek status Overdue untuk Indikator Baris Tabel
+                let isOverdue = false;
+                let selisihHari = 0;
+                if (!isLunas && invoice.tanggal) {
+                    const invDate = new Date(invoice.tanggal);
+                    const selisihWaktu = Math.abs(hariIni - invDate);
+                    selisihHari = Math.ceil(selisihWaktu / (1000 * 60 * 60 * 24));
+                    if(selisihHari > 30) isOverdue = true;
+                }
+
                 const badgeClass = isLunas 
                     ? "bg-emerald-100 text-emerald-800 border-emerald-200" 
                     : "bg-amber-100 text-amber-800 border-amber-200";
+                
+                // Menyuntikkan tag estetik bila overdue > 1 bulan
+                const tagOverdueHtml = isOverdue ? 
+                    `<div class="text-[9px] text-rose-500 font-bold mt-1.5 flex items-center justify-center gap-1 bg-rose-50 py-0.5 rounded border border-rose-100">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span> Overdue ${selisihHari} Hari
+                    </div>` : '';
 
                 const isChecked = (currentInvoiceData && currentInvoiceData.noInvoice === invoice.noInvoice) ? "checked" : "";
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-[#F5EBE0]/30 border-b border-gray-100 text-xs";
                 tr.innerHTML = `
-                    <td class="p-2 sm:p-3 text-center">
+                    <td class="p-2 sm:p-3 text-center align-middle">
                         <input type="radio" name="printData" value="${invoice.noInvoice}" ${isChecked} onchange="pilihDataUntukCetak(this.value)" class="print-selector h-4 w-4 text-[#78350F] focus:ring-[#78350F] border-gray-300 cursor-pointer">
                     </td>
-                    <td class="p-2 sm:p-3 font-bold text-[#78350F] break-all">${invoice.noInvoice}</td>
-                    <td class="p-2 sm:p-3">
+                    <td class="p-2 sm:p-3 font-bold text-[#78350F] break-all align-middle">${invoice.noInvoice}</td>
+                    <td class="p-2 sm:p-3 align-middle">
                         <div class="font-semibold text-gray-900">${invoice.pelanggan?.nama || '-'}</div>
                         <div class="text-[10px] text-gray-400">${formatTanggalIndonesia(invoice.tanggal)}</div>
                     </td>
-                    <td class="p-2 sm:p-3 font-bold text-gray-900 whitespace-nowrap">Rp. ${invoice.total.toLocaleString('id-ID')}</td>
-                    <td class="p-2 sm:p-3 text-center">
+                    <td class="p-2 sm:p-3 font-bold text-gray-900 whitespace-nowrap align-middle">Rp. ${invoice.total.toLocaleString('id-ID')}</td>
+                    <td class="p-2 sm:p-3 text-center align-middle">
                         <button onclick="toggleLiveStatus('${invoice.noInvoice}', '${statusStr}')" title="Klik untuk ubah status cepat" class="px-2 py-0.5 sm:py-1 rounded-full border text-[9px] sm:text-[10px] font-bold transition duration-150 whitespace-nowrap ${badgeClass}">
                             ${isLunas ? "✅ Lunas" : "❌ Belum"}
                         </button>
+                        ${tagOverdueHtml}
                     </td>
-                    <td class="p-2 sm:p-3 text-center">
+                    <td class="p-2 sm:p-3 text-center align-middle">
                         <div class="flex flex-col sm:flex-row justify-center gap-1">
-                            <button onclick="bukaFakturDariDb('${invoice.noInvoice}')" class="bg-[#78350F] text-white py-1 px-2 rounded text-[10px] sm:text-[11px] font-semibold hover:bg-[#451A03] w-full sm:w-auto">Buka</button>
-                            <button onclick="hapusFakturDariDb('${invoice.noInvoice}')" class="bg-rose-50 text-rose-600 border border-rose-200 py-1 px-2 rounded text-[10px] sm:text-[11px] font-semibold hover:bg-rose-100 w-full sm:w-auto">Hapus</button>
+                            <button onclick="bukaFakturDariDb('${invoice.noInvoice}')" class="bg-[#78350F] text-white py-1 px-2 rounded text-[10px] sm:text-[11px] font-semibold hover:bg-[#451A03] w-full sm:w-auto shadow-sm">Buka</button>
+                            <button onclick="hapusFakturDariDb('${invoice.noInvoice}')" class="bg-rose-50 text-rose-600 border border-rose-200 py-1 px-2 rounded text-[10px] sm:text-[11px] font-semibold hover:bg-rose-100 w-full sm:w-auto shadow-sm">Hapus</button>
                         </div>
                     </td>
                 `;
