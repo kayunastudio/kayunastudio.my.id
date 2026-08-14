@@ -106,9 +106,24 @@
             </div>
 
             <!-- PANEL INPUT FORM PARAMETER -->
-            <div class="bg-[#E6F4EA] p-4 sm:p-6 rounded-xl shadow-md lg:col-span-1 border border-[#a7f3d0] flex flex-col justify-between h-full order-2 lg:order-1">
+            <div class="bg-[#E6F4EA] p-4 sm:p-6 rounded-xl shadow-md lg:col-span-1 border border-[#a7f3d0] flex flex-col justify-between h-full order-2 lg:order-1 relative">
                 <div>
                     <h2 class="text-lg sm:text-xl font-bold text-[#064e3b] mb-4 border-b border-[#a7f3d0] pb-2">1. Input Parameter Dokumen</h2>
+                    
+                    <!-- BANNER PENGINGAT OVERDUE ESTETIK -->
+                    <div id="overdueBanner" class="hidden mb-4 bg-gradient-to-r from-rose-50 to-white border-l-4 border-rose-600 p-3 rounded-r-xl shadow-sm flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-rose-600 text-lg animate-pulse">⚠️</span>
+                            <div>
+                                <h4 class="text-[11px] font-extrabold text-rose-800 uppercase tracking-wider">Perhatian: Jatuh Tempo!</h4>
+                                <p class="text-[10px] text-rose-600 font-medium">Invoice tertunda lebih dari <span id="txtOverdueDays">30</span> hari.</p>
+                            </div>
+                        </div>
+                        <button id="btnRemindWA" type="button" class="w-full bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-200 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 mt-1">
+                            <span>📱</span> Kirim Reminder WA
+                        </button>
+                    </div>
+
                     <form id="invoiceForm" onsubmit="event.preventDefault(); prosesDataInvoice();">
                         <div class="grid grid-cols-3 gap-2 mb-4">
                             <div class="col-span-2">
@@ -130,8 +145,15 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Jatuh Tempo</label>
-                                <input type="date" id="invTempo" required class="w-full border border-[#a7f3d0] p-2 rounded text-xs sm:text-sm focus:outline-none focus:border-[#059669] bg-white text-gray-700">
+                                <input type="date" id="invTempo" required onchange="perbaruiTombolKalender()" class="w-full border border-[#a7f3d0] p-2 rounded text-xs sm:text-sm focus:outline-none focus:border-[#059669] bg-white text-gray-700">
                             </div>
+                        </div>
+
+                        <!-- FITUR BARU: TOMBOL ADD TO CALENDAR GOOGLE -->
+                        <div id="calendarContainer" class="mb-4 hidden">
+                            <a id="googleCalendarLink" href="#" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                                <span>📅</span> Tambahkan Jatuh Tempo ke Google Calendar
+                            </a>
                         </div>
 
                         <div class="bg-[#F4FBF7]/60 p-3 rounded-lg border border-[#a7f3d0] mb-4 grid grid-cols-2 gap-2">
@@ -334,6 +356,28 @@
             dateObj.setDate(dateObj.getDate() + 2);
             const formatYmd = dateObj.toISOString().split('T')[0];
             document.getElementById('invTempo').value = formatYmd;
+            perbaruiTombolKalender();
+        }
+
+        function perbaruiTombolKalender() {
+            const tglTempo = document.getElementById('invTempo').value;
+            const noInv = document.getElementById('invNo').value || "Invoice";
+            const namaKlien = document.getElementById('custNama').value || "Pelanggan";
+            const calendarContainer = document.getElementById('calendarContainer');
+            const gCalLink = document.getElementById('googleCalendarLink');
+
+            if (tglTempo) {
+                calendarContainer.classList.remove('hidden');
+                // Format tanggal untuk Google Calendar (YYYYMMDD)
+                const dateClean = tglTempo.replace(/-/g, '');
+                const textDetail = encodeURIComponent(`Jatuh Tempo Pembayaran ${noInv} - ${namaKlien}`);
+                const details = encodeURIComponent(`Tagihan pelunasan order Sayogi Store untuk klien ${namaKlien} dengan nomor faktur ${noInv}.`);
+                
+                const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${textDetail}&dates=${dateClean}/${dateClean}&details=${details}`;
+                gCalLink.href = googleUrl;
+            } else {
+                calendarContainer.classList.add('hidden');
+            }
         }
 
         function bersihkanFormulirInput() {
@@ -346,6 +390,8 @@
             document.getElementById('custHp').value = "";
             document.getElementById('custAlamat').value = "";
             document.getElementById('wrapper-item-transaksi').innerHTML = "";
+            document.getElementById('overdueBanner').classList.add('hidden');
+            document.getElementById('calendarContainer').classList.add('hidden');
         }
 
         function pemicuCetakPdfDinamis() {
@@ -359,7 +405,6 @@
                 document.title = `Invoice_Sayogi`;
             }
 
-            // Timeout adaptif asinkron untuk kestabilan penamaan di smartphone
             setTimeout(() => {
                 window.print();
                 
@@ -418,7 +463,6 @@
             .then(data => {
                 listDatabaseInvoice = data.map(row => JSON.parse(row.datajson));
                 
-                // Kalkulasi statistik data klien Sayogi
                 hitungDanTampilkanStatistik();
 
                 const searchVal = document.getElementById('dbSearchInput').value;
@@ -664,8 +708,12 @@
                 if(currentInvoiceData && currentInvoiceData.noInvoice === noInvoice) {
                     document.getElementById('invStatus').value = newStatus;
                     perbaruiStatusStempelLive(newStatus);
+                    if(newStatus === 'Lunas') {
+                        document.getElementById('overdueBanner').classList.add('hidden');
+                    }
                 }
                 kirimKeSpreadsheetProxy(listDatabaseInvoice[index], true);
+                renderDatabaseTable();
             }
         }
 
@@ -704,6 +752,32 @@
             document.getElementById('custAlamat').value = invoice.pelanggan?.alamat || '';
 
             perbaruiStatusStempelLive(invoice.status);
+            perbaruiTombolKalender();
+
+            // LOGIKA PENGINGAT OVERDUE (> 30 hari belum lunas)
+            const banner = document.getElementById('overdueBanner');
+            if (invoice.tanggal && invoice.status !== 'Lunas') {
+                const invDate = new Date(invoice.tanggal);
+                const hariIni = new Date();
+                const selisihWaktu = Math.abs(hariIni - invDate);
+                const selisihHari = Math.ceil(selisihWaktu / (1000 * 60 * 60 * 24));
+                
+                if (selisihHari > 30) {
+                    banner.classList.remove('hidden');
+                    document.getElementById('txtOverdueDays').innerText = selisihHari;
+                    
+                    const waBtn = document.getElementById('btnRemindWA');
+                    const noHpMentah = invoice.pelanggan?.hp || "";
+                    const noHpWA = noHpMentah.startsWith('0') ? '62' + noHpMentah.substring(1) : noHpMentah;
+                    const pesanWa = `Halo ${invoice.pelanggan?.nama}, ini adalah pengingat dari Sayogi Store. \n\nInvoice Anda dengan Nomor *${invoice.noInvoice}* tertanggal *${formatTanggalIndonesia(invoice.tanggal)}* telah melewati batas waktu pelunasan lebih dari 1 bulan (Total Sisa Pembayaran: *Rp ${invoice.total.toLocaleString('id-ID')}*).\n\nMohon konfirmasinya. Terima kasih!`;
+                    
+                    waBtn.onclick = () => window.open(`https://wa.me/${noHpWA}?text=${encodeURIComponent(pesanWa)}`, '_blank');
+                } else {
+                    banner.classList.add('hidden');
+                }
+            } else {
+                banner.classList.add('hidden');
+            }
 
             const subtotalVal = invoice.subtotal || invoice.total || 0;
             const dpVal = invoice.dpNominal || 0;
@@ -777,36 +851,54 @@
                 return;
             }
 
+            const hariIni = new Date();
+
             targetArrayData.forEach((invoice, idx) => {
                 const statusStr = invoice.status || "Belum Lunas";
                 const isLunas = statusStr === "Lunas";
+                
+                let isOverdue = false;
+                let selisihHari = 0;
+                if (!isLunas && invoice.tanggal) {
+                    const invDate = new Date(invoice.tanggal);
+                    const selisihWaktu = Math.abs(hariIni - invDate);
+                    selisihHari = Math.ceil(selisihWaktu / (1000 * 60 * 60 * 24));
+                    if(selisihHari > 30) isOverdue = true;
+                }
+
                 const badgeClass = isLunas 
                     ? "bg-emerald-100 text-emerald-800 border-emerald-200" 
                     : "bg-amber-100 text-amber-800 border-amber-200";
+
+                const tagOverdueHtml = isOverdue ? 
+                    `<div class="text-[9px] text-rose-500 font-bold mt-1.5 flex items-center justify-center gap-1 bg-rose-50 py-0.5 rounded border border-rose-100">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span> Overdue ${selisihHari} Hari
+                    </div>` : '';
 
                 const isChecked = (currentInvoiceData && currentInvoiceData.noInvoice === invoice.noInvoice) ? "checked" : "";
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-[#E6F4EA]/30 border-b border-gray-100 text-xs";
                 tr.innerHTML = `
-                    <td class="p-2 sm:p-3 text-center">
+                    <td class="p-2 sm:p-3 text-center align-middle">
                         <input type="radio" name="printData" value="${invoice.noInvoice}" ${isChecked} onchange="pilihDataUntukCetak(this.value)" class="print-selector h-4 w-4 text-[#064e3b] focus:ring-[#064e3b] border-gray-300 cursor-pointer">
                     </td>
-                    <td class="p-2 sm:p-3 font-bold text-[#064e3b] break-all">${invoice.noInvoice}</td>
-                    <td class="p-2 sm:p-3">
+                    <td class="p-2 sm:p-3 font-bold text-[#064e3b] break-all align-middle">${invoice.noInvoice}</td>
+                    <td class="p-2 sm:p-3 align-middle">
                         <div class="font-semibold text-gray-900">${invoice.pelanggan?.nama || '-'}</div>
                         <div class="text-[10px] text-gray-400">${formatTanggalIndonesia(invoice.tanggal)}</div>
                     </td>
-                    <td class="p-2 sm:p-3 font-bold text-gray-900 whitespace-nowrap">Rp. ${invoice.total.toLocaleString('id-ID')}</td>
-                    <td class="p-2 sm:p-3 text-center">
+                    <td class="p-2 sm:p-3 font-bold text-gray-900 whitespace-nowrap align-middle">Rp. ${invoice.total.toLocaleString('id-ID')}</td>
+                    <td class="p-2 sm:p-3 text-center align-middle">
                         <button onclick="toggleLiveStatus('${invoice.noInvoice}', '${statusStr}')" title="Klik untuk ubah status cepat" class="px-2 py-0.5 sm:py-1 rounded-full border text-[9px] sm:text-[10px] font-bold transition duration-150 whitespace-nowrap ${badgeClass}">
                             ${isLunas ? "✅ Lunas" : "❌ Belum"}
                         </button>
+                        ${tagOverdueHtml}
                     </td>
-                    <td class="p-2 sm:p-3 text-center">
+                    <td class="p-2 sm:p-3 text-center align-middle">
                         <div class="flex flex-col sm:flex-row justify-center gap-1">
-                            <button onclick="bukaFakturDariDb('${invoice.noInvoice}')" class="bg-[#064e3b] text-white py-1 px-2 rounded text-[10px] sm:text-[11px] font-semibold hover:bg-[#022c22] w-full sm:w-auto">Buka</button>
-                            <button onclick="hapusFakturDariDb('${invoice.noInvoice}')" class="bg-rose-50 text-rose-600 border border-rose-200 py-1 px-2 rounded text-[10px] sm:text-[11px] font-semibold hover:bg-rose-100 w-full sm:w-auto">Hapus</button>
+                            <button onclick="bukaFakturDariDb('${invoice.noInvoice}')" class="bg-[#064e3b] text-white py-1 px-2 rounded text-[10px] sm:text-[11px] font-semibold hover:bg-[#022c22] w-full sm:w-auto shadow-sm">Buka</button>
+                            <button onclick="hapusFakturDariDb('${invoice.noInvoice}')" class="bg-rose-50 text-rose-600 border border-rose-200 py-1 px-2 rounded text-[10px] sm:text-[11px] font-semibold hover:bg-rose-100 w-full sm:w-auto shadow-sm">Hapus</button>
                         </div>
                     </td>
                 `;
