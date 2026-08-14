@@ -40,7 +40,8 @@
             </div>
             
             <div class="flex items-center gap-2">
-                <button onclick="muatDataKeuangan(); perbaruiPasarBibit();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded-xl shadow text-xs transition flex items-center gap-1.5 font-mono">
+                <!-- MEMPERBAIKI BUG: Hapus perbaruiPasarBibit() dari tombol Sync -->
+                <button onclick="muatDataKeuangan();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded-xl shadow text-xs transition flex items-center gap-1.5 font-mono">
                     <span>🔄</span> <span class="hidden sm:inline">Sync Supabase</span>
                 </button>
                 <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3.5 rounded-xl text-xs transition flex items-center gap-1.5">
@@ -90,7 +91,7 @@
             </div>
         </div>
 
-        <!-- KATEGORI RASIO & MACROECONOMIC INSIGHT -->
+        <!-- KATEGORI RASIO & MEMO BELANJA -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col items-center justify-center min-h-[180px] sm:min-h-[220px]">
                 <div class="w-full flex justify-between items-center mb-2 border-b border-slate-50 pb-1">
@@ -103,21 +104,24 @@
                 </div>
             </div>
 
-            <!-- MACROECONOMIC INSIGHT -->
-            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col justify-between gap-2 print-hide-macro">
-                <div class="w-full flex justify-between items-center border-b border-slate-50 pb-1 mb-1">
-                    <h3 class="text-[11px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">🏛️ Macroeconomic Insight & Advisor</h3>
-                    <span class="text-[8px] sm:text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold">Live</span>
+            <!-- MEMO & DAFTAR BELANJAAN -->
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col justify-between gap-3 print-hide-macro">
+                <div class="w-full flex justify-between items-center border-b border-slate-50 pb-1.5">
+                    <h3 class="text-[11px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">📝 Memo & Daftar Belanjaan</h3>
+                    <span class="text-[8px] sm:text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold" id="lblTotalMemo">0 Item</span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] sm:text-[11px] text-slate-500 leading-relaxed">
-                    <div>
-                        <span class="font-bold text-slate-800 block mb-0.5">📈 Sentimen Inflasi Nasional:</span>
-                        <p>Laju inflasi domestik terkendali. Disarankan mempertahankan porsi dana darurat likuid minimal 20% dari total aset kas.</p>
-                    </div>
-                    <div>
-                        <span class="font-bold text-slate-800 block mb-0.5">🏢 Suku Bunga Global (BI / Fed):</span>
-                        <p>Proyeksi stabilitas suku bunga acuan. Optimalkan instrumen reksa dana pendapatan tetap.</p>
-                    </div>
+                
+                <form onsubmit="event.preventDefault(); tambahMemoBelanja();" class="flex gap-2 no-print">
+                    <input type="text" id="memoInputTitle" placeholder="Nama barang / memo..." required class="flex-1 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                    <input type="number" id="memoInputQty" placeholder="Qty" value="1" min="1" class="w-14 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none text-center">
+                    <input type="number" id="memoInputPrice" placeholder="Est. Rp" class="w-24 sm:w-28 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">➕ Tambah</button>
+                </form>
+
+                <div class="overflow-y-auto max-h-36 custom-scroll pr-1">
+                    <ul id="memoListContainer" class="space-y-1.5 text-[11px]">
+                        <li class="text-slate-400 italic text-center py-2">Memuat daftar belanjaan...</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -274,16 +278,29 @@
                     </div>
                 </div>
 
-                <!-- LIVE BIBIT TICKER -->
-                <div class="bg-gradient-to-br from-slate-900 to-slate-950 text-gray-100 p-3.5 rounded-2xl shadow-sm border border-slate-800 flex flex-col no-print">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
-                        <div class="flex items-center gap-1.5">
-                            <h3 class="text-[10px] sm:text-xs font-bold text-emerald-400 uppercase tracking-wider">🟢 Live Bibit Ticker</h3>
-                            <span class="text-[8px] sm:text-[9px] text-slate-500 font-medium font-mono" id="lblBibitTimestamp">Sync...</span>
+                <!-- DAFTAR KEBUTUHAN VS KEINGINAN -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/60 flex flex-col no-print space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div>
+                            <h3 class="text-xs sm:text-sm font-bold text-indigo-700 uppercase tracking-wider">🛒 Daftar Kebutuhan</h3>
+                            <p class="text-[9px] sm:text-[10px] text-slate-400">Prioritaskan pos pengeluaran berdasarkan tipe kebutuhan</p>
                         </div>
-                        <button onclick="perbaruiPasarBibit()" class="text-[8px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded-md transition">🔄</button>
+                        <span class="text-[9px] font-mono font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full" id="lblNeedsWantsCount">0 Items</span>
                     </div>
-                    <div id="bibit-ticker-container" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+
+                    <form onsubmit="event.preventDefault(); tambahNeedsWants();" class="flex flex-wrap items-center gap-2 border-b pb-3">
+                        <input type="text" id="nwTitle" placeholder="Nama item / barang..." required class="flex-1 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none min-w-[140px]">
+                        <select id="nwType" class="border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none font-bold">
+                            <option value="Kebutuhan" class="text-emerald-600">🟢 Kebutuhan</option>
+                            <option value="Keinginan" class="text-amber-600">🟡 Keinginan</option>
+                        </select>
+                        <input type="number" id="nwPrice" placeholder="Est. Rp" class="w-24 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">➕ Tambah</button>
+                    </form>
+
+                    <div id="needsWantsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto custom-scroll pr-1">
+                        <div class="text-slate-400 italic text-center py-4 col-span-2 text-xs">Memuat daftar kebutuhan...</div>
+                    </div>
                 </div>
 
             </div>
@@ -307,7 +324,7 @@
     </div>
 
     <script>
-        // CONFIG SUPABASE CREDENTIALS
+        // MENGGUNAKAN KEY API SUPABASE ANDA SECARA TEPAT DARI INDEX_2.HTML
         const SUPABASE_URL = "https://spetgpwpkjfifgvclwyl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZXRncHdwa2pmaWZndmNsd3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjkwNzYsImV4cCI6MjEwMTIwNTA3Nn0.oQzAtPKKpdejAY1y5cjBRoNZIK2Yp-oZMDxmXDESOUk";
 
@@ -316,6 +333,8 @@
 
         let logArusKeuanganKeluarga = [];
         let logTargetWishlistCloud = [];
+        let logMemoBelanja = [];
+        let logNeedsWants = [];
         let stringFileBase64 = "";
         let totalSaldoAktifGlobal = 0;
         let chartInstances = { Bersama: null, Irfan: null, Hana: null, Kategori: null, MutasiLine: null };
@@ -323,8 +342,9 @@
         document.addEventListener("DOMContentLoaded", () => {
             resetFormMutasi();
             document.getElementById('txFileBukti').addEventListener('change', konversiFileKeBase64);
+            
+            // HANYA MEMANGGIL muatDataKeuangan() - error pemanggilan Bibit sudah dihapus
             muatDataKeuangan();
-            perbaruiPasarBibit();
         });
 
         function konversiFileKeBase64(e) {
@@ -335,37 +355,7 @@
             reader.readAsDataURL(file);
         }
 
-        function perbaruiPasarBibit() {
-            const container = document.getElementById('bibit-ticker-container');
-            const stamp = document.getElementById('lblBibitTimestamp');
-            stamp.innerText = `${new Date().toLocaleTimeString('id-ID')} WIB`;
-
-            const daftarAsetBibit = [
-                { tipe: "SAHAM", nama: "IHSG (Indeks)", nilai: "7,245.80", return: "+1.25%", naik: true },
-                { tipe: "RDPU", nama: "Sucor Sharia Money", nilai: "1,640.20", return: "+4.65%", naik: true },
-                { tipe: "RDPU", nama: "Batavia Dana Kas", nilai: "1,580.45", return: "+4.30%", naik: true },
-                { tipe: "OBLIGASI", nama: "ABF Indo Bond", nilai: "5,120.10", return: "+6.85%", naik: true },
-                { tipe: "SAHAM", nama: "Sucor Equity Fund", nilai: "2,450.35", return: "+11.40%", naik: true },
-                { tipe: "BLUECHIP", nama: "BBCA - Bank Central", nilai: "Rp 10,250", return: "+0.98%", naik: true }
-            ];
-
-            container.innerHTML = "";
-            daftarAsetBibit.forEach(aset => {
-                const div = document.createElement('div');
-                div.className = "bg-slate-900/60 p-2 rounded-xl border border-slate-800/80 text-[10px]";
-                div.innerHTML = `
-                    <div class="flex justify-between items-center text-[7px] font-bold text-slate-400 tracking-wider mb-0.5">
-                        <span>${aset.tipe}</span>
-                        <span class="${aset.naik ? 'text-emerald-400' : 'text-rose-400'} font-bold font-mono">${aset.return}</span>
-                    </div>
-                    <div class="font-semibold text-slate-200 truncate">${aset.nama}</div>
-                    <div class="font-mono font-bold text-slate-400 text-[9px] mt-0.5">${aset.nilai}</div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // FUNCTION HELPER UNTUK MENGAMBIL SELURUH DATA TANPA TERBATAS LIMIT 1000 ROW SUPABASE
+        // HELPER UNTUK MENGAMBIL SELURUH DATA SUPABASE
         async function fetchAllRows(tableName) {
             let allRows = [];
             let page = 0;
@@ -402,7 +392,7 @@
         }
 
         async function muatDataKeuangan() {
-            // 1. Membaca tabel financial_records secara fleksibel
+            // 1. Financial Records
             try {
                 const dataKas = await fetchAllRows('financial_records');
                 logArusKeuanganKeluarga = (dataKas || []).map(row => ({
@@ -425,7 +415,7 @@
                 document.getElementById('jurnal-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-600 italic text-[11px]">Tabel 'financial_records' belum ada di Supabase atau RLS belum dibuka. (${err.message || err})</td></tr>`;
             }
 
-            // 2. Membaca tabel wishlist secara terpisah
+            // 2. Wishlist
             try {
                 const dataWishlist = await fetchAllRows('wishlist');
                 logTargetWishlistCloud = (dataWishlist || []).map(row => ({
@@ -436,11 +426,147 @@
                 }));
                 renderTabelWishlist(logTargetWishlistCloud);
             } catch (err) {
-                console.warn("Tabel wishlist tidak ditemukan di Supabase:", err);
-                document.getElementById('wishlist-table-rows').innerHTML = `<tr><td colspan="5" class="p-3 text-center text-amber-600 italic text-[11px]">Tabel 'wishlist' belum dibuat di Supabase. Silakan buat tabel 'wishlist'.</td></tr>`;
+                console.warn("Tabel wishlist tidak ditemukan:", err);
+            }
+
+            // 3. Shopping Memo (Ganti Macroeconomic)
+            muatMemoBelanja();
+
+            // 4. Needs vs Wants (Ganti Live Bibit)
+            muatNeedsWants();
+        }
+
+        /* --- FUNGSI SPESIFIK: SHOPPING MEMO --- */
+        async function muatMemoBelanja() {
+            try {
+                const data = await fetchAllRows('shopping_memo');
+                logMemoBelanja = data || [];
+                renderMemoBelanja();
+            } catch (err) {
+                document.getElementById('memoListContainer').innerHTML = `<li class="text-amber-600 italic text-center py-2">Tabel 'shopping_memo' belum dibuat di Supabase.</li>`;
             }
         }
 
+        function renderMemoBelanja() {
+            const container = document.getElementById('memoListContainer');
+            document.getElementById('lblTotalMemo').innerText = `${logMemoBelanja.length} Item`;
+            container.innerHTML = "";
+
+            if (logMemoBelanja.length === 0) {
+                container.innerHTML = `<li class="text-slate-400 italic text-center py-2">Belum ada daftar belanjaan.</li>`;
+                return;
+            }
+
+            logMemoBelanja.forEach(item => {
+                const li = document.createElement('li');
+                li.className = `flex items-center justify-between p-2 rounded-xl border ${item.is_bought ? 'bg-slate-50 border-slate-200 line-through text-slate-400' : 'bg-amber-50/50 border-amber-100 text-slate-700'}`;
+                li.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" ${item.is_bought ? 'checked' : ''} onchange="toggleStatusMemo('${item.id}', this.checked)" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500">
+                        <span class="font-medium">${item.title}</span>
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 bg-white rounded-md border text-slate-500">x${item.qty || 1}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-mono font-bold text-slate-600">Rp ${parseFloat(item.estimated_price || 0).toLocaleString('id-ID')}</span>
+                        <button onclick="hapusMemo('${item.id}')" class="text-rose-500 hover:text-rose-700 font-bold">✕</button>
+                    </div>
+                `;
+                container.appendChild(li);
+            });
+        }
+
+        async function tambahMemoBelanja() {
+            const title = document.getElementById('memoInputTitle').value.trim();
+            const qty = parseInt(document.getElementById('memoInputQty').value) || 1;
+            const price = parseFloat(document.getElementById('memoInputPrice').value) || 0;
+
+            const { error } = await supabaseClient
+                .from('shopping_memo')
+                .insert([{ title, qty, estimated_price: price, is_bought: false }]);
+
+            if (!error) {
+                document.getElementById('memoInputTitle').value = "";
+                document.getElementById('memoInputQty').value = "1";
+                document.getElementById('memoInputPrice').value = "";
+                muatMemoBelanja();
+            } else {
+                alert("Gagal menyimpan memo: " + error.message);
+            }
+        }
+
+        async function toggleStatusMemo(id, isBought) {
+            await supabaseClient.from('shopping_memo').update({ is_bought: isBought }).eq('id', id);
+            muatMemoBelanja();
+        }
+
+        async function hapusMemo(id) {
+            await supabaseClient.from('shopping_memo').delete().eq('id', id);
+            muatMemoBelanja();
+        }
+
+        /* --- FUNGSI SPESIFIK: KEBUTUHAN VS KEINGINAN --- */
+        async function muatNeedsWants() {
+            try {
+                const data = await fetchAllRows('needs_wants');
+                logNeedsWants = data || [];
+                renderNeedsWants();
+            } catch (err) {
+                document.getElementById('needsWantsContainer').innerHTML = `<div class="text-amber-600 italic text-center py-4 col-span-2 text-xs">Tabel 'needs_wants' belum dibuat di Supabase.</div>`;
+            }
+        }
+
+        function renderNeedsWants() {
+            const container = document.getElementById('needsWantsContainer');
+            document.getElementById('lblNeedsWantsCount').innerText = `${logNeedsWants.length} Items`;
+            container.innerHTML = "";
+
+            if (logNeedsWants.length === 0) {
+                container.innerHTML = `<div class="text-slate-400 italic text-center py-4 col-span-2 text-xs">Belum ada daftar Kebutuhan.</div>`;
+                return;
+            }
+
+            logNeedsWants.forEach(item => {
+                const isNeeds = item.type === "Kebutuhan";
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-xl border flex justify-between items-center ${isNeeds ? 'bg-emerald-50/40 border-emerald-200' : 'bg-amber-50/40 border-amber-200'}`;
+                div.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[8px] font-bold px-1.5 py-0.5 rounded-full ${isNeeds ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'}">${item.type}</span>
+                            <span class="font-bold text-xs text-slate-800">${item.title}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 font-mono mt-0.5">Rp ${parseFloat(item.estimated_price || 0).toLocaleString('id-ID')}</div>
+                    </div>
+                    <button onclick="hapusNeedsWants('${item.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs p-1">🗑️</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function tambahNeedsWants() {
+            const title = document.getElementById('nwTitle').value.trim();
+            const type = document.getElementById('nwType').value;
+            const price = parseFloat(document.getElementById('nwPrice').value) || 0;
+
+            const { error } = await supabaseClient
+                .from('needs_wants')
+                .insert([{ title, type, estimated_price: price }]);
+
+            if (!error) {
+                document.getElementById('nwTitle').value = "";
+                document.getElementById('nwPrice').value = "";
+                muatNeedsWants();
+            } else {
+                alert("Gagal menambahkan data: " + error.message);
+            }
+        }
+
+        async function hapusNeedsWants(id) {
+            await supabaseClient.from('needs_wants').delete().eq('id', id);
+            muatNeedsWants();
+        }
+
+        /* --- FUNGSI LOGIK KAS KEUANGAN --- */
         function kalkulasiDasborStatistik() {
             let totalInflow = 0; let totalOutflow = 0;
             logArusKeuanganKeluarga.forEach(tx => {
@@ -506,7 +632,7 @@
                 muatDataKeuangan(); 
                 alert("Target impian tersimpan ke Supabase Cloud!");
             } else {
-                alert("Gagal menyimpan target ke Supabase. Pastikan tabel 'wishlist' sudah dibuat.\n\nError: " + error.message);
+                alert("Gagal menyimpan target ke Supabase. Error: " + error.message);
             }
         }
 
