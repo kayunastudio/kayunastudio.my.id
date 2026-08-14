@@ -14,7 +14,7 @@
     <!-- Dynamic Web App Manifest via Data-URI for Standalone App Mode -->
     <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22ProRAB%20System%22%2C%22short_name%22%3A%22ProRAB%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
 
-    <title>ProRAB System — AHSP & Regional HSD Estimator (Multi-User & Custom Branding)</title>
+    <title>ProRAB System — AHSP & Regional HSD Estimator</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client CDN -->
@@ -41,6 +41,9 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen min-h-dvh flex flex-col selection:bg-amber-500 selection:text-slate-950">
 
+    <!-- CONTAINER NOTIFIKASI TOAST (MELAYANG TANPA TOMBOL OK) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[1000] flex flex-col gap-2 pointer-events-none"></div>
+
     <!-- OVERLAY / HALAMAN LOGIN AKUN (ACCESS CONTROL) -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-[100] flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-5 shadow-2xl">
@@ -49,7 +52,7 @@
             </div>
             <div>
                 <h2 class="text-xl font-bold text-white tracking-tight">ProRAB Access Control</h2>
-                <p class="text-xs text-slate-400 mt-1">Masukkan PIN.</p>
+                <p class="text-xs text-slate-400 mt-1">Masukkan PIN Akses Anda.</p>
             </div>
             <form onsubmit="event.preventDefault(); eksekusiLoginPasscode();" class="space-y-3">
                 <div>
@@ -63,61 +66,72 @@
         </div>
     </div>
 
-    <!-- HEADER TOPBAR (RESPONSIVE) -->
+    <!-- HEADER TOPBAR (RESPONSIVE & BURGER MENU) -->
     <header class="bg-slate-900 text-white border-b border-slate-800 px-3 sm:px-6 py-3 sticky top-0 z-50 shadow-md no-print pt-safe">
-        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
             
-            <div class="flex items-center justify-between w-full lg:w-auto">
-                <div class="flex items-center gap-2.5">
-                    <img id="imgHeaderLogo" src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Logo Perusahaan" class="w-8 h-8 sm:w-9 sm:h-9 object-contain bg-white p-1 rounded-lg shrink-0 border border-slate-700">
-                    <div>
-                        <h1 id="txtHeaderTitle" class="font-bold text-sm sm:text-base tracking-tight leading-none">ProRAB System</h1>
-                        <span id="txtHeaderSubtitle" class="text-[9px] sm:text-[10px] text-amber-400 font-medium block mt-0.5">Permen PUPR & Supabase Database</span>
-                    </div>
-                </div>
-
-                <div class="flex lg:hidden items-center gap-1">
-                    <button onclick="bukaModalProfilAkun()" class="bg-slate-800 text-amber-400 border border-slate-700 font-bold px-2 py-1 rounded-lg text-[10px]" title="Setting Identitas">⚙️ Profil</button>
-                    <button onclick="toggleAppFullScreen()" class="bg-amber-500 text-slate-950 p-2 rounded-lg text-xs font-bold" title="Fullscreen">📱</button>
-                    <button onclick="eksekusiLogout()" class="bg-rose-800 text-white p-2 rounded-lg text-xs" title="Logout">🚪</button>
+            <!-- BRANDING & LOGO -->
+            <div class="flex items-center gap-2.5 shrink-0">
+                <img id="imgHeaderLogo" src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Logo Perusahaan" class="w-8 h-8 sm:w-9 sm:h-9 object-contain bg-white p-1 rounded-lg border border-slate-700">
+                <div>
+                    <h1 id="txtHeaderTitle" class="font-bold text-sm sm:text-base tracking-tight leading-none">ProRAB System</h1>
+                    <span id="txtHeaderSubtitle" class="text-[9px] sm:text-[10px] text-amber-400 font-medium block mt-0.5">Permen PUPR & Supabase Database</span>
                 </div>
             </div>
-            
-            <div class="flex items-center bg-slate-800 p-1 rounded-xl w-full lg:w-auto overflow-x-auto custom-scroll gap-1">
+
+            <!-- TAB MENU NAVIGASI (DESKTOP) -->
+            <div class="hidden lg:flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700/50 gap-1">
                 <button id="btnTabRAB" onclick="switchTab('rab')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow">
                     📊 Dashboard & RAB
                 </button>
                 <button id="btnTabMaster" onclick="switchTab('master')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
-                    ➕ Kelola AHSP & HSD
+                    ➕ AHSP & HSD
                 </button>
                 <button id="btnTabDaily" onclick="switchTab('daily')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
-                    📋 Laporan Harian & Dokumentasi
+                    📋 Laporan Harian
                 </button>
                 <button id="btnTabSchedule" onclick="switchTab('schedule')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
                     📈 Jadwal & Kurva S
                 </button>
             </div>
 
-            <div class="hidden lg:flex items-center gap-2">
-                <button onclick="bukaModalProfilAkun()" id="lblUserBadge" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 flex items-center gap-1.5 transition" title="Klik untuk Kustomisasi Logo & Identitas Perusahaan">
+            <!-- TOOLBAR KANAN & BURGER MENU TOGGLE -->
+            <div class="flex items-center gap-2">
+                <button onclick="bukaModalProfilAkun()" id="lblUserBadge" class="hidden sm:flex bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 items-center gap-1.5 transition" title="Kustomisasi Identitas">
                     <span>🏢</span> <span id="txtNamaUserAktif">Memuat...</span>
-                    <span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">⚙️ Custom</span>
                 </button>
-                <button onclick="toggleAppFullScreen()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow border border-slate-700">
-                    <span>📱</span> Fullscreen
-                </button>
-                <button onclick="muatDataProyekSemua()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
+                
+                <button onclick="muatDataProyekSemua()" class="hidden sm:flex bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-2.5 rounded-lg text-xs transition items-center gap-1 shadow" title="Sync Database">
                     <span>⚡</span> Sync
                 </button>
-                <button onclick="exportToExcelSummary()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
-                    <span>📊</span> Excel
+
+                <div class="hidden sm:flex items-center gap-1">
+                    <button onclick="exportToExcelSummary()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1.5 px-2.5 rounded-lg text-xs transition" title="Export Excel">📊 Excel</button>
+                    <button onclick="exportToPDFSummary()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 px-2.5 rounded-lg text-xs transition" title="Export PDF">📄 PDF</button>
+                </div>
+
+                <!-- BURGER MENU BUTTON (MOBILE & TABLET) -->
+                <button onclick="toggleMobileMenu()" class="lg:hidden bg-slate-800 border border-slate-700 hover:bg-slate-700 text-amber-400 p-2 rounded-xl focus:outline-none transition" title="Menu Navigasi">
+                    <span class="text-base leading-none">☰</span>
                 </button>
-                <button onclick="exportToPDFSummary()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow">
-                    <span>📄</span> PDF
-                </button>
-                <button onclick="eksekusiLogout()" class="bg-slate-800 hover:bg-rose-700 text-rose-300 hover:text-white font-bold py-1.5 px-3 rounded-lg text-xs transition flex items-center gap-1 shadow border border-slate-700" title="Keluar">
-                    <span>🚪</span> Logout
-                </button>
+            </div>
+        </div>
+
+        <!-- MOBILE BURGER MENU DROPDOWN PANEL -->
+        <div id="mobileDropdownMenu" class="hidden lg:hidden border-t border-slate-800 mt-2.5 pt-2.5 space-y-2">
+            <div class="grid grid-cols-2 gap-1.5 text-xs">
+                <button onclick="switchTab('rab'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">📊 Dashboard & RAB</button>
+                <button onclick="switchTab('master'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">➕ AHSP & HSD Master</button>
+                <button onclick="switchTab('daily'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">📋 Laporan Harian</button>
+                <button onclick="switchTab('schedule'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">📈 Kurva S & Jadwal</button>
+            </div>
+            
+            <div class="pt-2 border-t border-slate-800/80 flex justify-between items-center text-xs">
+                <button onclick="bukaModalProfilAkun(); toggleMobileMenu();" class="text-amber-400 font-bold flex items-center gap-1">⚙️ Profil Perusahaan</button>
+                <div class="flex items-center gap-2">
+                    <button onclick="muatDataProyekSemua(); toggleMobileMenu();" class="text-emerald-400 font-bold">⚡ Sync</button>
+                    <button onclick="eksekusiLogout()" class="text-rose-400 font-bold">🚪 Logout</button>
+                </div>
             </div>
         </div>
     </header>
@@ -139,7 +153,7 @@
                                 <button id="btnFilterArchived" onclick="setProjectStatusFilter('archived')" class="px-2 py-0.5 rounded text-slate-500 hover:text-slate-900">📦 Terarsip</button>
                             </div>
                         </div>
-                        <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Hanya menampilkan daftar proyek milik akun yang sedang aktif</p>
+                        <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Menampilkan daftar proyek aktif khusus akun ini</p>
                     </div>
 
                     <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -168,7 +182,7 @@
                             <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider">📍 HSD Lokasi Proyek</span>
                             <span id="lblLokasiProyekAktif" class="text-xs font-mono font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded">-</span>
                         </div>
-                        <p class="text-[10px] sm:text-[11px] text-slate-600 leading-relaxed">Perhitungan AHSP mengacu pada database dan wilayah proyek.</p>
+                        <p class="text-[10px] sm:text-[11px] text-slate-600 leading-relaxed">AHSP otomatis mencari HSD lokasi proyek, fallback ke INDONESIA / NASIONAL jika kosong.</p>
                     </div>
 
                     <!-- FORM 1: PILIH DARI ANALISA STANDAR AHSP PUPR -->
@@ -226,7 +240,7 @@
                                     <button type="button" onclick="bukaModalDetailAHSP()" id="btnDetailAHSP" class="hidden text-[10px] text-blue-600 font-bold hover:underline">🔍 Preview Rincian Standar</button>
                                 </div>
                                 <input type="number" id="inpHargaSatuan" readonly required placeholder="0" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-100 font-bold text-slate-800 cursor-not-allowed">
-                                <p class="text-[9px] text-slate-400 mt-0.5">* Otomatis terhitung dari HSD termurah lokasi proyek</p>
+                                <p class="text-[9px] text-slate-400 mt-0.5">* Terhitung dari HSD Lokasi atau Fallback INDONESIA</p>
                             </div>
 
                             <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex justify-between items-center">
@@ -253,7 +267,7 @@
                         <form id="formLumpsumPekerjaan" onsubmit="event.preventDefault(); simpanItemLumpsumKeProyek();" class="space-y-3">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Divisi Pekerjaan Utama</label>
-                                <input type="text" id="inpLsKategori" required placeholder="Contoh: I. PEKERJAAN PERSIAPAN / X. LAIN-LAIN" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none font-bold text-slate-800">
+                                <input type="text" id="inpLsKategori" required placeholder="Contoh: I. PEKERJAAN PERSIAPAN" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none font-bold text-slate-800">
                             </div>
 
                             <div>
@@ -504,7 +518,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Wilayah</label>
-                                <input type="text" id="addHsdLokasi" required placeholder="Bandung / Jakarta" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
+                                <input type="text" id="addHsdLokasi" placeholder="INDONESIA / Bandung / Jakarta" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
                             </div>
                         </div>
 
@@ -526,8 +540,8 @@
                     <form onsubmit="event.preventDefault(); simpanAHSPBaru();" class="space-y-3">
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode AHSP</label>
-                                <input type="text" id="addAhspKode" required placeholder="A.4.4.1.9" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode AHSP <span class="text-[9px] text-amber-600 font-normal">(Auto jika kosong)</span></label>
+                                <input type="text" id="addAhspKode" placeholder="Ex: A.4.4.1.9" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan Pekerjaan</label>
@@ -570,7 +584,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- MONITOR MASTER HSD (SCROLLABLE TALL) -->
+                <!-- MONITOR MASTER HSD -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
                         <div>
@@ -607,7 +621,7 @@
                     </div>
                 </div>
 
-                <!-- MONITOR MASTER AHSP (SCROLLABLE TALL) -->
+                <!-- MONITOR MASTER AHSP -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
                         <div>
@@ -690,7 +704,7 @@
 
                         <div>
                             <label class="block font-bold text-slate-500 uppercase mb-1">Material / Alat Utama Masuk</label>
-                            <input type="text" id="dailyMaterial" placeholder="Ex: Semen 50 Sak, Pasir 1 Truk, Excavator 1 Unit" class="w-full border p-2 rounded-lg bg-slate-50 font-medium">
+                            <input type="text" id="dailyMaterial" placeholder="Ex: Semen 50 Sak, Pasir 1 Truk" class="w-full border p-2 rounded-lg bg-slate-50 font-medium">
                         </div>
 
                         <div>
@@ -725,7 +739,7 @@
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-2">
                             <div>
                                 <h3 class="font-black text-sm text-slate-900 uppercase">📚 Riwayat Laporan Harian Proyek</h3>
-                                <p class="text-[10px] text-slate-400">Daftar laporan harian tersimpan dalam database (<code class="font-bold">04_daily_report</code>)</p>
+                                <p class="text-[10px] text-slate-400">Daftar laporan harian tersimpan (<code class="font-bold">04_daily_report</code>)</p>
                             </div>
                             <button onclick="muatDataProyekSemua()" class="text-xs bg-slate-100 hover:bg-slate-200 font-bold px-3 py-1.5 rounded-lg text-slate-700 transition">
                                 🔄 Refresh Data
@@ -765,7 +779,7 @@
                         <h2 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
                             <span>📈</span> MANAJEMEN JADWAL & GRAFIK KURVA S
                         </h2>
-                        <p class="text-xs text-slate-500">Penjadwalan Proyek & Tracking Realisasi ala MS Project dengan Kalender Kerja & Hari Libur Nasional</p>
+                        <p class="text-xs text-slate-500">Penjadwalan Proyek & Tracking Realisasi dengan Kalender Kerja & Hari Libur Nasional</p>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                         <span id="badgeScheduleProject" class="text-xs bg-amber-500 text-slate-950 px-2.5 py-1 rounded-lg font-bold font-mono truncate max-w-[150px] sm:max-w-none">PILIH PROYEK</span>
@@ -820,7 +834,7 @@
 
     </main>
 
-    <!-- MODAL CUSTOMISASI LOGO & IDENTITAS AKUN / PERUSAHAAN (NEW FEATURE) -->
+    <!-- MODAL CUSTOMISASI LOGO & IDENTITAS AKUN / PERUSAHAAN -->
     <div id="modalProfilAkun" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
             <div class="flex justify-between items-center border-b pb-3">
@@ -828,13 +842,12 @@
                     <h3 class="font-black text-sm text-slate-900 uppercase flex items-center gap-2">
                         <span>⚙️</span> Custom Identitas & Logo Perusahaan
                     </h3>
-                    <p class="text-[10px] text-slate-500">Kustomisasi Kop Surat, Logo, & TTD Khusus Untuk Akun Ini (Terisolasi)</p>
+                    <p class="text-[10px] text-slate-500">Kustomisasi Kop Surat & Logo Khusus Akun Ini</p>
                 </div>
                 <button onclick="tutupModalProfilAkun()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
             </div>
 
             <form onsubmit="event.preventDefault(); simpanProfilAkun();" class="space-y-4 text-xs">
-                <!-- PREVIEW LOGO & UPLOAD -->
                 <div class="p-3 bg-slate-50 border rounded-xl flex flex-col sm:flex-row items-center gap-4">
                     <div class="w-16 h-16 bg-white border p-1 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                         <img id="previewLogoModal" src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Preview Logo" class="w-full h-full object-contain">
@@ -852,11 +865,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block font-bold text-slate-600 uppercase mb-1">Nama Perusahaan / Studio</label>
-                        <input type="text" id="inpProfileCompany" required placeholder="Ex: KAYUNA STUDIO / PT. KONTRAKTOR JAYA" class="w-full border p-2 rounded-lg bg-slate-50 font-bold">
+                        <input type="text" id="inpProfileCompany" required placeholder="Ex: KAYUNA STUDIO" class="w-full border p-2 rounded-lg bg-slate-50 font-bold">
                     </div>
                     <div>
                         <label class="block font-bold text-slate-600 uppercase mb-1">Tagline / Slogan</label>
-                        <input type="text" id="inpProfileTagline" placeholder="Ex: Architecture & Construction Consultant" class="w-full border p-2 rounded-lg bg-slate-50">
+                        <input type="text" id="inpProfileTagline" placeholder="Ex: Architecture Consultant" class="w-full border p-2 rounded-lg bg-slate-50">
                     </div>
                 </div>
 
@@ -878,7 +891,7 @@
                     </div>
                     <div>
                         <label class="block font-bold text-slate-600 uppercase mb-1">Penanggung Jawab / Perencana</label>
-                        <input type="text" id="inpProfilePlannerName" placeholder="Ex: Tim Perencana Kayuna Studio" class="w-full border p-2 rounded-lg bg-slate-50 font-bold">
+                        <input type="text" id="inpProfilePlannerName" placeholder="Ex: Tim Perencana" class="w-full border p-2 rounded-lg bg-slate-50 font-bold">
                     </div>
                 </div>
 
@@ -1105,7 +1118,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Wilayah</label>
-                        <input type="text" id="editHsdLokasi" required class="w-full border p-2 text-xs rounded-lg bg-slate-50">
+                        <input type="text" id="editHsdLokasi" placeholder="INDONESIA / Bandung" class="w-full border p-2 text-xs rounded-lg bg-slate-50">
                     </div>
                 </div>
                 <div class="pt-2 flex gap-2">
@@ -1267,7 +1280,7 @@
         ];
 
         let currentUser = null;
-        let userProfile = null; // Menyimpan Profil Kustom Akun Terisolasi
+        let userProfile = null;
         let listProyek = [];
         let listAHSPMaster = [];
         let listHSDMaster = [];
@@ -1278,8 +1291,39 @@
         let proyekAktif = null;
         let filterStatusProyek = 'active';
         let kurvaSChartInstance = null;
+        let debounceHsdTimer = null;
 
-        // FUNGSI ACCESS CONTROL LOGIN PASSCODE (PER AKUN)
+        // FUNGSI NOTIFIKASI TOAST (TANPA MENEKAN OK)
+        function showToast(message, type = 'success', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-slate-900 border-emerald-500 text-emerald-400' : 'bg-rose-950 border-rose-500 text-rose-200';
+            const icon = type === 'success' ? '✅' : '⚠️';
+
+            toast.className = `flex items-center gap-2 px-4 py-3 rounded-xl border shadow-2xl text-xs font-bold pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 ${bgColor}`;
+            toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // TOGGLE BURGER MENU MOBILE
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileDropdownMenu');
+            if(menu) menu.classList.toggle('hidden');
+        }
+
+        // FUNGSI ACCESS CONTROL LOGIN PASSCODE
         function periksaSesiLogin() {
             const savedUser = localStorage.getItem('prorab_current_user');
             const overlay = document.getElementById('loginOverlay');
@@ -1308,12 +1352,13 @@
                 document.getElementById('inpPasscode').value = '';
                 perbaruiUIUser();
                 muatDataProyekSemua();
+                showToast("Selamat Datang, " + currentUser.nama + "!");
             } else {
                 errLbl.classList.remove('hidden');
             }
         }
 
-        // FUNGSI UTAMA CUSTOMISASI PROFIL & IDENTITAS PER AKUN (MENCEGAH TUMPAH TINDIH)
+        // FUNGSI UTAMA CUSTOMISASI PROFIL & IDENTITAS PER AKUN
         function muatProfilIdentitasAkun() {
             if (!currentUser) return;
             const storageKey = `prorab_profile_${currentUser.userId}`;
@@ -1342,7 +1387,6 @@
         function terapkanProfilIdentitasUI() {
             if (!userProfile) return;
 
-            // 1. Update Header Aplikasi
             const imgHeader = document.getElementById('imgHeaderLogo');
             const txtTitle = document.getElementById('txtHeaderTitle');
             const txtSub = document.getElementById('txtHeaderSubtitle');
@@ -1350,7 +1394,6 @@
             if(txtTitle) txtTitle.innerText = userProfile.name || "ProRAB System";
             if(txtSub) txtSub.innerText = userProfile.tagline || "Permen PUPR & Supabase Database";
 
-            // 2. Update Kop Surat Dokumen Cetak RAB
             const docLogo = document.getElementById('docCompanyLogo');
             const docName = document.getElementById('docCompanyName');
             const docTag = document.getElementById('docCompanyTagline');
@@ -1361,7 +1404,6 @@
             if(docTag) docTag.innerText = userProfile.tagline || "";
             if(docContacts) docContacts.innerText = `Website: ${userProfile.website || '-'} | Email: ${userProfile.email || '-'}`;
 
-            // 3. Update Kolom TTD / Signature
             const txtTTDComp = document.getElementById('txtTTDPerusahaan');
             const txtTTDName = document.getElementById('txtTTDNamaPerencana');
             const txtTTDWeb = document.getElementById('txtTTDWebsite');
@@ -1370,12 +1412,10 @@
             if(txtTTDName) txtTTDName.innerText = userProfile.plannerName || "Tim Perencana";
             if(txtTTDWeb) txtTTDWeb.innerText = userProfile.website || "";
 
-            // 4. Update Header Lampiran Footers
             document.querySelectorAll('.lblFooterCompanyName').forEach(el => {
                 el.innerText = userProfile.name || "Kayuna Studio";
             });
 
-            // 5. Update Tanggal TTD Kota Domicile
             perbaruiTanggalTtdEkspor();
         }
 
@@ -1404,7 +1444,7 @@
                 reader.onload = function(e) {
                     const base64Img = e.target.result;
                     document.getElementById('previewLogoModal').src = base64Img;
-                    document.getElementById('inpLogoUrlModal').value = ""; // Reset URL input
+                    document.getElementById('inpLogoUrlModal').value = "";
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1443,15 +1483,13 @@
 
             terapkanProfilIdentitasUI();
             tutupModalProfilAkun();
-            alert("✅ Identitas & Logo Perusahaan berhasil diperbarui khusus untuk akun " + currentUser.nama + "!");
+            showToast("Identitas & Logo Perusahaan berhasil disimpan!");
         }
 
         function perbaruiUIUser() {
             if(!currentUser) return;
             const nameElem = document.getElementById('txtNamaUserAktif');
-            const mobElem = document.getElementById('lblUserMobileBadge');
             if (nameElem) nameElem.innerText = currentUser.nama;
-            if (mobElem) mobElem.innerText = `👤 ${currentUser.nama}`;
         }
 
         function eksekusiLogout() {
@@ -1464,23 +1502,6 @@
             }
         }
 
-        function toggleAppFullScreen() {
-            const elem = document.documentElement;
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(err => {});
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
-            }
-        }
-
         window.addEventListener("load", () => {
             setTimeout(() => { window.scrollTo(0, 1); }, 0);
         });
@@ -1489,6 +1510,7 @@
             periksaSesiLogin();
             tambahBarisKomponenBuilder('containerKomponenBuilder');
 
+            // EVENT LISTENER MOUSE CLICK OUTSIDE
             document.addEventListener('click', (e) => {
                 const container = document.getElementById('dropdownAhspContainer');
                 if (container && !container.contains(e.target)) {
@@ -1501,6 +1523,25 @@
                         popover.classList.add('hidden');
                     }
                 });
+            });
+
+            // EVENT LISTENER TOMBOL ESCAPE (ESC)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' || e.key === 'Esc') {
+                    // Sembunyikan Popover Dropdown HSD yang terbuka
+                    document.querySelectorAll('.popover-hsd-menu').forEach(popover => {
+                        popover.classList.add('hidden');
+                    });
+
+                    // Sembunyikan Popover AHSP
+                    const popoverAhsp = document.getElementById('popoverAhspMenu');
+                    if (popoverAhsp) popoverAhsp.classList.add('hidden');
+
+                    // Lepaskan fokus kursor dari input yang sedang aktif
+                    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                        document.activeElement.blur();
+                    }
+                }
             });
         });
 
@@ -1519,24 +1560,27 @@
             pageDaily.classList.add('hidden');
             pageSchedule.classList.add('hidden');
 
-            btnTabRAB.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
-            btnTabMaster.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
-            btnTabDaily.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
-            btnTabSchedule.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
+            const inactiveClass = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white";
+            const activeClass = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+
+            btnTabRAB.className = inactiveClass;
+            btnTabMaster.className = inactiveClass;
+            btnTabDaily.className = inactiveClass;
+            btnTabSchedule.className = inactiveClass;
 
             if(tabName === 'rab') {
                 pageRAB.classList.remove('hidden');
-                btnTabRAB.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+                btnTabRAB.className = activeClass;
             } else if(tabName === 'master') {
                 pageMaster.classList.remove('hidden');
-                btnTabMaster.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+                btnTabMaster.className = activeClass;
             } else if(tabName === 'daily') {
                 pageDaily.classList.remove('hidden');
-                btnTabDaily.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+                btnTabDaily.className = activeClass;
                 renderTabelLaporanHarian();
             } else if(tabName === 'schedule') {
                 pageSchedule.classList.remove('hidden');
-                btnTabSchedule.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow";
+                btnTabSchedule.className = activeClass;
                 renderTabelPenjadwalan();
             }
         }
@@ -1681,19 +1725,19 @@
                 }
             } catch (err) {
                 console.error("Gagal sinkronisasi data dari Supabase:", err);
-                const container = document.getElementById('projectCardsContainer');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="p-4 text-center text-rose-500 font-bold text-xs col-span-full">
-                            ⚠️ Gagal terhubung ke Database Supabase.<br>
-                            <button onclick="muatDataProyekSemua()" class="mt-2 bg-slate-800 text-white px-3 py-1 rounded-lg">🔄 Coba Lagi</button>
-                        </div>
-                    `;
-                }
+                showToast("Gagal terhubung ke Database Supabase", "error");
             }
         }
 
+        // OPTIMASI PERFORMA DROPDOWN HSD (DEBOUNCED & LIMIT 100 RESULTS)
         function filterHsdDropdownOptions(inputElem) {
+            clearTimeout(debounceHsdTimer);
+            debounceHsdTimer = setTimeout(() => {
+                eksekusiFilterHsdDropdownOptions(inputElem);
+            }, 150); // Debounce 150ms agar super cepat dan tanpa patah-patah
+        }
+
+        function eksekusiFilterHsdDropdownOptions(inputElem) {
             const row = inputElem.closest('.row-komponen-builder');
             if(!row) return;
 
@@ -1714,7 +1758,13 @@
             const searchTokens = rawKw.split(/\s+/).filter(t => t.length > 0);
 
             let uniqueItemsMap = {};
-            listHSDMaster.forEach(hsd => {
+            let matchCount = 0;
+            const maxDisplay = 100; // 👈 Limit hasil pencarian dinaikkan menjadi max 100 item
+
+            for (let i = 0; i < listHSDMaster.length; i++) {
+                if (matchCount >= maxDisplay) break;
+                
+                const hsd = listHSDMaster[i];
                 let nama = hsd.nama_item || hsd.uraian || "";
                 let kode = hsd.kode || "";
                 let namaLower = nama.toLowerCase();
@@ -1728,8 +1778,9 @@
                         kode: kode,
                         satuan: hsd.satuan || ''
                     };
+                    matchCount++;
                 }
-            });
+            }
 
             const filteredList = Object.values(uniqueItemsMap);
 
@@ -1772,9 +1823,6 @@
 
             const isCurrentlyArchived = prj.status === 'archived';
             const newStatus = isCurrentlyArchived ? 'active' : 'archived';
-            const pesan = isCurrentlyArchived ? "Buka arsip proyek ini?" : "Arsipkan proyek ini?";
-
-            if(!confirm(pesan)) return;
 
             const { error } = await supabaseClient
                 .from('project')
@@ -1782,10 +1830,11 @@
                 .eq('id', idProyek);
 
             if (!error) {
+                showToast(isCurrentlyArchived ? "Proyek dipindahkan ke Aktif" : "Proyek diarsipkan");
                 if(proyekAktif && proyekAktif.id === idProyek) { unselectProyek(); }
                 muatDataProyekSemua();
             } else {
-                alert("Gagal mengarsipkan proyek: " + error.message);
+                showToast("Gagal mengarsipkan proyek: " + error.message, "error");
             }
         }
 
@@ -1802,10 +1851,11 @@
                 .eq('id', idProyek);
 
             if (!error) {
+                showToast("Proyek berhasil dihapus permanen");
                 if(proyekAktif && proyekAktif.id === idProyek) { unselectProyek(); }
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menghapus proyek: " + error.message);
+                showToast("Gagal menghapus proyek: " + error.message, "error");
             }
         }
 
@@ -1915,30 +1965,37 @@
             hitungPreviewHargaItem();
         }
 
+        // PEMBARUAN LOGIKA CARI HARGA HSD (AUTO-SUGGEST LOKASI INDONESIA / NASIONAL)
         function cariHargaHSD(itemKomponen, lokasiProyek) {
-            let matchLokasiItems = listHSDMaster.filter(h => {
-                let matchKode = itemKomponen.kode && h.kode && h.kode.toString().trim().toLowerCase() === itemKomponen.kode.toString().trim().toLowerCase();
-                let matchUraian = (h.nama_item || h.uraian || "").toLowerCase().trim() === (itemKomponen.uraian || "").toLowerCase().trim();
-                let matchLokasi = !lokasiProyek || (h.lokasi || "").toLowerCase().trim() === lokasiProyek;
-                return (matchKode || matchUraian) && matchLokasi;
-            });
+            const targetKode = (itemKomponen.kode || "").toString().trim().toLowerCase();
+            const targetUraian = (itemKomponen.uraian || "").toLowerCase().trim();
+            const targetLokasi = (lokasiProyek || "").toLowerCase().trim();
 
-            if (matchLokasiItems.length > 0) {
-                let hargaTerendah = Math.min(...matchLokasiItems.map(item => parseFloat(item.harga) || 0));
-                return hargaTerendah;
-            }
-
-            let matchAllItems = listHSDMaster.filter(h => {
-                let matchKode = itemKomponen.kode && h.kode && h.kode.toString().trim().toLowerCase() === itemKomponen.kode.toString().trim().toLowerCase();
-                let matchUraian = (h.nama_item || h.uraian || "").toLowerCase().trim() === (itemKomponen.uraian || "").toLowerCase().trim();
+            const isMatchItem = (hsd) => {
+                let matchKode = targetKode && hsd.kode && hsd.kode.toString().trim().toLowerCase() === targetKode;
+                let matchUraian = (hsd.nama_item || hsd.uraian || "").toLowerCase().trim() === targetUraian;
                 return matchKode || matchUraian;
-            });
+            };
 
-            if (matchAllItems.length > 0) {
-                let hargaTerendah = Math.min(...matchAllItems.map(item => parseFloat(item.harga) || 0));
-                return hargaTerendah;
+            // 1. Prioritas Utama: Sesuai Lokasi Proyek Spesifik
+            let matchLokasi = listHSDMaster.filter(h => isMatchItem(h) && (h.lokasi || "").toLowerCase().trim() === targetLokasi);
+            if (matchLokasi.length > 0) {
+                return Math.min(...matchLokasi.map(item => parseFloat(item.harga) || 0));
             }
 
+            // 2. Prioritas Kedua: Fallback Otomatis ke Wilayah "INDONESIA" atau "NASIONAL"
+            let matchIndonesia = listHSDMaster.filter(h => isMatchItem(h) && ["indonesia", "nasional"].includes((h.lokasi || "").toLowerCase().trim()));
+            if (matchIndonesia.length > 0) {
+                return Math.min(...matchIndonesia.map(item => parseFloat(item.harga) || 0));
+            }
+
+            // 3. Prioritas Ketiga: Ambil dari lokasi mana saja yang tersedia di Master HSD
+            let matchAll = listHSDMaster.filter(h => isMatchItem(h));
+            if (matchAll.length > 0) {
+                return Math.min(...matchAll.map(item => parseFloat(item.harga) || 0));
+            }
+
+            // 4. Default Fallback
             return parseFloat(itemKomponen.hargaFallback) || 0;
         }
 
@@ -2043,6 +2100,7 @@
 
             renderBQDanRekapitulasi(proyekAktif.data_bq || []);
             renderTabelLaporanHarian();
+            showToast(`Proyek "${proyekAktif.nama_proyek}" dipilih`);
         }
 
         function unselectProyek() {
@@ -2181,6 +2239,7 @@
                 .eq('id', proyekAktif.id);
 
             if (!error) {
+                showToast("Item BQ berhasil diperbarui");
                 document.getElementById('formItemPekerjaan').reset();
                 document.getElementById('formLumpsumPekerjaan').reset();
                 document.getElementById('lblAhspDropdownSelected').innerText = "-- Pilih Standar AHSP --";
@@ -2188,7 +2247,7 @@
                 document.getElementById('txtSubtotalLsPreview').innerText = "Rp 0";
                 muatDataProyekSemua();
             } else {
-                alert("Gagal memperbarui data BQ: " + error.message);
+                showToast("Gagal memperbarui data BQ: " + error.message, "error");
             }
         }
 
@@ -2417,7 +2476,7 @@
 
         async function simpanLaporanHarian() {
             if(!proyekAktif) {
-                alert("Pilih proyek terlebih dahulu!");
+                showToast("Pilih proyek terlebih dahulu!", "error");
                 return;
             }
 
@@ -2440,7 +2499,7 @@
                 .insert([payload]);
 
             if(!error) {
-                alert("Laporan Harian Berhasil Disimpan!");
+                showToast("Laporan Harian Berhasil Disimpan!");
                 document.getElementById('dailyHariKe').value = "";
                 document.getElementById('dailyTenaga').value = "";
                 document.getElementById('dailyMaterial').value = "";
@@ -2451,7 +2510,7 @@
                 dailyFotoBase64Array = [];
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menyimpan laporan harian: " + error.message);
+                showToast("Gagal menyimpan laporan harian: " + error.message, "error");
             }
         }
 
@@ -2563,9 +2622,10 @@
                 .eq('id', idDaily);
 
             if(!error) {
+                showToast("Laporan harian terhapus");
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menghapus laporan: " + error.message);
+                showToast("Gagal menghapus laporan: " + error.message, "error");
             }
         }
 
@@ -2715,6 +2775,7 @@
 
             tutupModalTrackingReal();
             renderKurvaSChart();
+            showToast("Tracking realisasi disimpan!");
         }
 
         async function simpanJadwalSemua() {
@@ -2748,10 +2809,10 @@
                 .upsert(payloadSchedule);
 
             if(!error) {
-                alert("Rencana Jadwal & Tracking Realisasi Berhasil Disimpan ke Supabase!");
+                showToast("Rencana Jadwal & Kurva S Disimpan!");
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menyimpan jadwal: " + error.message);
+                showToast("Gagal menyimpan jadwal: " + error.message, "error");
             }
         }
 
@@ -2821,8 +2882,6 @@
             const newKode = item.kode + "_COPY_" + Math.floor(Math.random() * 100);
             const newNama = (item.nama_item || item.uraian || "") + " (Salinan)";
 
-            if (!confirm(`Duplikat HSD [${kodeHSD}] menjadi [${newKode}]?`)) return;
-
             const payload = {
                 kode: newKode,
                 nama_item: newNama,
@@ -2836,10 +2895,10 @@
                 .insert([payload]);
 
             if (!error) {
-                alert("HSD berhasil diduplikat!");
+                showToast(`HSD diduplikat: ${newKode}`);
                 muatDataProyekSemua();
             } else {
-                alert("Gagal duplikat HSD: " + error.message);
+                showToast("Gagal duplikat HSD: " + error.message, "error");
             }
         }
 
@@ -2849,8 +2908,6 @@
 
             const newKode = item.kode_ahsp + "_COPY_" + Math.floor(Math.random() * 100);
             const newNama = (item.nama_pekerjaan || "") + " (Salinan)";
-
-            if (!confirm(`Duplikat AHSP Pekerjaan [${kodeAHSP}] menjadi [${newKode}]?`)) return;
 
             const payload = {
                 kode_ahsp: newKode,
@@ -2866,16 +2923,16 @@
                 .insert([payload]);
 
             if (!error) {
-                alert("AHSP Pekerjaan berhasil diduplikat!");
+                showToast(`AHSP diduplikat: ${newKode}`);
                 muatDataProyekSemua();
             } else {
-                alert("Gagal duplikat AHSP: " + error.message);
+                showToast("Gagal duplikat AHSP: " + error.message, "error");
             }
         }
 
         function exportMasterHSD(format = 'csv') {
             if (listHSDMaster.length === 0) {
-                alert("Master HSD Kosong!");
+                showToast("Master HSD Kosong!", "error");
                 return;
             }
             const ws = XLSX.utils.json_to_sheet(listHSDMaster);
@@ -2886,7 +2943,7 @@
 
         function exportMasterAHSP(format = 'csv') {
             if (listAHSPMaster.length === 0) {
-                alert("Master AHSP Kosong!");
+                showToast("Master AHSP Kosong!", "error");
                 return;
             }
             const dataFlat = listAHSPMaster.map(item => ({
@@ -2932,7 +2989,7 @@
                     <td class="p-2 font-medium">${item.nama_item || item.uraian || '-'}</td>
                     <td class="p-2 text-center font-mono">${item.satuan || '-'}</td>
                     <td class="p-2 text-right font-mono font-bold">Rp ${hr}</td>
-                    <td class="p-2 text-center font-bold text-slate-500">${item.lokasi || 'Nasional'}</td>
+                    <td class="p-2 text-center font-bold text-slate-500">${item.lokasi || 'INDONESIA'}</td>
                     <td class="p-2 text-center flex justify-center gap-1">
                         <button onclick="duplikatBarisHSD('${item.kode}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs" title="Duplikat Item HSD">📋</button>
                         <button onclick="editBarisHSD('${item.kode}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs" title="Edit HSD">✏️</button>
@@ -3003,7 +3060,7 @@
                 nama_item: document.getElementById('editHsdNama').value,
                 satuan: document.getElementById('editHsdSatuan').value,
                 harga: parseFloat(document.getElementById('editHsdHarga').value) || 0,
-                lokasi: document.getElementById('editHsdLokasi').value
+                lokasi: document.getElementById('editHsdLokasi').value || 'INDONESIA'
             };
 
             const { error } = await supabaseClient
@@ -3012,10 +3069,11 @@
                 .eq('kode', oldKode);
 
             if (!error) {
+                showToast("Master HSD diperbarui");
                 tutupModalEditHSD();
                 muatDataProyekSemua();
             } else {
-                alert("Gagal update HSD: " + error.message);
+                showToast("Gagal update HSD: " + error.message, "error");
             }
         }
 
@@ -3028,9 +3086,10 @@
                 .eq('kode', kodeHSD);
 
             if (!error) {
+                showToast("HSD berhasil dihapus");
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menghapus HSD: " + error.message);
+                showToast("Gagal menghapus HSD: " + error.message, "error");
             }
         }
 
@@ -3105,10 +3164,11 @@
                 .eq('kode_ahsp', oldKode);
 
             if (!error) {
+                showToast("Master AHSP diperbarui");
                 tutupModalEditAHSP();
                 muatDataProyekSemua();
             } else {
-                alert("Gagal update AHSP: " + error.message);
+                showToast("Gagal update AHSP: " + error.message, "error");
             }
         }
 
@@ -3121,9 +3181,10 @@
                 .eq('kode_ahsp', kodeAHSP);
 
             if (!error) {
+                showToast("AHSP berhasil dihapus");
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menghapus AHSP: " + error.message);
+                showToast("Gagal menghapus AHSP: " + error.message, "error");
             }
         }
 
@@ -3133,7 +3194,7 @@
                 nama_item: document.getElementById('addHsdNama').value,
                 satuan: document.getElementById('addHsdSatuan').value,
                 harga: parseFloat(document.getElementById('addHsdHarga').value) || 0,
-                lokasi: document.getElementById('addHsdLokasi').value
+                lokasi: document.getElementById('addHsdLokasi').value || 'INDONESIA'
             };
 
             const { error } = await supabaseClient
@@ -3141,7 +3202,7 @@
                 .insert([payload]);
 
             if (!error) {
-                alert("Berhasil menambahkan item HSD baru ke Supabase!");
+                showToast("HSD Baru Berhasil Disimpan!");
                 document.getElementById('addHsdKode').value = "";
                 document.getElementById('addHsdNama').value = "";
                 document.getElementById('addHsdSatuan').value = "";
@@ -3149,7 +3210,7 @@
                 document.getElementById('addHsdLokasi').value = "";
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menyimpan HSD: " + error.message);
+                showToast("Gagal menyimpan HSD: " + error.message, "error");
             }
         }
 
@@ -3192,7 +3253,15 @@
             container.appendChild(div);
         }
 
+        // PEMBARUAN SIMPAN AHSP BARU (AUTO GENERATE KODE JIKA KOSONG)
         async function simpanAHSPBaru() {
+            let inputKode = document.getElementById('addAhspKode').value.trim();
+
+            // Auto Generate Kode Unik jika tidak diisi agar tidak saling terhubung
+            if (!inputKode) {
+                inputKode = "AHSP-CUSTOM-" + Date.now().toString().slice(-6) + "-" + Math.floor(Math.random() * 100);
+            }
+
             const rows = document.querySelectorAll('#containerKomponenBuilder .row-komponen-builder');
             let arrayKomponen = [];
 
@@ -3209,7 +3278,7 @@
             });
 
             const payload = {
-                kode_ahsp: document.getElementById('addAhspKode').value,
+                kode_ahsp: inputKode,
                 nama_pekerjaan: document.getElementById('addAhspNama').value,
                 kategori: document.getElementById('addAhspKategori').value,
                 satuan: document.getElementById('addAhspSatuan').value,
@@ -3222,7 +3291,7 @@
                 .insert([payload]);
 
             if (!error) {
-                alert("Berhasil menambahkan AHSP Pekerjaan baru ke Supabase!");
+                showToast("AHSP Berhasil Disimpan! Kode: " + inputKode);
                 document.getElementById('addAhspKode').value = "";
                 document.getElementById('addAhspNama').value = "";
                 document.getElementById('addAhspKategori').value = "";
@@ -3231,7 +3300,7 @@
                 tambahBarisKomponenBuilder('containerKomponenBuilder');
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menyimpan AHSP: " + error.message);
+                showToast("Gagal menyimpan AHSP: " + error.message, "error");
             }
         }
 
@@ -3258,13 +3327,14 @@
                 .insert([payload]);
 
             if (!error) {
+                showToast("Proyek Baru Berhasil Dibuat!");
                 tutupModalBuatProyek();
                 document.getElementById('modalNamaProyek').value = "";
                 document.getElementById('modalPemilik').value = "";
                 document.getElementById('modalLokasi').value = "";
                 muatDataProyekSemua();
             } else {
-                alert("Gagal menambahkan proyek baru: " + error.message);
+                showToast("Gagal menambahkan proyek: " + error.message, "error");
             }
         }
 
@@ -3292,7 +3362,7 @@
         }
 
         function exportToExcelSummary() {
-            if(!proyekAktif) { alert("Pilih proyek terlebih dahulu!"); return; }
+            if(!proyekAktif) { showToast("Pilih proyek terlebih dahulu!", "error"); return; }
             const cleanClone = buatElemenPrintClean();
             let wb = XLSX.utils.table_to_book(cleanClone, {sheet: "RAB Proyek"});
             const compName = (userProfile && userProfile.name ? userProfile.name : "ProRAB").replace(/[^a-zA-Z0-9]/g, '_');
@@ -3300,7 +3370,7 @@
         }
 
         function exportToPDFSummary() {
-            if(!proyekAktif) { alert("Pilih proyek terlebih dahulu!"); return; }
+            if(!proyekAktif) { showToast("Pilih proyek terlebih dahulu!", "error"); return; }
             const cleanClone = buatElemenPrintClean();
             
             const pdfContainer = document.createElement('div');
