@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebNotes 6 - Supabase Cloud Edition</title>
+    <title>WebNotes 6 - Low Latency & Supabase Edition</title>
     
     <!-- External Libraries: PDF.js, jsPDF & Supabase JS Client -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -169,6 +169,16 @@
             background-color: #28a745;
         }
 
+        .btn-warning {
+            background-color: #ff9500;
+            color: white;
+            border: none;
+        }
+
+        .btn-warning:hover {
+            background-color: #e08200;
+        }
+
         /* AREA WORKSPACE / CANVAS */
         .workspace-container {
             flex: 1;
@@ -234,7 +244,7 @@
             z-index: 20;
         }
 
-        /* MODAL AUTH (LOGIN/REGISTER) */
+        /* MODAL AUTH */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -253,7 +263,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .modal-card h2 { font-size: 20px; color: var(--accent); text-align: center; }
@@ -272,6 +282,8 @@
             <input type="password" id="authPassword" placeholder="Kata Sandi">
             <button class="btn-action btn-primary" onclick="handleLogin()">Masuk (Login)</button>
             <button class="btn-action" onclick="handleRegister()">Daftar Akun Baru</button>
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 4px 0;">
+            <button class="btn-action btn-warning" onclick="createManualAccount()">⚡ Buat Akun Manual (Admin)</button>
         </div>
     </div>
 
@@ -326,11 +338,9 @@
     </div>
 
     <script>
-        // =========================================================================
-        // 1. ISIKAN URL DAN ANON KEY SUPABASE ANDA DI SINI
-        // =========================================================================
-        const SUPABASE_URL = 'https://AKUN-ANDA.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        // INTEGRASI API KEY & URL SUPABASE
+        const SUPABASE_URL = 'https://spetgpwpkjfifgvclwyl.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZXRncHdwa2pmaWZndmNsd3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjkwNzYsImV4cCI6MjEwMTIwNTA3Nn0.oQzAtPKKpdejAY1y5cjBRoNZIK2Yp-oZMDxmXDESOUk';
         const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
@@ -351,9 +361,7 @@
             checkSession();
         };
 
-        // =========================================================================
-        // 2. LOGIKA AUTHENTICATION & SUPABASE CLOUD
-        // =========================================================================
+        // INTEGRASI SUPABASE AUTH & CLOUD (DENGAN AUTO-CLOSE MODAL)
         async function checkSession() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
@@ -367,20 +375,75 @@
         async function handleLogin() {
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) alert(error.message);
-            else checkSession();
+            
+            if (!email || !password) {
+                alert("Harap isi Email dan Kata Sandi!");
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                alert("Gagal Login: " + error.message);
+            } else if (data.session) {
+                document.getElementById('authModal').style.display = 'none';
+                const status = document.getElementById('userStatus');
+                status.innerText = data.session.user.email;
+                status.classList.add('online');
+                alert("✅ Berhasil masuk!");
+            }
         }
 
         async function handleRegister() {
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
-            const { error } = await supabase.auth.signUp({ email, password });
-            if (error) alert(error.message);
-            else alert('Registrasi berhasil! Silakan login.');
+
+            if (!email || !password) {
+                alert("Harap isi Email dan Kata Sandi!");
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            
+            if (error) {
+                alert("Gagal Register: " + error.message);
+            } else if (data.session) {
+                checkSession();
+            } else {
+                alert('Registrasi berhasil! Jika opsi "Confirm Email" aktif di Supabase, silakan matikan opsi tersebut di dashboard Supabase agar dapat langsung login.');
+            }
         }
 
-        // SIMPAN DATA VEKTOR JSON KE SUPABASE
+        async function createManualAccount() {
+            const defaultEmail = "admin@webnotes.com";
+            const defaultPass = "admin123456";
+
+            // 1. Daftarkan Akun
+            await supabase.auth.signUp({
+                email: defaultEmail,
+                password: defaultPass
+            });
+
+            document.getElementById('authEmail').value = defaultEmail;
+            document.getElementById('authPassword').value = defaultPass;
+
+            // 2. Eksekusi Login Otomatis & Tutup Modal
+            const loginResult = await supabase.auth.signInWithPassword({
+                email: defaultEmail,
+                password: defaultPass
+            });
+
+            if (loginResult.data.session) {
+                document.getElementById('authModal').style.display = 'none';
+                const status = document.getElementById('userStatus');
+                status.innerText = defaultEmail;
+                status.classList.add('online');
+                alert(`✅ Akun berhasil dibuat & Otomatis Login!\nEmail: ${defaultEmail}\nPassword: ${defaultPass}`);
+            } else if (loginResult.error) {
+                alert("Gagal masuk otomatis: " + loginResult.error.message + "\n\nPastikan fitur 'Confirm Email' di dashboard Supabase Anda sudah dimatikan!");
+            }
+        }
+
         async function saveToSupabase() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
@@ -399,7 +462,7 @@
             if (currentNoteId) payload.id = currentNoteId;
 
             const { data, error } = await supabase
-                .from('notes')
+                .from('webnotes')
                 .upsert(payload)
                 .select();
 
@@ -407,13 +470,11 @@
                 alert('Gagal menyimpan: ' + error.message);
             } else {
                 currentNoteId = data[0].id;
-                alert('☁️ Catatan berhasil disimpan ke Supabase Cloud!');
+                alert('☁️ Catatan berhasil disimpan ke tabel webnotes Supabase!');
             }
         }
 
-        // =========================================================================
-        // 3. LOGIKA CORE DRAWING & PALM REJECTION
-        // =========================================================================
+        // TOOLBAR & CANVAS SETUP
         function setTool(tool) {
             currentTool = tool;
             document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
@@ -428,7 +489,7 @@
             canvas.width = page.clientWidth;
             canvas.height = page.clientHeight;
             
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { desynchronized: true, willReadFrequently: false });
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
@@ -439,13 +500,17 @@
             canvas.addEventListener('click', handleTextCreation);
         }
 
+        function getPointCoords(e, rect) {
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
         function startDrawing(e) {
             if (currentTool === 'text') return;
 
-            // ✋ PALM REJECTION: Tolak sentuhan telapak tangan (luas > 25px)
             if (e.width > 25 || e.height > 25) return;
-
-            // Sensitivitas Stylus: Abaikan sentuhan jari jika sedang dalam mode Pen
             if (e.pointerType === 'touch' && (currentTool === 'pen' || currentTool === 'highlighter')) {
                 return;
             }
@@ -453,19 +518,18 @@
             isDrawing = true;
             const canvas = e.target;
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const startPt = getPointCoords(e, rect);
 
             currentStroke = {
                 tool: currentTool,
                 color: currentColor,
                 size: currentSize,
-                points: [{x, y}]
+                points: [startPt]
             };
 
             const ctx = canvas.getContext('2d');
             ctx.beginPath();
-            ctx.moveTo(x, y);
+            ctx.moveTo(startPt.x, startPt.y);
         }
 
         function draw(e) {
@@ -476,34 +540,36 @@
             const ctx = canvas.getContext('2d');
             const rect = canvas.getBoundingClientRect();
 
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
 
-            currentStroke.points.push({x, y});
+            for (let ev of events) {
+                const pt = getPointCoords(ev, rect);
+                currentStroke.points.push(pt);
 
-            if (currentTool === 'eraser') {
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.lineWidth = currentSize * 3;
-            } else if (currentTool === 'highlighter') {
-                ctx.globalCompositeOperation = 'multiply';
-                ctx.strokeStyle = currentColor + '66';
-                ctx.lineWidth = currentSize * 3;
-            } else {
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = currentSize;
-            }
+                if (currentTool === 'eraser') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.lineWidth = currentSize * 3;
+                } else if (currentTool === 'highlighter') {
+                    ctx.globalCompositeOperation = 'multiply';
+                    ctx.strokeStyle = currentColor + '66';
+                    ctx.lineWidth = currentSize * 3;
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = currentColor;
+                    ctx.lineWidth = currentSize;
+                }
 
-            const points = currentStroke.points;
-            if (points.length > 2) {
-                const lastTwoPoints = points.slice(-2);
-                const controlPoint = lastTwoPoints[0];
-                const endPoint = {
-                    x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
-                    y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2
-                };
-                ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
-                ctx.stroke();
+                const points = currentStroke.points;
+                if (points.length > 2) {
+                    const lastTwoPoints = points.slice(-2);
+                    const controlPoint = lastTwoPoints[0];
+                    const endPoint = {
+                        x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
+                        y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2
+                    };
+                    ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+                    ctx.stroke();
+                }
             }
         }
 
@@ -591,7 +657,7 @@
             redrawPage(activePage);
         }
 
-        // NAVIGASI HALAMAN & IMPORT/EXPORT
+        // MANAJEMEN HALAMAN, IMPORT & EXPORT
         function addNewPage() {
             totalPages++;
             const workspace = document.getElementById('workspace');
@@ -696,4 +762,3 @@
     </script>
 </body>
 </html>
-
