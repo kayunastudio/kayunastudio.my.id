@@ -17,9 +17,21 @@
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .fin-shadow { box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.08), 0 8px 10px -6px rgba(148, 163, 184, 0.08); }
         
+        /* OVERLAY PIN ACCESS LAYAR PENUH */
+        #pin-overlay { 
+            position: fixed; 
+            inset: 0; 
+            z-index: 9999; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 1rem;
+        }
+
         /* CSS KHUSUS ATURAN CETAK (PRINT) */
         @media print { 
-            .no-print, .print-hide-macro { display: none !important; } 
+            .no-print, .print-hide-macro, #pin-overlay { display: none !important; } 
             .print-area { width: 100% !important; margin: 0 !important; padding: 0 !important; } 
             body { background-color: #ffffff !important; }
             .print-scroll-auto { overflow: visible !important; max-height: none !important; }
@@ -28,295 +40,327 @@
 </head>
 <body class="bg-[#ECEFF5] text-slate-800 min-h-screen font-sans antialiased flex flex-col">
 
-    <!-- HEADER NAVIGATION ATAS -->
-    <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 sticky top-0 z-50 shadow-sm no-print">
-        <div class="max-w-7xl mx-auto flex flex-row justify-between items-center w-full">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 text-base">F</div>
-                <div>
-                    <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight block leading-tight">Family Finance Tracker</span>
-                    <span class="text-[10px] text-slate-400 font-medium hidden sm:block">Unified Dashboard Financial Management (Supabase Cloud)</span>
-                </div>
+    <!-- OVERLAY MASUKKAN KODE PASSCODE PIN -->
+    <div id="pin-overlay" class="no-print">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-slate-100 text-center relative overflow-hidden">
+            <div class="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-black mx-auto mb-4 text-2xl shadow-lg shadow-blue-500/30">
+                F
             </div>
-            
-            <div class="flex items-center gap-2">
-                <button onclick="muatDataKeuangan();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded-xl shadow text-xs transition flex items-center gap-1.5 font-mono">
-                    <span>🔄</span> <span class="hidden sm:inline">Sync Supabase</span>
+            <h2 class="text-xl font-black text-slate-900 tracking-tight">Akses Keuangan Keluarga</h2>
+            <p class="text-xs text-slate-400 font-medium mt-1 mb-6">Masukkan Kode PIN</p>
+
+            <form onsubmit="event.preventDefault(); verifikasiKodePass();" class="space-y-3">
+                <div>
+                    <input type="password" id="inputPinCode" maxlength="8" autofocus placeholder="Kode PIN" class="w-full border border-slate-200 p-3.5 text-center text-lg tracking-widest font-black rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                </div>
+
+                <div id="pinErrorMsg" class="hidden text-[11px] text-rose-500 font-bold bg-rose-50 p-2.5 rounded-xl border border-rose-100">
+                    ⚠️ Kode PIN salah!
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    <span>🔓</span> Verifikasi PIN
                 </button>
-                <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3.5 rounded-xl text-xs transition flex items-center gap-1.5">
-                    <span>🖨️</span> <span class="hidden sm:inline">Cetak</span>
-                </button>
-            </div>
+            </form>
         </div>
-    </header>
+    </div>
 
-    <!-- KONTEN UTAMA SINGLE PAGE -->
-    <main class="flex-grow p-3 sm:p-8 max-w-7xl mx-auto w-full print-area">
-        
-        <div class="mb-5 no-print">
-            <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Hi Family Team,</h1>
-            <p class="text-xs text-slate-400 font-medium">Berikut laporan terpadu dan rekapitulasi mutasi keuangan keluarga Anda.</p>
-        </div>
-
-        <!-- METRIK UTAMA STATISTIK -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
-            <div class="bg-gradient-to-br from-[#2DD4BF] to-[#0D9488] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
-                <div>
-                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-teal-100 block tracking-wider">Saldo Buku Aktif</span>
-                    <span id="statSaldoKas" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
-                </div>
-                <div class="mt-1 flex items-center justify-between"><span id="labelKondisiKas" class="text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/20">Sehat</span></div>
-            </div>
-            <div class="bg-gradient-to-br from-[#60A5FA] to-[#2563EB] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
-                <div>
-                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-blue-100 block tracking-wider">Total Inflow (Debit)</span>
-                    <span id="statTotalPemasukan" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
-                </div>
-                <span class="text-[8px] sm:text-[9px] font-bold text-blue-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">supabase sync</span>
-            </div>
-            <div class="bg-gradient-to-br from-[#FB7185] to-[#E11D48] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
-                <div>
-                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-rose-100 block tracking-wider">Total Outflow (Kredit)</span>
-                    <span id="statTotalPengeluaran" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
-                </div>
-                <span class="text-[8px] sm:text-[9px] font-bold text-rose-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">live stream</span>
-            </div>
-            <div class="bg-gradient-to-br from-[#C084FC] to-[#7C3AED] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
-                <div>
-                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-purple-100 block tracking-wider">Top Alokasi Biaya</span>
-                    <span id="txtTopKategori" class="text-xs sm:text-sm font-black block mt-0.5 sm:mt-1 truncate tracking-tight">Menganalisis...</span>
-                </div>
-                <p id="txtKesimpulanPengeluaran" class="text-[8px] sm:text-[9px] font-medium text-purple-100/90 leading-tight truncate">Membaca data...</p>
-            </div>
-        </div>
-
-        <!-- KATEGORI RASIO & MEMO BELANJA -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
-            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col items-center justify-center min-h-[180px] sm:min-h-[220px]">
-                <div class="w-full flex justify-between items-center mb-2 border-b border-slate-50 pb-1">
-                    <h3 class="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">📊 Kategori Rasio Global</h3>
-                    <span class="text-[9px] sm:text-[10px] text-slate-400 font-semibold">Bulan Ini</span>
-                </div>
-                <div class="w-full flex items-center gap-3 sm:gap-4">
-                    <div class="w-20 h-20 sm:w-28 sm:h-28 shrink-0 relative"><canvas id="kategoriPieChart"></canvas></div>
-                    <div class="text-[10px] sm:text-[11px] text-slate-400 leading-relaxed">Diagram pembagian segmentasi alokasi biaya pengeluaran domestik.</div>
-                </div>
-            </div>
-
-            <!-- MEMO & DAFTAR BELANJAAN (Diperbarui untuk Estetika & Mobile) -->
-            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col gap-3 print-hide-macro relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -z-10 opacity-50"></div>
-                
-                <div class="w-full flex justify-between items-center border-b border-slate-100 pb-2">
+    <!-- MAIN APP DASHBOARD WRAPPER -->
+    <div id="mainDashboardWrapper" class="hidden flex-grow flex flex-col">
+        <!-- HEADER NAVIGATION ATAS -->
+        <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 sticky top-0 z-50 shadow-sm no-print">
+            <div class="max-w-7xl mx-auto flex flex-row justify-between items-center w-full">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 text-base">F</div>
                     <div>
-                        <h3 class="text-[11px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1.5"><span>📝</span> Memo & Daftar Belanja</h3>
-                        <p class="text-[9px] sm:text-[10px] text-slate-400 mt-0.5">Ceklis perlengkapan sebelum berbelanja</p>
+                        <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight block leading-tight">Family Finance Tracker</span>
+                        <span class="text-[10px] text-slate-400 font-medium hidden sm:block">Unified Dashboard Financial Management (Supabase Cloud)</span>
                     </div>
-                    <span class="text-[8px] sm:text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm px-2.5 py-1 rounded-full font-bold" id="lblTotalMemo">0 Item</span>
                 </div>
                 
-                <!-- Form Input Flex-Wrap (Responsif untuk HP) -->
-                <form onsubmit="event.preventDefault(); tambahMemoBelanja();" class="flex flex-col sm:flex-row gap-2 no-print border-b border-slate-100 pb-3 mb-1">
-                    <input type="text" id="memoInputTitle" placeholder="Nama barang / memo..." required class="w-full sm:flex-1 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition">
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <input type="number" id="memoInputQty" placeholder="Qty" value="1" min="1" class="w-16 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:border-amber-400 text-center">
-                        <input type="number" id="memoInputPrice" placeholder="Est. Rp" class="flex-1 sm:w-28 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:border-amber-400">
-                        <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-2 sm:py-2.5 rounded-xl text-xs transition shadow-sm hover:shadow-md flex items-center justify-center gap-1">
-                            <span>➕</span> <span class="hidden sm:inline">Tambah</span>
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Daftar Card Items (Tinggi ditambah, responsif & estetik) -->
-                <div class="overflow-y-auto max-h-56 custom-scroll pr-1.5 -mr-1.5">
-                    <ul id="memoListContainer" class="space-y-2 text-[11px] pb-1">
-                        <li class="text-slate-400 italic text-center py-4 text-xs">Memuat daftar belanjaan...</li>
-                    </ul>
+                <div class="flex items-center gap-2">
+                    <button onclick="muatDataKeuangan();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded-xl shadow text-xs transition flex items-center gap-1.5 font-mono">
+                        <span>🔄</span> <span class="hidden sm:inline">Sync Supabase</span>
+                    </button>
+                    <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3.5 rounded-xl text-xs transition flex items-center gap-1.5">
+                        <span>🖨️</span> <span class="hidden sm:inline">Cetak</span>
+                    </button>
+                    <button onclick="kunciUlangDashboard();" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center gap-1 ml-1" title="Kunci Dashboard">
+                        <span>🔒</span> <span class="hidden sm:inline">Kunci</span>
+                    </button>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- FORM & TABEL REKENING KORAN + WISHLIST -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
+        <!-- KONTEN UTAMA SINGLE PAGE -->
+        <main class="flex-grow p-3 sm:p-8 max-w-7xl mx-auto w-full print-area">
             
-            <div class="lg:col-span-1 space-y-4 sm:space-y-6 no-print">
-                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm">
-                    <h2 id="formTitle" class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 border-b pb-1.5">Catat Mutasi Keuangan</h2>
-                    <form id="financeForm" onsubmit="event.preventDefault(); eksekusiSimpanTransaksi();" class="space-y-2.5">
-                        <input type="hidden" id="txId">
+            <div class="mb-5 no-print flex justify-between items-end">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Hi Family Team,</h1>
+                    <p class="text-xs text-slate-400 font-medium">Berikut laporan terpadu dan rekapitulasi mutasi keuangan keluarga Anda.</p>
+                </div>
+                <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-200 hidden sm:inline-block">● Authorized Access</span>
+            </div>
+
+            <!-- METRIK UTAMA STATISTIK -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
+                <div class="bg-gradient-to-br from-[#2DD4BF] to-[#0D9488] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+                    <div>
+                        <span class="text-[9px] sm:text-[10px] uppercase font-bold text-teal-100 block tracking-wider">Saldo Buku Aktif</span>
+                        <span id="statSaldoKas" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
+                    </div>
+                    <div class="mt-1 flex items-center justify-between"><span id="labelKondisiKas" class="text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/20">Sehat</span></div>
+                </div>
+                <div class="bg-gradient-to-br from-[#60A5FA] to-[#2563EB] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+                    <div>
+                        <span class="text-[9px] sm:text-[10px] uppercase font-bold text-blue-100 block tracking-wider">Total Inflow (Debit)</span>
+                        <span id="statTotalPemasukan" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
+                    </div>
+                    <span class="text-[8px] sm:text-[9px] font-bold text-blue-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">supabase sync</span>
+                </div>
+                <div class="bg-gradient-to-br from-[#FB7185] to-[#E11D48] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+                    <div>
+                        <span class="text-[9px] sm:text-[10px] uppercase font-bold text-rose-100 block tracking-wider">Total Outflow (Kredit)</span>
+                        <span id="statTotalPengeluaran" class="text-sm sm:text-xl font-black block mt-0.5 sm:mt-1 tracking-tight truncate">Rp 0</span>
+                    </div>
+                    <span class="text-[8px] sm:text-[9px] font-bold text-rose-100/80 bg-white/10 px-1.5 py-0.5 rounded-full w-max">live stream</span>
+                </div>
+                <div class="bg-gradient-to-br from-[#C084FC] to-[#7C3AED] p-3.5 sm:p-4 rounded-2xl text-white fin-shadow flex flex-col justify-between min-h-[95px] sm:min-h-[110px]">
+                    <div>
+                        <span class="text-[9px] sm:text-[10px] uppercase font-bold text-purple-100 block tracking-wider">Top Alokasi Biaya</span>
+                        <span id="txtTopKategori" class="text-xs sm:text-sm font-black block mt-0.5 sm:mt-1 truncate tracking-tight">Menganalisis...</span>
+                    </div>
+                    <p id="txtKesimpulanPengeluaran" class="text-[8px] sm:text-[9px] font-medium text-purple-100/90 leading-tight truncate">Membaca data...</p>
+                </div>
+            </div>
+
+            <!-- KATEGORI RASIO & MEMO BELANJA -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col items-center justify-center min-h-[180px] sm:min-h-[220px]">
+                    <div class="w-full flex justify-between items-center mb-2 border-b border-slate-50 pb-1">
+                        <h3 class="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">📊 Kategori Rasio Global</h3>
+                        <span class="text-[9px] sm:text-[10px] text-slate-400 font-semibold">Bulan Ini</span>
+                    </div>
+                    <div class="w-full flex items-center gap-3 sm:gap-4">
+                        <div class="w-20 h-20 sm:w-28 sm:h-28 shrink-0 relative"><canvas id="kategoriPieChart"></canvas></div>
+                        <div class="text-[10px] sm:text-[11px] text-slate-400 leading-relaxed">Diagram pembagian segmentasi alokasi biaya pengeluaran domestik.</div>
+                    </div>
+                </div>
+
+                <!-- MEMO & DAFTAR BELANJAAN -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col gap-3 print-hide-macro relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -z-10 opacity-50"></div>
+                    
+                    <div class="w-full flex justify-between items-center border-b border-slate-100 pb-2">
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Tanggal Transaksi</label>
-                            <input type="date" id="txTanggal" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                            <h3 class="text-[11px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1.5"><span>📝</span> Memo & Daftar Belanja</h3>
+                            <p class="text-[9px] sm:text-[10px] text-slate-400 mt-0.5">Ceklis item untuk langsung mengarsipkan/menghapus memo</p>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Anggota (PIC)</label>
-                                <select id="txPic" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-medium">
-                                    <option value="Bersama">👥 Bersama</option>
-                                    <option value="Irfan">👨 Irfan</option>
-                                    <option value="Hana">👩 Hana</option>
-                                    <option value="Anak">👦 Anak</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Jenis Arus</label>
-                                <select id="txJenis" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-bold text-emerald-600">
-                                    <option value="Pemasukan" class="text-emerald-600">💰 Pemasukan</option>
-                                    <option value="Pengeluaran" class="text-rose-600">💸 Pengeluaran</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Kategori Alokasi Detail</label>
-                            <select id="txKategori" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
-                                <option value="Gaji & Bisnis">💼 Gaji & Bisnis</option>
-                                <option value="Makanan & Bahan Dapur">🍳 Makanan & Bahan Dapur</option>
-                                <option value="Edukasi & Sekolah">📚 Edukasi & Sekolah</option>
-                                <option value="Utilitas & Tagihan Bulanan">⚡ Utilitas & Tagihan Bulanan</option>
-                                <option value="Akomodasi & Transportasi">🚗 Akomodasi & Transportasi</option>
-                                <option value="Kesehatan & Medis">🏥 Kesehatan & Medis</option>
-                                <option value="Perawatan Diri">🧴 Perawatan Diri</option>
-                                <option value="Keperluan Anak">🍼 Keperluan Anak</option>
-                                <option value="Hiburan & Rekreasi">🏕️ Hiburan & Rekreasi</option>
-                                <option value="Investasi & Tabungan">📈 Investasi & Tabungan</option>
-                                <option value="Pajak & Asuransi">📄 Pajak & Asuransi</option>
-                                <option value="Cicilan & Utang">💸 Cicilan & Utang</option>
-                                <option value="Lain-lain">📦 Lain-lain</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Deskripsi Keperluan</label>
-                            <input type="text" id="txDeskripsi" required placeholder="Contoh: Belanja Bulanan" class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Nominal Rupiah (Rp)</label>
-                            <input type="number" id="txNominal" required placeholder="0" min="1" class="w-full border border-slate-200 p-2 text-xs font-bold rounded-xl bg-slate-50 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Upload Bukti Lampiran (Gambar / PDF)</label>
-                            <input type="file" id="txFileBukti" accept="image/*,application/pdf" class="w-full text-[10px] text-slate-500 bg-slate-50 border border-slate-200 p-1 rounded-xl file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:bg-slate-200 file:text-slate-700 cursor-pointer">
-                        </div>
-                        <div class="flex gap-1.5 pt-1.5">
-                            <button type="submit" id="btnSubmitForm" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-xl shadow text-xs transition">💾 Simpan Kas</button>
-                            <button type="button" id="btnBatalEdit" onclick="resetFormMutasi()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 rounded-xl text-xs transition">Batal</button>
+                        <span class="text-[8px] sm:text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm px-2.5 py-1 rounded-full font-bold" id="lblTotalMemo">0 Item</span>
+                    </div>
+                    
+                    <form onsubmit="event.preventDefault(); tambahMemoBelanja();" class="flex flex-col sm:flex-row gap-2 no-print border-b border-slate-100 pb-3 mb-1">
+                        <input type="text" id="memoInputTitle" placeholder="Nama barang / memo..." required class="w-full sm:flex-1 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition">
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <input type="number" id="memoInputQty" placeholder="Qty" value="1" min="1" class="w-16 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:border-amber-400 text-center">
+                            <input type="number" id="memoInputPrice" placeholder="Est. Rp" class="flex-1 sm:w-28 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:border-amber-400">
+                            <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-2 sm:py-2.5 rounded-xl text-xs transition shadow-sm hover:shadow-md flex items-center justify-center gap-1">
+                                <span>➕</span> <span class="hidden sm:inline">Tambah</span>
+                            </button>
                         </div>
                     </form>
-                </div>
-                
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/60 shadow-sm space-y-2.5">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Arus Kas Anggota Keluarga</span>
-                    <div class="grid grid-cols-3 gap-1.5 text-center text-[9px]">
-                        <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Bersama</div><div id="txtTotalBersama" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartBersama"></canvas></div></div>
-                        <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Irfan</div><div id="txtTotalIrfan" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartIrfan"></canvas></div></div>
-                        <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Hana</div><div id="txtTotalHana" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartHana"></canvas></div></div>
+
+                    <div class="overflow-y-auto max-h-56 custom-scroll pr-1.5 -mr-1.5">
+                        <ul id="memoListContainer" class="space-y-2 text-[11px] pb-1">
+                            <li class="text-slate-400 italic text-center py-4 text-xs">Memuat daftar belanjaan...</li>
+                        </ul>
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 space-y-4 sm:space-y-6 w-full">
+            <!-- FORM & TABEL REKENING KORAN + WISHLIST -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
                 
-                <!-- REKENING KORAN & GRAFIK DENGAN SCROLL/SLIDE -->
-                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between">
-                    <div class="w-full flex flex-col">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b pb-2">
+                <div class="lg:col-span-1 space-y-4 sm:space-y-6 no-print">
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm">
+                        <h2 id="formTitle" class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 border-b pb-1.5">Catat Mutasi Keuangan</h2>
+                        <form id="financeForm" onsubmit="event.preventDefault(); eksekusiSimpanTransaksi();" class="space-y-2.5">
+                            <input type="hidden" id="txId">
                             <div>
-                                <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📝 Rekening Koran Kas Domestik</h2>
-                                <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tren balance berjalan terintegrasi log form mutasi</p>
+                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Tanggal Transaksi</label>
+                                <input type="date" id="txTanggal" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
                             </div>
-                            <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm no-print">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Anggota (PIC)</label>
+                                    <select id="txPic" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-medium">
+                                        <option value="Bersama">👥 Bersama</option>
+                                        <option value="Irfan">👨 Irfan</option>
+                                        <option value="Hana">👩 Hana</option>
+                                        <option value="Anak">👦 Anak</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Jenis Arus</label>
+                                    <select id="txJenis" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-bold text-emerald-600">
+                                        <option value="Pemasukan" class="text-emerald-600">💰 Pemasukan</option>
+                                        <option value="Pengeluaran" class="text-rose-600">💸 Pengeluaran</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Kategori Alokasi Detail</label>
+                                <select id="txKategori" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                                    <option value="Gaji & Bisnis">💼 Gaji & Bisnis</option>
+                                    <option value="Makanan & Bahan Dapur">🍳 Makanan & Bahan Dapur</option>
+                                    <option value="Edukasi & Sekolah">📚 Edukasi & Sekolah</option>
+                                    <option value="Utilitas & Tagihan Bulanan">⚡ Utilitas & Tagihan Bulanan</option>
+                                    <option value="Akomodasi & Transportasi">🚗 Akomodasi & Transportasi</option>
+                                    <option value="Kesehatan & Medis">🏥 Kesehatan & Medis</option>
+                                    <option value="Perawatan Diri">🧴 Perawatan Diri</option>
+                                    <option value="Keperluan Anak">🍼 Keperluan Anak</option>
+                                    <option value="Hiburan & Rekreasi">🏕️ Hiburan & Rekreasi</option>
+                                    <option value="Investasi & Tabungan">📈 Investasi & Tabungan</option>
+                                    <option value="Pajak & Asuransi">📄 Pajak & Asuransi</option>
+                                    <option value="Cicilan & Utang">💸 Cicilan & Utang</option>
+                                    <option value="Lain-lain">📦 Lain-lain</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Deskripsi Keperluan</label>
+                                <input type="text" id="txDeskripsi" required placeholder="Contoh: Belanja Bulanan" class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Nominal Rupiah (Rp)</label>
+                                <input type="number" id="txNominal" required placeholder="0" min="1" class="w-full border border-slate-200 p-2 text-xs font-bold rounded-xl bg-slate-50 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Upload Bukti Lampiran (Gambar / PDF)</label>
+                                <input type="file" id="txFileBukti" accept="image/*,application/pdf" class="w-full text-[10px] text-slate-500 bg-slate-50 border border-slate-200 p-1 rounded-xl file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:bg-slate-200 file:text-slate-700 cursor-pointer">
+                            </div>
+                            <div class="flex gap-1.5 pt-1.5">
+                                <button type="submit" id="btnSubmitForm" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-xl shadow text-xs transition">💾 Simpan Kas</button>
+                                <button type="button" id="btnBatalEdit" onclick="resetFormMutasi()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 rounded-xl text-xs transition">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/60 shadow-sm space-y-2.5">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Arus Kas Anggota Keluarga</span>
+                        <div class="grid grid-cols-3 gap-1.5 text-center text-[9px]">
+                            <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Bersama</div><div id="txtTotalBersama" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartBersama"></canvas></div></div>
+                            <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Irfan</div><div id="txtTotalIrfan" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartIrfan"></canvas></div></div>
+                            <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Hana</div><div id="txtTotalHana" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartHana"></canvas></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-4 sm:space-y-6 w-full">
+                    
+                    <!-- REKENING KORAN & GRAFIK DENGAN SCROLL/SLIDE -->
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between">
+                        <div class="w-full flex flex-col">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b pb-2">
+                                <div>
+                                    <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📝 Rekening Koran Kas Domestik</h2>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tren balance berjalan terintegrasi log form mutasi</p>
+                                </div>
+                                <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm no-print">
+                            </div>
+
+                            <!-- CONTAINER GRAFIK INTERAKTIF -->
+                            <div class="w-full overflow-x-auto overflow-y-auto max-h-64 sm:max-h-80 mb-3 bg-slate-50/50 rounded-xl p-2 border border-slate-100 custom-scroll print-scroll-auto">
+                                <div id="chartWrapper" class="h-48 sm:h-64 relative min-w-[600px]">
+                                    <canvas id="chartMutasiLine"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto overflow-y-auto max-h-60 border rounded-xl border-slate-150 custom-scroll">
+                                <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[550px]">
+                                    <thead class="sticky top-0 bg-slate-50 text-slate-500 font-bold border-b border-slate-200 z-10 text-[9px] sm:text-[10px] uppercase tracking-wider">
+                                        <tr>
+                                            <th class="p-2 w-14">Tanggal</th>
+                                            <th class="p-2 w-14">PIC</th>
+                                            <th class="p-2">Keterangan / Pos</th>
+                                            <th class="p-2 text-right w-20 text-emerald-600">Debit (+)</th>
+                                            <th class="p-2 text-right w-20 text-rose-600">Kredit (-)</th>
+                                            <th class="p-2 text-right w-24 bg-slate-50/50 border-x">Saldo Buku</th>
+                                            <th class="p-2 text-center w-20 no-print">Aksi & Lampiran</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="jurnal-rows" class="divide-y text-slate-600 bg-white font-medium">
+                                        <tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Memuat mutasi kas koran...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WISHLIST -->
+                    <div id="section-wishlist" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm space-y-3">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-2 gap-2">
+                            <div>
+                                <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">🎯 Wishlist & Rencana Target Finansial</h2>
+                                <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tabel inventaris data lengkap rencana impian jangka panjang</p>
+                            </div>
+                            
+                            <form id="targetForm" onsubmit="event.preventDefault(); eksekusiSimpanTargetCloud();" class="flex flex-wrap items-center gap-1.5 no-print w-full sm:w-auto justify-end">
+                                <input type="text" id="targetNama" required placeholder="Nama Impian..." class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none w-24 sm:w-28">
+                                <input type="number" id="targetNominal" required placeholder="Target Rp" class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none w-20 sm:w-24">
+                                <input type="date" id="targetDeadline" required class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 text-slate-400 focus:outline-none w-24 sm:w-28">
+                                <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] sm:text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow transition">➕ Add</button>
+                            </form>
                         </div>
 
-                        <!-- CONTAINER GRAFIK INTERAKTIF -->
-                        <div class="w-full overflow-x-auto overflow-y-auto max-h-64 sm:max-h-80 mb-3 bg-slate-50/50 rounded-xl p-2 border border-slate-100 custom-scroll print-scroll-auto">
-                            <div id="chartWrapper" class="h-48 sm:h-64 relative min-w-[600px]">
-                                <canvas id="chartMutasiLine"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto overflow-y-auto max-h-60 border rounded-xl border-slate-150 custom-scroll">
-                            <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[550px]">
-                                <thead class="sticky top-0 bg-slate-50 text-slate-500 font-bold border-b border-slate-200 z-10 text-[9px] sm:text-[10px] uppercase tracking-wider">
+                        <div class="overflow-x-auto border rounded-xl border-slate-150 custom-scroll">
+                            <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[500px]">
+                                <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[9px] sm:text-[10px] uppercase tracking-wider">
                                     <tr>
-                                        <th class="p-2 w-14">Tanggal</th>
-                                        <th class="p-2 w-14">PIC</th>
-                                        <th class="p-2">Keterangan / Pos</th>
-                                        <th class="p-2 text-right w-20 text-emerald-600">Debit (+)</th>
-                                        <th class="p-2 text-right w-20 text-rose-600">Kredit (-)</th>
-                                        <th class="p-2 text-right w-24 bg-slate-50/50 border-x">Saldo Buku</th>
-                                        <th class="p-2 text-center w-20 no-print">Aksi & Lampiran</th>
+                                        <th class="p-2">Nama Rencana Impian</th>
+                                        <th class="p-2 w-20 text-right">Target Rupiah</th>
+                                        <th class="p-2 w-16 text-center">Deadline</th>
+                                        <th class="p-2 w-28 text-center">Progress Terpenuhi</th>
+                                        <th class="p-2 w-14 text-center no-print">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="jurnal-rows" class="divide-y text-slate-600 bg-white font-medium">
-                                    <tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Memuat mutasi kas koran...</td></tr>
+                                <tbody id="wishlist-table-rows" class="divide-y text-slate-600 bg-white font-medium">
+                                    <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat wishlist cloud...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
 
-                <!-- WISHLIST -->
-                <div id="section-wishlist" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm space-y-3">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-2 gap-2">
-                        <div>
-                            <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">🎯 Wishlist & Rencana Target Finansial</h2>
-                            <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tabel inventaris data lengkap rencana impian jangka panjang</p>
+                    <!-- DAFTAR KEBUTUHAN VS KEINGINAN -->
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/60 flex flex-col no-print space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <div>
+                                <h3 class="text-xs sm:text-sm font-bold text-indigo-700 uppercase tracking-wider">🛒 Daftar Kebutuhan</h3>
+                                <p class="text-[9px] sm:text-[10px] text-slate-400">Prioritaskan pos pengeluaran berdasarkan tipe kebutuhan</p>
+                            </div>
+                            <span class="text-[9px] font-mono font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full" id="lblNeedsWantsCount">0 Items</span>
                         </div>
-                        
-                        <form id="targetForm" onsubmit="event.preventDefault(); eksekusiSimpanTargetCloud();" class="flex flex-wrap items-center gap-1.5 no-print w-full sm:w-auto justify-end">
-                            <input type="text" id="targetNama" required placeholder="Nama Impian..." class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none w-24 sm:w-28">
-                            <input type="number" id="targetNominal" required placeholder="Target Rp" class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none w-20 sm:w-24">
-                            <input type="date" id="targetDeadline" required class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 text-slate-400 focus:outline-none w-24 sm:w-28">
-                            <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] sm:text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow transition">➕ Add</button>
+
+                        <form onsubmit="event.preventDefault(); tambahNeedsWants();" class="flex flex-wrap items-center gap-2 border-b pb-3">
+                            <input type="text" id="nwTitle" placeholder="Nama item / barang..." required class="flex-1 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none min-w-[140px]">
+                            <select id="nwType" class="border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none font-bold">
+                                <option value="Kebutuhan" class="text-emerald-600">🟢 Kebutuhan</option>
+                                <option value="Keinginan" class="text-amber-600">🟡 Keinginan</option>
+                            </select>
+                            <input type="number" id="nwPrice" placeholder="Est. Rp" class="w-24 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">➕ Tambah</button>
                         </form>
-                    </div>
 
-                    <div class="overflow-x-auto border rounded-xl border-slate-150 custom-scroll">
-                        <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[500px]">
-                            <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[9px] sm:text-[10px] uppercase tracking-wider">
-                                <tr>
-                                    <th class="p-2">Nama Rencana Impian</th>
-                                    <th class="p-2 w-20 text-right">Target Rupiah</th>
-                                    <th class="p-2 w-16 text-center">Deadline</th>
-                                    <th class="p-2 w-28 text-center">Progress Terpenuhi</th>
-                                    <th class="p-2 w-14 text-center no-print">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="wishlist-table-rows" class="divide-y text-slate-600 bg-white font-medium">
-                                <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat wishlist cloud...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- DAFTAR KEBUTUHAN VS KEINGINAN -->
-                <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/60 flex flex-col no-print space-y-3">
-                    <div class="flex justify-between items-center border-b pb-2">
-                        <div>
-                            <h3 class="text-xs sm:text-sm font-bold text-indigo-700 uppercase tracking-wider">🛒 Daftar Kebutuhan</h3>
-                            <p class="text-[9px] sm:text-[10px] text-slate-400">Prioritaskan pos pengeluaran berdasarkan tipe kebutuhan</p>
+                        <div id="needsWantsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto custom-scroll pr-1">
+                            <div class="text-slate-400 italic text-center py-4 col-span-2 text-xs">Memuat daftar kebutuhan...</div>
                         </div>
-                        <span class="text-[9px] font-mono font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full" id="lblNeedsWantsCount">0 Items</span>
                     </div>
 
-                    <form onsubmit="event.preventDefault(); tambahNeedsWants();" class="flex flex-wrap items-center gap-2 border-b pb-3">
-                        <input type="text" id="nwTitle" placeholder="Nama item / barang..." required class="flex-1 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none min-w-[140px]">
-                        <select id="nwType" class="border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none font-bold">
-                            <option value="Kebutuhan" class="text-emerald-600">🟢 Kebutuhan</option>
-                            <option value="Keinginan" class="text-amber-600">🟡 Keinginan</option>
-                        </select>
-                        <input type="number" id="nwPrice" placeholder="Est. Rp" class="w-24 border border-slate-200 p-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none">
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">➕ Tambah</button>
-                    </form>
-
-                    <div id="needsWantsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto custom-scroll pr-1">
-                        <div class="text-slate-400 italic text-center py-4 col-span-2 text-xs">Memuat daftar kebutuhan...</div>
-                    </div>
                 </div>
 
             </div>
-
-        </div>
-    </main>
+        </main>
+    </div>
 
     <!-- MODAL POPUP PRATINJAU DOKUMEN / BUKTI MUTASI -->
     <div id="previewModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
@@ -334,6 +378,9 @@
     </div>
 
     <script>
+        // KODE PIN AKSES
+        const ACCESS_PIN_CODE = "2510";
+
         // MENGGUNAKAN KEY API SUPABASE ANDA
         const SUPABASE_URL = "https://spetgpwpkjfifgvclwyl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZXRncHdwa2pmaWZndmNsd3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjkwNzYsImV4cCI6MjEwMTIwNTA3Nn0.oQzAtPKKpdejAY1y5cjBRoNZIK2Yp-oZMDxmXDESOUk";
@@ -350,10 +397,45 @@
         let chartInstances = { Bersama: null, Irfan: null, Hana: null, Kategori: null, MutasiLine: null };
 
         document.addEventListener("DOMContentLoaded", () => {
+            if (sessionStorage.getItem("fincheck_unlocked") === "true") {
+                bukaDashboardAplikasi();
+            } else {
+                tampilkanLayarPin();
+            }
+        });
+
+        /* --- LOGIKA VERIFIKASI PIN --- */
+        function verifikasiKodePass() {
+            const inputPin = document.getElementById('inputPinCode').value.trim();
+            const errBox = document.getElementById('pinErrorMsg');
+
+            if (inputPin === ACCESS_PIN_CODE) {
+                errBox.classList.add('hidden');
+                bukaDashboardAplikasi();
+            } else {
+                errBox.classList.remove('hidden');
+                document.getElementById('inputPinCode').value = "";
+            }
+        }
+
+        function bukaDashboardAplikasi() {
+            sessionStorage.setItem("fincheck_unlocked", "true");
+            document.getElementById('pin-overlay').style.display = 'none';
+            document.getElementById('mainDashboardWrapper').classList.remove('hidden');
             resetFormMutasi();
             document.getElementById('txFileBukti').addEventListener('change', konversiFileKeBase64);
             muatDataKeuangan();
-        });
+        }
+
+        function tampilkanLayarPin() {
+            document.getElementById('pin-overlay').style.display = 'flex';
+            document.getElementById('mainDashboardWrapper').classList.add('hidden');
+        }
+
+        function kunciUlangDashboard() {
+            sessionStorage.removeItem("fincheck_unlocked");
+            window.location.reload();
+        }
 
         function konversiFileKeBase64(e) {
             const file = e.target.files[0];
@@ -440,12 +522,12 @@
             muatNeedsWants();
         }
 
-        /* --- FUNGSI SPESIFIK: SHOPPING MEMO (DIPERBARUI UNTUK ESTETIKA HP) --- */
+        /* --- SHOPPING MEMO --- */
         async function muatMemoBelanja() {
             try {
                 const data = await fetchAllRows('shopping_memo');
-                // Urutkan: yang belum dibeli di atas, yang sudah dibeli di bawah
-                logMemoBelanja = (data || []).sort((a, b) => (a.is_bought === b.is_bought) ? 0 : a.is_bought ? 1 : -1);
+                // Menyaring item agar item yang is_bought true tidak ditampilkan (otomatis terhapus/terarsip)
+                logMemoBelanja = (data || []).filter(item => !item.is_bought);
                 renderMemoBelanja();
             } catch (err) {
                 document.getElementById('memoListContainer').innerHTML = `<li class="text-amber-600 italic text-center py-4 text-xs">Tabel 'shopping_memo' belum dibuat di Supabase.</li>`;
@@ -464,18 +546,15 @@
 
             logMemoBelanja.forEach(item => {
                 const li = document.createElement('li');
+                li.className = `p-2.5 sm:p-3 rounded-xl border transition-all duration-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 text-slate-800`;
                 
-                // Styling Card: responsif (baris terpisah di HP) dan gradien warna
-                li.className = `p-2.5 sm:p-3 rounded-xl border transition-all duration-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${item.is_bought ? 'bg-slate-50/80 border-slate-200 opacity-70' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 text-slate-800'}`;
-                
-                // SVG Ikon Tempat Sampah (Delete)
                 const svgDelete = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>`;
 
                 li.innerHTML = `
                     <div class="flex items-start sm:items-center gap-2.5 w-full">
-                        <input type="checkbox" ${item.is_bought ? 'checked' : ''} onchange="toggleStatusMemo('${item.id}', this.checked)" class="mt-0.5 sm:mt-0 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer flex-shrink-0">
+                        <input type="checkbox" onchange="toggleStatusMemo('${item.id}', this.checked)" class="mt-0.5 sm:mt-0 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer flex-shrink-0" title="Centang untuk menyelesaikan & menghapus item">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 w-full">
-                            <span class="font-bold text-xs sm:text-sm ${item.is_bought ? 'line-through text-slate-400' : 'text-slate-800'} break-words">${item.title}</span>
+                            <span class="font-bold text-xs sm:text-sm text-slate-800 break-words">${item.title}</span>
                             <span class="text-[9px] font-black px-1.5 py-0.5 bg-white/70 rounded-md border border-slate-200/60 text-slate-500 w-max">x${item.qty || 1}</span>
                         </div>
                     </div>
@@ -510,8 +589,10 @@
         }
 
         async function toggleStatusMemo(id, isBought) {
-            await supabaseClient.from('shopping_memo').update({ is_bought: isBought }).eq('id', id);
-            muatMemoBelanja();
+            // Ketika dicek, hapus item dari Supabase agar memo otomatis bersih/terarsip
+            if (isBought) {
+                await hapusMemo(id);
+            }
         }
 
         async function hapusMemo(id) {
@@ -519,7 +600,7 @@
             muatMemoBelanja();
         }
 
-        /* --- FUNGSI SPESIFIK: KEBUTUHAN VS KEINGINAN --- */
+        /* --- KEBUTUHAN VS KEINGINAN --- */
         async function muatNeedsWants() {
             try {
                 const data = await fetchAllRows('needs_wants');
