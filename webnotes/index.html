@@ -1,1 +1,699 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebNotes 6 - Supabase Cloud Edition</title>
+    
+    <!-- External Libraries: PDF.js, jsPDF & Supabase JS Client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg-main: #f4f5f7;
+            --toolbar-bg: #ffffff;
+            --accent: #007aff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* HEADER & TOOLBAR UTAMA */
+        header {
+            background-color: var(--toolbar-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            z-index: 10;
+        }
+
+        .brand {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .title-input {
+            border: 1px solid transparent;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .title-input:hover, .title-input:focus {
+            border-color: var(--border-color);
+            background: #fafafa;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tool-btn {
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tool-btn:hover {
+            background-color: rgba(0, 122, 255, 0.08);
+            color: var(--accent);
+        }
+
+        .tool-btn.active {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="color"] {
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+        }
+
+        select, input[type="file"] {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0062cc;
+        }
+
+        .btn-success {
+            background-color: #34c759;
+            color: white;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #28a745;
+        }
+
+        /* AREA WORKSPACE / CANVAS */
+        .workspace-container {
+            flex: 1;
+            overflow: auto;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .paper-page {
+            background-color: white;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            position: relative;
+            width: 794px;
+            height: 1123px;
+            touch-action: none;
+        }
+
+        .pdf-canvas, .draw-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        .draw-canvas {
+            z-index: 2;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .text-box {
+            position: absolute;
+            border: 1px dashed var(--accent);
+            background: transparent;
+            font-size: 16px;
+            outline: none;
+            padding: 4px;
+            z-index: 3;
+            min-width: 100px;
+        }
+
+        /* PAGE NAVIGATOR BAR */
+        .page-footer {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 8px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 20;
+        }
+
+        /* MODAL AUTH (LOGIN/REGISTER) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-card h2 { font-size: 20px; color: var(--accent); text-align: center; }
+        .modal-card input { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; }
+        .status-badge { font-size: 12px; padding: 4px 8px; border-radius: 12px; background: #e0e0e0; }
+        .status-badge.online { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+
+    <!-- MODAL AUTH LOGIN SUPABASE -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-card">
+            <h2>☁️ WebNotes Login</h2>
+            <input type="email" id="authEmail" placeholder="Email Anda">
+            <input type="password" id="authPassword" placeholder="Kata Sandi">
+            <button class="btn-action btn-primary" onclick="handleLogin()">Masuk (Login)</button>
+            <button class="btn-action" onclick="handleRegister()">Daftar Akun Baru</button>
+        </div>
+    </div>
+
+    <!-- TOOLBAR UTAMA -->
+    <header>
+        <div class="brand">
+            ✏️ <input type="text" id="noteTitle" class="title-input" value="Catatan Tanpa Judul">
+            <span class="status-badge" id="userStatus">Offline</span>
+        </div>
+
+        <div class="toolbar">
+            <button class="tool-btn active" id="penTool" onclick="setTool('pen')">🖋️ Pen</button>
+            <button class="tool-btn" id="highlighterTool" onclick="setTool('highlighter')">🖍️ Highlighter</button>
+            <button class="tool-btn" id="eraserTool" onclick="setTool('eraser')">🧹 Eraser</button>
+            <button class="tool-btn" id="textTool" onclick="setTool('text')">🔤 Text</button>
+
+            <div class="controls">
+                <input type="color" id="colorPicker" value="#000000" onchange="updateColor(this.value)">
+                <select id="sizePicker" onchange="updateSize(this.value)">
+                    <option value="2">Tipis (2px)</option>
+                    <option value="5" selected>Sedang (5px)</option>
+                    <option value="12">Tebal (12px)</option>
+                    <option value="24">Sangat Tebal (24px)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-action" onclick="undoLastStroke()">↩️ Undo</button>
+            <button class="btn-action" onclick="clearCurrentPage()">🗑️ Clear</button>
+            <button class="btn-action btn-success" onclick="saveToSupabase()">☁️ Simpan Cloud</button>
+            <input type="file" id="pdfUpload" accept="application/pdf" style="display:none" onchange="importPDF(event)">
+            <button class="btn-action" onclick="document.getElementById('pdfUpload').click()">📥 PDF</button>
+            <button class="btn-action btn-primary" onclick="exportPDF()">📤 Export PDF</button>
+        </div>
+    </header>
+
+    <!-- AREA WORKSPACE CANVAS -->
+    <div class="workspace-container" id="workspace">
+        <div class="paper-page" id="page-1" data-page="1">
+            <canvas class="pdf-canvas"></canvas>
+            <canvas class="draw-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- PENGATUR HALAMAN FOOTER -->
+    <div class="page-footer">
+        <button class="btn-action" onclick="changePage(-1)">◀ Prev</button>
+        <span id="pageIndicator">Halaman 1 dari 1</span>
+        <button class="btn-action" onclick="changePage(1)">Next ▶</button>
+        <button class="btn-action btn-primary" onclick="addNewPage()">+ Halaman Baru</button>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. ISIKAN URL DAN ANON KEY SUPABASE ANDA DI SINI
+        // =========================================================================
+        const SUPABASE_URL = 'https://AKUN-ANDA.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let currentTool = 'pen';
+        let currentColor = '#000000';
+        let currentSize = 5;
+        let isDrawing = false;
+        let activePage = 1;
+        let totalPages = 1;
+        let currentNoteId = null; 
+        
+        let pageHistory = { 1: [] }; 
+        let currentStroke = [];
+
+        window.onload = async () => {
+            initCanvas(document.querySelector('#page-1 .draw-canvas'));
+            checkSession();
+        };
+
+        // =========================================================================
+        // 2. LOGIKA AUTHENTICATION & SUPABASE CLOUD
+        // =========================================================================
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                document.getElementById('authModal').style.display = 'none';
+                const status = document.getElementById('userStatus');
+                status.innerText = session.user.email;
+                status.classList.add('online');
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) alert(error.message);
+            else checkSession();
+        }
+
+        async function handleRegister() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const { error } = await supabase.auth.signUp({ email, password });
+            if (error) alert(error.message);
+            else alert('Registrasi berhasil! Silakan login.');
+        }
+
+        // SIMPAN DATA VEKTOR JSON KE SUPABASE
+        async function saveToSupabase() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                document.getElementById('authModal').style.display = 'flex';
+                return;
+            }
+
+            const title = document.getElementById('noteTitle').value;
+            const payload = {
+                user_id: user.id,
+                title: title,
+                pages_data: pageHistory,
+                updated_at: new Date()
+            };
+
+            if (currentNoteId) payload.id = currentNoteId;
+
+            const { data, error } = await supabase
+                .from('notes')
+                .upsert(payload)
+                .select();
+
+            if (error) {
+                alert('Gagal menyimpan: ' + error.message);
+            } else {
+                currentNoteId = data[0].id;
+                alert('☁️ Catatan berhasil disimpan ke Supabase Cloud!');
+            }
+        }
+
+        // =========================================================================
+        // 3. LOGIKA CORE DRAWING & PALM REJECTION
+        // =========================================================================
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tool + 'Tool').classList.add('active');
+        }
+
+        function updateColor(color) { currentColor = color; }
+        function updateSize(size) { currentSize = parseInt(size); }
+
+        function initCanvas(canvas) {
+            const page = canvas.parentElement;
+            canvas.width = page.clientWidth;
+            canvas.height = page.clientHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            canvas.addEventListener('pointerdown', startDrawing);
+            canvas.addEventListener('pointermove', draw);
+            canvas.addEventListener('pointerup', stopDrawing);
+            canvas.addEventListener('pointerleave', stopDrawing);
+            canvas.addEventListener('click', handleTextCreation);
+        }
+
+        function startDrawing(e) {
+            if (currentTool === 'text') return;
+
+            // ✋ PALM REJECTION: Tolak sentuhan telapak tangan (luas > 25px)
+            if (e.width > 25 || e.height > 25) return;
+
+            // Sensitivitas Stylus: Abaikan sentuhan jari jika sedang dalam mode Pen
+            if (e.pointerType === 'touch' && (currentTool === 'pen' || currentTool === 'highlighter')) {
+                return;
+            }
+
+            isDrawing = true;
+            const canvas = e.target;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            currentStroke = {
+                tool: currentTool,
+                color: currentColor,
+                size: currentSize,
+                points: [{x, y}]
+            };
+
+            const ctx = canvas.getContext('2d');
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            if (e.width > 25 || e.height > 25) { stopDrawing(e); return; }
+
+            const canvas = e.target;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            currentStroke.points.push({x, y});
+
+            if (currentTool === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = currentSize * 3;
+            } else if (currentTool === 'highlighter') {
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.strokeStyle = currentColor + '66';
+                ctx.lineWidth = currentSize * 3;
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = currentSize;
+            }
+
+            const points = currentStroke.points;
+            if (points.length > 2) {
+                const lastTwoPoints = points.slice(-2);
+                const controlPoint = lastTwoPoints[0];
+                const endPoint = {
+                    x: (lastTwoPoints[0].x + lastTwoPoints[1].x) / 2,
+                    y: (lastTwoPoints[0].y + lastTwoPoints[1].y) / 2
+                };
+                ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+                ctx.stroke();
+            }
+        }
+
+        function stopDrawing(e) {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            if (currentStroke.points.length > 0) {
+                if (!pageHistory[activePage]) pageHistory[activePage] = [];
+                pageHistory[activePage].push(currentStroke);
+            }
+            currentStroke = [];
+        }
+
+        function handleTextCreation(e) {
+            if (currentTool !== 'text') return;
+            const page = e.target.parentElement;
+            const rect = page.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const input = document.createElement('textarea');
+            input.className = 'text-box';
+            input.style.left = x + 'px';
+            input.style.top = y + 'px';
+            input.style.color = currentColor;
+            input.style.fontSize = (currentSize * 3) + 'px';
+
+            page.appendChild(input);
+            input.focus();
+
+            input.addEventListener('blur', () => {
+                if (!input.value.trim()) input.remove();
+            });
+        }
+
+        function redrawPage(pageNumber) {
+            const page = document.querySelector(`#page-${pageNumber}`);
+            if (!page) return;
+
+            const canvas = page.querySelector('.draw-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const history = pageHistory[pageNumber] || [];
+            history.forEach(stroke => {
+                ctx.beginPath();
+                if (stroke.tool === 'eraser') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.lineWidth = stroke.size * 3;
+                } else if (stroke.tool === 'highlighter') {
+                    ctx.globalCompositeOperation = 'multiply';
+                    ctx.strokeStyle = stroke.color + '66';
+                    ctx.lineWidth = stroke.size * 3;
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = stroke.color;
+                    ctx.lineWidth = stroke.size;
+                }
+
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                const points = stroke.points;
+                if (points.length > 0) ctx.moveTo(points[0].x, points[0].y);
+
+                for (let i = 1; i < points.length - 1; i++) {
+                    const xc = (points[i].x + points[i + 1].x) / 2;
+                    const yc = (points[i].y + points[i + 1].y) / 2;
+                    ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                }
+                ctx.stroke();
+            });
+        }
+
+        function undoLastStroke() {
+            if (pageHistory[activePage] && pageHistory[activePage].length > 0) {
+                pageHistory[activePage].pop();
+                redrawPage(activePage);
+            }
+        }
+
+        function clearCurrentPage() {
+            pageHistory[activePage] = [];
+            redrawPage(activePage);
+        }
+
+        // NAVIGASI HALAMAN & IMPORT/EXPORT
+        function addNewPage() {
+            totalPages++;
+            const workspace = document.getElementById('workspace');
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'paper-page';
+            pageDiv.id = `page-${totalPages}`;
+            pageDiv.setAttribute('data-page', totalPages);
+
+            pageDiv.innerHTML = `<canvas class="pdf-canvas"></canvas><canvas class="draw-canvas"></canvas>`;
+            workspace.appendChild(pageDiv);
+            initCanvas(pageDiv.querySelector('.draw-canvas'));
+            pageHistory[totalPages] = [];
+            changePage(totalPages - activePage);
+        }
+
+        function changePage(direction) {
+            const targetPage = activePage + direction;
+            if (targetPage >= 1 && targetPage <= totalPages) {
+                activePage = targetPage;
+                document.getElementById(`page-${activePage}`).scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('pageIndicator').innerText = `Halaman ${activePage} dari ${totalPages}`;
+            }
+        }
+
+        async function importPDF(event) {
+            const file = event.target.files[0];
+            if (!file || file.type !== 'application/pdf') return;
+
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                const typedarray = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+
+                document.getElementById('workspace').innerHTML = '';
+                totalPages = pdf.numPages;
+                pageHistory = {};
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
+
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'paper-page';
+                    pageDiv.id = `page-${i}`;
+                    pageDiv.style.width = viewport.width + 'px';
+                    pageDiv.style.height = viewport.height + 'px';
+
+                    const pdfCanvas = document.createElement('canvas');
+                    pdfCanvas.className = 'pdf-canvas';
+                    pdfCanvas.width = viewport.width;
+                    pdfCanvas.height = viewport.height;
+
+                    const drawCanvas = document.createElement('canvas');
+                    drawCanvas.className = 'draw-canvas';
+
+                    pageDiv.appendChild(pdfCanvas);
+                    pageDiv.appendChild(drawCanvas);
+                    document.getElementById('workspace').appendChild(pageDiv);
+
+                    await page.render({ canvasContext: pdfCanvas.getContext('2d'), viewport: viewport }).promise;
+                    initCanvas(drawCanvas);
+                    pageHistory[i] = [];
+                }
+                activePage = 1;
+                document.getElementById('pageIndicator').innerText = `Halaman 1 dari ${totalPages}`;
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        async function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageElement = document.getElementById(`page-${i}`);
+                if (!pageElement) continue;
+
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = pageElement.clientWidth;
+                tempCanvas.height = pageElement.clientHeight;
+                const tempCtx = tempCanvas.getContext('2d');
+
+                const pdfCanvas = pageElement.querySelector('.pdf-canvas');
+                tempCtx.drawImage(pdfCanvas, 0, 0);
+
+                const drawCanvas = pageElement.querySelector('.draw-canvas');
+                tempCtx.drawImage(drawCanvas, 0, 0);
+
+                const textboxes = pageElement.querySelectorAll('.text-box');
+                textboxes.forEach(box => {
+                    tempCtx.font = `${box.style.fontSize} sans-serif`;
+                    tempCtx.fillStyle = box.style.color;
+                    tempCtx.fillText(box.value, parseInt(box.style.left), parseInt(box.style.top) + parseInt(box.style.fontSize));
+                });
+
+                const imgData = tempCanvas.toDataURL('image/jpeg', 0.95);
+                if (i > 1) doc.addPage();
+                doc.addImage(imgData, 'JPEG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
+            }
+            doc.save('Catatan-WebNotes.pdf');
+        }
+    </script>
+</body>
+</html>
 
