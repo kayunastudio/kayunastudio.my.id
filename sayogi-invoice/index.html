@@ -11,6 +11,18 @@
         .inv-editable-input { background: transparent; border: none; width: 100%; text-align: inherit; font-family: inherit; font-size: inherit; color: inherit; font-weight: inherit; }
         .inv-editable-input:focus { background: rgba(209, 250, 229, 0.5); outline: 1px dashed #047857; }
         
+        /* OVERLAY PIN ACCESS LAYAR PENUH */
+        #pin-overlay { 
+            position: fixed; 
+            inset: 0; 
+            z-index: 9999; 
+            background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 1rem;
+        }
+
         /* CSS Cetak Khusus agar Ekspor PDF Berfungsi Sempurna */
         @media print {
             @page { 
@@ -21,7 +33,7 @@
                 margin: 0 !important;
                 padding: 0 !important;
             }
-            .no-print { display: none !important; }
+            .no-print, #pin-overlay { display: none !important; }
             #invoice-paper { 
                 margin: 0 !important; 
                 border: none !important; 
@@ -36,277 +48,315 @@
 </head>
 <body class="bg-[#F4FBF7] text-gray-800 min-h-screen font-sans">
 
-    <!-- PANEL UTAMA DASHBOARD -->
-    <div class="container mx-auto p-4 sm:p-6 max-w-7xl no-print">
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 border-b-2 border-[#059669] pb-4">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-[#064e3b]">Sayogi</h1>
-                <p class="text-sm text-[#047857]">Hantaran dan Bouquet — Database Spreadsheet</p>
+    <!-- OVERLAY MASUKKAN KODE PASSCODE PIN -->
+    <div id="pin-overlay" class="no-print">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-emerald-100 text-center relative overflow-hidden">
+            <div class="w-14 h-14 bg-gradient-to-tr from-[#064e3b] to-[#059669] rounded-2xl flex items-center justify-center text-white font-black mx-auto mb-4 text-2xl shadow-lg shadow-emerald-900/30">
+                S
             </div>
-            <div class="flex gap-2 w-full sm:w-auto justify-end">
-                <button onclick="muatDataDariSpreadsheet()" class="bg-[#059669] hover:bg-[#047857] text-white font-semibold px-3 py-2 rounded-lg shadow-md transition text-xs sm:text-sm flex items-center gap-1">
-                    🔄 <span class="hidden sm:inline">Sinkron</span> Sheet
-                </button>
-                <button onclick="pemicuCetakPdfDinamis()" class="bg-[#064e3b] hover:bg-[#022c22] text-white font-semibold px-4 py-2 rounded-lg shadow-md transition duration-200 flex items-center gap-2 text-xs sm:text-sm">
-                    🖨️ Ekspor ke PDF
-                </button>
-            </div>
-        </header>
+            <h2 class="text-xl font-black text-gray-900 tracking-tight">Sayogi Invoice System</h2>
+            <p class="text-xs text-gray-400 font-medium mt-1 mb-6">Masukkan Kode PIN untuk Akses</p>
 
-        <!-- GRID UTAMA DASHBOARD -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
-            
-            <!-- PANEL DATABASE SPREADSHEET -->
-            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-md lg:col-span-2 border border-gray-200 flex flex-col min-h-[550px] lg:h-full justify-between order-1 lg:order-2">
-                <div class="flex flex-col h-full">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 border-b pb-4 flex-none">
-                        <h2 class="text-lg sm:text-xl font-bold text-gray-700">2. Database Spreadsheet</h2>
-                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
-                            <input type="text" id="dbSearchInput" oninput="jalankanPencarianDatabase(this.value)" placeholder="🔍 Cari No. Invoice / Pelanggan..." class="border border-gray-300 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus:border-[#064e3b] bg-white w-full sm:w-48 md:w-64 shadow-sm">
-                            <button onclick="bersihkanKertasInvoice(true)" class="bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 text-xs px-3 py-1.5 rounded-lg shadow-sm transition font-medium whitespace-nowrap w-full sm:w-auto text-center">
-                                📭 Kosongkan Preview
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- KARTU STATISTIK RINGKASAN DATA DINAMIS -->
-                    <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-4 flex-none">
-                        <div class="bg-[#F4FBF7] p-3 rounded-lg border border-gray-200 shadow-sm">
-                            <span class="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 block mb-0.5">Total Klien</span>
-                            <span id="statTotalKlien" class="text-base sm:text-xl font-extrabold text-[#064e3b]">0</span>
-                        </div>
-                        <div class="bg-emerald-50/60 p-3 rounded-lg border border-emerald-100 shadow-sm">
-                            <span class="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-emerald-600 block mb-0.5">Total Lunas</span>
-                            <span id="statTotalLunas" class="text-xs sm:text-base font-extrabold text-emerald-700 block truncate">Rp 0</span>
-                        </div>
-                        <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-100 shadow-sm">
-                            <span class="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-amber-600 block mb-0.5">Belum Lunas</span>
-                            <span id="statTotalBelumLunas" class="text-xs sm:text-base font-extrabold text-amber-700 block truncate">Rp 0</span>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto overflow-y-auto flex-grow h-0 border border-gray-100 rounded-lg shadow-inner">
-                        <table class="w-full text-left border-collapse text-xs sm:text-sm min-w-[600px] lg:min-w-0">
-                            <thead class="sticky top-0 bg-[#E6F4EA] text-[#064e3b] font-bold border-b border-[#a7f3d0] z-10">
-                                <tr>
-                                    <th class="p-3 text-center w-12">Pilih</th>
-                                    <th class="p-3 w-24 sm:w-32">No. Invoice</th>
-                                    <th class="p-3">Pelanggan</th>
-                                    <th class="p-3 w-28 sm:w-32">Nilai Total</th>
-                                    <th class="p-3 text-center w-24 sm:w-28">Status</th>
-                                    <th class="p-3 text-center w-28 sm:w-36">Tindakan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="database-rows" class="divide-y text-gray-700 bg-white">
-                                <tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Memuat basis data dari Spreadsheet...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PANEL INPUT FORM PARAMETER -->
-            <div class="bg-[#E6F4EA] p-4 sm:p-6 rounded-xl shadow-md lg:col-span-1 border border-[#a7f3d0] flex flex-col justify-between h-full order-2 lg:order-1 relative">
+            <form onsubmit="event.preventDefault(); verifikasiKodePass();" class="space-y-3">
                 <div>
-                    <h2 class="text-lg sm:text-xl font-bold text-[#064e3b] mb-4 border-b border-[#a7f3d0] pb-2">1. Input Parameter Dokumen</h2>
-                    
-                    <!-- BANNER PENGINGAT OVERDUE ESTETIK -->
-                    <div id="overdueBanner" class="hidden mb-4 bg-gradient-to-r from-rose-50 to-white border-l-4 border-rose-600 p-3 rounded-r-xl shadow-sm flex flex-col gap-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-rose-600 text-lg animate-pulse">⚠️</span>
-                            <div>
-                                <h4 class="text-[11px] font-extrabold text-rose-800 uppercase tracking-wider">Perhatian: Jatuh Tempo!</h4>
-                                <p class="text-[10px] text-rose-600 font-medium">Invoice tertunda lebih dari <span id="txtOverdueDays">30</span> hari.</p>
-                            </div>
-                        </div>
-                        <button id="btnRemindWA" type="button" class="w-full bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-200 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 mt-1">
-                            <span>📱</span> Kirim Reminder WA
-                        </button>
-                    </div>
-
-                    <form id="invoiceForm" onsubmit="event.preventDefault(); prosesDataInvoice();">
-                        <div class="grid grid-cols-3 gap-2 mb-4">
-                            <div class="col-span-2">
-                                <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">No. Invoice</label>
-                                <input type="text" id="invNo" required placeholder="Contoh: 26153-001" class="w-full border border-[#a7f3d0] p-2 text-sm rounded focus:outline-none focus:border-[#059669] bg-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Status</label>
-                                <select id="invStatus" class="w-full border border-[#a7f3d0] p-2 rounded focus:outline-none focus:border-[#059669] bg-white font-semibold text-xs sm:text-sm">
-                                    <option value="Belum Lunas" class="text-amber-700 font-bold">❌ Belum</option>
-                                    <option value="Lunas" class="text-emerald-700 font-bold">✅ Lunas</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- TANGGAL INVOICE & TANGGAL JATUH TEMPO -->
-                        <div class="grid grid-cols-2 gap-2 mb-4">
-                            <div>
-                                <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Tanggal</label>
-                                <input type="date" id="invTgl" required onchange="hitungOtomatisJatuhTempo(this.value)" class="w-full border border-[#a7f3d0] p-2 rounded text-xs sm:text-sm focus:outline-none focus:border-[#059669] bg-white text-gray-700">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Jatuh Tempo</label>
-                                <input type="date" id="invTempo" required class="w-full border border-[#a7f3d0] p-2 rounded text-xs sm:text-sm focus:outline-none focus:border-[#059669] bg-white text-gray-700">
-                            </div>
-                        </div>
-
-                        <!-- TANGGAL PESANAN / PROYEK & TOMBOL GOOGLE CALENDAR -->
-                        <div class="mb-4">
-                            <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Tanggal Pesanan / Proyek</label>
-                            <input type="date" id="invTglProyek" required onchange="perbaruiTombolKalender()" class="w-full border border-[#a7f3d0] p-2 rounded text-xs sm:text-sm focus:outline-none focus:border-[#059669] bg-white text-gray-700">
-                        </div>
-
-                        <div id="calendarContainer" class="mb-4 hidden">
-                            <a id="googleCalendarLink" href="#" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
-                                <span>📅</span> Tambahkan Tanggal Pesanan ke Google Calendar
-                            </a>
-                        </div>
-
-                        <div class="bg-[#F4FBF7]/60 p-3 rounded-lg border border-[#a7f3d0] mb-4 grid grid-cols-2 gap-2">
-                            <div class="col-span-2"><span class="text-xs font-bold text-[#064e3b] uppercase tracking-wider block mb-1">Informasi Uang Muka (DP)</span></div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-[#047857] mb-0.5">Nominal DP (Rp)</label>
-                                <input type="number" id="invDpNominal" placeholder="0" oninput="rekapTotalSeketika()" class="w-full border border-[#a7f3d0] p-1.5 text-xs rounded bg-white focus:outline-none focus:border-[#059669]">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-[#047857] mb-0.5">Tanggal Bayar DP</label>
-                                <input type="date" id="invDpTgl" onchange="rekapTotalSeketika()" class="w-full border border-[#a7f3d0] p-1.5 text-xs rounded bg-white text-gray-700 focus:outline-none focus:border-[#059669]">
-                            </div>
-                        </div>
-
-                        <h3 class="text-xs sm:text-sm font-bold text-[#064e3b] mt-4 mb-2">Data Pelanggan</h3>
-                        <div class="mb-2"><input type="text" id="custNama" required placeholder="Nama Klien / Instansi" oninput="perbaruiTombolKalender()" class="w-full border border-[#a7f3d0] p-2 text-sm rounded bg-white"></div>
-                        <div class="mb-2"><input type="text" id="custHp" required placeholder="No. Handphone" class="w-full border border-[#a7f3d0] p-2 text-sm rounded bg-white"></div>
-                        <div class="mb-4"><textarea id="custAlamat" required placeholder="Alamat lengkap tujuan invoice..." rows="2" class="w-full border border-[#a7f3d0] p-2 text-sm rounded bg-white"></textarea></div>
-
-                        <h3 class="text-xs sm:text-sm font-bold text-[#064e3b] mt-4 mb-2 flex justify-between items-center">
-                            <span>Daftar Transaksi</span>
-                            <button type="button" onclick="tambahItemBaris()" class="text-xs bg-[#a7f3d0] text-[#064e3b] px-2 py-1 rounded font-bold hover:bg-[#c6f6d5]">+ Tambah</button>
-                        </h3>
-                        <div id="wrapper-item-transaksi" class="space-y-3 mb-4">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Terbilang Rupiah Pelunasan (Otomatis)</label>
-                            <input type="text" id="invTerbilang" readonly required value="Nol Rupiah" class="w-full border border-gray-300 p-2 text-xs sm:text-sm rounded bg-gray-100 font-medium text-gray-700 focus:outline-none">
-                        </div>
-
-                        <button type="submit" class="w-full mt-4 bg-[#064e3b] hover:bg-[#022c22] text-white font-bold p-3 rounded-lg shadow text-sm sm:text-base transition">
-                            💾 Simpan & Sinkron ke Spreadsheet
-                        </button>
-                    </form>
+                    <input type="password" id="inputPinCode" maxlength="8" autofocus placeholder="Kode PIN" class="w-full border border-gray-200 p-3.5 text-center text-lg tracking-widest font-black rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#064e3b]/20 focus:border-[#064e3b] transition">
                 </div>
-            </div>
 
+                <div id="pinErrorMsg" class="hidden text-[11px] text-rose-500 font-bold bg-rose-50 p-2.5 rounded-xl border border-rose-100">
+                    ⚠️ Kode PIN salah!
+                </div>
+
+                <button type="submit" class="w-full bg-[#064e3b] hover:bg-[#022c22] text-white font-bold py-3 rounded-xl text-xs transition shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    <span>🔓</span> Verifikasi PIN
+                </button>
+            </form>
         </div>
     </div>
 
-    <!-- TAMPILAN KERTAS INVOICE PREVIEW / EKSPOR PDF (A4) -->
-    <div class="w-full overflow-x-auto flex justify-start md:justify-center py-4 bg-gray-200 print:bg-white print:py-0">
-        <div id="invoice-paper" class="bg-white p-[10mm] sm:p-[20mm] border border-gray-300 shadow-xl print:shadow-none print:border-none relative flex flex-col justify-between text-black text-xs sm:text-sm leading-relaxed min-w-[210mm]">
-            
-            <!-- ELEMEN STEMPEL LUNAS KONDISIONAL -->
-            <div id="pdf-stamp-lunas" class="absolute top-[45mm] sm:top-[50mm] right-[20mm] sm:right-[25mm] border-4 border-emerald-600 text-emerald-600 font-black text-lg sm:text-xl tracking-[0.2em] px-4 py-1.5 rounded-md uppercase font-sans select-none -rotate-12 opacity-85 pointer-events-none hidden bg-white/40 shadow-sm">
-                Lunas
-            </div>
+    <!-- MAIN APP DASHBOARD WRAPPER -->
+    <div id="mainDashboardWrapper" class="hidden">
+        <!-- PANEL UTAMA DASHBOARD -->
+        <div class="container mx-auto p-4 sm:p-6 max-w-7xl no-print">
+            <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 border-b-2 border-[#059669] pb-4">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-[#064e3b]">Sayogi</h1>
+                    <p class="text-sm text-[#047857]">Hantaran dan Bouquet — Database Spreadsheet</p>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="muatDataDariSpreadsheet()" class="bg-[#059669] hover:bg-[#047857] text-white font-semibold px-3 py-2 rounded-lg shadow-md transition text-xs sm:text-sm flex items-center gap-1">
+                        🔄 <span class="hidden sm:inline">Sinkron</span> Sheet
+                    </button>
+                    <button onclick="pemicuCetakPdfDinamis()" class="bg-[#064e3b] hover:bg-[#022c22] text-white font-semibold px-4 py-2 rounded-lg shadow-md transition duration-200 flex items-center gap-2 text-xs sm:text-sm">
+                        🖨️ Ekspor ke PDF
+                    </button>
+                    <button onclick="kunciUlangDashboard();" class="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-bold px-3 py-2 rounded-lg text-xs sm:text-sm transition flex items-center gap-1" title="Kunci Dashboard">
+                        🔒 <span class="hidden sm:inline">Kunci</span>
+                    </button>
+                </div>
+            </header>
 
-            <div>
-                <!-- Header Banner -->
-                <div class="flex justify-between items-start mb-8 sm:mb-10">
+            <!-- GRID UTAMA DASHBOARD -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+                
+                <!-- PANEL DATABASE SPREADSHEET -->
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-md lg:col-span-2 border border-gray-200 flex flex-col min-h-[550px] lg:h-full justify-between order-1 lg:order-2">
+                    <div class="flex flex-col h-full">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 border-b pb-4 flex-none">
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-700">2. Database Spreadsheet</h2>
+                            <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                                <input type="text" id="dbSearchInput" oninput="jalankanPencarianDatabase(this.value)" placeholder="🔍 Cari No. Invoice / Pelanggan..." class="border border-gray-300 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus:border-[#064e3b] bg-white w-full sm:w-48 md:w-64 shadow-sm">
+                                <button onclick="bersihkanKertasInvoice(true)" class="bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 text-xs px-3 py-1.5 rounded-lg shadow-sm transition font-medium whitespace-nowrap w-full sm:w-auto text-center">
+                                    📭 Kosongkan Preview
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- KARTU STATISTIK RINGKASAN DATA DINAMIS -->
+                        <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-4 flex-none">
+                            <div class="bg-[#F4FBF7] p-3 rounded-lg border border-gray-200 shadow-sm">
+                                <span class="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 block mb-0.5">Total Klien</span>
+                                <span id="statTotalKlien" class="text-base sm:text-xl font-extrabold text-[#064e3b]">0</span>
+                            </div>
+                            <div class="bg-emerald-50/60 p-3 rounded-lg border border-emerald-100 shadow-sm">
+                                <span class="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-emerald-600 block mb-0.5">Total Lunas</span>
+                                <span id="statTotalLunas" class="text-xs sm:text-base font-extrabold text-emerald-700 block truncate">Rp 0</span>
+                            </div>
+                            <div class="bg-amber-50/60 p-3 rounded-lg border border-amber-100 shadow-sm">
+                                <span class="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-amber-600 block mb-0.5">Belum Lunas</span>
+                                <span id="statTotalBelumLunas" class="text-xs sm:text-base font-extrabold text-amber-700 block truncate">Rp 0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto overflow-y-auto flex-grow h-0 border border-gray-100 rounded-lg shadow-inner">
+                            <table class="w-full text-left border-collapse text-xs sm:text-sm min-w-[600px] lg:min-w-0">
+                                <thead class="sticky top-0 bg-[#E6F4EA] text-[#064e3b] font-bold border-b border-[#a7f3d0] z-10">
+                                    <tr>
+                                        <th class="p-3 text-center w-12">Pilih</th>
+                                        <th class="p-3 w-24 sm:w-32">No. Invoice</th>
+                                        <th class="p-3">Pelanggan</th>
+                                        <th class="p-3 w-28 sm:w-32">Nilai Total</th>
+                                        <th class="p-3 text-center w-24 sm:w-28">Status</th>
+                                        <th class="p-3 text-center w-28 sm:w-36">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="database-rows" class="divide-y text-gray-700 bg-white">
+                                    <tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Memuat basis data dari Spreadsheet...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL INPUT FORM PARAMETER -->
+                <div class="bg-[#E6F4EA] p-4 sm:p-6 rounded-xl shadow-md lg:col-span-1 border border-[#a7f3d0] flex flex-col justify-between h-full order-2 lg:order-1 relative">
                     <div>
-                        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#064e3b] tracking-tight">SAYOGI</h1>
-                        <p class="text-[9px] sm:text-xs tracking-[0.25em] font-medium text-[#059669]">HANTARAN DAN BOUQUET</p>
-                    </div>
-                    <div class="text-right">
-                        <h2 class="text-3xl sm:text-4xl font-light text-gray-400 tracking-widest uppercase mb-1">INVOICE</h2>
-                        <p class="text-[10px] sm:text-xs font-semibold text-gray-700">Nomor Faktur: <span id="pdf-inv-no" class="text-black font-bold">-</span></p>
+                        <h2 class="text-lg sm:text-xl font-bold text-[#064e3b] mb-4 border-b border-[#a7f3d0] pb-2">1. Input Parameter Dokumen</h2>
+                        
+                        <!-- BANNER PENGINGAT OVERDUE ESTETIK -->
+                        <div id="overdueBanner" class="hidden mb-4 bg-gradient-to-r from-rose-50 to-white border-l-4 border-rose-600 p-3 rounded-r-xl shadow-sm flex flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-rose-600 text-lg animate-pulse">⚠️</span>
+                                <div>
+                                    <h4 class="text-[11px] font-extrabold text-rose-800 uppercase tracking-wider">Perhatian: Jatuh Tempo!</h4>
+                                    <p class="text-[10px] text-rose-600 font-medium">Invoice tertunda lebih dari <span id="txtOverdueDays">30</span> hari.</p>
+                                </div>
+                            </div>
+                            <button id="btnRemindWA" type="button" class="w-full bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-200 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 mt-1">
+                                <span>📱</span> Kirim Reminder WA
+                            </button>
+                        </div>
+
+                        <form id="invoiceForm" onsubmit="event.preventDefault(); prosesDataInvoice();">
+                            <div class="grid grid-cols-3 gap-2 mb-4">
+                                <div class="col-span-2">
+                                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">No. Invoice</label>
+                                    <input type="text" id="invNo" required placeholder="Contoh: 26153-001" class="w-full border border-[#a7f3d0] p-2 text-sm rounded focus:outline-none focus:border-[#059669] bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Status</label>
+                                    <select id="invStatus" class="w-full border border-[#a7f3d0] p-2 rounded focus:outline-none focus:border-[#059669] bg-white font-semibold text-xs sm:text-sm">
+                                        <option value="Belum Lunas" class="text-amber-700 font-bold">❌ Belum</option>
+                                        <option value="Lunas" class="text-emerald-700 font-bold">✅ Lunas</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- TANGGAL INVOICE & TANGGAL JATUH TEMPO -->
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Tanggal Cetak</label>
+                                    <input type="date" id="invTgl" required onchange="hitungOtomatisJatuhTempo(this.value)" class="w-full border border-[#a7f3d0] p-2 rounded text-xs focus:outline-none focus:border-[#059669] bg-white text-gray-700">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Jatuh Tempo</label>
+                                    <input type="date" id="invTempo" required class="w-full border border-[#a7f3d0] p-2 rounded text-xs focus:outline-none focus:border-[#059669] bg-white text-gray-700">
+                                </div>
+                            </div>
+
+                            <!-- RENTANG DURASI TANGGAL PESANAN / PROYEK -->
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Tgl Mulai Pesanan</label>
+                                    <input type="date" id="invTglMulai" required onchange="perbaruiLogikaTanggalPesanan()" class="w-full border border-[#a7f3d0] p-2 rounded text-xs focus:outline-none focus:border-[#059669] bg-white text-gray-700">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Tgl Selesai Pesanan</label>
+                                    <input type="date" id="invTglSelesai" required onchange="perbaruiTombolKalender()" class="w-full border border-[#a7f3d0] p-2 rounded text-xs focus:outline-none focus:border-[#059669] bg-white text-gray-700">
+                                </div>
+                            </div>
+
+                            <!-- TOMBOL GOOGLE CALENDAR DINAMIS -->
+                            <div id="calendarContainer" class="mb-4 hidden">
+                                <a id="googleCalendarLink" href="#" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                                    <span>📅</span> Tambahkan Durasi Pesanan ke Google Calendar
+                                </a>
+                            </div>
+
+                            <div class="bg-[#F4FBF7]/60 p-3 rounded-lg border border-[#a7f3d0] mb-4 grid grid-cols-2 gap-2">
+                                <div class="col-span-2"><span class="text-xs font-bold text-[#064e3b] uppercase tracking-wider block mb-1">Informasi Uang Muka (DP)</span></div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-[#047857] mb-0.5">Nominal DP (Rp)</label>
+                                    <input type="number" id="invDpNominal" placeholder="0" oninput="rekapTotalSeketika()" class="w-full border border-[#a7f3d0] p-1.5 text-xs rounded bg-white focus:outline-none focus:border-[#059669]">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-[#047857] mb-0.5">Tanggal Bayar DP</label>
+                                    <input type="date" id="invDpTgl" onchange="rekapTotalSeketika()" class="w-full border border-[#a7f3d0] p-1.5 text-xs rounded bg-white text-gray-700 focus:outline-none focus:border-[#059669]">
+                                </div>
+                            </div>
+
+                            <h3 class="text-xs sm:text-sm font-bold text-[#064e3b] mt-4 mb-2">Data Pelanggan</h3>
+                            <div class="mb-2"><input type="text" id="custNama" required placeholder="Nama Klien / Instansi" oninput="perbaruiTombolKalender()" class="w-full border border-[#a7f3d0] p-2 text-sm rounded bg-white"></div>
+                            <div class="mb-2"><input type="text" id="custHp" required placeholder="No. Handphone" class="w-full border border-[#a7f3d0] p-2 text-sm rounded bg-white"></div>
+                            <div class="mb-4"><textarea id="custAlamat" required placeholder="Alamat lengkap tujuan invoice..." rows="2" class="w-full border border-[#a7f3d0] p-2 text-sm rounded bg-white"></textarea></div>
+
+                            <h3 class="text-xs sm:text-sm font-bold text-[#064e3b] mt-4 mb-2 flex justify-between items-center">
+                                <span>Daftar Transaksi</span>
+                                <button type="button" onclick="tambahItemBaris()" class="text-xs bg-[#a7f3d0] text-[#064e3b] px-2 py-1 rounded font-bold hover:bg-[#c6f6d5]">+ Tambah</button>
+                            </h3>
+                            <div id="wrapper-item-transaksi" class="space-y-3 mb-4">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Terbilang Rupiah Pelunasan (Otomatis)</label>
+                                <input type="text" id="invTerbilang" readonly required value="Nol Rupiah" class="w-full border border-gray-300 p-2 text-xs sm:text-sm rounded bg-gray-100 font-medium text-gray-700 focus:outline-none">
+                            </div>
+
+                            <button type="submit" class="w-full mt-4 bg-[#064e3b] hover:bg-[#022c22] text-white font-bold p-3 rounded-lg shadow text-sm sm:text-base transition">
+                                💾 Simpan & Sinkron ke Spreadsheet
+                            </button>
+                        </form>
                     </div>
                 </div>
 
-                <!-- Info Klien & Tanggal Proyek -->
-                <div class="grid grid-cols-2 gap-4 sm:gap-8 mb-8 text-[11px] sm:text-xs">
-                    <div class="bg-[#F4FBF7] p-4 rounded-lg border border-[#a7f3d0]">
-                        <h3 class="font-bold text-[#064e3b] uppercase tracking-wider mb-2 text-[9px] sm:text-[10px]">Ditujukan Kepada:</h3>
-                        <p id="pdf-cust-nama" class="font-bold text-xs sm:text-sm text-gray-900 mb-0.5">-</p>
-                        <p id="pdf-cust-hp" class="text-gray-600 mb-2">-</p>
-                        <p class="font-bold text-[9px] sm:text-[10px] uppercase text-gray-400 mb-0.5">Alamat:</p>
-                        <p id="pdf-cust-alamat" class="text-gray-700 leading-normal">-</p>
-                    </div>
-                    <div class="flex flex-col justify-between p-4 border border-[#a7f3d0] rounded-lg bg-[#F4FBF7]">
-                        <div class="grid grid-cols-2 gap-y-2">
-                            <div class="font-bold text-gray-500 uppercase text-[9px] sm:text-[10px]">Tanggal Cetak</div>
-                            <div id="pdf-inv-tgl" class="text-gray-900 font-medium">: -</div>
-                            <div class="font-bold text-gray-500 uppercase text-[9px] sm:text-[10px]">Tanggal Proyek</div>
-                            <div id="pdf-inv-tgl-proyek" class="text-emerald-800 font-bold">: -</div>
-                            <div class="font-bold text-gray-500 uppercase text-[9px] sm:text-[10px]">Jatuh Tempo</div>
-                            <div id="pdf-inv-tempo" class="text-rose-700 font-bold">: -</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabel Item Pekerjaan -->
-                <table class="w-full text-[11px] sm:text-xs text-left mb-6 border-collapse">
-                    <thead>
-                        <tr class="bg-[#064e3b] text-white font-bold uppercase text-[9px] sm:text-[10px] tracking-wider">
-                            <th class="p-3 rounded-l-md w-12 text-center">No</th>
-                            <th class="p-3">Deskripsi Pekerjaan / Jasa</th>
-                            <th class="p-3 text-center w-24 sm:w-28">Volume</th>
-                            <th class="p-3 text-right w-28 sm:w-32">Harga Satuan (Rp)</th>
-                            <th class="p-3 text-right rounded-r-md w-28 sm:w-32">Total Biaya</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pdf-table-body" class="divide-y divide-gray-200 text-gray-700"></tbody>
-                </table>
-
-                <!-- Rincian Biaya Berserta DP & Sisa Pelunasan -->
-                <div class="flex justify-between items-start mt-4 bg-[#E6F4EA]/40 p-4 rounded-xl border border-[#a7f3d0]">
-                    <div class="max-w-[55%]">
-                        <h4 class="text-[9px] sm:text-[10px] font-bold uppercase text-gray-400 mb-1">Terbilang Sisa Pelunasan:</h4>
-                        <p id="pdf-inv-terbilang" class="italic font-medium text-[#064e3b] text-[11px] sm:text-xs">"Nol Rupiah"</p>
-                        <div id="pdf-dp-info-block" class="mt-2 text-[10px] sm:text-[11px] text-gray-600 print:block hidden">
-                            * Telah dibayarkan uang muka (DP) pada tanggal <span id="pdf-dp-tgl-text" class="font-semibold text-gray-800">-</span>
-                        </div>
-                    </div>
-                    <div class="text-right min-w-[40%] space-y-1.5 text-[11px] sm:text-xs text-gray-600">
-                        <div class="flex justify-between"><span>Subtotal Transaksi:</span><span id="pdf-subtotal-raw" class="font-medium text-gray-900">Rp. 0</span></div>
-                        <div id="pdf-row-dp-nominal" class="flex justify-between text-amber-800 hidden print:flex"><span>Uang Muka (DP):</span><span id="pdf-dp-raw">-Rp. 0</span></div>
-                        <div class="flex justify-between text-sm sm:text-base font-extrabold text-[#064e3b] border-t border-[#a7f3d0] pt-1.5">
-                            <span class="text-[10px] sm:text-xs uppercase text-gray-500 font-bold self-center">Sisa Pelunasan:</span>
-                            <span id="pdf-inv-total">Rp. 0</span>
-                        </div>
-                    </div>
-                </div>
             </div>
+        </div>
 
-            <!-- AREA FOOTER SEJAJAR 3 KOLOM HARMONIS -->
-            <div class="mt-10 sm:mt-12 border-t border-[#a7f3d0] pt-6 sm:pt-8">
-                <div class="grid grid-cols-3 gap-6 text-[11px] sm:text-xs text-gray-600 items-start">
-                    
-                    <!-- Kolom 1: Informasi Rekening Sayogi -->
-                    <div class="border-r border-gray-200 pr-4">
-                        <h4 class="font-bold text-gray-900 uppercase text-[9px] sm:text-[10px] tracking-wider mb-2">Informasi Pembayaran Rekening:</h4>
-                        <div class="space-y-1.5 text-[10px] sm:text-[11px]">
-                            <div class="flex justify-between gap-1"><span class="text-gray-400 whitespace-nowrap">Nama Bank</span><span class="font-semibold text-gray-900">Seabank Indonesia</span></div>
-                            <div class="flex justify-between gap-1"><span class="text-gray-400 whitespace-nowrap">No. Rekening</span><span class="font-mono font-bold text-gray-900">901002946860</span></div>
-                            <div class="flex justify-between gap-1"><span class="text-gray-400 whitespace-nowrap">Atas Nama</span><span class="font-semibold text-[#064e3b]">Hana Handayani</span></div>
+        <!-- TAMPILAN KERTAS INVOICE PREVIEW / EKSPOR PDF (A4) -->
+        <div class="w-full overflow-x-auto flex justify-start md:justify-center py-4 bg-gray-200 print:bg-white print:py-0">
+            <div id="invoice-paper" class="bg-white p-[10mm] sm:p-[20mm] border border-gray-300 shadow-xl print:shadow-none print:border-none relative flex flex-col justify-between text-black text-xs sm:text-sm leading-relaxed min-w-[210mm]">
+                
+                <!-- ELEMEN STEMPEL LUNAS KONDISIONAL -->
+                <div id="pdf-stamp-lunas" class="absolute top-[45mm] sm:top-[50mm] right-[20mm] sm:right-[25mm] border-4 border-emerald-600 text-emerald-600 font-black text-lg sm:text-xl tracking-[0.2em] px-4 py-1.5 rounded-md uppercase font-sans select-none -rotate-12 opacity-85 pointer-events-none hidden bg-white/40 shadow-sm">
+                    Lunas
+                </div>
+
+                <div>
+                    <!-- Header Banner -->
+                    <div class="flex justify-between items-start mb-8 sm:mb-10">
+                        <div>
+                            <h1 class="text-2xl sm:text-3xl font-extrabold text-[#064e3b] tracking-tight">SAYOGI</h1>
+                            <p class="text-[9px] sm:text-xs tracking-[0.25em] font-medium text-[#059669]">HANTARAN DAN BOUQUET</p>
+                        </div>
+                        <div class="text-right">
+                            <h2 class="text-3xl sm:text-4xl font-light text-gray-400 tracking-widest uppercase mb-1">INVOICE</h2>
+                            <p class="text-[10px] sm:text-xs font-semibold text-gray-700">Nomor Faktur: <span id="pdf-inv-no" class="text-black font-bold">-</span></p>
                         </div>
                     </div>
-                    
-                    <!-- Kolom 2: Scan QRIS Sayogi -->
-                    <div class="border-r border-gray-200 px-4 text-center flex flex-col items-center justify-start h-full">
-                        <h4 class="font-bold text-gray-900 uppercase text-[8px] sm:text-[9px] tracking-wider mb-2">Atau Scan QRIS Resmi:</h4>
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-white border p-1 rounded-md shadow-sm">
-                            <img src="https://raw.githubusercontent.com/kayunastudio/sayogi-invoice/main/qris.jpg" class="w-full h-full object-contain" alt="QRIS Resmi Sayogi">
+
+                    <!-- Info Klien & Tanggal Pesanan -->
+                    <div class="grid grid-cols-2 gap-4 sm:gap-8 mb-8 text-[11px] sm:text-xs">
+                        <div class="bg-[#F4FBF7] p-4 rounded-lg border border-[#a7f3d0]">
+                            <h3 class="font-bold text-[#064e3b] uppercase tracking-wider mb-2 text-[9px] sm:text-[10px]">Ditujukan Kepada:</h3>
+                            <p id="pdf-cust-nama" class="font-bold text-xs sm:text-sm text-gray-900 mb-0.5">-</p>
+                            <p id="pdf-cust-hp" class="text-gray-600 mb-2">-</p>
+                            <p class="font-bold text-[9px] sm:text-[10px] uppercase text-gray-400 mb-0.5">Alamat:</p>
+                            <p id="pdf-cust-alamat" class="text-gray-700 leading-normal">-</p>
+                        </div>
+                        <div class="flex flex-col justify-between p-4 border border-[#a7f3d0] rounded-lg bg-[#F4FBF7]">
+                            <div class="grid grid-cols-2 gap-y-2">
+                                <div class="font-bold text-gray-500 uppercase text-[9px] sm:text-[10px]">Tanggal Cetak</div>
+                                <div id="pdf-inv-tgl" class="text-gray-900 font-medium">: -</div>
+                                <div class="font-bold text-gray-500 uppercase text-[9px] sm:text-[10px]">Tanggal Pesanan</div>
+                                <div id="pdf-inv-tgl-proyek" class="text-emerald-800 font-bold">: -</div>
+                                <div class="font-bold text-gray-500 uppercase text-[9px] sm:text-[10px]">Jatuh Tempo</div>
+                                <div id="pdf-inv-tempo" class="text-rose-700 font-bold">: -</div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Kolom 3: Sayogi Store Office -->
-                    <div class="pl-4 text-right">
-                        <h4 class="font-bold text-gray-900 uppercase text-[9px] sm:text-[10px] tracking-wider mb-2">Sayogi Store:</h4>
-                        <p class="text-[9px] sm:text-[10px] text-gray-500 leading-normal">Jl. Titiran Dalam II, Sadang Serang, Coblong, Kota Bandung, Jawa Barat</p>
-                    </div>
 
+                    <!-- Tabel Item Pekerjaan -->
+                    <table class="w-full text-[11px] sm:text-xs text-left mb-6 border-collapse">
+                        <thead>
+                            <tr class="bg-[#064e3b] text-white font-bold uppercase text-[9px] sm:text-[10px] tracking-wider">
+                                <th class="p-3 rounded-l-md w-12 text-center">No</th>
+                                <th class="p-3">Deskripsi Pekerjaan / Jasa</th>
+                                <th class="p-3 text-center w-24 sm:w-28">Volume</th>
+                                <th class="p-3 text-right w-28 sm:w-32">Harga Satuan (Rp)</th>
+                                <th class="p-3 text-right rounded-r-md w-28 sm:w-32">Total Biaya</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pdf-table-body" class="divide-y divide-gray-200 text-gray-700"></tbody>
+                    </table>
+
+                    <!-- Rincian Biaya Berserta DP & Sisa Pelunasan -->
+                    <div class="flex justify-between items-start mt-4 bg-[#E6F4EA]/40 p-4 rounded-xl border border-[#a7f3d0]">
+                        <div class="max-w-[55%]">
+                            <h4 class="text-[9px] sm:text-[10px] font-bold uppercase text-gray-400 mb-1">Terbilang Sisa Pelunasan:</h4>
+                            <p id="pdf-inv-terbilang" class="italic font-medium text-[#064e3b] text-[11px] sm:text-xs">"Nol Rupiah"</p>
+                            <div id="pdf-dp-info-block" class="mt-2 text-[10px] sm:text-[11px] text-gray-600 print:block hidden">
+                                * Telah dibayarkan uang muka (DP) pada tanggal <span id="pdf-dp-tgl-text" class="font-semibold text-gray-800">-</span>
+                            </div>
+                        </div>
+                        <div class="text-right min-w-[40%] space-y-1.5 text-[11px] sm:text-xs text-gray-600">
+                            <div class="flex justify-between"><span>Subtotal Transaksi:</span><span id="pdf-subtotal-raw" class="font-medium text-gray-900">Rp. 0</span></div>
+                            <div id="pdf-row-dp-nominal" class="flex justify-between text-amber-800 hidden print:flex"><span>Uang Muka (DP):</span><span id="pdf-dp-raw">-Rp. 0</span></div>
+                            <div class="flex justify-between text-sm sm:text-base font-extrabold text-[#064e3b] border-t border-[#a7f3d0] pt-1.5">
+                                <span class="text-[10px] sm:text-xs uppercase text-gray-500 font-bold self-center">Sisa Pelunasan:</span>
+                                <span id="pdf-inv-total">Rp. 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AREA FOOTER SEJAJAR 3 KOLOM HARMONIS -->
+                <div class="mt-10 sm:mt-12 border-t border-[#a7f3d0] pt-6 sm:pt-8">
+                    <div class="grid grid-cols-3 gap-6 text-[11px] sm:text-xs text-gray-600 items-start">
+                        
+                        <!-- Kolom 1: Informasi Rekening Sayogi -->
+                        <div class="border-r border-gray-200 pr-4">
+                            <h4 class="font-bold text-gray-900 uppercase text-[9px] sm:text-[10px] tracking-wider mb-2">Informasi Pembayaran Rekening:</h4>
+                            <div class="space-y-1.5 text-[10px] sm:text-[11px]">
+                                <div class="flex justify-between gap-1"><span class="text-gray-400 whitespace-nowrap">Nama Bank</span><span class="font-semibold text-gray-900">Seabank Indonesia</span></div>
+                                <div class="flex justify-between gap-1"><span class="text-gray-400 whitespace-nowrap">No. Rekening</span><span class="font-mono font-bold text-gray-900">901002946860</span></div>
+                                <div class="flex justify-between gap-1"><span class="text-gray-400 whitespace-nowrap">Atas Nama</span><span class="font-semibold text-[#064e3b]">Hana Handayani</span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Kolom 2: Scan QRIS Sayogi -->
+                        <div class="border-r border-gray-200 px-4 text-center flex flex-col items-center justify-start h-full">
+                            <h4 class="font-bold text-gray-900 uppercase text-[8px] sm:text-[9px] tracking-wider mb-2">Atau Scan QRIS Resmi:</h4>
+                            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-white border p-1 rounded-md shadow-sm">
+                                <img src="https://raw.githubusercontent.com/kayunastudio/sayogi-invoice/main/qris.jpg" class="w-full h-full object-contain" alt="QRIS Resmi Sayogi">
+                            </div>
+                        </div>
+                        
+                        <!-- Kolom 3: Sayogi Store Office -->
+                        <div class="pl-4 text-right">
+                            <h4 class="font-bold text-gray-900 uppercase text-[9px] sm:text-[10px] tracking-wider mb-2">Sayogi Store:</h4>
+                            <p class="text-[9px] sm:text-[10px] text-gray-500 leading-normal">Jl. Titiran Dalam II, Sadang Serang, Coblong, Kota Bandung, Jawa Barat</p>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -314,12 +364,41 @@
 
     <!-- ENGINE SCRIPT JAVASCRIPT KONEKSI GOOGLE SPREADSHEET VIA SHEETDB -->
     <script>
+        // KODE PIN AKSES DOKUMEN SAYOGI
+        const ACCESS_PIN_CODE = "2510";
+
         const SHEETDB_API_URL = "https://sheetdb.io/api/v1/f8ok9902fr9pq"; 
 
         let listDatabaseInvoice = [];
         let currentInvoiceData = null;
 
         document.addEventListener("DOMContentLoaded", () => {
+            if (sessionStorage.getItem("sayogi_unlocked") === "true") {
+                bukaDashboardAplikasi();
+            } else {
+                tampilkanLayarPin();
+            }
+        });
+
+        /* --- LOGIKA PIN VERIFIKASI --- */
+        function verifikasiKodePass() {
+            const inputPin = document.getElementById('inputPinCode').value.trim();
+            const errBox = document.getElementById('pinErrorMsg');
+
+            if (inputPin === ACCESS_PIN_CODE) {
+                errBox.classList.add('hidden');
+                bukaDashboardAplikasi();
+            } else {
+                errBox.classList.remove('hidden');
+                document.getElementById('inputPinCode').value = "";
+            }
+        }
+
+        function bukaDashboardAplikasi() {
+            sessionStorage.setItem("sayogi_unlocked", "true");
+            document.getElementById('pin-overlay').style.display = 'none';
+            document.getElementById('mainDashboardWrapper').classList.remove('hidden');
+
             bersihkanFormulirInput();
             tambahItemBaris("", "", "", 0);
             muatDataDariSpreadsheet();
@@ -329,7 +408,17 @@
                     hitungSubtotalBaris(e.target.closest('.item-row'));
                 }
             });
-        });
+        }
+
+        function tampilkanLayarPin() {
+            document.getElementById('pin-overlay').style.display = 'flex';
+            document.getElementById('mainDashboardWrapper').classList.add('hidden');
+        }
+
+        function kunciUlangDashboard() {
+            sessionStorage.removeItem("sayogi_unlocked");
+            window.location.reload();
+        }
 
         function perbaruiStatusStempelLive(statusVal) {
             const stempelElement = document.getElementById('pdf-stamp-lunas');
@@ -366,29 +455,76 @@
             const formatYmd = dateObj.toISOString().split('T')[0];
             document.getElementById('invTempo').value = formatYmd;
             
-            // Set default tanggal proyek sama dengan tanggal invoice jika masih kosong
-            const tglProyekInput = document.getElementById('invTglProyek');
-            if(!tglProyekInput.value) {
-                tglProyekInput.value = stringTanggalInvoice;
-                perbaruiTombolKalender();
+            const tglMulaiInput = document.getElementById('invTglMulai');
+            if(!tglMulaiInput.value) {
+                tglMulaiInput.value = stringTanggalInvoice;
+                perbaruiLogikaTanggalPesanan();
             }
         }
 
+        /* LOGIKA PEMBARUAN TANGGAL MULAI & SELESAI PESANAN */
+        function perbaruiLogikaTanggalPesanan() {
+            const tglMulai = document.getElementById('invTglMulai').value;
+            const tglSelesaiInput = document.getElementById('invTglSelesai');
+            
+            if (tglMulai && (!tglSelesaiInput.value || tglSelesaiInput.value < tglMulai)) {
+                tglSelesaiInput.value = tglMulai;
+            }
+            
+            perbaruiTombolKalender();
+        }
+
+        /* FORMAT RENTANG TANGGAL UNTUK LEMBAR PREVIEW CETAK INVOICE */
+        function formatRentangTanggalIndonesia(tglMulai, tglSelesai) {
+            if (!tglMulai) return "-";
+            if (!tglSelesai || tglMulai === tglSelesai) {
+                return formatTanggalIndonesia(tglMulai);
+            }
+            
+            const partsMulai = tglMulai.split('-');
+            const partsSelesai = tglSelesai.split('-');
+            
+            const daftarBulan = [
+                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ];
+
+            if (partsMulai[0] === partsSelesai[0] && partsMulai[1] === partsSelesai[1]) {
+                const bln = daftarBulan[parseInt(partsMulai[1], 10) - 1];
+                return `${parseInt(partsMulai[2], 10)}–${parseInt(partsSelesai[2], 10)} ${bln} ${partsMulai[0]}`;
+            }
+            
+            return `${formatTanggalIndonesia(tglMulai)} – ${formatTanggalIndonesia(tglSelesai)}`;
+        }
+
+        /* GENERATOR TOMBOL ADD TO GOOGLE CALENDAR DENGAN RENTANG WAKTU */
         function perbaruiTombolKalender() {
-            const tglProyek = document.getElementById('invTglProyek').value;
+            const tglMulai = document.getElementById('invTglMulai').value;
+            const tglSelesai = document.getElementById('invTglSelesai').value || tglMulai;
             const noInv = document.getElementById('invNo').value || "Invoice";
             const namaKlien = document.getElementById('custNama').value || "Pelanggan";
+            
             const calendarContainer = document.getElementById('calendarContainer');
             const gCalLink = document.getElementById('googleCalendarLink');
 
-            if (tglProyek) {
+            if (tglMulai) {
                 calendarContainer.classList.remove('hidden');
-                // Format tanggal untuk Google Calendar (YYYYMMDD)
-                const dateClean = tglProyek.replace(/-/g, '');
-                const textDetail = encodeURIComponent(`Pesanan / Proyek Sayogi (${noInv} - ${namaKlien})`);
-                const details = encodeURIComponent(`Jadwal pelaksanaan pesanan atau proyek Sayogi Store untuk klien ${namaKlien} dengan nomor faktur ${noInv}.`);
                 
-                const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${textDetail}&dates=${dateClean}/${dateClean}&details=${details}`;
+                const startClean = tglMulai.replace(/-/g, '');
+                
+                // Google Calendar All-Day Event butuh endDate + 1 Hari
+                const endDateObj = new Date(tglSelesai);
+                endDateObj.setDate(endDateObj.getDate() + 1);
+                const endClean = endDateObj.toISOString().split('T')[0].replace(/-/g, '');
+
+                const durasiTeks = (tglMulai === tglSelesai) 
+                    ? formatTanggalIndonesia(tglMulai) 
+                    : formatRentangTanggalIndonesia(tglMulai, tglSelesai);
+
+                const textDetail = encodeURIComponent(`Pesanan / Proyek Sayogi (${noInv} - ${namaKlien})`);
+                const details = encodeURIComponent(`Jadwal pelaksanaan pesanan/proyek Sayogi Store untuk klien ${namaKlien}.\n\nNomor Faktur: ${noInv}\nDurasi Pesanan: ${durasiTeks}`);
+                
+                const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${textDetail}&dates=${startClean}/${endClean}&details=${details}`;
                 gCalLink.href = googleUrl;
             } else {
                 calendarContainer.classList.add('hidden');
@@ -399,7 +535,8 @@
             document.getElementById('invNo').value = "";
             document.getElementById('invTgl').value = "";
             document.getElementById('invTempo').value = "";
-            document.getElementById('invTglProyek').value = "";
+            document.getElementById('invTglMulai').value = "";
+            document.getElementById('invTglSelesai').value = "";
             document.getElementById('invDpNominal').value = "";
             document.getElementById('invDpTgl').value = "";
             document.getElementById('custNama').value = "";
@@ -690,7 +827,8 @@
                 noInvoice: document.getElementById('invNo').value,
                 status: document.getElementById('invStatus').value,
                 tanggal: document.getElementById('invTgl').value,
-                tanggalProyek: document.getElementById('invTglProyek').value,
+                tanggalMulai: document.getElementById('invTglMulai').value,
+                tanggalSelesai: document.getElementById('invTglSelesai').value || document.getElementById('invTglMulai').value,
                 jatuhTempo: document.getElementById('invTempo').value,
                 dpNominal: nominalDp,
                 dpTanggal: document.getElementById('invDpTgl').value,
@@ -757,12 +895,16 @@
             document.getElementById('pdf-cust-alamat').innerText = invoice.pelanggan?.alamat || '';
             
             document.getElementById('pdf-inv-tgl').innerText = ": " + formatTanggalIndonesia(invoice.tanggal);
-            document.getElementById('pdf-inv-tgl-proyek').innerText = ": " + formatTanggalIndonesia(invoice.tanggalProyek || invoice.tanggal);
+            
+            const tglMulai = invoice.tanggalMulai || invoice.tanggalProyek || invoice.tanggal;
+            const tglSelesai = invoice.tanggalSelesai || tglMulai;
+            document.getElementById('pdf-inv-tgl-proyek').innerText = ": " + formatRentangTanggalIndonesia(tglMulai, tglSelesai);
             document.getElementById('pdf-inv-tempo').innerText = ": " + formatTanggalIndonesia(invoice.jatuhTempo);
             
             document.getElementById('invNo').value = invoice.noInvoice;
             document.getElementById('invTgl').value = invoice.tanggal;
-            document.getElementById('invTglProyek').value = invoice.tanggalProyek || invoice.tanggal;
+            document.getElementById('invTglMulai').value = tglMulai;
+            document.getElementById('invTglSelesai').value = tglSelesai;
             document.getElementById('invTempo').value = invoice.jatuhTempo;
             document.getElementById('invStatus').value = invoice.status;
             document.getElementById('invDpNominal').value = invoice.dpNominal || "";
@@ -774,7 +916,6 @@
             perbaruiStatusStempelLive(invoice.status);
             perbaruiTombolKalender();
 
-            // LOGIKA PENGINGAT OVERDUE (> 30 hari belum lunas)
             const banner = document.getElementById('overdueBanner');
             if (invoice.tanggal && invoice.status !== 'Lunas') {
                 const invDate = new Date(invoice.tanggal);
