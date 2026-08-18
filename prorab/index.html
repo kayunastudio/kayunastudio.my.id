@@ -108,6 +108,8 @@
                 <div class="hidden sm:flex items-center gap-1">
                     <button onclick="exportToExcelSummary()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1.5 px-2.5 rounded-lg text-xs transition" title="Export Excel">📊 Excel</button>
                     <button onclick="exportToPDFSummary()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 px-2.5 rounded-lg text-xs transition" title="Export PDF">📄 PDF</button>
+                    <!-- TOMBOL LOGOUT DESKTOP -->
+                    <button onclick="eksekusiLogout()" class="bg-rose-950 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-bold py-1.5 px-2.5 rounded-lg text-xs transition flex items-center gap-1" title="Keluar Akun">🚪 Logout</button>
                 </div>
 
                 <!-- BURGER MENU BUTTON (MOBILE & TABLET) -->
@@ -597,6 +599,25 @@
                         </div>
                     </div>
 
+                    <!-- FITUR MASAL 1: PENYESUAIAN HARGA HSD INFLASI/ESKALASI BERDASARKAN PERSENTASE -->
+                    <div class="bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[10px] font-bold text-blue-900 uppercase flex items-center gap-1">
+                                <span>📈</span> Penyesuaian Harga HSD Massal (Inflasi %)
+                            </label>
+                            <span class="text-[9px] text-blue-600 font-medium">*Berlaku untuk item tampil/pencarian</span>
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            <div class="relative flex-1">
+                                <input type="number" step="0.1" id="inpHsdInflationPercent" placeholder="Contoh: 5 (naik 5%) / -2 (turun 2%)" class="w-full border border-blue-300 p-1.5 text-xs rounded-lg bg-white font-bold text-slate-800 pl-3 pr-7 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <span class="absolute right-2.5 top-1.5 text-xs font-bold text-slate-400">%</span>
+                            </div>
+                            <button onclick="eksekusiAdjustHargaHsdPersentase()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow transition shrink-0">
+                                ⚡ Terapkan Inflasi
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="relative">
                         <input type="text" id="searchHsdInput" oninput="renderTabelMonitorHSD()" placeholder="🔍 Cari kode, nama item, atau lokasi HSD..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium">
                         <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
@@ -631,6 +652,25 @@
                         <div class="flex items-center gap-1">
                             <button onclick="exportMasterAHSP('csv')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export CSV</button>
                             <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
+                        </div>
+                    </div>
+
+                    <!-- FITUR MASAL 2: UBAH OVERHEAD AHSP SECARA KESELURUHAN -->
+                    <div class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[10px] font-bold text-amber-900 uppercase flex items-center gap-1">
+                                <span>🏷️</span> Ubah Overhead AHSP Massal (%)
+                            </label>
+                            <span class="text-[9px] text-amber-700 font-medium">*Ubah persen overhead seluruh item</span>
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            <div class="relative flex-1">
+                                <input type="number" step="0.5" id="inpGlobalAhspOverhead" placeholder="Contoh: 15 / 10 / 20" class="w-full border border-amber-300 p-1.5 text-xs rounded-lg bg-white font-bold text-slate-800 pl-3 pr-7 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <span class="absolute right-2.5 top-1.5 text-xs font-bold text-slate-400">%</span>
+                            </div>
+                            <button onclick="eksekusiUbahGlobalOverheadAHSP()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs shadow transition shrink-0">
+                                ⚙️ Update Overhead
+                            </button>
                         </div>
                     </div>
 
@@ -1528,16 +1568,13 @@
             // EVENT LISTENER TOMBOL ESCAPE (ESC)
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' || e.key === 'Esc') {
-                    // Sembunyikan Popover Dropdown HSD yang terbuka
                     document.querySelectorAll('.popover-hsd-menu').forEach(popover => {
                         popover.classList.add('hidden');
                     });
 
-                    // Sembunyikan Popover AHSP
                     const popoverAhsp = document.getElementById('popoverAhspMenu');
                     if (popoverAhsp) popoverAhsp.classList.add('hidden');
 
-                    // Lepaskan fokus kursor dari input yang sedang aktif
                     if (document.activeElement && typeof document.activeElement.blur === 'function') {
                         document.activeElement.blur();
                     }
@@ -1729,12 +1766,104 @@
             }
         }
 
+        // FITUR MASAL BARU 1: PENYESUAIAN HARGA HSD BERDASARKAN PERSENTASE (INFLASI/ESKALASI)
+        async function eksekusiAdjustHargaHsdPersentase() {
+            const inputVal = parseFloat(document.getElementById('inpHsdInflationPercent').value);
+            if (isNaN(inputVal) || inputVal === 0) {
+                showToast("Masukkan nilai persentase inflasi yang valid (misal: 5 atau -3.5)", "error");
+                return;
+            }
+
+            const keyword = (document.getElementById('searchHsdInput')?.value || "").toLowerCase().trim();
+            
+            // Filter HSD yang sedang tampil / sesuai keyword pencarian
+            let targetItems = listHSDMaster.filter(item => {
+                let matchKode = (item.kode || "").toLowerCase().includes(keyword);
+                let matchNama = (item.nama_item || item.uraian || "").toLowerCase().includes(keyword);
+                let matchLokasi = (item.lokasi || "").toLowerCase().includes(keyword);
+                return matchKode || matchNama || matchLokasi;
+            });
+
+            if (targetItems.length === 0) {
+                showToast("Tidak ada item HSD yang terpilih untuk diubah", "error");
+                return;
+            }
+
+            const pesanKonfirmasi = `⚠️ Apakah Anda yakin ingin menggeser/menyesuaikan harga ${targetItems.length} item HSD sebesar ${inputVal > 0 ? '+' : ''}${inputVal}%?`;
+            if (!confirm(pesanKonfirmasi)) return;
+
+            const factor = 1 + (inputVal / 100);
+            let successCount = 0;
+
+            showToast("Sedang memproses penyesuaian harga HSD...", "success", 4000);
+
+            // Update item Supabase satu-per-satu / batch
+            for (let item of targetItems) {
+                let currentHarga = parseFloat(item.harga) || 0;
+                let newHarga = Math.round(currentHarga * factor);
+
+                const { error } = await supabaseClient
+                    .from('02_hsd')
+                    .update({ harga: newHarga })
+                    .eq('kode', item.kode);
+
+                if (!error) successCount++;
+            }
+
+            showToast(`Berhasil memperbarui ${successCount} item HSD!`);
+            document.getElementById('inpHsdInflationPercent').value = "";
+            muatDataProyekSemua();
+        }
+
+        // FITUR MASAL BARU 2: UBAH OVERHEAD AHSP SECARA KESELURUHAN (MASSAL)
+        async function eksekusiUbahGlobalOverheadAHSP() {
+            const inputVal = parseFloat(document.getElementById('inpGlobalAhspOverhead').value);
+            if (isNaN(inputVal) || inputVal < 0) {
+                showToast("Masukkan nilai persentase overhead yang valid (misal: 15 atau 10)", "error");
+                return;
+            }
+
+            const keyword = (document.getElementById('searchAhspInput')?.value || "").toLowerCase().trim();
+            
+            // Filter AHSP yang sedang tampil / sesuai keyword pencarian
+            let targetItems = listAHSPMaster.filter(item => {
+                let matchKode = (item.kode_ahsp || "").toLowerCase().includes(keyword);
+                let matchNama = (item.nama_pekerjaan || "").toLowerCase().includes(keyword);
+                let matchKat = (item.kategori || "").toLowerCase().includes(keyword);
+                return matchKode || matchNama || matchKat;
+            });
+
+            if (targetItems.length === 0) {
+                showToast("Tidak ada item AHSP yang terpilih untuk diubah", "error");
+                return;
+            }
+
+            const pesanKonfirmasi = `⚠️ Apakah Anda yakin ingin mengubah nilai Overhead ${targetItems.length} item AHSP secara massal menjadi ${inputVal}%?`;
+            if (!confirm(pesanKonfirmasi)) return;
+
+            showToast("Sedang memproses perubahan overhead AHSP...", "success", 4000);
+
+            let successCount = 0;
+            for (let item of targetItems) {
+                const { error } = await supabaseClient
+                    .from('01_ahsp')
+                    .update({ overhead_persen: inputVal })
+                    .eq('kode_ahsp', item.kode_ahsp);
+
+                if (!error) successCount++;
+            }
+
+            showToast(`Berhasil meng-update Overhead untuk ${successCount} item AHSP!`);
+            document.getElementById('inpGlobalAhspOverhead').value = "";
+            muatDataProyekSemua();
+        }
+
         // OPTIMASI PERFORMA DROPDOWN HSD (DEBOUNCED & LIMIT 100 RESULTS)
         function filterHsdDropdownOptions(inputElem) {
             clearTimeout(debounceHsdTimer);
             debounceHsdTimer = setTimeout(() => {
                 eksekusiFilterHsdDropdownOptions(inputElem);
-            }, 150); // Debounce 150ms agar super cepat dan tanpa patah-patah
+            }, 150);
         }
 
         function eksekusiFilterHsdDropdownOptions(inputElem) {
@@ -1759,7 +1888,7 @@
 
             let uniqueItemsMap = {};
             let matchCount = 0;
-            const maxDisplay = 100; // 👈 Limit hasil pencarian dinaikkan menjadi max 100 item
+            const maxDisplay = 100;
 
             for (let i = 0; i < listHSDMaster.length; i++) {
                 if (matchCount >= maxDisplay) break;
@@ -1965,7 +2094,6 @@
             hitungPreviewHargaItem();
         }
 
-        // PEMBARUAN LOGIKA CARI HARGA HSD (AUTO-SUGGEST LOKASI INDONESIA / NASIONAL)
         function cariHargaHSD(itemKomponen, lokasiProyek) {
             const targetKode = (itemKomponen.kode || "").toString().trim().toLowerCase();
             const targetUraian = (itemKomponen.uraian || "").toLowerCase().trim();
@@ -1977,25 +2105,21 @@
                 return matchKode || matchUraian;
             };
 
-            // 1. Prioritas Utama: Sesuai Lokasi Proyek Spesifik
             let matchLokasi = listHSDMaster.filter(h => isMatchItem(h) && (h.lokasi || "").toLowerCase().trim() === targetLokasi);
             if (matchLokasi.length > 0) {
                 return Math.min(...matchLokasi.map(item => parseFloat(item.harga) || 0));
             }
 
-            // 2. Prioritas Kedua: Fallback Otomatis ke Wilayah "INDONESIA" atau "NASIONAL"
             let matchIndonesia = listHSDMaster.filter(h => isMatchItem(h) && ["indonesia", "nasional"].includes((h.lokasi || "").toLowerCase().trim()));
             if (matchIndonesia.length > 0) {
                 return Math.min(...matchIndonesia.map(item => parseFloat(item.harga) || 0));
             }
 
-            // 3. Prioritas Ketiga: Ambil dari lokasi mana saja yang tersedia di Master HSD
             let matchAll = listHSDMaster.filter(h => isMatchItem(h));
             if (matchAll.length > 0) {
                 return Math.min(...matchAll.map(item => parseFloat(item.harga) || 0));
             }
 
-            // 4. Default Fallback
             return parseFloat(itemKomponen.hargaFallback) || 0;
         }
 
@@ -3253,11 +3377,9 @@
             container.appendChild(div);
         }
 
-        // PEMBARUAN SIMPAN AHSP BARU (AUTO GENERATE KODE JIKA KOSONG)
         async function simpanAHSPBaru() {
             let inputKode = document.getElementById('addAhspKode').value.trim();
 
-            // Auto Generate Kode Unik jika tidak diisi agar tidak saling terhubung
             if (!inputKode) {
                 inputKode = "AHSP-CUSTOM-" + Date.now().toString().slice(-6) + "-" + Math.floor(Math.random() * 100);
             }
