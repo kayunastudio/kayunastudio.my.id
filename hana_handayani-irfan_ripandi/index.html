@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Undangan Pernikahan Digital - Hana & Irfan</title>
-    <!-- Google Fonts: Alex Brush (Calligraphy Formal & Readable) & Montserrat -->
+    <!-- Google Fonts: Alex Brush & Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -48,7 +48,6 @@
             line-height: 1.6;
         }
 
-        /* Pembatas Layar HP / Mobile Container */
         .mobile-container {
             width: 100%;
             max-width: 450px;
@@ -93,7 +92,7 @@
         .delay-3 { transition-delay: 450ms; }
 
         /* ==========================================================================
-           FIXED PERBAIKAN TAUTAN MENTAH (RAW) ASSET DAUN MELAYANG
+           ASSET DAUN MELAYANG
            ========================================================================== */
         .swaying-leaves {
             position: absolute;
@@ -205,7 +204,7 @@
         }
 
         /* ==========================================================================
-           COVER AWAL TRADISIONAL MODERN
+           COVER AWAL DENGAN VIDEO BACKGROUND & TOMBOL PENGAKTIF SUARA
            ========================================================================== */
         #invitation-cover {
             position: fixed;
@@ -215,9 +214,7 @@
             width: 100%;
             max-width: 450px;
             height: 100vh;
-            background: linear-gradient(rgba(244, 234, 230, 0.5), rgba(244, 234, 230, 0.8)), 
-                        url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover.png') no-repeat center center;
-            background-size: cover;
+            background: rgba(0, 0, 0, 0.35);
             z-index: 9999;
             display: flex;
             flex-direction: column;
@@ -229,6 +226,60 @@
             overflow: hidden;
         }
 
+        .cover-bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(0.85);
+        }
+
+        /* Tombol Mute/Unmute Video pada Cover */
+        .btn-video-audio {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-video-audio svg { width: 14px; height: 14px; fill: currentColor; }
+
+        .cover-content-elements {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.2s ease, visibility 1.2s ease;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cover-content-elements.show-content {
+            opacity: 1;
+            visibility: visible;
+        }
+
         #invitation-cover.opened {
             transform: translate(-50%, -100vh);
         }
@@ -236,36 +287,40 @@
         .cover-top p {
             font-size: 0.8rem;
             text-transform: uppercase;
-            color: var(--primary-emerald);
+            color: var(--white);
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 2px;
-            font-weight: 500;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
         .cover-date {
             font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-dark);
+            font-weight: 600;
+            color: var(--white);
             margin: 8px 0 25px 0;
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
         .guest-box span.dear-text {
             font-family: 'Montserrat', sans-serif;
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: rgba(255,255,255,0.85);
             display: block;
             margin-bottom: 6px;
             letter-spacing: 1px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
         .guest-name {
             font-size: 1.15rem;
             font-weight: 700;
-            color: var(--primary-emerald);
+            color: var(--white);
             font-family: 'Montserrat', sans-serif;
             margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
 
         .btn-open-traditional {
@@ -277,7 +332,7 @@
             font-weight: 600;
             border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(11, 68, 52, 0.25);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
@@ -341,19 +396,69 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 50px 25px;
+            padding: 45px 22px;
             text-align: center;
+            position: relative;
         }
 
-        .quran-arabic {
-            font-family: 'Traditional Arabic', 'Meiryo', 'Georgia', serif;
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: var(--primary-emerald);
-            line-height: 2.1;
-            direction: rtl;
-            margin-bottom: 25px;
-            text-align: center;
+        .floral-quran-transparent {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            padding: 25px 12px;
+            margin: 0 auto;
+        }
+
+        .corner-leaf {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        .c-top-left {
+            top: -10px;
+            left: -10px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png');
+        }
+
+        .c-top-right {
+            top: -10px;
+            right: -10px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
+        }
+
+        .c-bottom-left {
+            bottom: -10px;
+            left: -10px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png');
+            transform: rotate(180deg);
+        }
+
+        .c-bottom-right {
+            bottom: -10px;
+            right: -10px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
+            transform: rotate(180deg);
+        }
+
+        .quran-image-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .quran-image-wrapper img {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            object-fit: contain;
+            mix-blend-mode: multiply;
         }
 
         .quran-translation {
@@ -363,14 +468,14 @@
             color: var(--text-dark);
             font-weight: 400;
             text-align: center;
-            padding: 0 5px;
+            padding: 0 8px;
         }
 
         .quran-surah-name {
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
             color: var(--primary-maroon);
-            margin-top: 20px;
+            margin-top: 18px;
             font-size: 0.85rem;
             letter-spacing: 0.5px;
         }
@@ -609,7 +714,6 @@
         .clean-timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: var(--primary-emerald); opacity: 0.22; transform: translateX(-50%); }
         .timeline-node { position: relative; width: 100%; margin-bottom: 35px; }
         .node-circle { position: absolute; left: 50%; top: 0; width: 8px; height: 8px; background-color: var(--primary-maroon); border-radius: 50%; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg-cream-accent); }
-        .node-circle { position: absolute; left: 50%; top: 0; width: 8px; height: 8px; background-color: var(--primary-maroon); border-radius: 50%; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg-cream-accent); }
         .node-header { text-align: center; margin-bottom: 12px; padding-top: 16px; }
         .node-header h3 { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; color: var(--primary-emerald); letter-spacing: 0.3px; display: inline-block; position: relative; text-transform: uppercase; }
         .node-body-card { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(11, 68, 52, 0.04); border: 1px solid rgba(255, 255, 255, 0.6); text-align: justify; }
@@ -800,33 +904,47 @@
     <div class="mobile-container">
 
         <!-- ==========================================================================
-           1. COVER DEPAN (FIXED PATH)
+           1. COVER DEPAN BERBASIS VIDEO BACKGROUND
            ========================================================================== -->
         <div id="invitation-cover">
+            <!-- VIDEO BACKGROUND COVER -->
+            <video id="coverVideo" class="cover-bg-video" autoplay muted playsinline preload="auto">
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-holding-hands-43187-large.mp4" type="video/mp4">
+            </video>
+
+            <!-- TOMBOL IKON ELEGAN UNTUK MENGAKTIFKAN SUARA BAWAAN VIDEO -->
+            <button class="btn-video-audio" id="btnVideoSound" onclick="toggleVideoSound()">
+                <svg id="iconMuted" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                <svg id="iconUnmuted" viewBox="0 0 24 24" style="display:none;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                <span id="textVideoSound">Suara Video</span>
+            </button>
+
             <div class="swaying-leaves leaves-top-left"></div>
             <div class="swaying-leaves leaves-top-right"></div>
             <div class="swaying-leaves leaves-bottom-left"></div>
             <div class="swaying-leaves leaves-bottom-right"></div>
 
-            <div class="cover-top">
-                <p>Our Wedding Invitation</p>
-            </div>
-            <div class="cover-middle">
-                <div class="oval-frame">
-                    <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Foto Hana & Irfan">
+            <div class="cover-content-elements" id="coverContent">
+                <div class="cover-top">
+                    <p>Our Wedding Invitation</p>
                 </div>
-                <h1 class="script-luxury">Hana & Irfan</h1>
-                <p class="cover-date">Minggu, 25 Oktober 2026</p>
-                <div class="guest-box">
-                    <span class="dear-text">Dear:</span>
-                    <div class="guest-name" id="nama-tamu">Tamu yang Berbahagia</div>
-                    <button class="btn-open-traditional" onclick="openInvitation()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                        Open Invitation
-                    </button>
+                <div class="cover-middle">
+                    <div class="oval-frame">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Foto Hana & Irfan">
+                    </div>
+                    <h1 class="script-luxury" style="color: #ffffff; text-shadow: 0 2px 8px rgba(0,0,0,0.6);">Hana & Irfan</h1>
+                    <p class="cover-date">Minggu, 25 Oktober 2026</p>
+                    <div class="guest-box">
+                        <span class="dear-text">Dear:</span>
+                        <div class="guest-name" id="nama-tamu">Tamu yang Berbahagia</div>
+                        <button class="btn-open-traditional" onclick="openInvitation()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            Open Invitation
+                        </button>
+                    </div>
                 </div>
+                <div></div>
             </div>
-            <div></div>
         </div>
 
 
@@ -855,19 +973,28 @@
             <!-- HALAMAN AYAT QURAN -->
             <div class="quran-verse-page">
                 <div class="divider-line scroll-reveal"></div>
-                <div class="quran-arabic scroll-reveal delay-1">
-                   وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم mِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَع بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لآيَاتٍ Lِّقَوْمٍ يَتَفَكَّرُونَ
-                </div>
-                <div class="quran-translation scroll-reveal delay-2">
-                    "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir."
-                </div>
-                <div class="quran-surah-name scroll-reveal delay-3">
-                    ( QS. Ar-Rum : 21 )
+                <div class="floral-quran-transparent oval-reveal">
+                    <div class="corner-leaf c-top-left"></div>
+                    <div class="corner-leaf c-top-right"></div>
+                    <div class="corner-leaf c-bottom-left"></div>
+                    <div class="corner-leaf c-bottom-right"></div>
+
+                    <div class="quran-image-wrapper">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/arrum.png" alt="Kaligrafi QS. Ar-Rum Ayat 21">
+                    </div>
+
+                    <div class="quran-translation scroll-reveal delay-1">
+                        "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir."
+                    </div>
+
+                    <div class="quran-surah-name scroll-reveal delay-2">
+                        ( QS. Ar-Rum : 21 )
+                    </div>
                 </div>
                 <div class="divider-line scroll-reveal"></div>
             </div>
 
-            <!-- TAB 2: MEMPELAI SECTION (FIXED PHOTO PATHS) -->
+            <!-- TAB 2: MEMPELAI SECTION -->
             <div id="section-mempelai" class="section-padding mempelai-section-bg">
                 <h2 class="serif-title scroll-reveal">Assalamu’alaikum Wr. Wb.</h2>
                 <div class="divider-line scroll-reveal"></div>
@@ -875,7 +1002,6 @@
                     Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i, serta kerabat sekalian, untuk menghadiri acara pernikahan kami:
                 </p>
 
-                <!-- Profil Mempelai Wanita -->
                 <div class="mempelai-card">
                     <div class="oval-frame oval-reveal" style="width: 180px; height: 250px; border-radius: 90px; margin-bottom: 16px;">
                         <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg" alt="Foto Hana Handayani">
@@ -892,7 +1018,6 @@
 
                 <div class="catin-separator scroll-reveal"><span>&</span></div>
 
-                <!-- Profil Mempelai Pria -->
                 <div class="mempelai-card">
                     <div class="oval-frame oval-reveal" style="width: 180px; height: 250px; border-radius: 90px; margin-bottom: 16px;">
                         <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg" alt="Foto Irfan Ripandi">
@@ -1210,11 +1335,43 @@
         const mainContent = document.getElementById('main-content');
         const music = document.getElementById('bg-music');
         const musicBtn = document.getElementById('music-btn');
+        const coverVideo = document.getElementById('coverVideo');
+        const coverContent = document.getElementById('coverContent');
+
+        function toggleVideoSound() {
+            const iconMuted = document.getElementById('iconMuted');
+            const iconUnmuted = document.getElementById('iconUnmuted');
+            
+            if (coverVideo.muted) {
+                coverVideo.muted = false;
+                iconMuted.style.display = 'none';
+                iconUnmuted.style.display = 'block';
+            } else {
+                coverVideo.muted = true;
+                iconMuted.style.display = 'block';
+                iconUnmuted.style.display = 'none';
+            }
+        }
+
+        function showCoverOverlay() {
+            if (!coverContent.classList.contains('show-content')) {
+                coverContent.classList.add('show-content');
+                coverVideo.loop = true;
+                coverVideo.play().catch(err => console.log(err));
+            }
+        }
+
+        coverVideo.addEventListener('ended', showCoverOverlay);
+        setTimeout(showCoverOverlay, 5000);
 
         function openInvitation() {
             cover.classList.add('opened');
             mainContent.classList.add('show');
             
+            // Matikan suara video saat cover ditutup
+            coverVideo.muted = true;
+            coverVideo.pause();
+
             setTimeout(initScrollReveal, 100);
 
             music.play().then(() => { 
