@@ -14,7 +14,6 @@
            COLOR PALETTE & CORE STYLES (Tema: Emerald Green, Maroon & Cream Accent)
            ========================================================================= */
         :root {
-            /* KUSTOMISASI: Ubah kode hex warna di bawah ini jika ingin mengganti warna tema */
             --bg-cream-accent: #F4EAE6; 
             --bg-pure-white: #FFFFFF;
             --primary-emerald: #0B4434; 
@@ -94,7 +93,7 @@
         .delay-3 { transition-delay: 450ms; }
 
         /* ==========================================================================
-           FIXED PERBAIKAN: INLINE SVG DAUN MELAYANG BERWARNA EMERALD GREEN
+           FIXED PERBAIKAN TAUTAN MENTAH (RAW) ASSET DAUN MELAYANG
            ========================================================================== */
         .swaying-leaves {
             position: absolute;
@@ -111,7 +110,7 @@
         .leaves-top-left {
             top: 0;
             left: 0;
-            background-image: url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/floral-left.PNG?raw=true');
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png');
             transform-origin: top left;
             animation: gentle-wind-left 5.5s ease-in-out infinite alternate;
         }
@@ -119,7 +118,7 @@
         .leaves-top-right {
             top: 0;
             right: 0;
-            background-image: url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/floral-right.png?raw=true');
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
             transform-origin: top right;
             animation: gentle-wind-right 5.5s ease-in-out infinite alternate;
         }
@@ -127,7 +126,7 @@
         .leaves-bottom-right {
             bottom: 0;
             right: 0;
-            background-image: url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/floral-right.png?raw=true');
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
             transform-origin: bottom right;
             animation: gentle-wind-right 5.5s ease-in-out infinite alternate;
         }
@@ -135,7 +134,7 @@
         .leaves-bottom-left {
             bottom: 0;
             left: 0;
-            background-image: url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/floral-left.PNG?raw=true');
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png');
             transform-origin: bottom left;
             animation: gentle-wind-left 5.5s ease-in-out infinite alternate;
         }
@@ -152,7 +151,6 @@
             100% { transform: rotate(1deg) scale(0.99) skewX(-0.5deg); }
         }
 
-        /* Typography & Custom Titles - Diperkecil & Proporsional */
         .script-luxury {
             font-family: 'Alex Brush', cursive;
             color: var(--primary-maroon); 
@@ -218,7 +216,7 @@
             max-width: 450px;
             height: 100vh;
             background: linear-gradient(rgba(244, 234, 230, 0.5), rgba(244, 234, 230, 0.8)), 
-                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true') no-repeat center center;
+                        url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover.png') no-repeat center center;
             background-size: cover;
             z-index: 9999;
             display: flex;
@@ -304,7 +302,7 @@
             width: 100%;
             height: 100vh;
             background: linear-gradient(rgba(244, 234, 230, 0.5), rgba(244, 234, 230, 0.8)), 
-                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true') no-repeat center center;
+                        url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover.png') no-repeat center center;
             background-size: cover;
             display: flex;
             flex-direction: column;
@@ -335,7 +333,6 @@
             letter-spacing: 1px;
         }
 
-        /* Halaman Ayat Quran */
         .quran-verse-page {
             width: 100%;
             min-height: 80vh;
@@ -378,10 +375,9 @@
             letter-spacing: 0.5px;
         }
 
-        /* Bagian Mempelai */
         .mempelai-section-bg {
             background: linear-gradient(rgba(244, 234, 230, 0.8), rgba(244, 234, 230, 0.9)), 
-                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/cover-catin.jpg?raw=true') no-repeat center center;
+                        url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg') no-repeat center center;
             background-size: cover;
         }
 
@@ -457,7 +453,6 @@
 
         .catin-separator span { padding: 0 12px; margin-top: -8px; }
 
-        /* Bagian Detail Acara & Countdown */
         .event-section-bg {
             background-color: var(--dark-emerald-bg);
             color: var(--white);
@@ -518,7 +513,7 @@
             border-radius: 30px;
             padding: 45px 20px 35px 20px;
             background: linear-gradient(rgba(5, 43, 32, 0.4), rgba(5, 43, 32, 0.75)), 
-                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/cover-acara.jpg?raw=true') no-repeat center center;
+                        url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg') no-repeat center center;
             background-size: cover;
             text-align: center;
         }
@@ -561,7 +556,6 @@
             color: var(--accent-warm-gold);
         }
 
-        /* Bagian Galeri Kebahagiaan */
         .gallery-section-bg {
             background: linear-gradient(rgba(244, 234, 230, 0.85), rgba(244, 234, 230, 0.9)), 
                         url('https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=600&auto=format&fit=crop') no-repeat center center;
@@ -605,7 +599,6 @@
         .gsc-lightbox img { max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2); }
         .gsc-lightbox-close { position: absolute; top: 25px; right: 25px; color: var(--white); font-size: 2rem; cursor: pointer; background: none; border: none; }
 
-        /* Bagian Love Story */
         .story-section-bg {
             background: linear-gradient(rgba(244, 234, 230, 0.9), rgba(244, 234, 230, 0.95)), 
                         url('https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=600&auto=format&fit=crop') no-repeat center center;
@@ -616,12 +609,12 @@
         .clean-timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: var(--primary-emerald); opacity: 0.22; transform: translateX(-50%); }
         .timeline-node { position: relative; width: 100%; margin-bottom: 35px; }
         .node-circle { position: absolute; left: 50%; top: 0; width: 8px; height: 8px; background-color: var(--primary-maroon); border-radius: 50%; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg-cream-accent); }
+        .node-circle { position: absolute; left: 50%; top: 0; width: 8px; height: 8px; background-color: var(--primary-maroon); border-radius: 50%; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg-cream-accent); }
         .node-header { text-align: center; margin-bottom: 12px; padding-top: 16px; }
         .node-header h3 { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; color: var(--primary-emerald); letter-spacing: 0.3px; display: inline-block; position: relative; text-transform: uppercase; }
         .node-body-card { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(11, 68, 52, 0.04); border: 1px solid rgba(255, 255, 255, 0.6); text-align: justify; }
         .node-body-card p { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; line-height: 1.6; color: var(--text-dark); font-weight: 400; }
 
-        /* Section Wedding Gift */
         .gift-section-bg {
             background-color: var(--dark-emerald-bg);
             color: var(--white);
@@ -651,7 +644,6 @@
         .qris-image-frame img { width: 100%; height: 100%; object-fit: contain; }
         .qris-payment-block p { font-size: 0.75rem; color: #444444; line-height: 1.4; font-family: 'Montserrat', sans-serif; font-weight: 400; }
 
-        /* Section RSVP */
         .rsvp-section-bg {
             background-color: var(--dark-emerald-bg);
             color: var(--white);
@@ -676,13 +668,12 @@
         .ucapan-card-count { font-size: 0.65rem; background: rgba(244, 234, 230, 0.18); color: var(--white); padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 500; }
         .ucapan-card-body { font-size: 0.8rem; color: rgba(244, 234, 230, 0.9); margin-top: 4px; line-height: 1.45; font-weight: 400; }
 
-        /* Section Penutup / Terima Kasih */
         .thankyou-section-luxury {
             width: 100%;
             padding: 70px 25px 35px 25px;
             text-align: center;
             background: linear-gradient(rgba(244, 234, 230, 0.85), rgba(244, 234, 230, 0.88)), 
-                        url('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true') no-repeat center center;
+                        url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover.png') no-repeat center center;
             background-size: cover;
             position: relative;
             overflow: hidden;
@@ -707,9 +698,6 @@
         .signature-intro-label { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 400; color: var(--text-muted); margin-bottom: 5px; }
         .signature-couple-name { font-family: 'Alex Brush', cursive; color: var(--primary-maroon); font-size: 3.5rem; font-weight: 400; margin-top: 2px; line-height: 1.1; }
 
-        /* ==========================================================================
-           FOOTER ATRIBUSI LAYANAN KAYUNA STUDIO WITH SOCIAL LINKS
-           ========================================================================== */
         .kayuna-branding-footer {
             background-color: var(--primary-emerald);
             color: var(--bg-cream-accent);
@@ -751,7 +739,6 @@
             fill: currentColor;
         }
 
-        /* Controls & Navigation */
         .music-control {
             position: fixed;
             bottom: 85px;
@@ -813,7 +800,7 @@
     <div class="mobile-container">
 
         <!-- ==========================================================================
-           1. COVER DEPAN
+           1. COVER DEPAN (FIXED PATH)
            ========================================================================== -->
         <div id="invitation-cover">
             <div class="swaying-leaves leaves-top-left"></div>
@@ -826,7 +813,7 @@
             </div>
             <div class="cover-middle">
                 <div class="oval-frame">
-                    <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true" alt="Foto Hana & Irfan">
+                    <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Foto Hana & Irfan">
                 </div>
                 <h1 class="script-luxury">Hana & Irfan</h1>
                 <p class="cover-date">Minggu, 25 Oktober 2026</p>
@@ -859,7 +846,7 @@
 
                 <p class="top-title scroll-reveal">Our Wedding Invitation</p>
                 <div class="oval-frame oval-reveal delay-1">
-                    <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true" alt="Foto Hana & Irfan">
+                    <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Foto Hana & Irfan">
                 </div>
                 <h1 class="script-luxury scroll-reveal delay-2">Hana & Irfan</h1>
                 <p class="interior-date scroll-reveal delay-3">Minggu, 25 Oktober 2026</p>
@@ -869,7 +856,7 @@
             <div class="quran-verse-page">
                 <div class="divider-line scroll-reveal"></div>
                 <div class="quran-arabic scroll-reveal delay-1">
-                   وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَع بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ
+                   وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم mِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَع بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لآيَاتٍ Lِّقَوْمٍ يَتَفَكَّرُونَ
                 </div>
                 <div class="quran-translation scroll-reveal delay-2">
                     "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir."
@@ -880,7 +867,7 @@
                 <div class="divider-line scroll-reveal"></div>
             </div>
 
-            <!-- TAB 2: MEMPELAI SECTION -->
+            <!-- TAB 2: MEMPELAI SECTION (FIXED PHOTO PATHS) -->
             <div id="section-mempelai" class="section-padding mempelai-section-bg">
                 <h2 class="serif-title scroll-reveal">Assalamu’alaikum Wr. Wb.</h2>
                 <div class="divider-line scroll-reveal"></div>
@@ -891,7 +878,7 @@
                 <!-- Profil Mempelai Wanita -->
                 <div class="mempelai-card">
                     <div class="oval-frame oval-reveal" style="width: 180px; height: 250px; border-radius: 90px; margin-bottom: 16px;">
-                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/catin-pw.JPG?raw=true" alt="Foto Hana Handayani">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg" alt="Foto Hana Handayani">
                     </div>
                     <h3 class="scroll-reveal delay-1">Hana Handayani, S.T.</h3>
                     <p class="ortu scroll-reveal delay-2">Putri Pertama Dari<br>Bapak Budrik &amp; Ibu Ida Parida</p>
@@ -908,7 +895,7 @@
                 <!-- Profil Mempelai Pria -->
                 <div class="mempelai-card">
                     <div class="oval-frame oval-reveal" style="width: 180px; height: 250px; border-radius: 90px; margin-bottom: 16px;">
-                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/catin-pp.JPG?raw=true" alt="Foto Irfan Ripandi">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg" alt="Foto Irfan Ripandi">
                     </div>
                     <h3 class="scroll-reveal delay-1">Ir. Irfan Ripandi</h3>
                     <p class="ortu scroll-reveal delay-2">Putra Pertama Dari<br>Bapak Tantan Rustandi<br>&amp; Ibu Jumsih</p>
@@ -951,7 +938,6 @@
                         </a>
                     </div>
 
-                    <!-- ORNAMEN BUNGA SVG MURNI ELEGAN -->
                     <svg class="flower-separator-svg scroll-reveal" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M10 15h30M90 15h-30" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
                         <circle cx="50" cy="15" r="3" fill="currentColor"/>
@@ -968,7 +954,7 @@
                         </div>
                         <div class="event-detail-row">
                             <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
-                            <span>Pukul : 12.00 - Selesai</span>
+                            <span>Pukul : 11.00 - Selesai</span>
                         </div>
                         <p class="event-address">Kp. Rancapanggung RT 03/RW 09<br>Kec. Cililin Kab. Bandung Barat</p>
                         <a href="https://maps.app.goo.gl/ky1oxmMaZ8Rz8wfVA" target="_blank" class="btn-lihat-lokasi">
@@ -988,17 +974,17 @@
                 </p>
                 
                 <div class="gallery-portrait-grid">
-                    <div class="gallery-item oval-reveal" onclick="openLightbox('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-1.JPG?raw=true')">
-                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-1.JPG?raw=true" alt="Galeri Pernikahan 1">
+                    <div class="gallery-item oval-reveal" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-1.JPG')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-1.png" alt="Galeri Pernikahan 1">
                     </div>
-                    <div class="gallery-item oval-reveal delay-1" onclick="openLightbox('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-2.JPG?raw=true')">
-                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-2.JPG?raw=true" alt="Galeri Pernikahan 2">
+                    <div class="gallery-item oval-reveal delay-1" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-2.JPG')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-2.png" alt="Galeri Pernikahan 2">
                     </div>
-                    <div class="gallery-item oval-reveal" onclick="openLightbox('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-3.JPG?raw=true')">
-                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-3.JPG?raw=true" alt="Galeri Pernikahan 3">
+                    <div class="gallery-item oval-reveal" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-3.JPG')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-3.png" alt="Galeri Pernikahan 3">
                     </div>
-                    <div class="gallery-item oval-reveal delay-1" onclick="openLightbox('https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-4.JPG?raw=true')">
-                        <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/galeri-4.JPG?raw=true" alt="Galeri Pernikahan 4">
+                    <div class="gallery-item oval-reveal delay-1" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-4.JPG')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-4.png" alt="Galeri Pernikahan 4">
                     </div>
                 </div>
             </div>
@@ -1075,9 +1061,9 @@
                 </div>
 
                 <div class="qris-payment-block scroll-reveal">
-                    <img src="https://github.com/kayunastudio/QRIS/blob/main/gpn.svg?raw=true" class="qris-logo-header" alt="Logo GPN QRIS">
+                    <img src="https://raw.githubusercontent.com/kayunastudio/QRIS/main/gpn.svg" class="qris-logo-header" alt="Logo GPN QRIS">
                     <div class="qris-image-frame">
-                        <img src="https://github.com/kayunastudio/QRIS/blob/main/qris.JPG?raw=true" alt="Barcode QRIS">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/QRIS/main/qris.JPG" alt="Barcode QRIS">
                     </div>
                     <p>Silakan pindai atau simpan kode QRIS di atas untuk melakukan transfer amplop digital melalui e-wallet maupun mobile banking Anda.</p>
                 </div>
@@ -1147,7 +1133,7 @@
                 <div class="swaying-leaves leaves-top-right"></div>
 
                 <div class="closing-capsule-frame oval-reveal">
-                    <img src="https://github.com/kayunastudio/hana_handayani-irfan_ripandi/blob/main/foto-cover.jpg?raw=true" alt="Foto Bersanding Hana & Irfan">
+                    <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Foto Bersanding Hana & Irfan">
                 </div>
 
                 <p class="thankyou-paragraph-text scroll-reveal delay-1">
