@@ -1437,7 +1437,7 @@
             if (savedProfile) {
                 try {
                     userProfile = JSON.parse(savedProfile);
-                } catch(e) {
+                } catch(e){
                     userProfile = { ...currentUser.defaultCompany };
                 }
             } else {
@@ -1753,18 +1753,32 @@
             return allRows;
         }
 
-        // FUNGSI OTOMATISASI GENERATE KODE UNTUK HSD KOSONG DI DATABASE
+        // FUNGSI OTOMATISASI GENERATE KODE UNTUK HSD KOSONG DI DATABASE (DIPERBARUI PARALEL & PERMANEN KE SUPABASE)
         async function autoGenerateKodeMasterHsdTanpaKode() {
-            let emptyKodeItems = listHSDMaster.filter(h => !h.kode || h.kode.trim() === "");
+            let emptyKodeItems = listHSDMaster.filter(h => !h.kode || h.kode.trim() === "" || h.kode.trim() === "-");
             if (emptyKodeItems.length === 0) return;
 
-            for (let item of emptyKodeItems) {
+            showToast(`Mengisi kode otomatis untuk ${emptyKodeItems.length} item lama...`, "success", 3000);
+
+            const updatePromises = emptyKodeItems.map(item => {
                 const autoGenKode = "HSD-GEN-" + Math.floor(100000 + Math.random() * 900000);
-                await supabaseClient
-                    .from('02_hsd')
-                    .update({ kode: autoGenKode })
-                    .eq('nama_item', item.nama_item);
-            }
+                item.kode = autoGenKode; // Update memory lokal
+
+                if (item.id) {
+                    return supabaseClient
+                        .from('02_hsd')
+                        .update({ kode: autoGenKode })
+                        .eq('id', item.id);
+                } else {
+                    return supabaseClient
+                        .from('02_hsd')
+                        .update({ kode: autoGenKode })
+                        .eq('nama_item', item.nama_item);
+                }
+            });
+
+            await Promise.all(updatePromises);
+            showToast("Kode otomatis item lama berhasil disimpan permanen ke Supabase!");
         }
 
         async function muatDataProyekSemua() {
@@ -1794,7 +1808,7 @@
                 listScheduleMaster = dataSchedule || [];
                 listDailyMaster = dataDaily || [];
 
-                // Periksa & auto generate kode untuk data HSD tanpa kode
+                // Periksa & auto generate kode untuk data HSD tanpa kode secara permanen
                 await autoGenerateKodeMasterHsdTanpaKode();
 
                 renderDaftarProyekKartu();
