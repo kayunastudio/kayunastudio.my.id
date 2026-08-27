@@ -487,6 +487,7 @@
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
+                <!-- FORM TAMBAH HSD BARU (DENGAN AUTO-GENERATE KODE, CEK DUPLIKAT, & REFERENSI LINK) -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="border-b pb-2 flex justify-between items-center">
                         <div>
@@ -499,8 +500,8 @@
                     <form onsubmit="event.preventDefault(); simpanHSDBaru();" class="space-y-3">
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Item</label>
-                                <input type="text" id="addHsdKode" required placeholder="L.01 / M.05" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Item <span class="text-[9px] text-blue-600 font-normal">(Auto jika kosong)</span></label>
+                                <input type="text" id="addHsdKode" placeholder="Ex: L.01 / M.05 / Auto" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan</label>
@@ -524,12 +525,19 @@
                             </div>
                         </div>
 
+                        <!-- INPUT BARU: NOMOR ATAU LINK REFERENSI HSD -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">No. Halaman / Link Referensi <span class="text-[9px] text-slate-400 font-normal">(Opsional)</span></label>
+                            <input type="text" id="addHsdReferensi" placeholder="Contoh: https://katalog-harga.com/semen atau Ref-No: 2026/08/INV" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium text-slate-700">
+                        </div>
+
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
                             💾 Simpan Ke Database
                         </button>
                     </form>
                 </div>
 
+                <!-- FORM TAMBAH AHSP PEKERJAAN BARU -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="border-b pb-2 flex justify-between items-center">
                         <div>
@@ -586,7 +594,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- MONITOR MASTER HSD -->
+                <!-- MONITOR MASTER HSD (DENGAN CEKLIS CHECKBOX & PENYESUAIAN HARGA INFLASI SPESIFIK) -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
                         <div>
@@ -599,13 +607,13 @@
                         </div>
                     </div>
 
-                    <!-- FITUR MASAL 1: PENYESUAIAN HARGA HSD INFLASI/ESKALASI BERDASARKAN PERSENTASE -->
+                    <!-- FITUR MASAL 1: PENYESUAIAN HARGA HSD INFLASI BERDASARKAN CEKLIS ITEM / PERSENTASE -->
                     <div class="bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl space-y-2">
                         <div class="flex justify-between items-center">
                             <label class="text-[10px] font-bold text-blue-900 uppercase flex items-center gap-1">
-                                <span>📈</span> Penyesuaian Harga HSD Massal (Inflasi %)
+                                <span>📈</span> Penyesuaian Harga Inflasi (%) Item Terpilih
                             </label>
-                            <span class="text-[9px] text-blue-600 font-medium">*Berlaku untuk item tampil/pencarian</span>
+                            <span class="text-[9px] text-blue-600 font-medium" id="lblHsdSelectedCountInfo">*0 item diceklis</span>
                         </div>
                         <div class="flex gap-2 items-center">
                             <div class="relative flex-1">
@@ -618,25 +626,35 @@
                         </div>
                     </div>
 
-                    <div class="relative">
-                        <input type="text" id="searchHsdInput" oninput="renderTabelMonitorHSD()" placeholder="🔍 Cari kode, nama item, atau lokasi HSD..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium">
-                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                    <!-- SEARCH BAR DENGAN TOMBOL PENCARIAN & ENTER EVENT -->
+                    <div class="flex gap-1.5 items-center">
+                        <div class="relative flex-1">
+                            <input type="text" id="searchHsdInput" onkeydown="handleSearchHsdKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                        </div>
+                        <button onclick="renderTabelMonitorHSD()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                            🔍 Cari
+                        </button>
                     </div>
 
                     <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
-                        <table class="w-full text-left border-collapse text-xs min-w-[450px]">
+                        <table class="w-full text-left border-collapse text-xs min-w-[550px]">
                             <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase shadow-sm">
                                 <tr>
+                                    <th class="p-2 border-b bg-slate-100 text-center w-8">
+                                        <input type="checkbox" id="chkSelectAllHSD" onchange="toggleSelectAllHSD(this)" title="Pilih Semua Item">
+                                    </th>
                                     <th class="p-2 border-b bg-slate-100">KODE</th>
                                     <th class="p-2 border-b bg-slate-100">NAMA ITEM</th>
                                     <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
                                     <th class="p-2 border-b bg-slate-100 text-right">HARGA (RP)</th>
                                     <th class="p-2 border-b bg-slate-100 text-center">LOKASI</th>
+                                    <th class="p-2 border-b bg-slate-100">REFERENSI</th>
                                     <th class="p-2 border-b bg-slate-100 text-center w-24">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelMasterHSDMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
-                                <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
+                                <tr><td colspan="8" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -674,9 +692,15 @@
                         </div>
                     </div>
 
-                    <div class="relative">
-                        <input type="text" id="searchAhspInput" oninput="renderTabelMonitorAHSP()" placeholder="🔍 Cari kode AHSP, nama pekerjaan, atau kategori..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium">
-                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                    <!-- SEARCH BAR AHSP DENGAN TOMBOL PENCARIAN & ENTER EVENT -->
+                    <div class="flex gap-1.5 items-center">
+                        <div class="relative flex-1">
+                            <input type="text" id="searchAhspInput" onkeydown="handleSearchAhspKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                        </div>
+                        <button onclick="renderTabelMonitorAHSP()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                            🔍 Cari
+                        </button>
                     </div>
 
                     <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
@@ -1127,7 +1151,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDIT MASTER HSD -->
+    <!-- MODAL EDIT MASTER HSD (DENGAN FIELD REFERENSI) -->
     <div id="modalEditHSD" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
@@ -1160,6 +1184,10 @@
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Wilayah</label>
                         <input type="text" id="editHsdLokasi" placeholder="INDONESIA / Bandung" class="w-full border p-2 text-xs rounded-lg bg-slate-50">
                     </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nomor / Link Referensi</label>
+                    <input type="text" id="editHsdReferensi" placeholder="Contoh: https://link-katalog.com atau Ref-01" class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-medium">
                 </div>
                 <div class="pt-2 flex gap-2">
                     <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs transition">💾 Update HSD</button>
@@ -1332,6 +1360,7 @@
         let filterStatusProyek = 'active';
         let kurvaSChartInstance = null;
         let debounceHsdTimer = null;
+        let selectedHsdKodeSet = new Set(); // Menampung kode HSD yang diceklis
 
         // FUNGSI NOTIFIKASI TOAST (TANPA MENEKAN OK)
         function showToast(message, type = 'success', duration = 3000) {
@@ -1723,6 +1752,20 @@
             return allRows;
         }
 
+        // FUNGSI OTOMATISASI GENERATE KODE UNTUK HSD KOSONG DI DATABASE
+        async function autoGenerateKodeMasterHsdTanpaKode() {
+            let emptyKodeItems = listHSDMaster.filter(h => !h.kode || h.kode.trim() === "");
+            if (emptyKodeItems.length === 0) return;
+
+            for (let item of emptyKodeItems) {
+                const autoGenKode = "HSD-GEN-" + Math.floor(100000 + Math.random() * 900000);
+                await supabaseClient
+                    .from('02_hsd')
+                    .update({ kode: autoGenKode })
+                    .eq('nama_item', item.nama_item);
+            }
+        }
+
         async function muatDataProyekSemua() {
             if (!currentUser) return;
 
@@ -1750,6 +1793,9 @@
                 listScheduleMaster = dataSchedule || [];
                 listDailyMaster = dataDaily || [];
 
+                // Periksa & auto generate kode untuk data HSD tanpa kode
+                await autoGenerateKodeMasterHsdTanpaKode();
+
                 renderDaftarProyekKartu();
                 renderAhspCustomDropdownOptions();
                 renderTabelMonitorAHSP();
@@ -1766,7 +1812,52 @@
             }
         }
 
-        // FITUR MASAL BARU 1: PENYESUAIAN HARGA HSD BERDASARKAN PERSENTASE (INFLASI/ESKALASI)
+        // EVENT LISTENER ENTER UNTUK SEARCH BAR HSD & AHSP
+        function handleSearchHsdKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                renderTabelMonitorHSD();
+            }
+        }
+
+        function handleSearchAhspKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                renderTabelMonitorAHSP();
+            }
+        }
+
+        // FUNGSI KELOLA CEKLIS/CHECKBOX SELECTION MASTER HSD
+        function toggleSelectAllHSD(chkAll) {
+            const checkboxes = document.querySelectorAll('.chk-hsd-item');
+            checkboxes.forEach(chk => {
+                chk.checked = chkAll.checked;
+                if (chkAll.checked) {
+                    selectedHsdKodeSet.add(chk.value);
+                } else {
+                    selectedHsdKodeSet.delete(chk.value);
+                }
+            });
+            perbaruiInfoCeklisHSD();
+        }
+
+        function toggleSelectRowHSD(chk) {
+            if (chk.checked) {
+                selectedHsdKodeSet.add(chk.value);
+            } else {
+                selectedHsdKodeSet.delete(chk.value);
+            }
+            perbaruiInfoCeklisHSD();
+        }
+
+        function perbaruiInfoCeklisHSD() {
+            const lbl = document.getElementById('lblHsdSelectedCountInfo');
+            if(lbl) {
+                lbl.innerText = `*${selectedHsdKodeSet.size} item diceklis`;
+            }
+        }
+
+        // FITUR MASAL BARU 1: PENYESUAIAN HARGA HSD BERDASARKAN CEKLIS ITEM / PERSENTASE
         async function eksekusiAdjustHargaHsdPersentase() {
             const inputVal = parseFloat(document.getElementById('inpHsdInflationPercent').value);
             if (isNaN(inputVal) || inputVal === 0) {
@@ -1774,22 +1865,30 @@
                 return;
             }
 
-            const keyword = (document.getElementById('searchHsdInput')?.value || "").toLowerCase().trim();
+            let targetItems = [];
             
-            // Filter HSD yang sedang tampil / sesuai keyword pencarian
-            let targetItems = listHSDMaster.filter(item => {
-                let matchKode = (item.kode || "").toLowerCase().includes(keyword);
-                let matchNama = (item.nama_item || item.uraian || "").toLowerCase().includes(keyword);
-                let matchLokasi = (item.lokasi || "").toLowerCase().includes(keyword);
-                return matchKode || matchNama || matchLokasi;
-            });
+            // JIKA ADA ITEM YANG DICEKLIS -> HANYA UBAH ITEM CEKLIS TERSEBUT
+            if (selectedHsdKodeSet.size > 0) {
+                targetItems = listHSDMaster.filter(item => selectedHsdKodeSet.has(item.kode));
+            } else {
+                // JIKA TIDAK ADA CEKLIS -> TAMPILKAN KONFIRMASI UBAH SEMUA ITEM YANG TAMPIL
+                const keyword = (document.getElementById('searchHsdInput')?.value || "").toLowerCase().trim();
+                targetItems = listHSDMaster.filter(item => {
+                    let matchKode = (item.kode || "").toLowerCase().includes(keyword);
+                    let matchNama = (item.nama_item || item.uraian || "").toLowerCase().includes(keyword);
+                    let matchLokasi = (item.lokasi || "").toLowerCase().includes(keyword);
+                    let matchRef = (item.referensi || "").toLowerCase().includes(keyword);
+                    return matchKode || matchNama || matchLokasi || matchRef;
+                });
+            }
 
             if (targetItems.length === 0) {
                 showToast("Tidak ada item HSD yang terpilih untuk diubah", "error");
                 return;
             }
 
-            const pesanKonfirmasi = `⚠️ Apakah Anda yakin ingin menggeser/menyesuaikan harga ${targetItems.length} item HSD sebesar ${inputVal > 0 ? '+' : ''}${inputVal}%?`;
+            const isCheckedMode = selectedHsdKodeSet.size > 0;
+            const pesanKonfirmasi = `⚠️ Apakah Anda yakin ingin menggeser/menyesuaikan harga ${targetItems.length} item HSD ${isCheckedMode ? '(DICEKLIS)' : '(SEMUA TAMPIL)'} sebesar ${inputVal > 0 ? '+' : ''}${inputVal}%?`;
             if (!confirm(pesanKonfirmasi)) return;
 
             const factor = 1 + (inputVal / 100);
@@ -1797,7 +1896,6 @@
 
             showToast("Sedang memproses penyesuaian harga HSD...", "success", 4000);
 
-            // Update item Supabase satu-per-satu / batch
             for (let item of targetItems) {
                 let currentHarga = parseFloat(item.harga) || 0;
                 let newHarga = Math.round(currentHarga * factor);
@@ -1810,8 +1908,9 @@
                 if (!error) successCount++;
             }
 
-            showToast(`Berhasil memperbarui ${successCount} item HSD!`);
+            showToast(`Berhasil memperbarui harga untuk ${successCount} item HSD!`);
             document.getElementById('inpHsdInflationPercent').value = "";
+            selectedHsdKodeSet.clear();
             muatDataProyekSemua();
         }
 
@@ -1825,7 +1924,6 @@
 
             const keyword = (document.getElementById('searchAhspInput')?.value || "").toLowerCase().trim();
             
-            // Filter AHSP yang sedang tampil / sesuai keyword pencarian
             let targetItems = listAHSPMaster.filter(item => {
                 let matchKode = (item.kode_ahsp || "").toLowerCase().includes(keyword);
                 let matchNama = (item.nama_pekerjaan || "").toLowerCase().includes(keyword);
@@ -1858,7 +1956,7 @@
             muatDataProyekSemua();
         }
 
-        // OPTIMASI PERFORMA DROPDOWN HSD (DEBOUNCED & LIMIT 100 RESULTS)
+        // OPTIMASI PERFORMA DROPDOWN HSD
         function filterHsdDropdownOptions(inputElem) {
             clearTimeout(debounceHsdTimer);
             debounceHsdTimer = setTimeout(() => {
@@ -3011,7 +3109,8 @@
                 nama_item: newNama,
                 satuan: item.satuan,
                 harga: item.harga,
-                lokasi: item.lokasi
+                lokasi: item.lokasi,
+                referensi: item.referensi || ''
             };
 
             const { error } = await supabaseClient
@@ -3094,26 +3193,42 @@
                 let matchKode = (item.kode || "").toLowerCase().includes(keyword);
                 let matchNama = (item.nama_item || item.uraian || "").toLowerCase().includes(keyword);
                 let matchLokasi = (item.lokasi || "").toLowerCase().includes(keyword);
-                return matchKode || matchNama || matchLokasi;
+                let matchRef = (item.referensi || "").toLowerCase().includes(keyword);
+                return matchKode || matchNama || matchLokasi || matchRef;
             });
 
             badge.innerText = `${filteredList.length} dari ${listHSDMaster.length} Item`;
 
             if(filteredList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Item HSD tidak ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400 italic">Item HSD tidak ditemukan. Press Enter / klik Cari.</td></tr>`;
                 return;
             }
 
             filteredList.forEach(item => {
+                const isChecked = selectedHsdKodeSet.has(item.kode);
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 border-b border-slate-200";
                 const hr = parseFloat(item.harga || 0).toLocaleString('id-ID');
+
+                let refCell = `<span class="text-slate-400 font-mono text-[10px]">-</span>`;
+                if (item.referensi) {
+                    if (item.referensi.startsWith('http://') || item.referensi.startsWith('https://')) {
+                        refCell = `<a href="${item.referensi}" target="_blank" class="text-blue-600 hover:underline font-bold text-[10px] flex items-center gap-1">🔗 Link Referensi</a>`;
+                    } else {
+                        refCell = `<span class="text-slate-700 font-mono text-[10px] font-bold">${item.referensi}</span>`;
+                    }
+                }
+
                 tr.innerHTML = `
+                    <td class="p-2 text-center">
+                        <input type="checkbox" value="${item.kode}" ${isChecked ? 'checked' : ''} onchange="toggleSelectRowHSD(this)" class="chk-hsd-item">
+                    </td>
                     <td class="p-2 font-mono font-bold text-blue-600">${item.kode || '-'}</td>
                     <td class="p-2 font-medium">${item.nama_item || item.uraian || '-'}</td>
                     <td class="p-2 text-center font-mono">${item.satuan || '-'}</td>
                     <td class="p-2 text-right font-mono font-bold">Rp ${hr}</td>
                     <td class="p-2 text-center font-bold text-slate-500">${item.lokasi || 'INDONESIA'}</td>
+                    <td class="p-2">${refCell}</td>
                     <td class="p-2 text-center flex justify-center gap-1">
                         <button onclick="duplikatBarisHSD('${item.kode}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs" title="Duplikat Item HSD">📋</button>
                         <button onclick="editBarisHSD('${item.kode}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs" title="Edit HSD">✏️</button>
@@ -3122,6 +3237,8 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            perbaruiInfoCeklisHSD();
         }
 
         function renderTabelMonitorAHSP() {
@@ -3140,7 +3257,7 @@
             badge.innerText = `${filteredList.length} dari ${listAHSPMaster.length} Item`;
 
             if(filteredList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Item AHSP tidak ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Item AHSP tidak ditemukan. Press Enter / klik Cari.</td></tr>`;
                 return;
             }
 
@@ -3172,6 +3289,7 @@
             document.getElementById('editHsdSatuan').value = item.satuan;
             document.getElementById('editHsdHarga').value = item.harga;
             document.getElementById('editHsdLokasi').value = item.lokasi || '';
+            document.getElementById('editHsdReferensi').value = item.referensi || '';
             document.getElementById('modalEditHSD').classList.remove('hidden');
         }
 
@@ -3179,12 +3297,24 @@
 
         async function eksekusiSimpanEditHSD() {
             const oldKode = document.getElementById('editHsdOldKode').value;
+            const newKode = document.getElementById('editHsdKode').value.trim();
+
+            // Pengecekan kode duplikat saat edit (jika kode diubah)
+            if (newKode !== oldKode) {
+                const isExist = listHSDMaster.some(h => h.kode.toLowerCase() === newKode.toLowerCase());
+                if (isExist) {
+                    showToast(`⚠️ Kode Item "${newKode}" sudah digunakan oleh item lain!`, "error", 4000);
+                    return;
+                }
+            }
+
             const payload = {
-                kode: document.getElementById('editHsdKode').value,
+                kode: newKode,
                 nama_item: document.getElementById('editHsdNama').value,
                 satuan: document.getElementById('editHsdSatuan').value,
                 harga: parseFloat(document.getElementById('editHsdHarga').value) || 0,
-                lokasi: document.getElementById('editHsdLokasi').value || 'INDONESIA'
+                lokasi: document.getElementById('editHsdLokasi').value || 'INDONESIA',
+                referensi: document.getElementById('editHsdReferensi').value.trim()
             };
 
             const { error } = await supabaseClient
@@ -3312,13 +3442,29 @@
             }
         }
 
+        // FUNGSI TAMBAH HSD BARU (DENGAN AUTO-GENERATE KODE KOSONG & DETEKSI DUPLIKAT)
         async function simpanHSDBaru() {
+            let inputKode = document.getElementById('addHsdKode').value.trim();
+
+            // 1. PENCEGAHAN DUPLIKASI KODE ITEM HSD
+            if (inputKode) {
+                const isDuplicate = listHSDMaster.some(h => h.kode && h.kode.toLowerCase() === inputKode.toLowerCase());
+                if (isDuplicate) {
+                    showToast(`⚠️ Kode Item "${inputKode}" sudah terdaftar di Master HSD! Gunakan kode lain.`, "error", 4000);
+                    return;
+                }
+            } else {
+                // 2. AUTO GENERATE KODE UNIK JIKA INPUT KODE DIBIARKAN KOSONG
+                inputKode = "HSD-" + String(listHSDMaster.length + 1).padStart(4, '0');
+            }
+
             const payload = {
-                kode: document.getElementById('addHsdKode').value,
+                kode: inputKode,
                 nama_item: document.getElementById('addHsdNama').value,
                 satuan: document.getElementById('addHsdSatuan').value,
                 harga: parseFloat(document.getElementById('addHsdHarga').value) || 0,
-                lokasi: document.getElementById('addHsdLokasi').value || 'INDONESIA'
+                lokasi: document.getElementById('addHsdLokasi').value || 'INDONESIA',
+                referensi: document.getElementById('addHsdReferensi').value.trim()
             };
 
             const { error } = await supabaseClient
@@ -3326,12 +3472,13 @@
                 .insert([payload]);
 
             if (!error) {
-                showToast("HSD Baru Berhasil Disimpan!");
+                showToast("HSD Baru Berhasil Disimpan! Kode: " + inputKode);
                 document.getElementById('addHsdKode').value = "";
                 document.getElementById('addHsdNama').value = "";
                 document.getElementById('addHsdSatuan').value = "";
                 document.getElementById('addHsdHarga').value = "";
                 document.getElementById('addHsdLokasi').value = "";
+                document.getElementById('addHsdReferensi').value = "";
                 muatDataProyekSemua();
             } else {
                 showToast("Gagal menyimpan HSD: " + error.message, "error");
