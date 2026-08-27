@@ -446,7 +446,7 @@
                             </div>
                         </div>
 
-                        <!-- HALAMAN 4: LAMPIRAN 3 - HSD -->
+                        <!-- HALAMAN 4: LAMPIRAN 3 - HSD (DENGAN KOLOM REFERENSI) -->
                         <div class="page-break-before pt-6 space-y-4">
                             <div class="flex justify-between items-center border-b-2 border-slate-900 pb-2">
                                 <div>
@@ -457,7 +457,7 @@
                             </div>
 
                             <div class="overflow-x-auto custom-scroll">
-                                <table class="w-full text-left border-collapse text-xs min-w-[550px]">
+                                <table class="w-full text-left border-collapse text-xs min-w-[650px]">
                                     <thead>
                                         <tr class="bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider">
                                             <th class="p-2 w-8 text-center">NO</th>
@@ -466,10 +466,11 @@
                                             <th class="p-2">NAMA ITEM / BAHAN / UPAH / ALAT</th>
                                             <th class="p-2 text-center w-16">SATUAN</th>
                                             <th class="p-2 text-right w-32">HARGA SAT. LOKASI (RP)</th>
+                                            <th class="p-2 w-32">REFERENSI</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tabelLampiranHSDDetailRows" class="divide-y divide-slate-200 font-medium text-slate-700">
-                                        <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Pilih proyek untuk melihat rincian HSD terpakai.</td></tr>
+                                        <tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek untuk melihat rincian HSD terpakai.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -2192,7 +2193,8 @@
             hitungPreviewHargaItem();
         }
 
-        function cariHargaHSD(itemKomponen, lokasiProyek) {
+        // FUNGSI CARI OBJECT HSD LENGKAP TERMASUK HARGA & REFERENSI
+        function cariHsdObjectLengkap(itemKomponen, lokasiProyek) {
             const targetKode = (itemKomponen.kode || "").toString().trim().toLowerCase();
             const targetUraian = (itemKomponen.uraian || "").toLowerCase().trim();
             const targetLokasi = (lokasiProyek || "").toLowerCase().trim();
@@ -2204,20 +2206,22 @@
             };
 
             let matchLokasi = listHSDMaster.filter(h => isMatchItem(h) && (h.lokasi || "").toLowerCase().trim() === targetLokasi);
-            if (matchLokasi.length > 0) {
-                return Math.min(...matchLokasi.map(item => parseFloat(item.harga) || 0));
-            }
+            if (matchLokasi.length > 0) return matchLokasi[0];
 
             let matchIndonesia = listHSDMaster.filter(h => isMatchItem(h) && ["indonesia", "nasional"].includes((h.lokasi || "").toLowerCase().trim()));
-            if (matchIndonesia.length > 0) {
-                return Math.min(...matchIndonesia.map(item => parseFloat(item.harga) || 0));
-            }
+            if (matchIndonesia.length > 0) return matchIndonesia[0];
 
             let matchAll = listHSDMaster.filter(h => isMatchItem(h));
-            if (matchAll.length > 0) {
-                return Math.min(...matchAll.map(item => parseFloat(item.harga) || 0));
-            }
+            if (matchAll.length > 0) return matchAll[0];
 
+            return null;
+        }
+
+        function cariHargaHSD(itemKomponen, lokasiProyek) {
+            const hsdObj = cariHsdObjectLengkap(itemKomponen, lokasiProyek);
+            if (hsdObj) {
+                return parseFloat(hsdObj.harga) || 0;
+            }
             return parseFloat(itemKomponen.hargaFallback) || 0;
         }
 
@@ -2612,12 +2616,13 @@
             });
         }
 
+        // REVISI FUNGSI LAMPIRAN 3: MENAMPILKAN NOMOR / LINK REFERENSI UNTUK TIAP ITEM HSD TERPAKAI
         function renderLampiranHSDDetailProyek(bqArray) {
             const tbody = document.getElementById('tabelLampiranHSDDetailRows');
             tbody.innerHTML = "";
 
             if(!bqArray || bqArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Belum ada item BQ terpasang.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada item BQ terpasang.</td></tr>`;
                 return;
             }
 
@@ -2638,13 +2643,17 @@
                 components.forEach(c => {
                     let key = (c.kode || c.uraian || "").toString().trim().toLowerCase();
                     if(!uniqueHsdMap[key]) {
-                        let hsdHarga = cariHargaHSD(c, lokasiProyek);
+                        let hsdObj = cariHsdObjectLengkap(c, lokasiProyek);
+                        let hsdHarga = hsdObj ? parseFloat(hsdObj.harga) || 0 : (parseFloat(c.hargaFallback) || 0);
+                        let hsdRef = hsdObj ? (hsdObj.referensi || '') : '';
+
                         uniqueHsdMap[key] = {
                             tipe: c.tipe || 'Bahan',
                             kode: c.kode || '-',
                             uraian: c.uraian,
                             satuan: c.satuan,
-                            harga: hsdHarga
+                            harga: hsdHarga,
+                            referensi: hsdRef
                         };
                     }
                 });
@@ -2652,13 +2661,23 @@
 
             const hsdArray = Object.values(uniqueHsdMap);
             if(hsdArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Tidak ada item HSD yang terekstrak dari AHSP.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Tidak ada item HSD yang terekstrak dari AHSP.</td></tr>`;
                 return;
             }
 
             hsdArray.forEach((hsd, idx) => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 border-b border-slate-200";
+                
+                let refCell = `<span class="text-slate-400 font-mono text-[10px]">-</span>`;
+                if (hsd.referensi) {
+                    if (hsd.referensi.startsWith('http://') || hsd.referensi.startsWith('https://')) {
+                        refCell = `<a href="${hsd.referensi}" target="_blank" class="text-blue-600 hover:underline font-bold text-[10px] flex items-center gap-1">🔗 Link Referensi</a>`;
+                    } else {
+                        refCell = `<span class="text-slate-700 font-mono text-[10px] font-bold">${hsd.referensi}</span>`;
+                    }
+                }
+
                 tr.innerHTML = `
                     <td class="p-2 text-center font-bold text-slate-400">${idx + 1}</td>
                     <td class="p-2 text-center font-bold text-slate-600">${hsd.tipe}</td>
@@ -2666,6 +2685,7 @@
                     <td class="p-2 font-bold text-slate-800">${hsd.uraian}</td>
                     <td class="p-2 text-center font-mono">${hsd.satuan}</td>
                     <td class="p-2 text-right font-mono font-bold text-emerald-700">Rp ${hsd.harga.toLocaleString('id-ID')}</td>
+                    <td class="p-2">${refCell}</td>
                 `;
                 tbody.appendChild(tr);
             });
