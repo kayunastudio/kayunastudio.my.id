@@ -2655,19 +2655,19 @@
 
                     if (!uraianRaw && !kodeRaw) return;
 
-                    let key = (tipeRaw + "_" + (kodeRaw !== "" && kodeRaw !== "-" ? kodeRaw : uraianRaw)).toLowerCase();
+                    let hsdObj = cariHsdObjectLengkap(c, lokasiProyek);
+                    
+                    let finalTipe = hsdObj ? (hsdObj.tipe || tipeRaw) : tipeRaw;
+                    let finalKode = hsdObj ? (hsdObj.kode || kodeRaw) : (kodeRaw || '-');
+                    let finalNama = hsdObj ? (hsdObj.nama_item || hsdObj.uraian || uraianRaw) : uraianRaw;
+                    let finalSatuan = hsdObj ? (hsdObj.satuan || c.satuan) : (c.satuan || '-');
+                    let finalHarga = hsdObj ? parseFloat(hsdObj.harga) : (parseFloat(c.hargaFallback) || 0);
+                    let finalRef = hsdObj ? (hsdObj.referensi || '') : 'Harga Dasar AHSP / Default';
 
-                    if(!uniqueHsdMap[key]) {
-                        let hsdObj = cariHsdObjectLengkap(c, lokasiProyek);
-                        
-                        let finalTipe = hsdObj ? (hsdObj.tipe || tipeRaw) : tipeRaw;
-                        let finalKode = hsdObj ? (hsdObj.kode || kodeRaw) : (kodeRaw || '-');
-                        let finalNama = hsdObj ? (hsdObj.nama_item || hsdObj.uraian || uraianRaw) : uraianRaw;
-                        let finalSatuan = hsdObj ? (hsdObj.satuan || c.satuan) : (c.satuan || '-');
-                        let finalHarga = hsdObj ? parseFloat(hsdObj.harga) : (parseFloat(c.hargaFallback) || 0);
-                        let finalRef = hsdObj ? (hsdObj.referensi || '') : 'Harga Dasar AHSP / Default';
+                    let uniqueKey = (finalKode && finalKode !== '-' ? finalKode : finalNama).toLowerCase().trim();
 
-                        uniqueHsdMap[key] = {
+                    if(!uniqueHsdMap[uniqueKey]) {
+                        uniqueHsdMap[uniqueKey] = {
                             tipe: finalTipe,
                             kode: finalKode,
                             uraian: finalNama,
@@ -3387,16 +3387,31 @@
                 }
 
                 components.forEach(c => {
-                    let key = ((c.tipe || 'Bahan') + '_' + (c.kode || c.uraian)).toLowerCase();
-                    if(!uniqueHsdMap[key]) {
-                        let hsdObj = cariHsdObjectLengkap(c, lokasiProyek);
-                        uniqueHsdMap[key] = {
-                            tipe: hsdObj ? hsdObj.tipe : (c.tipe || 'Bahan'),
-                            kode: hsdObj ? hsdObj.kode : (c.kode || '-'),
-                            uraian: hsdObj ? (hsdObj.nama_item || hsdObj.uraian) : c.uraian,
-                            satuan: hsdObj ? hsdObj.satuan : c.satuan,
-                            harga: hsdObj ? parseFloat(hsdObj.harga) : (parseFloat(c.hargaFallback) || 0),
-                            referensi: hsdObj ? (hsdObj.referensi || '') : 'Default AHSP'
+                    let tipeRaw = (c.tipe || "Bahan").toString().trim();
+                    let uraianRaw = (c.uraian || c.nama_item || "").toString().trim();
+                    let kodeRaw = (c.kode || "").toString().trim();
+
+                    if (!uraianRaw && !kodeRaw) return;
+
+                    let hsdObj = cariHsdObjectLengkap(c, lokasiProyek);
+
+                    let finalTipe = hsdObj ? (hsdObj.tipe || tipeRaw) : tipeRaw;
+                    let finalKode = hsdObj ? (hsdObj.kode || kodeRaw) : (kodeRaw || '-');
+                    let finalNama = hsdObj ? (hsdObj.nama_item || hsdObj.uraian || uraianRaw) : uraianRaw;
+                    let finalSatuan = hsdObj ? (hsdObj.satuan || c.satuan) : (c.satuan || '-');
+                    let finalHarga = hsdObj ? parseFloat(hsdObj.harga) : (parseFloat(c.hargaFallback) || 0);
+                    let finalRef = hsdObj ? (hsdObj.referensi || '') : 'Harga Dasar AHSP / Default';
+
+                    let uniqueKey = (finalKode && finalKode !== '-' ? finalKode : finalNama).toLowerCase().trim();
+
+                    if(!uniqueHsdMap[uniqueKey]) {
+                        uniqueHsdMap[uniqueKey] = {
+                            tipe: finalTipe,
+                            kode: finalKode,
+                            uraian: finalNama,
+                            satuan: finalSatuan,
+                            harga: finalHarga,
+                            referensi: finalRef
                         };
                     }
                 });
