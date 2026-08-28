@@ -41,10 +41,10 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen min-h-dvh flex flex-col selection:bg-amber-500 selection:text-slate-950">
 
-    <!-- CONTAINER NOTIFIKASI TOAST (MELAYANG TANPA TOMBOL OK) -->
+    <!-- CONTAINER NOTIFIKASI TOAST -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-[1000] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- OVERLAY / HALAMAN LOGIN AKUN (ACCESS CONTROL) -->
+    <!-- OVERLAY / HALAMAN LOGIN AKUN -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-[100] flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-5 shadow-2xl">
             <div class="w-16 h-16 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
@@ -66,11 +66,10 @@
         </div>
     </div>
 
-    <!-- HEADER TOPBAR (RESPONSIVE & BURGER MENU) -->
+    <!-- HEADER TOPBAR -->
     <header class="bg-slate-900 text-white border-b border-slate-800 px-3 sm:px-6 py-3 sticky top-0 z-50 shadow-md no-print pt-safe">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
             
-            <!-- BRANDING & LOGO -->
             <div class="flex items-center gap-2.5 shrink-0">
                 <img id="imgHeaderLogo" src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Logo Perusahaan" class="w-8 h-8 sm:w-9 sm:h-9 object-contain bg-white p-1 rounded-lg border border-slate-700">
                 <div>
@@ -79,7 +78,6 @@
                 </div>
             </div>
 
-            <!-- TAB MENU NAVIGASI (DESKTOP) -->
             <div class="hidden lg:flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700/50 gap-1">
                 <button id="btnTabRAB" onclick="switchTab('rab')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap bg-amber-500 text-slate-950 shadow">
                     📊 Dashboard & RAB
@@ -95,7 +93,6 @@
                 </button>
             </div>
 
-            <!-- TOOLBAR KANAN & BURGER MENU TOGGLE -->
             <div class="flex items-center gap-2">
                 <button onclick="bukaModalProfilAkun()" id="lblUserBadge" class="hidden sm:flex bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 items-center gap-1.5 transition" title="Kustomisasi Identitas">
                     <span>🏢</span> <span id="txtNamaUserAktif">Memuat...</span>
@@ -108,18 +105,15 @@
                 <div class="hidden sm:flex items-center gap-1">
                     <button onclick="exportToExcelSummary()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1.5 px-2.5 rounded-lg text-xs transition" title="Export Excel">📊 Excel</button>
                     <button onclick="exportToPDFSummary()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 px-2.5 rounded-lg text-xs transition" title="Export PDF">📄 PDF</button>
-                    <!-- TOMBOL LOGOUT DESKTOP -->
                     <button onclick="eksekusiLogout()" class="bg-rose-950 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-bold py-1.5 px-2.5 rounded-lg text-xs transition flex items-center gap-1" title="Keluar Akun">🚪 Logout</button>
                 </div>
 
-                <!-- BURGER MENU BUTTON (MOBILE & TABLET) -->
                 <button onclick="toggleMobileMenu()" class="lg:hidden bg-slate-800 border border-slate-700 hover:bg-slate-700 text-amber-400 p-2 rounded-xl focus:outline-none transition" title="Menu Navigasi">
                     <span class="text-base leading-none">☰</span>
                 </button>
             </div>
         </div>
 
-        <!-- MOBILE BURGER MENU DROPDOWN PANEL -->
         <div id="mobileDropdownMenu" class="hidden lg:hidden border-t border-slate-800 mt-2.5 pt-2.5 space-y-2">
             <div class="grid grid-cols-2 gap-1.5 text-xs">
                 <button onclick="switchTab('rab'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">📊 Dashboard & RAB</button>
@@ -144,7 +138,6 @@
         <!-- ================= PAGE 1: ESTIMATOR & RAB PROYEK ================= -->
         <div id="pageRAB" class="space-y-6">
             
-            <!-- SECTION DAFTAR PROYEK ACTIVE / ARCHIVED -->
             <section class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm no-print">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 border-b pb-3">
                     <div>
@@ -173,10 +166,8 @@
                 </div>
             </section>
 
-            <!-- INPUT BQ & HASIL REKAPITULASI -->
             <div id="activeProjectSection" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <!-- KIRI: INPUT ITEM PEKERJAAN (AHSP & LUMPSUM) -->
                 <div class="lg:col-span-1 space-y-4 no-print">
                     
                     <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 sm:p-4 rounded-2xl">
@@ -184,10 +175,9 @@
                             <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider">📍 HSD Lokasi Proyek</span>
                             <span id="lblLokasiProyekAktif" class="text-xs font-mono font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded">-</span>
                         </div>
-                        <p class="text-[10px] sm:text-[11px] text-slate-600 leading-relaxed">AHSP otomatis mencari HSD lokasi proyek, fallback ke INDONESIA / NASIONAL jika kosong.</p>
+                        <p class="text-[10px] sm:text-[11px] text-slate-600 leading-relaxed">AHSP otomatis mencari HSD termurah lokasi proyek, fallback ke INDONESIA / NASIONAL jika kosong.</p>
                     </div>
 
-                    <!-- FORM 1: PILIH DARI ANALISA STANDAR AHSP PUPR -->
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                         <div class="flex justify-between items-center border-b pb-2">
                             <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">📐 Pilih Analisa AHSP PUPR</h3>
@@ -204,9 +194,14 @@
                                 </button>
 
                                 <div id="popoverAhspMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 space-y-2">
-                                    <div class="relative">
-                                        <input type="text" id="searchAhspDropdownInput" oninput="filterAhspDropdownOptions()" placeholder="🔍 Cari kode / nama AHSP..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
-                                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                                    <div class="flex gap-1.5 items-center">
+                                        <div class="relative flex-1">
+                                            <input type="text" id="searchAhspDropdownInput" onkeydown="handleSearchAhspDropdownKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-2 py-1.5 text-xs rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                                            <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                                        </div>
+                                        <button type="button" onclick="filterAhspDropdownOptions()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs shadow transition shrink-0">
+                                            Cari
+                                        </button>
                                     </div>
                                     <div id="listAhspOptionsContainer" class="max-h-48 overflow-y-auto custom-scroll divide-y divide-slate-100 text-xs">
                                     </div>
@@ -242,7 +237,7 @@
                                     <button type="button" onclick="bukaModalDetailAHSP()" id="btnDetailAHSP" class="hidden text-[10px] text-blue-600 font-bold hover:underline">🔍 Preview Rincian Standar</button>
                                 </div>
                                 <input type="number" id="inpHargaSatuan" readonly required placeholder="0" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-100 font-bold text-slate-800 cursor-not-allowed">
-                                <p class="text-[9px] text-slate-400 mt-0.5">* Terhitung dari HSD Lokasi atau Fallback INDONESIA</p>
+                                <p class="text-[9px] text-slate-400 mt-0.5">* Terhitung otomatis dari HSD termurah lokasi proyek</p>
                             </div>
 
                             <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex justify-between items-center">
@@ -256,7 +251,6 @@
                         </form>
                     </div>
 
-                    <!-- FORM 2: FORM PEKERJAAN LUMPSUM / CUSTOM PRICE -->
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                         <div class="border-b pb-2 flex justify-between items-center">
                             <div>
@@ -306,14 +300,12 @@
 
                 </div>
 
-                <!-- KANAN: REKAPITULASI DOKUMEN CETAK -->
                 <div class="lg:col-span-2 space-y-6">
 
                     <div id="exportArea" class="bg-white p-4 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6 text-slate-800">
                         
                         <!-- HALAMAN 1: DOKUMEN UTAMA -->
                         <div class="space-y-6">
-                            <!-- DYNAMIC KOP SURAT PERUSAHAAN AKUN -->
                             <div class="border-b-4 border-slate-900 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                                 <div class="flex items-center gap-3 sm:gap-4">
                                     <img id="docCompanyLogo" src="https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true" alt="Company Logo" class="h-10 sm:h-14 w-auto object-contain">
@@ -446,7 +438,7 @@
                             </div>
                         </div>
 
-                        <!-- HALAMAN 4: LAMPIRAN 3 - HSD (DENGAN KOLOM REFERENSI) -->
+                        <!-- HALAMAN 4: LAMPIRAN 3 - HSD -->
                         <div class="page-break-before pt-6 space-y-4">
                             <div class="flex justify-between items-center border-b-2 border-slate-900 pb-2">
                                 <div>
@@ -488,7 +480,7 @@
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- FORM TAMBAH HSD BARU (DENGAN AUTO-GENERATE KODE, CEK DUPLIKAT, & REFERENSI LINK) -->
+                <!-- FORM TAMBAH HSD BARU -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="border-b pb-2 flex justify-between items-center">
                         <div>
@@ -526,7 +518,6 @@
                             </div>
                         </div>
 
-                        <!-- INPUT BARU: NOMOR ATAU LINK REFERENSI HSD -->
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">No. Halaman / Link Referensi <span class="text-[9px] text-slate-400 font-normal">(Opsional)</span></label>
                             <input type="text" id="addHsdReferensi" placeholder="Contoh: https://katalog-harga.com/semen atau Ref-No: 2026/08/INV" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium text-slate-700">
@@ -595,7 +586,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- MONITOR MASTER HSD (DENGAN CEKLIS CHECKBOX & PENYESUAIAN HARGA INFLASI SPESIFIK) -->
+                <!-- MONITOR MASTER HSD -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
                         <div>
@@ -608,7 +599,6 @@
                         </div>
                     </div>
 
-                    <!-- FITUR MASAL 1: PENYESUAIAN HARGA HSD INFLASI BERDASARKAN CEKLIS ITEM / PERSENTASE -->
                     <div class="bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl space-y-2">
                         <div class="flex justify-between items-center">
                             <label class="text-[10px] font-bold text-blue-900 uppercase flex items-center gap-1">
@@ -627,7 +617,6 @@
                         </div>
                     </div>
 
-                    <!-- SEARCH BAR DENGAN TOMBOL PENCARIAN & ENTER EVENT -->
                     <div class="flex gap-1.5 items-center">
                         <div class="relative flex-1">
                             <input type="text" id="searchHsdInput" onkeydown="handleSearchHsdKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -669,12 +658,11 @@
                             <p class="text-[10px] text-slate-400">Database Standar Pekerjaan PUPR (<code class="font-bold">01_ahsp</code>)</p>
                         </div>
                         <div class="flex items-center gap-1">
-                            <button onclick="exportMasterAHSP('csv')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export CSV</button>
+                            <button onclick="exportMasterAHSP('xlsx')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export Standar PUPR</button>
                             <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
                         </div>
                     </div>
 
-                    <!-- FITUR MASAL 2: UBAH OVERHEAD AHSP SECARA KESELURUHAN -->
                     <div class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-xl space-y-2">
                         <div class="flex justify-between items-center">
                             <label class="text-[10px] font-bold text-amber-900 uppercase flex items-center gap-1">
@@ -693,7 +681,6 @@
                         </div>
                     </div>
 
-                    <!-- SEARCH BAR AHSP DENGAN TOMBOL PENCARIAN & ENTER EVENT -->
                     <div class="flex gap-1.5 items-center">
                         <div class="relative flex-1">
                             <input type="text" id="searchAhspInput" onkeydown="handleSearchAhspKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
@@ -726,11 +713,10 @@
 
         </div>
 
-        <!-- ================= PAGE 2.5: LAPORAN PROGRES HARIAN & DOKUMENTASI ================= -->
+        <!-- ================= PAGE 2.5: LAPORAN PROGRES HARIAN ================= -->
         <div id="pageDaily" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <!-- FORM INPUT LAPORAN HARIAN -->
                 <div class="lg:col-span-1 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -782,7 +768,6 @@
                             <textarea id="dailyKendala" rows="2" placeholder="Tuliskan jika ada kendala cuaca, bahan, atau teknis..." class="w-full border p-2 rounded-lg bg-slate-50 font-medium"></textarea>
                         </div>
 
-                        <!-- UPLOAD DOKUMENTASI FOTO -->
                         <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
                             <label class="block font-bold text-slate-700 uppercase">📷 Upload Foto Dokumentasi Lapangan</label>
                             <input type="file" id="dailyFotoInput" accept="image/*" multiple onchange="handlePreviewFotoDaily(this)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800">
@@ -798,7 +783,6 @@
                     </form>
                 </div>
 
-                <!-- RIWAYAT & DETAIL LAPORAN HARIAN -->
                 <div class="lg:col-span-2 space-y-4">
                     <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-2">
@@ -899,7 +883,7 @@
 
     </main>
 
-    <!-- MODAL CUSTOMISASI LOGO & IDENTITAS AKUN / PERUSAHAAN -->
+    <!-- MODAL CUSTOMISASI LOGO & IDENTITAS AKUN -->
     <div id="modalProfilAkun" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
             <div class="flex justify-between items-center border-b pb-3">
@@ -1152,7 +1136,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDIT MASTER HSD (DENGAN FIELD REFERENSI) -->
+    <!-- MODAL EDIT MASTER HSD -->
     <div id="modalEditHSD" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
@@ -1161,6 +1145,7 @@
             </div>
             
             <form onsubmit="event.preventDefault(); eksekusiSimpanEditHSD();" class="space-y-3">
+                <input type="hidden" id="editHsdRowId">
                 <input type="hidden" id="editHsdOldKode">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -1282,16 +1267,12 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC & SUPABASE INTEGRATION -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // CONFIG KREDENSIAL SUPABASE
         const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
-
-        // DEFAULT LOGO & DEFAULTS
         const DEFAULT_LOGO = "https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true";
 
-        // LOKASI DAFTAR AKUN & PIN (MULTI-USER ISOLATION)
         const LIST_AKUN = [
             { 
                 pin: "2424", 
@@ -1338,7 +1319,6 @@
             }
         ];
 
-        // Inisialisasi Supabase SDK Client
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const HARI_LIBUR_NASIONAL_2026 = [
@@ -1361,9 +1341,8 @@
         let filterStatusProyek = 'active';
         let kurvaSChartInstance = null;
         let debounceHsdTimer = null;
-        let selectedHsdKodeSet = new Set(); // Menampung kode HSD yang diceklis
+        let selectedHsdKodeSet = new Set();
 
-        // FUNGSI NOTIFIKASI TOAST (TANPA MENEKAN OK)
         function showToast(message, type = 'success', duration = 3000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -1387,13 +1366,11 @@
             }, duration);
         }
 
-        // TOGGLE BURGER MENU MOBILE
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileDropdownMenu');
             if(menu) menu.classList.toggle('hidden');
         }
 
-        // FUNGSI ACCESS CONTROL LOGIN PASSCODE
         function periksaSesiLogin() {
             const savedUser = localStorage.getItem('prorab_current_user');
             const overlay = document.getElementById('loginOverlay');
@@ -1428,7 +1405,6 @@
             }
         }
 
-        // FUNGSI UTAMA CUSTOMISASI PROFIL & IDENTITAS PER AKUN
         function muatProfilIdentitasAkun() {
             if (!currentUser) return;
             const storageKey = `prorab_profile_${currentUser.userId}`;
@@ -1580,7 +1556,6 @@
             periksaSesiLogin();
             tambahBarisKomponenBuilder('containerKomponenBuilder');
 
-            // EVENT LISTENER MOUSE CLICK OUTSIDE
             document.addEventListener('click', (e) => {
                 const container = document.getElementById('dropdownAhspContainer');
                 if (container && !container.contains(e.target)) {
@@ -1595,7 +1570,6 @@
                 });
             });
 
-            // EVENT LISTENER TOMBOL ESCAPE (ESC)
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' || e.key === 'Esc') {
                     document.querySelectorAll('.popover-hsd-menu').forEach(popover => {
@@ -1753,7 +1727,6 @@
             return allRows;
         }
 
-        // FUNGSI OTOMATISASI GENERATE KODE UNTUK HSD KOSONG DI DATABASE (DIPERBARUI PARALEL & PERMANEN KE SUPABASE)
         async function autoGenerateKodeMasterHsdTanpaKode() {
             let emptyKodeItems = listHSDMaster.filter(h => !h.kode || h.kode.trim() === "" || h.kode.trim() === "-");
             if (emptyKodeItems.length === 0) return;
@@ -1762,7 +1735,7 @@
 
             const updatePromises = emptyKodeItems.map(item => {
                 const autoGenKode = "HSD-GEN-" + Math.floor(100000 + Math.random() * 900000);
-                item.kode = autoGenKode; // Update memory lokal
+                item.kode = autoGenKode;
 
                 if (item.id) {
                     return supabaseClient
@@ -1808,7 +1781,6 @@
                 listScheduleMaster = dataSchedule || [];
                 listDailyMaster = dataDaily || [];
 
-                // Periksa & auto generate kode untuk data HSD tanpa kode secara permanen
                 await autoGenerateKodeMasterHsdTanpaKode();
 
                 renderDaftarProyekKartu();
@@ -1827,7 +1799,6 @@
             }
         }
 
-        // EVENT LISTENER ENTER UNTUK SEARCH BAR HSD & AHSP
         function handleSearchHsdKeyDown(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -1842,7 +1813,13 @@
             }
         }
 
-        // FUNGSI KELOLA CEKLIS/CHECKBOX SELECTION MASTER HSD
+        function handleSearchAhspDropdownKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                filterAhspDropdownOptions();
+            }
+        }
+
         function toggleSelectAllHSD(chkAll) {
             const checkboxes = document.querySelectorAll('.chk-hsd-item');
             checkboxes.forEach(chk => {
@@ -1872,7 +1849,6 @@
             }
         }
 
-        // FITUR MASAL BARU 1: PENYESUAIAN HARGA HSD BERDASARKAN CEKLIS ITEM / PERSENTASE
         async function eksekusiAdjustHargaHsdPersentase() {
             const inputVal = parseFloat(document.getElementById('inpHsdInflationPercent').value);
             if (isNaN(inputVal) || inputVal === 0) {
@@ -1882,11 +1858,9 @@
 
             let targetItems = [];
             
-            // JIKA ADA ITEM YANG DICEKLIS -> HANYA UBAH ITEM CEKLIS TERSEBUT
             if (selectedHsdKodeSet.size > 0) {
                 targetItems = listHSDMaster.filter(item => selectedHsdKodeSet.has(item.kode));
             } else {
-                // JIKA TIDAK ADA CEKLIS -> TAMPILKAN KONFIRMASI UBAH SEMUA ITEM YANG TAMPIL
                 const keyword = (document.getElementById('searchHsdInput')?.value || "").toLowerCase().trim();
                 targetItems = listHSDMaster.filter(item => {
                     let matchKode = (item.kode || "").toLowerCase().includes(keyword);
@@ -1915,11 +1889,14 @@
                 let currentHarga = parseFloat(item.harga) || 0;
                 let newHarga = Math.round(currentHarga * factor);
 
-                const { error } = await supabaseClient
-                    .from('02_hsd')
-                    .update({ harga: newHarga })
-                    .eq('kode', item.kode);
+                let query = supabaseClient.from('02_hsd').update({ harga: newHarga });
+                if (item.id) {
+                    query = query.eq('id', item.id);
+                } else {
+                    query = query.eq('kode', item.kode);
+                }
 
+                const { error } = await query;
                 if (!error) successCount++;
             }
 
@@ -1929,7 +1906,6 @@
             muatDataProyekSemua();
         }
 
-        // FITUR MASAL BARU 2: UBAH OVERHEAD AHSP SECARA KESELURUHAN (MASSAL)
         async function eksekusiUbahGlobalOverheadAHSP() {
             const inputVal = parseFloat(document.getElementById('inpGlobalAhspOverhead').value);
             if (isNaN(inputVal) || inputVal < 0) {
@@ -1971,7 +1947,6 @@
             muatDataProyekSemua();
         }
 
-        // OPTIMASI PERFORMA DROPDOWN HSD
         function filterHsdDropdownOptions(inputElem) {
             clearTimeout(debounceHsdTimer);
             debounceHsdTimer = setTimeout(() => {
@@ -2168,7 +2143,7 @@
             filtered.sort((a, b) => (a.kode_ahsp || "").localeCompare(b.kode_ahsp || "", undefined, { numeric: true, sensitivity: 'base' }));
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="p-3 text-center text-slate-400 italic">AHSP tidak ditemukan.</div>`;
+                container.innerHTML = `<div class="p-3 text-center text-slate-400 italic">AHSP tidak ditemukan. Tekan Enter atau klik Cari.</div>`;
                 return;
             }
 
@@ -2207,28 +2182,48 @@
             hitungPreviewHargaItem();
         }
 
-        // FUNGSI CARI OBJECT HSD LENGKAP TERMASUK HARGA & REFERENSI
         function cariHsdObjectLengkap(itemKomponen, lokasiProyek) {
             const targetKode = (itemKomponen.kode || "").toString().trim().toLowerCase();
-            const targetUraian = (itemKomponen.uraian || "").toLowerCase().trim();
-            const targetLokasi = (lokasiProyek || "").toLowerCase().trim();
+            const targetUraian = (itemKomponen.uraian || "").toString().trim().toLowerCase();
+            const targetTipe = (itemKomponen.tipe || "").toString().trim().toLowerCase();
+            const targetLokasi = (lokasiProyek || "").toString().trim().toLowerCase();
 
             const isMatchItem = (hsd) => {
-                let matchKode = targetKode && hsd.kode && hsd.kode.toString().trim().toLowerCase() === targetKode;
-                let matchUraian = (hsd.nama_item || hsd.uraian || "").toLowerCase().trim() === targetUraian;
-                return matchKode || matchUraian;
+                if (targetTipe && hsd.tipe) {
+                    let hsdTipe = hsd.tipe.toString().trim().toLowerCase();
+                    if (hsdTipe !== targetTipe) return false;
+                }
+
+                if (targetKode && targetKode !== "-" && targetKode !== "null" && targetKode !== "undefined") {
+                    let hsdKode = (hsd.kode || "").toString().trim().toLowerCase();
+                    if (hsdKode === targetKode) return true;
+                }
+                
+                let hsdNama = (hsd.nama_item || hsd.uraian || "").toString().trim().toLowerCase();
+                if (targetUraian !== "" && hsdNama === targetUraian) {
+                    return true;
+                }
+
+                return false;
             };
 
-            let matchLokasi = listHSDMaster.filter(h => isMatchItem(h) && (h.lokasi || "").toLowerCase().trim() === targetLokasi);
-            if (matchLokasi.length > 0) return matchLokasi[0];
+            const getCheapest = (items) => {
+                if (!items || items.length === 0) return null;
+                return items.sort((a, b) => (parseFloat(a.harga) || 0) - (parseFloat(b.harga) || 0))[0];
+            };
+
+            if (targetLokasi !== "") {
+                let matchLokasi = listHSDMaster.filter(h => isMatchItem(h) && (h.lokasi || "").toLowerCase().trim().includes(targetLokasi));
+                let cheapestLokasi = getCheapest(matchLokasi);
+                if (cheapestLokasi) return cheapestLokasi;
+            }
 
             let matchIndonesia = listHSDMaster.filter(h => isMatchItem(h) && ["indonesia", "nasional"].includes((h.lokasi || "").toLowerCase().trim()));
-            if (matchIndonesia.length > 0) return matchIndonesia[0];
+            let cheapestIndo = getCheapest(matchIndonesia);
+            if (cheapestIndo) return cheapestIndo;
 
             let matchAll = listHSDMaster.filter(h => isMatchItem(h));
-            if (matchAll.length > 0) return matchAll[0];
-
-            return null;
+            return getCheapest(matchAll);
         }
 
         function cariHargaHSD(itemKomponen, lokasiProyek) {
@@ -2630,7 +2625,6 @@
             });
         }
 
-        // REVISI FUNGSI LAMPIRAN 3: MENAMPILKAN NOMOR / LINK REFERENSI UNTUK TIAP ITEM HSD TERPAKAI
         function renderLampiranHSDDetailProyek(bqArray) {
             const tbody = document.getElementById('tabelLampiranHSDDetailRows');
             tbody.innerHTML = "";
@@ -2655,19 +2649,31 @@
                 }
 
                 components.forEach(c => {
-                    let key = (c.kode || c.uraian || "").toString().trim().toLowerCase();
+                    let tipeRaw = (c.tipe || "Bahan").toString().trim();
+                    let uraianRaw = (c.uraian || c.nama_item || "").toString().trim();
+                    let kodeRaw = (c.kode || "").toString().trim();
+
+                    if (!uraianRaw && !kodeRaw) return;
+
+                    let key = (tipeRaw + "_" + (kodeRaw !== "" && kodeRaw !== "-" ? kodeRaw : uraianRaw)).toLowerCase();
+
                     if(!uniqueHsdMap[key]) {
                         let hsdObj = cariHsdObjectLengkap(c, lokasiProyek);
-                        let hsdHarga = hsdObj ? parseFloat(hsdObj.harga) || 0 : (parseFloat(c.hargaFallback) || 0);
-                        let hsdRef = hsdObj ? (hsdObj.referensi || '') : '';
+                        
+                        let finalTipe = hsdObj ? (hsdObj.tipe || tipeRaw) : tipeRaw;
+                        let finalKode = hsdObj ? (hsdObj.kode || kodeRaw) : (kodeRaw || '-');
+                        let finalNama = hsdObj ? (hsdObj.nama_item || hsdObj.uraian || uraianRaw) : uraianRaw;
+                        let finalSatuan = hsdObj ? (hsdObj.satuan || c.satuan) : (c.satuan || '-');
+                        let finalHarga = hsdObj ? parseFloat(hsdObj.harga) : (parseFloat(c.hargaFallback) || 0);
+                        let finalRef = hsdObj ? (hsdObj.referensi || '') : 'Harga Dasar AHSP / Default';
 
                         uniqueHsdMap[key] = {
-                            tipe: c.tipe || 'Bahan',
-                            kode: c.kode || '-',
-                            uraian: c.uraian,
-                            satuan: c.satuan,
-                            harga: hsdHarga,
-                            referensi: hsdRef
+                            tipe: finalTipe,
+                            kode: finalKode,
+                            uraian: finalNama,
+                            satuan: finalSatuan,
+                            harga: finalHarga,
+                            referensi: finalRef
                         };
                     }
                 });
@@ -2705,7 +2711,6 @@
             });
         }
 
-        // ================= LOGIC LAPORAN HARIAN PROGRES & DOKUMENTASI =================
         function handlePreviewFotoDaily(input) {
             dailyFotoBase64Array = [];
             const container = document.getElementById('previewFotoDailyContainer');
@@ -2885,7 +2890,6 @@
             }
         }
 
-        // ================= PENJADWALAN & KURVA S =================
         function updateWorkDaysRow(trElement) {
             const startVal = trElement.querySelector('.inp-sch-start').value;
             const finishVal = trElement.querySelector('.inp-sch-finish').value;
@@ -3131,11 +3135,11 @@
             });
         }
 
-        async function duplikatBarisHSD(kodeHSD) {
-            const item = listHSDMaster.find(h => h.kode === kodeHSD);
+        async function duplikatBarisHSD(identifier) {
+            const item = listHSDMaster.find(h => (h.id && h.id == identifier) || h.kode === identifier);
             if (!item) return;
 
-            const newKode = item.kode + "_COPY_" + Math.floor(Math.random() * 100);
+            const newKode = (item.kode || "HSD") + "_COPY_" + Math.floor(Math.random() * 100);
             const newNama = (item.nama_item || item.uraian || "") + " (Salinan)";
 
             const payload = {
@@ -3198,23 +3202,242 @@
             XLSX.writeFile(wb, `Master_HSD_ProRAB.${format === 'csv' ? 'csv' : 'xlsx'}`);
         }
 
-        function exportMasterAHSP(format = 'csv') {
+        // HELPER: Generasi Baris AHSP Format PUPR (Persis format pu.xlsx)
+        function generatePuAhspRows(ahspObj, bqItem = null) {
+            let lokasiProyek = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase().trim() : "";
+            let components = [];
+            if (ahspObj && ahspObj.komponen_json) {
+                try {
+                    components = typeof ahspObj.komponen_json === 'string' ? JSON.parse(ahspObj.komponen_json) : ahspObj.komponen_json;
+                } catch(e){}
+            }
+
+            let rows = [];
+            const kodeAHSP = ahspObj ? (ahspObj.kode_ahsp || 'AHSP') : (bqItem ? bqItem.kode_ahsp : 'AHSP');
+            const namaPekerjaan = ahspObj ? ahspObj.nama_pekerjaan : (bqItem ? bqItem.sub : 'Pekerjaan');
+            const satuanPekerjaan = ahspObj ? ahspObj.satuan : (bqItem ? bqItem.sat : 'unit');
+            const overheadPersen = parseFloat(ahspObj ? (ahspObj.overhead_persen || 15) : 15);
+
+            // Header Keterangan Pekerjaan
+            rows.push(["ANALISA HARGA SATUAN PEKERJAAN (AHSP) PUPR"]);
+            rows.push(["Kode AHSP", kodeAHSP]);
+            rows.push(["Nama Pekerjaan", namaPekerjaan]);
+            rows.push(["Satuan Pekerjaan", satuanPekerjaan]);
+            rows.push([]);
+
+            // Header Tabel Standard PUPR
+            rows.push(['No', 'Uraian', 'Kode', 'Satuan', 'Koefisien', 'Harga Satuan (Rp)', 'Jumlah Harga  (Rp)']);
+
+            let totalA = 0, totalB = 0, totalC = 0;
+
+            // A. TENAGA
+            rows.push(['A', 'TENAGA', '', '', '', '', '']);
+            let upahList = components.filter(c => (c.tipe || '').toLowerCase() === 'upah');
+            if (upahList.length === 0) {
+                rows.push(['', '(Tidak ada komponen tenaga)', '', '', '', 0, 0]);
+            } else {
+                upahList.forEach(c => {
+                    let hrg = cariHargaHSD(c, lokasiProyek);
+                    let sub = (parseFloat(c.koefisien) || 0) * hrg;
+                    totalA += sub;
+                    rows.push(['', c.uraian || '', c.kode || '', c.satuan || '', parseFloat(c.koefisien) || 0, hrg, sub]);
+                });
+            }
+            rows.push(['', '', '', '', 'JUMLAH TENAGA KERJA', '', totalA]);
+
+            // B. BAHAN
+            rows.push(['B', 'BAHAN', '', '', '', '', '']);
+            let bahanList = components.filter(c => (c.tipe || '').toLowerCase() === 'bahan');
+            if (bahanList.length === 0) {
+                rows.push(['', '(Tidak ada komponen bahan)', '', '', '', 0, 0]);
+            } else {
+                bahanList.forEach(c => {
+                    let hrg = cariHargaHSD(c, lokasiProyek);
+                    let sub = (parseFloat(c.koefisien) || 0) * hrg;
+                    totalB += sub;
+                    rows.push(['', c.uraian || '', c.kode || '', c.satuan || '', parseFloat(c.koefisien) || 0, hrg, sub]);
+                });
+            }
+            rows.push(['', '', '', '', 'JUMLAH HARGA BAHAN', '', totalB]);
+
+            // C. PERALATAN
+            rows.push(['C', 'PERALATAN', '', '', '', '', '']);
+            let alatList = components.filter(c => (c.tipe || '').toLowerCase() === 'alat');
+            if (alatList.length === 0) {
+                rows.push(['', '(Tidak ada komponen peralatan)', '', '', '', 0, 0]);
+            } else {
+                alatList.forEach(c => {
+                    let hrg = cariHargaHSD(c, lokasiProyek);
+                    let sub = (parseFloat(c.koefisien) || 0) * hrg;
+                    totalC += sub;
+                    rows.push(['', c.uraian || '', c.kode || '', c.satuan || '', parseFloat(c.koefisien) || 0, hrg, sub]);
+                });
+            }
+            rows.push(['', '', '', '', 'JUMLAH HARGA ALAT', '', totalC]);
+
+            // Summary D, E, F Standard PUPR
+            let totalD = totalA + totalB + totalC;
+            let totalE = (overheadPersen / 100) * totalD;
+            let totalF = totalD + totalE;
+
+            rows.push(['D', 'Jumlah (A+B+C)', '', '', '', '', totalD]);
+            rows.push(['E', 'Overhead & Profit ', '', '', `${overheadPersen}% x D`, '', totalE]);
+            rows.push(['F', 'Harga Satuan Pekerjaan (D+E)', '', '', '', '', totalF]);
+            rows.push([]);
+            rows.push([]);
+
+            return rows;
+        }
+
+        // EKSPOR DASHBOARD BQ & RAB MULTI-SHEET MATCHING PDF
+        function exportToExcelSummary() {
+            if(!proyekAktif) { showToast("Pilih proyek terlebih dahulu!", "error"); return; }
+            
+            const wb = XLSX.utils.book_new();
+            const bqArray = proyekAktif.data_bq || [];
+
+            // --- SHEET 1: REKAPITULASI RAB ---
+            let rekapRows = [
+                [(userProfile ? userProfile.name : "KAYUNA STUDIO")],
+                [(userProfile ? userProfile.tagline : "")],
+                [`DOKUMEN PENAWARAN RENCANA ANGGARAN BIAYA (RAB)`],
+                [`Nama Proyek: ${proyekAktif.nama_proyek}`, `Pemilik/Klien: ${proyekAktif.pemilik}`],
+                [`Lokasi: ${proyekAktif.lokasi}`, `Tanggal: ${formatTanggalIndoFormal(proyekAktif.tanggal)}`],
+                [],
+                ['NO', 'DIVISI PEKERJAAN UTAMA', 'JUMLAH HARGA (RP)', '% BOBOT']
+            ];
+
+            let rekapMap = {};
+            let totalKasar = 0;
+            bqArray.forEach(item => {
+                let sub = item.vol * item.hargaSatuan;
+                totalKasar += sub;
+                rekapMap[item.kategori] = (rekapMap[item.kategori] || 0) + sub;
+            });
+
+            let idx = 1;
+            for (const [kat, sumDiv] of Object.entries(rekapMap)) {
+                let bobot = totalKasar > 0 ? ((sumDiv / totalKasar) * 100).toFixed(2) : 0;
+                rekapRows.push([idx++, kat, sumDiv, `${bobot}%`]);
+            }
+
+            let ppn = totalKasar * 0.11;
+            let grandTotal = totalKasar + ppn;
+
+            rekapRows.push([]);
+            rekapRows.push(['', 'JUMLAH (DPA)', totalKasar, totalKasar > 0 ? '100.00%' : '0%']);
+            rekapRows.push(['', 'PPN 11%', ppn, '']);
+            rekapRows.push(['', 'TOTAL BIAYA + PPN', grandTotal, '']);
+            rekapRows.push(['', 'TERBILANG', terbilang(Math.round(grandTotal)) + " Rupiah", '']);
+
+            const wsRekap = XLSX.utils.aoa_to_sheet(rekapRows);
+            XLSX.utils.book_append_sheet(wb, wsRekap, "Rekapitulasi RAB");
+
+            // --- SHEET 2: LAMPIRAN 1 - BQ ---
+            let bqRows = [
+                ['LAMPIRAN 1: BILL OF QUANTITIES (BQ)'],
+                ['NO', 'DIVISI / URAIAN PEKERJAAN', 'VOLUME', 'SATUAN', 'HARGA SATUAN (RP)', 'TOTAL BIAYA (RP)']
+            ];
+
+            bqArray.forEach((b, i) => {
+                bqRows.push([
+                    i + 1,
+                    `${b.sub} (${b.kategori})`,
+                    b.vol,
+                    b.sat,
+                    b.hargaSatuan,
+                    b.vol * b.hargaSatuan
+                ]);
+            });
+
+            const wsBQ = XLSX.utils.aoa_to_sheet(bqRows);
+            XLSX.utils.book_append_sheet(wb, wsBQ, "Lampiran 1 - BQ");
+
+            // --- SHEET 3: LAMPIRAN 2 - AHSP (FORMAT PUPR) ---
+            let ahspAllRows = [
+                ['LAMPIRAN 2: DETAIL AHSP PEKERJAAN (FORMAT STANDAR KEMENTERIAN PUPR)'],
+                []
+            ];
+
+            bqArray.forEach(bqItem => {
+                if (bqItem.kode_ahsp === 'LUMPSUM') return;
+                const ahspObj = listAHSPMaster.find(a => a.kode_ahsp === bqItem.kode_ahsp);
+                let rowsPu = generatePuAhspRows(ahspObj, bqItem);
+                ahspAllRows = ahspAllRows.concat(rowsPu);
+            });
+
+            const wsAHSP = XLSX.utils.aoa_to_sheet(ahspAllRows);
+            XLSX.utils.book_append_sheet(wb, wsAHSP, "Lampiran 2 - AHSP PUPR");
+
+            // --- SHEET 4: LAMPIRAN 3 - HSD TERPAKAI ---
+            let hsdRows = [
+                ['LAMPIRAN 3: DAFTAR HARGA SATUAN DASAR (HSD) TERPAKAI PROYEK'],
+                ['NO', 'TIPE', 'KODE', 'NAMA ITEM / URAIAN', 'SATUAN', 'HARGA LOKASI (RP)', 'REFERENSI']
+            ];
+
+            let lokasiProyek = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase().trim() : "";
+            let uniqueHsdMap = {};
+
+            bqArray.forEach(bqItem => {
+                if(bqItem.kode_ahsp === 'LUMPSUM') return;
+                const ahspObj = listAHSPMaster.find(a => a.kode_ahsp === bqItem.kode_ahsp);
+                let components = [];
+                if (ahspObj && ahspObj.komponen_json) {
+                    try { components = typeof ahspObj.komponen_json === 'string' ? JSON.parse(ahspObj.komponen_json) : ahspObj.komponen_json; } catch(e){}
+                }
+
+                components.forEach(c => {
+                    let key = ((c.tipe || 'Bahan') + '_' + (c.kode || c.uraian)).toLowerCase();
+                    if(!uniqueHsdMap[key]) {
+                        let hsdObj = cariHsdObjectLengkap(c, lokasiProyek);
+                        uniqueHsdMap[key] = {
+                            tipe: hsdObj ? hsdObj.tipe : (c.tipe || 'Bahan'),
+                            kode: hsdObj ? hsdObj.kode : (c.kode || '-'),
+                            uraian: hsdObj ? (hsdObj.nama_item || hsdObj.uraian) : c.uraian,
+                            satuan: hsdObj ? hsdObj.satuan : c.satuan,
+                            harga: hsdObj ? parseFloat(hsdObj.harga) : (parseFloat(c.hargaFallback) || 0),
+                            referensi: hsdObj ? (hsdObj.referensi || '') : 'Default AHSP'
+                        };
+                    }
+                });
+            });
+
+            Object.values(uniqueHsdMap).forEach((h, i) => {
+                hsdRows.push([i + 1, h.tipe, h.kode, h.uraian, h.satuan, h.harga, h.referensi]);
+            });
+
+            const wsHSD = XLSX.utils.aoa_to_sheet(hsdRows);
+            XLSX.utils.book_append_sheet(wb, wsHSD, "Lampiran 3 - HSD");
+
+            // SIMPAN WORKBOOK EXCEL
+            const compName = (userProfile && userProfile.name ? userProfile.name : "ProRAB").replace(/[^a-zA-Z0-9]/g, '_');
+            XLSX.writeFile(wb, `RAB_${proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_')}_${compName}.xlsx`);
+            showToast("Dokumen RAB Multi-Sheet Excel Berhasil Dihasilkan!");
+        }
+
+        // EKSPOR MASTER AHSP STANDAR KEMENTERIAN PU
+        function exportMasterAHSP(format = 'xlsx') {
             if (listAHSPMaster.length === 0) {
                 showToast("Master AHSP Kosong!", "error");
                 return;
             }
-            const dataFlat = listAHSPMaster.map(item => ({
-                kode_ahsp: item.kode_ahsp,
-                nama_pekerjaan: item.nama_pekerjaan,
-                kategori: item.kategori,
-                satuan: item.satuan,
-                overhead_persen: item.overhead_persen,
-                komponen_json: typeof item.komponen_json === 'object' ? JSON.stringify(item.komponen_json) : item.komponen_json
-            }));
-            const ws = XLSX.utils.json_to_sheet(dataFlat);
+
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Master_AHSP");
-            XLSX.writeFile(wb, `Master_AHSP_ProRAB.${format === 'csv' ? 'csv' : 'xlsx'}`);
+            let allMasterPuRows = [
+                ["DAFTAR MASTER AHSP STANDAR KEMENTERIAN PUPR"],
+                []
+            ];
+
+            listAHSPMaster.forEach(ahsp => {
+                let puRows = generatePuAhspRows(ahsp);
+                allMasterPuRows = allMasterPuRows.concat(puRows);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(allMasterPuRows);
+            XLSX.utils.book_append_sheet(wb, ws, "Master_AHSP_PUPR");
+
+            XLSX.writeFile(wb, `Master_AHSP_Standar_PU.${format === 'csv' ? 'csv' : 'xlsx'}`);
+            showToast("Master AHSP Standar PUPR Berhasil Di-export!");
         }
 
         function renderTabelMonitorHSD() {
@@ -3253,6 +3476,8 @@
                     }
                 }
 
+                const itemKey = item.id ? item.id : item.kode;
+
                 tr.innerHTML = `
                     <td class="p-2 text-center">
                         <input type="checkbox" value="${item.kode}" ${isChecked ? 'checked' : ''} onchange="toggleSelectRowHSD(this)" class="chk-hsd-item">
@@ -3264,9 +3489,9 @@
                     <td class="p-2 text-center font-bold text-slate-500">${item.lokasi || 'INDONESIA'}</td>
                     <td class="p-2">${refCell}</td>
                     <td class="p-2 text-center flex justify-center gap-1">
-                        <button onclick="duplikatBarisHSD('${item.kode}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs" title="Duplikat Item HSD">📋</button>
-                        <button onclick="editBarisHSD('${item.kode}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs" title="Edit HSD">✏️</button>
-                        <button onclick="hapusBarisHSD('${item.kode}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs" title="Hapus HSD">✕</button>
+                        <button onclick="duplikatBarisHSD('${itemKey}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs" title="Duplikat Item HSD">📋</button>
+                        <button onclick="editBarisHSD('${itemKey}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs" title="Edit HSD">✏️</button>
+                        <button onclick="hapusBarisHSD('${itemKey}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs" title="Hapus HSD">✕</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -3314,9 +3539,11 @@
             });
         }
 
-        function editBarisHSD(kodeHSD) {
-            const item = listHSDMaster.find(h => h.kode === kodeHSD);
+        function editBarisHSD(identifier) {
+            const item = listHSDMaster.find(h => (h.id && h.id == identifier) || h.kode === identifier);
             if(!item) return;
+
+            document.getElementById('editHsdRowId').value = item.id || '';
             document.getElementById('editHsdOldKode').value = item.kode;
             document.getElementById('editHsdKode').value = item.kode;
             document.getElementById('editHsdNama').value = item.nama_item || item.uraian;
@@ -3330,12 +3557,12 @@
         function tutupModalEditHSD() { document.getElementById('modalEditHSD').classList.add('hidden'); }
 
         async function eksekusiSimpanEditHSD() {
+            const rowId = document.getElementById('editHsdRowId').value;
             const oldKode = document.getElementById('editHsdOldKode').value;
             const newKode = document.getElementById('editHsdKode').value.trim();
 
-            // Pengecekan kode duplikat saat edit (jika kode diubah)
             if (newKode !== oldKode) {
-                const isExist = listHSDMaster.some(h => h.kode.toLowerCase() === newKode.toLowerCase());
+                const isExist = listHSDMaster.some(h => (h.id != rowId) && h.kode && h.kode.toLowerCase() === newKode.toLowerCase());
                 if (isExist) {
                     showToast(`⚠️ Kode Item "${newKode}" sudah digunakan oleh item lain!`, "error", 4000);
                     return;
@@ -3351,10 +3578,15 @@
                 referensi: document.getElementById('editHsdReferensi').value.trim()
             };
 
-            const { error } = await supabaseClient
-                .from('02_hsd')
-                .update(payload)
-                .eq('kode', oldKode);
+            let query = supabaseClient.from('02_hsd').update(payload);
+            
+            if (rowId) {
+                query = query.eq('id', rowId);
+            } else {
+                query = query.eq('kode', oldKode);
+            }
+
+            const { error } = await query;
 
             if (!error) {
                 showToast("Master HSD diperbarui");
@@ -3365,13 +3597,20 @@
             }
         }
 
-        async function hapusBarisHSD(kodeHSD) {
-            if(!confirm(`Yakin ingin menghapus item HSD [${kodeHSD}]?`)) return;
+        async function hapusBarisHSD(identifier) {
+            const item = listHSDMaster.find(h => (h.id && h.id == identifier) || h.kode === identifier);
+            if(!item) return;
+
+            if(!confirm(`Yakin ingin menghapus item HSD [${item.kode}]?`)) return;
             
-            const { error } = await supabaseClient
-                .from('02_hsd')
-                .delete()
-                .eq('kode', kodeHSD);
+            let query = supabaseClient.from('02_hsd').delete();
+            if (item.id) {
+                query = query.eq('id', item.id);
+            } else {
+                query = query.eq('kode', item.kode);
+            }
+
+            const { error } = await query;
 
             if (!error) {
                 showToast("HSD berhasil dihapus");
@@ -3476,11 +3715,9 @@
             }
         }
 
-        // FUNGSI TAMBAH HSD BARU (DENGAN AUTO-GENERATE KODE KOSONG & DETEKSI DUPLIKAT)
         async function simpanHSDBaru() {
             let inputKode = document.getElementById('addHsdKode').value.trim();
 
-            // 1. PENCEGAHAN DUPLIKASI KODE ITEM HSD
             if (inputKode) {
                 const isDuplicate = listHSDMaster.some(h => h.kode && h.kode.toLowerCase() === inputKode.toLowerCase());
                 if (isDuplicate) {
@@ -3488,7 +3725,6 @@
                     return;
                 }
             } else {
-                // 2. AUTO GENERATE KODE UNIK JIKA INPUT KODE DIBIARKAN KOSONG
                 inputKode = "HSD-" + String(listHSDMaster.length + 1).padStart(4, '0');
             }
 
@@ -3662,14 +3898,6 @@
             const clone = document.getElementById('exportArea').cloneNode(true);
             clone.querySelectorAll('.no-print').forEach(el => el.remove());
             return clone;
-        }
-
-        function exportToExcelSummary() {
-            if(!proyekAktif) { showToast("Pilih proyek terlebih dahulu!", "error"); return; }
-            const cleanClone = buatElemenPrintClean();
-            let wb = XLSX.utils.table_to_book(cleanClone, {sheet: "RAB Proyek"});
-            const compName = (userProfile && userProfile.name ? userProfile.name : "ProRAB").replace(/[^a-zA-Z0-9]/g, '_');
-            XLSX.writeFile(wb, `RAB_${proyekAktif.nama_proyek.replace(/[^a-zA-Z0-9]/g, '_')}_${compName}.xlsx`);
         }
 
         function exportToPDFSummary() {
