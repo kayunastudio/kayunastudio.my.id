@@ -3661,6 +3661,16 @@
 
         async function eksekusiSimpanEditAHSP() {
             const oldKode = document.getElementById('editAhspOldKode').value;
+            const newKode = document.getElementById('editAhspKode').value.trim();
+
+            if (newKode.toLowerCase() !== oldKode.toLowerCase()) {
+                const isExist = listAHSPMaster.some(a => a.kode_ahsp && a.kode_ahsp.toLowerCase() === newKode.toLowerCase());
+                if (isExist) {
+                    showToast(`⚠️ Kode AHSP "${newKode}" sudah digunakan oleh item lain!`, "error", 4000);
+                    return;
+                }
+            }
+
             const rows = document.querySelectorAll('#containerKomponenEditBuilder .row-komponen-builder');
             let arrayKomponen = [];
 
@@ -3677,7 +3687,7 @@
             });
 
             const payload = {
-                kode_ahsp: document.getElementById('editAhspKode').value,
+                kode_ahsp: newKode,
                 nama_pekerjaan: document.getElementById('editAhspNama').value,
                 kategori: document.getElementById('editAhspKategori').value,
                 satuan: document.getElementById('editAhspSatuan').value,
@@ -3799,6 +3809,12 @@
 
             if (!inputKode) {
                 inputKode = "AHSP-CUSTOM-" + Date.now().toString().slice(-6) + "-" + Math.floor(Math.random() * 100);
+            } else {
+                const isDuplicate = listAHSPMaster.some(a => a.kode_ahsp && a.kode_ahsp.toLowerCase() === inputKode.toLowerCase());
+                if (isDuplicate) {
+                    showToast(`⚠️ Kode AHSP "${inputKode}" sudah terdaftar! Gunakan kode lain.`, "error", 4000);
+                    return;
+                }
             }
 
             const rows = document.querySelectorAll('#containerKomponenBuilder .row-komponen-builder');
