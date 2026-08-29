@@ -907,9 +907,9 @@
            1. COVER DEPAN BERBASIS VIDEO BACKGROUND
            ========================================================================== -->
         <div id="invitation-cover">
-            <!-- VIDEO BACKGROUND COVER -->
+            <!-- VIDEO BACKGROUND COVER (Atribut loop dihapus agar event ended terpicu di JS) -->
             <video id="coverVideo" class="cover-bg-video" autoplay muted playsinline preload="auto">
-                <source src="https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-holding-hands-43187-large.mp4" type="video/mp4">
+                <source src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/hana_handayani-irfan_ripandi/video_cover.mp4" type="video/mp4">
             </video>
 
             <!-- TOMBOL IKON ELEGAN UNTUK MENGAKTIFKAN SUARA BAWAAN VIDEO -->
@@ -1356,13 +1356,24 @@
         function showCoverOverlay() {
             if (!coverContent.classList.contains('show-content')) {
                 coverContent.classList.add('show-content');
-                coverVideo.loop = true;
+                coverVideo.loop = true; // Setelah muncul, video di-loop secara berkelanjutan
                 coverVideo.play().catch(err => console.log(err));
             }
         }
 
-        coverVideo.addEventListener('ended', showCoverOverlay);
-        setTimeout(showCoverOverlay, 5000);
+        // Penghitung jumlah pemutaran video
+        let loopCount = 0;
+        coverVideo.addEventListener('ended', function() {
+            loopCount++;
+            if (loopCount >= 2) {
+                showCoverOverlay();
+            } else {
+                coverVideo.play().catch(err => console.log(err));
+            }
+        });
+
+        // Diputar saat pertama kali halaman dimuat
+        coverVideo.play().catch(err => console.log(err));
 
         function openInvitation() {
             cover.classList.add('opened');
