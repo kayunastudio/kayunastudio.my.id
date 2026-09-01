@@ -44,6 +44,11 @@
     <!-- CONTAINER NOTIFIKASI TOAST -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-[1000] flex flex-col gap-2 pointer-events-none"></div>
 
+    <!-- POPOVER FLOATING UNTUK REKOMENDASI HSD -->
+    <div id="globalHsdPopoverMenu" class="hidden fixed z-[99999] bg-white border border-slate-300 rounded-xl shadow-2xl p-1.5 space-y-1">
+        <div id="globalHsdOptionsContainer" class="max-h-48 overflow-y-auto custom-scroll divide-y divide-slate-100 text-xs"></div>
+    </div>
+
     <!-- OVERLAY / HALAMAN LOGIN AKUN -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-[100] flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-5 shadow-2xl">
@@ -637,7 +642,7 @@
                             <input type="text" id="searchHsdInput" onkeydown="handleSearchHsdKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
                         </div>
-                        <button onclick="renderTabelMonitorHSD()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                        <button onclick="renderTabelMonitorHSD(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
                             🔍 Cari
                         </button>
                     </div>
@@ -662,6 +667,15 @@
                                 <tr><td colspan="8" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- KONTROL PAGINASI HSD -->
+                    <div class="flex items-center justify-between pt-2 text-xs text-slate-500 border-t">
+                        <span id="lblPageHsdInfo">Halaman 1 dari 1</span>
+                        <div class="flex gap-1.5">
+                            <button onclick="gantiHalamanHsd(-1)" id="btnHsdPrev" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">◄ Prev</button>
+                            <button onclick="gantiHalamanHsd(1)" id="btnHsdNext" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">Next ►</button>
+                        </div>
                     </div>
                 </div>
 
@@ -701,7 +715,7 @@
                             <input type="text" id="searchAhspInput" onkeydown="handleSearchAhspKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
                             <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
                         </div>
-                        <button onclick="renderTabelMonitorAHSP()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                        <button onclick="renderTabelMonitorAHSP(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
                             🔍 Cari
                         </button>
                     </div>
@@ -721,6 +735,15 @@
                                 <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- KONTROL PAGINASI AHSP -->
+                    <div class="flex items-center justify-between pt-2 text-xs text-slate-500 border-t">
+                        <span id="lblPageAhspInfo">Halaman 1 dari 1</span>
+                        <div class="flex gap-1.5">
+                            <button onclick="gantiHalamanAhsp(-1)" id="btnAhspPrev" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">◄ Prev</button>
+                            <button onclick="gantiHalamanAhsp(1)" id="btnAhspNext" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">Next ►</button>
+                        </div>
                     </div>
                 </div>
 
@@ -1256,6 +1279,13 @@
         let debounceHsdTimer = null;
         let selectedHsdKodeSet = new Set();
 
+        // VARS UNTUK PAGINASI TABEL MASTER
+        let pageHsdCurrent = 1;
+        const pageHsdSize = 10;
+        let pageAhspCurrent = 1;
+        const pageAhspSize = 10;
+        let activeBuilderInputTarget = null;
+
         function showToast(message, type = 'success', duration = 3000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -1475,19 +1505,19 @@
                     document.getElementById('popoverAhspMenu').classList.add('hidden');
                 }
 
-                document.querySelectorAll('.popover-hsd-menu').forEach(popover => {
-                    const inputTarget = popover.dataset.targetInputId ? document.getElementById(popover.dataset.targetInputId) : null;
-                    if (!popover.contains(e.target) && (!inputTarget || !inputTarget.contains(e.target))) {
-                        popover.classList.add('hidden');
-                    }
-                });
+                const globalPopover = document.getElementById('globalHsdPopoverMenu');
+                if (globalPopover && !globalPopover.contains(e.target) && activeBuilderInputTarget !== e.target) {
+                    globalPopover.classList.add('hidden');
+                }
             });
+
+            window.addEventListener('scroll', updatePopoverPosition, true);
+            window.addEventListener('resize', updatePopoverPosition);
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' || e.key === 'Esc') {
-                    document.querySelectorAll('.popover-hsd-menu').forEach(popover => {
-                        popover.classList.add('hidden');
-                    });
+                    const globalPopover = document.getElementById('globalHsdPopoverMenu');
+                    if (globalPopover) globalPopover.classList.add('hidden');
 
                     const popoverAhsp = document.getElementById('popoverAhspMenu');
                     if (popoverAhsp) popoverAhsp.classList.add('hidden');
@@ -1698,8 +1728,8 @@
 
                 renderDaftarProyekKartu();
                 renderAhspCustomDropdownOptions();
-                renderTabelMonitorAHSP();
-                renderTabelMonitorHSD();
+                renderTabelMonitorAHSP(1);
+                renderTabelMonitorHSD(1);
 
                 if (proyekAktif) {
                     const reRefreshed = listProyek.find(p => p.id === proyekAktif.id);
@@ -1715,14 +1745,14 @@
         function handleSearchHsdKeyDown(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                renderTabelMonitorHSD();
+                renderTabelMonitorHSD(1);
             }
         }
 
         function handleSearchAhspKeyDown(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                renderTabelMonitorAHSP();
+                renderTabelMonitorAHSP(1);
             }
         }
 
@@ -1862,17 +1892,29 @@
 
         function filterHsdDropdownOptions(inputElem) {
             clearTimeout(debounceHsdTimer);
+            activeBuilderInputTarget = inputElem;
             debounceHsdTimer = setTimeout(() => {
                 eksekusiFilterHsdDropdownOptions(inputElem);
             }, 150);
+        }
+
+        function updatePopoverPosition() {
+            if (!activeBuilderInputTarget) return;
+            const popover = document.getElementById('globalHsdPopoverMenu');
+            if (popover && !popover.classList.contains('hidden')) {
+                const rect = activeBuilderInputTarget.getBoundingClientRect();
+                popover.style.top = `${rect.bottom}px`;
+                popover.style.left = `${rect.left}px`;
+                popover.style.width = `${Math.max(rect.width, 220)}px`;
+            }
         }
 
         function eksekusiFilterHsdDropdownOptions(inputElem) {
             const row = inputElem.closest('.row-komponen-builder');
             if(!row) return;
 
-            const popover = row.querySelector('.popover-hsd-menu');
-            const container = popover.querySelector('.list-hsd-options-container');
+            const popover = document.getElementById('globalHsdPopoverMenu');
+            const container = document.getElementById('globalHsdOptionsContainer');
             const rawKw = inputElem.value.toLowerCase().trim();
 
             if(!rawKw) {
@@ -1880,10 +1922,7 @@
                 return;
             }
 
-            const rect = inputElem.getBoundingClientRect();
-            popover.style.top = `${rect.bottom + window.scrollY}px`;
-            popover.style.left = `${rect.left + window.scrollX}px`;
-            popover.style.width = `${rect.width}px`;
+            updatePopoverPosition();
 
             const searchTokens = rawKw.split(/\s+/).filter(t => t.length > 0);
 
@@ -3368,7 +3407,8 @@
             showToast("Master AHSP Standar PUPR Berhasil Di-export!");
         }
 
-        function renderTabelMonitorHSD() {
+        // RENDER MASTER HSD DENGAN PAGINASI
+        function renderTabelMonitorHSD(targetPage = pageHsdCurrent) {
             const tbody = document.getElementById('tabelMasterHSDMasterRows');
             const badge = document.getElementById('badgeCountHsd');
             const keyword = (document.getElementById('searchHsdInput')?.value || "").toLowerCase().trim();
@@ -3382,14 +3422,24 @@
                 return matchKode || matchNama || matchLokasi || matchRef;
             });
 
-            badge.innerText = `${filteredList.length} dari ${listHSDMaster.length} Item`;
+            const totalItems = filteredList.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / pageHsdSize));
+            pageHsdCurrent = Math.min(Math.max(1, targetPage), totalPages);
 
-            if(filteredList.length === 0) {
+            const startIndex = (pageHsdCurrent - 1) * pageHsdSize;
+            const paginatedItems = filteredList.slice(startIndex, startIndex + pageHsdSize);
+
+            badge.innerText = `${totalItems} dari ${listHSDMaster.length} Item`;
+            document.getElementById('lblPageHsdInfo').innerText = `Halaman ${pageHsdCurrent} dari ${totalPages}`;
+            document.getElementById('btnHsdPrev').disabled = (pageHsdCurrent <= 1);
+            document.getElementById('btnHsdNext').disabled = (pageHsdCurrent >= totalPages);
+
+            if(paginatedItems.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400 italic">Item HSD tidak ditemukan. Press Enter / klik Cari.</td></tr>`;
                 return;
             }
 
-            filteredList.forEach(item => {
+            paginatedItems.forEach(item => {
                 const isChecked = selectedHsdKodeSet.has(item.kode);
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 border-b border-slate-200";
@@ -3428,7 +3478,12 @@
             perbaruiInfoCeklisHSD();
         }
 
-        function renderTabelMonitorAHSP() {
+        function gantiHalamanHsd(delta) {
+            renderTabelMonitorHSD(pageHsdCurrent + delta);
+        }
+
+        // RENDER MASTER AHSP DENGAN PAGINASI
+        function renderTabelMonitorAHSP(targetPage = pageAhspCurrent) {
             const tbody = document.getElementById('tabelMasterAHSPMasterRows');
             const badge = document.getElementById('badgeCountAhsp');
             const keyword = (document.getElementById('searchAhspInput')?.value || "").toLowerCase().trim();
@@ -3441,14 +3496,24 @@
                 return matchKode || matchNama || matchKat;
             });
 
-            badge.innerText = `${filteredList.length} dari ${listAHSPMaster.length} Item`;
+            const totalItems = filteredList.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / pageAhspSize));
+            pageAhspCurrent = Math.min(Math.max(1, targetPage), totalPages);
 
-            if(filteredList.length === 0) {
+            const startIndex = (pageAhspCurrent - 1) * pageAhspSize;
+            const paginatedItems = filteredList.slice(startIndex, startIndex + pageAhspSize);
+
+            badge.innerText = `${totalItems} dari ${listAHSPMaster.length} Item`;
+            document.getElementById('lblPageAhspInfo').innerText = `Halaman ${pageAhspCurrent} dari ${totalPages}`;
+            document.getElementById('btnAhspPrev').disabled = (pageAhspCurrent <= 1);
+            document.getElementById('btnAhspNext').disabled = (pageAhspCurrent >= totalPages);
+
+            if(paginatedItems.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Item AHSP tidak ditemukan. Press Enter / klik Cari.</td></tr>`;
                 return;
             }
 
-            filteredList.forEach(item => {
+            paginatedItems.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 border-b border-slate-200";
                 tr.innerHTML = `
@@ -3465,6 +3530,10 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function gantiHalamanAhsp(delta) {
+            renderTabelMonitorAHSP(pageAhspCurrent + delta);
         }
 
         // ================= FITUR EDIT DIRECT ON FORM ISIAN (TANPA POP-UP) =================
@@ -3787,8 +3856,6 @@
             const valSatuan = dataPreset ? (dataPreset.satuan || '') : '';
             const valKoef = dataPreset ? (dataPreset.koefisien || '') : '';
 
-            const uniqueInputId = 'builderUraian_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-
             div.innerHTML = `
                 <select class="builder-tipe border p-1 text-[11px] rounded bg-white font-bold w-16 sm:w-20 shrink-0">
                     <option value="Upah" ${valTipe === 'Upah' ? 'selected' : ''}>Upah</option>
@@ -3798,12 +3865,7 @@
                 <input type="text" placeholder="Kode" value="${valKode}" class="builder-kode border p-1 text-[11px] rounded bg-white w-16 sm:w-20 font-mono shrink-0">
                 
                 <div class="flex-1 min-w-0">
-                    <input type="text" id="${uniqueInputId}" placeholder="Uraian Komponen / Ketik HSD..." value="${valUraian}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian border p-1 text-[11px] rounded bg-white w-full">
-                </div>
-
-                <div data-target-input-id="${uniqueInputId}" class="popover-hsd-menu hidden fixed z-[9999] bg-white border border-slate-200 rounded-xl shadow-2xl p-1.5 space-y-1">
-                    <div class="list-hsd-options-container max-h-48 overflow-y-auto custom-scroll divide-y divide-slate-100">
-                    </div>
+                    <input type="text" placeholder="Uraian Komponen / Ketik HSD..." value="${valUraian}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian border p-1 text-[11px] rounded bg-white w-full">
                 </div>
 
                 <input type="text" placeholder="Sat" value="${valSatuan}" class="builder-satuan border p-1 text-[11px] rounded bg-white w-10 sm:w-12 font-mono text-center shrink-0">
