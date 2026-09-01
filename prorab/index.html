@@ -39,18 +39,18 @@
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen min-h-dvh flex flex-col selection:bg-amber-500 selection:text-slate-950">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen min-h-dvh flex flex-col selection:bg-amber-500 selection:text-slate-950 relative">
 
     <!-- CONTAINER NOTIFIKASI TOAST -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-[1000] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[1000000] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- POPOVER FLOATING UNTUK REKOMENDASI HSD -->
-    <div id="globalHsdPopoverMenu" class="hidden fixed z-[99999] bg-white border border-slate-300 rounded-xl shadow-2xl p-1.5 space-y-1">
-        <div id="globalHsdOptionsContainer" class="max-h-48 overflow-y-auto custom-scroll divide-y divide-slate-100 text-xs"></div>
+    <!-- POPOVER FLOATING UNTUK REKOMENDASI HSD (LEBAR DISESUAIKAN PRESISI DENGAN INPUT) -->
+    <div id="globalHsdPopoverMenu" class="hidden fixed z-[999999] bg-white border border-slate-300 rounded-xl shadow-2xl p-1.5 space-y-1">
+        <div id="globalHsdOptionsContainer" class="max-h-56 overflow-y-auto custom-scroll divide-y divide-slate-100 text-xs"></div>
     </div>
 
     <!-- OVERLAY / HALAMAN LOGIN AKUN -->
-    <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-[100] flex items-center justify-center p-4">
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-950 z-[100000] flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl max-w-sm w-full text-center space-y-5 shadow-2xl">
             <div class="w-16 h-16 bg-gradient-to-tr from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
                 <span class="text-3xl">🔑</span>
@@ -72,7 +72,7 @@
     </div>
 
     <!-- HEADER TOPBAR -->
-    <header class="bg-slate-900 text-white border-b border-slate-800 px-3 sm:px-6 py-3 sticky top-0 z-50 shadow-md no-print pt-safe">
+    <header class="bg-slate-900 text-white border-b border-slate-800 px-3 sm:px-6 py-3 sticky top-0 z-40 shadow-md no-print pt-safe">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
             
             <div class="flex items-center gap-2.5 shrink-0">
@@ -922,7 +922,7 @@
     </main>
 
     <!-- MODAL CUSTOMISASI LOGO & IDENTITAS AKUN -->
-    <div id="modalProfilAkun" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+    <div id="modalProfilAkun" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[50000] flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
             <div class="flex justify-between items-center border-b pb-3">
                 <div>
@@ -991,7 +991,7 @@
     </div>
 
     <!-- MODAL CETAK / DETAIL LAPORAN HARIAN -->
-    <div id="modalPrintDaily" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+    <div id="modalPrintDaily" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[50000] flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
             <div class="flex justify-between items-center border-b pb-2">
                 <div>
@@ -1044,7 +1044,7 @@
     </div>
 
     <!-- MODAL POPUP UPDATE TRACKING REAL -->
-    <div id="modalTrackingReal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+    <div id="modalTrackingReal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[50000] flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
             <div class="flex justify-between items-center border-b pb-2">
                 <div>
@@ -1109,7 +1109,7 @@
     </div>
 
     <!-- MODAL POPUP PREVIEW MASTER AHSP -->
-    <div id="modalAHSPPUPR" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+    <div id="modalAHSPPUPR" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[50000] flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
             <div class="flex justify-between items-center border-b pb-2">
                 <div>
@@ -1143,7 +1143,7 @@
     </div>
 
     <!-- MODAL EDIT ITEM BQ PROYEK -->
-    <div id="modalEditBQ" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+    <div id="modalEditBQ" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[50000] flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="font-bold text-sm text-slate-900">✏️ Edit Item BQ Proyek</h3>
@@ -1175,7 +1175,7 @@
     </div>
 
     <!-- MODAL BUAT PROYEK BARU -->
-    <div id="modalProyek" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
+    <div id="modalProyek" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[50000] flex items-center justify-center hidden p-3 sm:p-4 no-print">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="font-bold text-sm text-slate-900">➕ Tambah Proyek Konstruksi Baru</h3>
@@ -1903,8 +1903,10 @@
             const popover = document.getElementById('globalHsdPopoverMenu');
             if (popover && !popover.classList.contains('hidden')) {
                 const rect = activeBuilderInputTarget.getBoundingClientRect();
-                popover.style.top = `${rect.bottom}px`;
+                popover.style.position = 'fixed';
+                popover.style.top = `${rect.bottom + 4}px`;
                 popover.style.left = `${rect.left}px`;
+                // Lebar disesuaikan dengan elemen input uraian komponen
                 popover.style.width = `${Math.max(rect.width, 220)}px`;
             }
         }
@@ -1961,16 +1963,18 @@
             container.innerHTML = "";
             filteredList.forEach(item => {
                 const div = document.createElement('div');
-                div.className = "p-1.5 hover:bg-amber-50 rounded-lg cursor-pointer transition flex justify-between items-center text-xs border-b border-slate-50 last:border-none";
+                div.className = "p-1.5 hover:bg-amber-50 rounded-lg cursor-pointer transition flex justify-between items-center text-xs border-b border-slate-50 last:border-none min-w-0";
+                div.title = `${item.nama} [${item.kode || '-'}] (${item.satuan || '-'})`; // Tooltip penuh saat di-hover
                 div.innerHTML = `
-                    <div class="truncate pr-2">
-                        <span class="font-bold text-slate-800 block truncate">${item.nama}</span>
-                        <span class="font-mono text-[10px] text-blue-600 font-bold">${item.kode || '-'}</span>
+                    <div class="truncate pr-2 min-w-0 flex-1">
+                        <span class="font-bold text-slate-800 block truncate text-[11px]">${item.nama}</span>
+                        <span class="font-mono text-[9px] text-blue-600 font-bold block truncate">${item.kode || '-'}</span>
                     </div>
-                    <span class="font-mono text-[10px] text-slate-500 shrink-0 font-bold bg-slate-100 px-1.5 py-0.5 rounded">${item.satuan}</span>
+                    <span class="font-mono text-[9px] text-slate-500 shrink-0 font-bold bg-slate-100 px-1.5 py-0.5 rounded ml-1">${item.satuan || '-'}</span>
                 `;
                 div.onclick = () => {
                     inputElem.value = item.nama;
+                    inputElem.title = item.nama; // Tambahkan tooltip pada input
                     const kodeInput = row.querySelector('.builder-kode');
                     const satInput = row.querySelector('.builder-satuan');
 
@@ -3865,7 +3869,7 @@
                 <input type="text" placeholder="Kode" value="${valKode}" class="builder-kode border p-1 text-[11px] rounded bg-white w-16 sm:w-20 font-mono shrink-0">
                 
                 <div class="flex-1 min-w-0">
-                    <input type="text" placeholder="Uraian Komponen / Ketik HSD..." value="${valUraian}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian border p-1 text-[11px] rounded bg-white w-full">
+                    <input type="text" placeholder="Uraian Komponen / Ketik HSD..." value="${valUraian}" title="${valUraian}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian border p-1 text-[11px] rounded bg-white w-full truncate">
                 </div>
 
                 <input type="text" placeholder="Sat" value="${valSatuan}" class="builder-satuan border p-1 text-[11px] rounded bg-white w-10 sm:w-12 font-mono text-center shrink-0">
