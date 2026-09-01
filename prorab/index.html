@@ -480,17 +480,20 @@
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- FORM TAMBAH HSD BARU -->
-                <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <!-- FORM TAMBAH / EDIT HSD BARU -->
+                <div id="sectionFormHSD" class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="border-b pb-2 flex justify-between items-center">
                         <div>
-                            <h3 class="font-bold text-xs sm:text-sm text-slate-900 uppercase">📦 Form Tambah HSD Baru</h3>
+                            <h3 id="txtHeaderFormHSD" class="font-bold text-xs sm:text-sm text-slate-900 uppercase">📦 Form Tambah HSD Baru</h3>
                             <p class="text-[10px] sm:text-[11px] text-slate-400">Menambahkan Upah, Bahan, atau Peralatan ke tabel <code class="bg-slate-100 px-1 rounded font-bold">02_hsd</code></p>
                         </div>
                         <span class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">Supabase</span>
                     </div>
 
                     <form onsubmit="event.preventDefault(); simpanHSDBaru();" class="space-y-3">
+                        <input type="hidden" id="editHsdRowId">
+                        <input type="hidden" id="editHsdOldKode">
+
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Item <span class="text-[9px] text-blue-600 font-normal">(Auto jika kosong)</span></label>
@@ -523,23 +526,30 @@
                             <input type="text" id="addHsdReferensi" placeholder="Contoh: https://katalog-harga.com/semen atau Ref-No: 2026/08/INV" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium text-slate-700">
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
-                            💾 Simpan Ke Database
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="submit" id="btnSubmitHsd" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
+                                💾 Simpan Ke Database
+                            </button>
+                            <button type="button" id="btnBatalEditHsd" onclick="resetFormHSD()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                                Batal
+                            </button>
+                        </div>
                     </form>
                 </div>
 
-                <!-- FORM TAMBAH AHSP PEKERJAAN BARU -->
-                <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <!-- FORM TAMBAH / EDIT AHSP PEKERJAAN BARU -->
+                <div id="sectionFormAHSP" class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="border-b pb-2 flex justify-between items-center">
                         <div>
-                            <h3 class="font-bold text-xs sm:text-sm text-slate-900 uppercase">🏗️ Form Tambah AHSP Pekerjaan Baru</h3>
+                            <h3 id="txtHeaderFormAHSP" class="font-bold text-xs sm:text-sm text-slate-900 uppercase">🏗️ Form Tambah AHSP Pekerjaan Baru</h3>
                             <p class="text-[10px] sm:text-[11px] text-slate-400">Menambahkan analisis & komponen ke tabel <code class="bg-slate-100 px-1 rounded font-bold">01_ahsp</code></p>
                         </div>
                         <span class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">Supabase</span>
                     </div>
 
                     <form onsubmit="event.preventDefault(); simpanAHSPBaru();" class="space-y-3">
+                        <input type="hidden" id="editAhspOldKode">
+
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode AHSP <span class="text-[9px] text-amber-600 font-normal">(Auto jika kosong)</span></label>
@@ -576,9 +586,14 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs shadow transition">
-                            💾 Simpan Ke Database
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="submit" id="btnSubmitAhsp" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs shadow transition">
+                                💾 Simpan Ke Database
+                            </button>
+                            <button type="button" id="btnBatalEditAhsp" onclick="resetFormAHSP()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                                Batal
+                            </button>
+                        </div>
                     </form>
                 </div>
 
@@ -1131,108 +1146,6 @@
                 <div class="pt-2 flex gap-2">
                     <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs transition">💾 Simpan Perubahan</button>
                     <button type="button" onclick="tutupModalEditBQ()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL EDIT MASTER HSD -->
-    <div id="modalEditHSD" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-sm text-slate-900">✏️ Edit Master HSD (Supabase)</h3>
-                <button onclick="tutupModalEditHSD()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
-            </div>
-            
-            <form onsubmit="event.preventDefault(); eksekusiSimpanEditHSD();" class="space-y-3">
-                <input type="hidden" id="editHsdRowId">
-                <input type="hidden" id="editHsdOldKode">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Item</label>
-                        <input type="text" id="editHsdKode" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan</label>
-                        <input type="text" id="editHsdSatuan" required class="w-full border p-2 text-xs rounded-lg bg-slate-50">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Item</label>
-                    <input type="text" id="editHsdNama" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-medium">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga (Rp)</label>
-                        <input type="number" id="editHsdHarga" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Wilayah</label>
-                        <input type="text" id="editHsdLokasi" placeholder="INDONESIA / Bandung" class="w-full border p-2 text-xs rounded-lg bg-slate-50">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nomor / Link Referensi</label>
-                    <input type="text" id="editHsdReferensi" placeholder="Contoh: https://link-katalog.com atau Ref-01" class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-medium">
-                </div>
-                <div class="pt-2 flex gap-2">
-                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs transition">💾 Update HSD</button>
-                    <button type="button" onclick="tutupModalEditHSD()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL EDIT MASTER AHSP -->
-    <div id="modalEditAHSP" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4 no-print">
-        <div class="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
-            <div class="flex justify-between items-center border-b pb-2">
-                <div>
-                    <h3 class="font-bold text-sm text-slate-900 uppercase">✏️ Edit Master AHSP Pekerjaan</h3>
-                    <p class="text-[10px] text-slate-400">Ubah info & rincian komponen penyusun di tabel <code class="font-bold">01_ahsp</code></p>
-                </div>
-                <button onclick="tutupModalEditAHSP()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
-            </div>
-            
-            <form onsubmit="event.preventDefault(); eksekusiSimpanEditAHSP();" class="space-y-3">
-                <input type="hidden" id="editAhspOldKode">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode AHSP</label>
-                        <input type="text" id="editAhspKode" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan Pekerjaan</label>
-                        <input type="text" id="editAhspSatuan" required class="w-full border p-2 text-xs rounded-lg bg-slate-50">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Pekerjaan</label>
-                    <input type="text" id="editAhspNama" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-medium">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kategori Divisi</label>
-                        <input type="text" id="editAhspKategori" required class="w-full border p-2 text-xs rounded-lg bg-slate-50">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Overhead (%)</label>
-                        <input type="number" id="editAhspOverhead" required class="w-full border p-2 text-xs rounded-lg bg-slate-50 font-bold">
-                    </div>
-                </div>
-
-                <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase">Edit Rincian Komponen Penyusun (A, B, C)</label>
-                        <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenEditBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
-                    </div>
-                    <div id="containerKomponenEditBuilder" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1">
-                    </div>
-                </div>
-
-                <div class="pt-2 flex gap-2">
-                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs shadow transition">💾 Update Master AHSP</button>
-                    <button type="button" onclick="tutupModalEditAHSP()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
                 </div>
             </form>
         </div>
@@ -3554,61 +3467,266 @@
             });
         }
 
+        // ================= FITUR EDIT DIRECT ON FORM ISIAN (TANPA POP-UP) =================
+
         function editBarisHSD(identifier) {
             const item = listHSDMaster.find(h => (h.id && h.id == identifier) || h.kode === identifier);
             if(!item) return;
 
             document.getElementById('editHsdRowId').value = item.id || '';
-            document.getElementById('editHsdOldKode').value = item.kode;
-            document.getElementById('editHsdKode').value = item.kode;
-            document.getElementById('editHsdNama').value = item.nama_item || item.uraian;
-            document.getElementById('editHsdSatuan').value = item.satuan;
-            document.getElementById('editHsdHarga').value = item.harga;
-            document.getElementById('editHsdLokasi').value = item.lokasi || '';
-            document.getElementById('editHsdReferensi').value = item.referensi || '';
-            document.getElementById('modalEditHSD').classList.remove('hidden');
+            document.getElementById('editHsdOldKode').value = item.kode || '';
+            document.getElementById('addHsdKode').value = item.kode || '';
+            document.getElementById('addHsdNama').value = item.nama_item || item.uraian || '';
+            document.getElementById('addHsdSatuan').value = item.satuan || '';
+            document.getElementById('addHsdHarga').value = item.harga || '';
+            document.getElementById('addHsdLokasi').value = item.lokasi || '';
+            document.getElementById('addHsdReferensi').value = item.referensi || '';
+
+            // Perbarui UI Form HSD
+            document.getElementById('txtHeaderFormHSD').innerText = "✏️ Edit HSD (Update Database)";
+            document.getElementById('btnSubmitHsd').innerText = "💾 Update Data HSD";
+            document.getElementById('btnBatalEditHsd').classList.remove('hidden');
+
+            // Scroll ke Form HSD
+            document.getElementById('sectionFormHSD').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function tutupModalEditHSD() { document.getElementById('modalEditHSD').classList.add('hidden'); }
+        function resetFormHSD() {
+            document.getElementById('editHsdRowId').value = '';
+            document.getElementById('editHsdOldKode').value = '';
+            document.getElementById('addHsdKode').value = '';
+            document.getElementById('addHsdNama').value = '';
+            document.getElementById('addHsdSatuan').value = '';
+            document.getElementById('addHsdHarga').value = '';
+            document.getElementById('addHsdLokasi').value = '';
+            document.getElementById('addHsdReferensi').value = '';
 
-        async function eksekusiSimpanEditHSD() {
+            document.getElementById('txtHeaderFormHSD').innerText = "📦 Form Tambah HSD Baru";
+            document.getElementById('btnSubmitHsd').innerText = "💾 Simpan Ke Database";
+            document.getElementById('btnBatalEditHsd').classList.add('hidden');
+        }
+
+        async function simpanHSDBaru() {
             const rowId = document.getElementById('editHsdRowId').value;
             const oldKode = document.getElementById('editHsdOldKode').value;
-            const newKode = document.getElementById('editHsdKode').value.trim();
+            let inputKode = document.getElementById('addHsdKode').value.trim();
 
-            if (newKode !== oldKode) {
-                const isExist = listHSDMaster.some(h => (h.id != rowId) && h.kode && h.kode.toLowerCase() === newKode.toLowerCase());
-                if (isExist) {
-                    showToast(`⚠️ Kode Item "${newKode}" sudah digunakan oleh item lain!`, "error", 4000);
-                    return;
+            if (rowId || oldKode) {
+                // Proses Edit / Update
+                if (inputKode && inputKode !== oldKode) {
+                    const isExist = listHSDMaster.some(h => (h.id != rowId) && h.kode && h.kode.toLowerCase() === inputKode.toLowerCase());
+                    if (isExist) {
+                        showToast(`⚠️ Kode Item "${inputKode}" sudah digunakan oleh item lain!`, "error", 4000);
+                        return;
+                    }
+                }
+
+                const payload = {
+                    kode: inputKode || oldKode,
+                    nama_item: document.getElementById('addHsdNama').value,
+                    satuan: document.getElementById('addHsdSatuan').value,
+                    harga: parseFloat(document.getElementById('addHsdHarga').value) || 0,
+                    lokasi: document.getElementById('addHsdLokasi').value || 'INDONESIA',
+                    referensi: document.getElementById('addHsdReferensi').value.trim()
+                };
+
+                let query = supabaseClient.from('02_hsd').update(payload);
+                if (rowId) {
+                    query = query.eq('id', rowId);
+                } else {
+                    query = query.eq('kode', oldKode);
+                }
+
+                const { error } = await query;
+                if (!error) {
+                    showToast("Master HSD berhasil diperbarui");
+                    resetFormHSD();
+                    muatDataProyekSemua();
+                } else {
+                    showToast("Gagal update HSD: " + error.message, "error");
+                }
+            } else {
+                // Proses Tambah Baru
+                if (inputKode) {
+                    const isDuplicate = listHSDMaster.some(h => h.kode && h.kode.toLowerCase() === inputKode.toLowerCase());
+                    if (isDuplicate) {
+                        showToast(`⚠️ Kode Item "${inputKode}" sudah terdaftar di Master HSD! Gunakan kode lain.`, "error", 4000);
+                        return;
+                    }
+                } else {
+                    inputKode = "HSD-" + String(listHSDMaster.length + 1).padStart(4, '0');
+                }
+
+                const payload = {
+                    kode: inputKode,
+                    nama_item: document.getElementById('addHsdNama').value,
+                    satuan: document.getElementById('addHsdSatuan').value,
+                    harga: parseFloat(document.getElementById('addHsdHarga').value) || 0,
+                    lokasi: document.getElementById('addHsdLokasi').value || 'INDONESIA',
+                    referensi: document.getElementById('addHsdReferensi').value.trim()
+                };
+
+                const { error } = await supabaseClient.from('02_hsd').insert([payload]);
+
+                if (!error) {
+                    showToast("HSD Baru Berhasil Disimpan! Kode: " + inputKode);
+                    resetFormHSD();
+                    muatDataProyekSemua();
+                } else {
+                    showToast("Gagal menyimpan HSD: " + error.message, "error");
                 }
             }
+        }
 
-            const payload = {
-                kode: newKode,
-                nama_item: document.getElementById('editHsdNama').value,
-                satuan: document.getElementById('editHsdSatuan').value,
-                harga: parseFloat(document.getElementById('editHsdHarga').value) || 0,
-                lokasi: document.getElementById('editHsdLokasi').value || 'INDONESIA',
-                referensi: document.getElementById('editHsdReferensi').value.trim()
-            };
+        function editBarisAHSP(kodeAHSP) {
+            const item = listAHSPMaster.find(a => a.kode_ahsp === kodeAHSP);
+            if(!item) return;
 
-            let query = supabaseClient.from('02_hsd').update(payload);
-            
-            if (rowId) {
-                query = query.eq('id', rowId);
-            } else {
-                query = query.eq('kode', oldKode);
+            document.getElementById('editAhspOldKode').value = item.kode_ahsp || '';
+            document.getElementById('addAhspKode').value = item.kode_ahsp || '';
+            document.getElementById('addAhspNama').value = item.nama_pekerjaan || '';
+            document.getElementById('addAhspKategori').value = item.kategori || '';
+            document.getElementById('addAhspSatuan').value = item.satuan || '';
+            document.getElementById('addAhspOverhead').value = item.overhead_persen || 15;
+
+            const container = document.getElementById('containerKomponenBuilder');
+            container.innerHTML = "";
+
+            let arrayKomponen = [];
+            if (item.komponen_json) {
+                try {
+                    arrayKomponen = typeof item.komponen_json === 'string' ? JSON.parse(item.komponen_json) : item.komponen_json;
+                } catch(e){}
             }
 
-            const { error } = await query;
-
-            if (!error) {
-                showToast("Master HSD diperbarui");
-                tutupModalEditHSD();
-                muatDataProyekSemua();
+            if(arrayKomponen.length === 0) {
+                tambahBarisKomponenBuilder('containerKomponenBuilder');
             } else {
-                showToast("Gagal update HSD: " + error.message, "error");
+                arrayKomponen.forEach(c => {
+                    tambahBarisKomponenBuilder('containerKomponenBuilder', c);
+                });
+            }
+
+            // Perbarui UI Form AHSP
+            document.getElementById('txtHeaderFormAHSP').innerText = "✏️ Edit AHSP Pekerjaan (Update Database)";
+            document.getElementById('btnSubmitAhsp').innerText = "💾 Update Master AHSP";
+            document.getElementById('btnBatalEditAhsp').classList.remove('hidden');
+
+            // Scroll ke Form AHSP
+            document.getElementById('sectionFormAHSP').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function resetFormAHSP() {
+            document.getElementById('editAhspOldKode').value = '';
+            document.getElementById('addAhspKode').value = '';
+            document.getElementById('addAhspNama').value = '';
+            document.getElementById('addAhspKategori').value = '';
+            document.getElementById('addAhspSatuan').value = '';
+            document.getElementById('addAhspOverhead').value = 12;
+
+            document.getElementById('containerKomponenBuilder').innerHTML = '';
+            tambahBarisKomponenBuilder('containerKomponenBuilder');
+
+            document.getElementById('txtHeaderFormAHSP').innerText = "🏗️ Form Tambah AHSP Pekerjaan Baru";
+            document.getElementById('btnSubmitAhsp').innerText = "💾 Simpan Ke Database";
+            document.getElementById('btnBatalEditAhsp').classList.add('hidden');
+        }
+
+        async function simpanAHSPBaru() {
+            const oldKode = document.getElementById('editAhspOldKode').value;
+            let inputKode = document.getElementById('addAhspKode').value.trim();
+
+            if (oldKode) {
+                // Proses Edit / Update AHSP
+                if (inputKode.toLowerCase() !== oldKode.toLowerCase()) {
+                    const isExist = listAHSPMaster.some(a => a.kode_ahsp && a.kode_ahsp.toLowerCase() === inputKode.toLowerCase());
+                    if (isExist) {
+                        showToast(`⚠️ Kode AHSP "${inputKode}" sudah digunakan oleh item lain!`, "error", 4000);
+                        return;
+                    }
+                }
+
+                const rows = document.querySelectorAll('#containerKomponenBuilder .row-komponen-builder');
+                let arrayKomponen = [];
+
+                rows.forEach(r => {
+                    const tipe = r.querySelector('.builder-tipe').value;
+                    const kode = r.querySelector('.builder-kode').value;
+                    const uraian = r.querySelector('.builder-uraian').value;
+                    const satuan = r.querySelector('.builder-satuan').value;
+                    const koef = parseFloat(r.querySelector('.builder-koefisien').value) || 0;
+
+                    if(uraian && koef) {
+                        arrayKomponen.push({ tipe: tipe, kode: kode, uraian: uraian, satuan: satuan, koefisien: koef });
+                    }
+                });
+
+                const payload = {
+                    kode_ahsp: inputKode || oldKode,
+                    nama_pekerjaan: document.getElementById('addAhspNama').value,
+                    kategori: document.getElementById('addAhspKategori').value,
+                    satuan: document.getElementById('addAhspSatuan').value,
+                    overhead_persen: parseFloat(document.getElementById('addAhspOverhead').value) || 15,
+                    komponen_json: JSON.stringify(arrayKomponen)
+                };
+
+                const { error } = await supabaseClient
+                    .from('01_ahsp')
+                    .update(payload)
+                    .eq('kode_ahsp', oldKode);
+
+                if (!error) {
+                    showToast("Master AHSP berhasil diperbarui");
+                    resetFormAHSP();
+                    muatDataProyekSemua();
+                } else {
+                    showToast("Gagal update AHSP: " + error.message, "error");
+                }
+            } else {
+                // Proses Tambah Baru AHSP
+                if (!inputKode) {
+                    inputKode = "AHSP-CUSTOM-" + Date.now().toString().slice(-6) + "-" + Math.floor(Math.random() * 100);
+                } else {
+                    const isDuplicate = listAHSPMaster.some(a => a.kode_ahsp && a.kode_ahsp.toLowerCase() === inputKode.toLowerCase());
+                    if (isDuplicate) {
+                        showToast(`⚠️ Kode AHSP "${inputKode}" sudah terdaftar! Gunakan kode lain.`, "error", 4000);
+                        return;
+                    }
+                }
+
+                const rows = document.querySelectorAll('#containerKomponenBuilder .row-komponen-builder');
+                let arrayKomponen = [];
+
+                rows.forEach(r => {
+                    const tipe = r.querySelector('.builder-tipe').value;
+                    const kode = r.querySelector('.builder-kode').value;
+                    const uraian = r.querySelector('.builder-uraian').value;
+                    const satuan = r.querySelector('.builder-satuan').value;
+                    const koef = parseFloat(r.querySelector('.builder-koefisien').value) || 0;
+
+                    if(uraian && koef) {
+                        arrayKomponen.push({ tipe: tipe, kode: kode, uraian: uraian, satuan: satuan, koefisien: koef });
+                    }
+                });
+
+                const payload = {
+                    kode_ahsp: inputKode,
+                    nama_pekerjaan: document.getElementById('addAhspNama').value,
+                    kategori: document.getElementById('addAhspKategori').value,
+                    satuan: document.getElementById('addAhspSatuan').value,
+                    overhead_persen: parseFloat(document.getElementById('addAhspOverhead').value) || 15,
+                    komponen_json: JSON.stringify(arrayKomponen)
+                };
+
+                const { error } = await supabaseClient.from('01_ahsp').insert([payload]);
+
+                if (!error) {
+                    showToast("AHSP Berhasil Disimpan! Kode: " + inputKode);
+                    resetFormAHSP();
+                    muatDataProyekSemua();
+                } else {
+                    showToast("Gagal menyimpan AHSP: " + error.message, "error");
+                }
             }
         }
 
@@ -3640,90 +3758,6 @@
             if(item) previewStrukturAHSP(item);
         }
 
-        function editBarisAHSP(kodeAHSP) {
-            const item = listAHSPMaster.find(a => a.kode_ahsp === kodeAHSP);
-            if(!item) return;
-
-            document.getElementById('editAhspOldKode').value = item.kode_ahsp;
-            document.getElementById('editAhspKode').value = item.kode_ahsp;
-            document.getElementById('editAhspNama').value = item.nama_pekerjaan;
-            document.getElementById('editAhspKategori').value = item.kategori;
-            document.getElementById('editAhspSatuan').value = item.satuan;
-            document.getElementById('editAhspOverhead').value = item.overhead_persen || 15;
-
-            const container = document.getElementById('containerKomponenEditBuilder');
-            container.innerHTML = "";
-
-            let arrayKomponen = [];
-            if (item.komponen_json) {
-                try {
-                    arrayKomponen = typeof item.komponen_json === 'string' ? JSON.parse(item.komponen_json) : item.komponen_json;
-                } catch(e){}
-            }
-
-            if(arrayKomponen.length === 0) {
-                tambahBarisKomponenBuilder('containerKomponenEditBuilder');
-            } else {
-                arrayKomponen.forEach(c => {
-                    tambahBarisKomponenBuilder('containerKomponenEditBuilder', c);
-                });
-            }
-
-            document.getElementById('modalEditAHSP').classList.remove('hidden');
-        }
-
-        function tutupModalEditAHSP() { document.getElementById('modalEditAHSP').classList.add('hidden'); }
-
-        async function eksekusiSimpanEditAHSP() {
-            const oldKode = document.getElementById('editAhspOldKode').value;
-            const newKode = document.getElementById('editAhspKode').value.trim();
-
-            if (newKode.toLowerCase() !== oldKode.toLowerCase()) {
-                const isExist = listAHSPMaster.some(a => a.kode_ahsp && a.kode_ahsp.toLowerCase() === newKode.toLowerCase());
-                if (isExist) {
-                    showToast(`⚠️ Kode AHSP "${newKode}" sudah digunakan oleh item lain!`, "error", 4000);
-                    return;
-                }
-            }
-
-            const rows = document.querySelectorAll('#containerKomponenEditBuilder .row-komponen-builder');
-            let arrayKomponen = [];
-
-            rows.forEach(r => {
-                const tipe = r.querySelector('.builder-tipe').value;
-                const kode = r.querySelector('.builder-kode').value;
-                const uraian = r.querySelector('.builder-uraian').value;
-                const satuan = r.querySelector('.builder-satuan').value;
-                const koef = parseFloat(r.querySelector('.builder-koefisien').value) || 0;
-
-                if(uraian && koef) {
-                    arrayKomponen.push({ tipe: tipe, kode: kode, uraian: uraian, satuan: satuan, koefisien: koef });
-                }
-            });
-
-            const payload = {
-                kode_ahsp: newKode,
-                nama_pekerjaan: document.getElementById('editAhspNama').value,
-                kategori: document.getElementById('editAhspKategori').value,
-                satuan: document.getElementById('editAhspSatuan').value,
-                overhead_persen: parseFloat(document.getElementById('editAhspOverhead').value) || 15,
-                komponen_json: JSON.stringify(arrayKomponen)
-            };
-
-            const { error } = await supabaseClient
-                .from('01_ahsp')
-                .update(payload)
-                .eq('kode_ahsp', oldKode);
-
-            if (!error) {
-                showToast("Master AHSP diperbarui");
-                tutupModalEditAHSP();
-                muatDataProyekSemua();
-            } else {
-                showToast("Gagal update AHSP: " + error.message, "error");
-            }
-        }
-
         async function hapusBarisAHSP(kodeAHSP) {
             if(!confirm(`Yakin ingin menghapus item AHSP [${kodeAHSP}]?`)) return;
 
@@ -3737,46 +3771,6 @@
                 muatDataProyekSemua();
             } else {
                 showToast("Gagal menghapus AHSP: " + error.message, "error");
-            }
-        }
-
-        async function simpanHSDBaru() {
-            let inputKode = document.getElementById('addHsdKode').value.trim();
-
-            if (inputKode) {
-                const isDuplicate = listHSDMaster.some(h => h.kode && h.kode.toLowerCase() === inputKode.toLowerCase());
-                if (isDuplicate) {
-                    showToast(`⚠️ Kode Item "${inputKode}" sudah terdaftar di Master HSD! Gunakan kode lain.`, "error", 4000);
-                    return;
-                }
-            } else {
-                inputKode = "HSD-" + String(listHSDMaster.length + 1).padStart(4, '0');
-            }
-
-            const payload = {
-                kode: inputKode,
-                nama_item: document.getElementById('addHsdNama').value,
-                satuan: document.getElementById('addHsdSatuan').value,
-                harga: parseFloat(document.getElementById('addHsdHarga').value) || 0,
-                lokasi: document.getElementById('addHsdLokasi').value || 'INDONESIA',
-                referensi: document.getElementById('addHsdReferensi').value.trim()
-            };
-
-            const { error } = await supabaseClient
-                .from('02_hsd')
-                .insert([payload]);
-
-            if (!error) {
-                showToast("HSD Baru Berhasil Disimpan! Kode: " + inputKode);
-                document.getElementById('addHsdKode').value = "";
-                document.getElementById('addHsdNama').value = "";
-                document.getElementById('addHsdSatuan').value = "";
-                document.getElementById('addHsdHarga').value = "";
-                document.getElementById('addHsdLokasi').value = "";
-                document.getElementById('addHsdReferensi').value = "";
-                muatDataProyekSemua();
-            } else {
-                showToast("Gagal menyimpan HSD: " + error.message, "error");
             }
         }
 
@@ -3817,61 +3811,6 @@
                 <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 font-bold px-1 text-xs shrink-0" title="Hapus Komponen">✕</button>
             `;
             container.appendChild(div);
-        }
-
-        async function simpanAHSPBaru() {
-            let inputKode = document.getElementById('addAhspKode').value.trim();
-
-            if (!inputKode) {
-                inputKode = "AHSP-CUSTOM-" + Date.now().toString().slice(-6) + "-" + Math.floor(Math.random() * 100);
-            } else {
-                const isDuplicate = listAHSPMaster.some(a => a.kode_ahsp && a.kode_ahsp.toLowerCase() === inputKode.toLowerCase());
-                if (isDuplicate) {
-                    showToast(`⚠️ Kode AHSP "${inputKode}" sudah terdaftar! Gunakan kode lain.`, "error", 4000);
-                    return;
-                }
-            }
-
-            const rows = document.querySelectorAll('#containerKomponenBuilder .row-komponen-builder');
-            let arrayKomponen = [];
-
-            rows.forEach(r => {
-                const tipe = r.querySelector('.builder-tipe').value;
-                const kode = r.querySelector('.builder-kode').value;
-                const uraian = r.querySelector('.builder-uraian').value;
-                const satuan = r.querySelector('.builder-satuan').value;
-                const koef = parseFloat(r.querySelector('.builder-koefisien').value) || 0;
-
-                if(uraian && koef) {
-                    arrayKomponen.push({ tipe: tipe, kode: kode, uraian: uraian, satuan: satuan, koefisien: koef });
-                }
-            });
-
-            const payload = {
-                kode_ahsp: inputKode,
-                nama_pekerjaan: document.getElementById('addAhspNama').value,
-                kategori: document.getElementById('addAhspKategori').value,
-                satuan: document.getElementById('addAhspSatuan').value,
-                overhead_persen: parseFloat(document.getElementById('addAhspOverhead').value) || 15,
-                komponen_json: JSON.stringify(arrayKomponen)
-            };
-
-            const { error } = await supabaseClient
-                .from('01_ahsp')
-                .insert([payload]);
-
-            if (!error) {
-                showToast("AHSP Berhasil Disimpan! Kode: " + inputKode);
-                document.getElementById('addAhspKode').value = "";
-                document.getElementById('addAhspNama').value = "";
-                document.getElementById('addAhspKategori').value = "";
-                document.getElementById('addAhspSatuan').value = "";
-                document.getElementById('containerKomponenBuilder').innerHTML = "";
-                tambahBarisKomponenBuilder('containerKomponenBuilder');
-                muatDataProyekSemua();
-            } else {
-                showToast("Gagal menyimpan AHSP: " + error.message, "error");
-            }
         }
 
         function bukaModalBuatProyek() { document.getElementById('modalProyek').classList.remove('hidden'); }
