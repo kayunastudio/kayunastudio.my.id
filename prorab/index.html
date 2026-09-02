@@ -481,272 +481,264 @@
         </div>
 
         <!-- ================= PAGE 2: KELOLA MASTER AHSP & HSD ================= -->
-        <div id="pageMaster" class="hidden space-y-6">
+        <div id="pageMaster" class="hidden flex flex-col lg:grid lg:grid-cols-2 gap-6">
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                <!-- FORM TAMBAH / EDIT HSD BARU -->
-                <div id="sectionFormHSD" class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <div class="border-b pb-2 flex justify-between items-center">
-                        <div>
-                            <h3 id="txtHeaderFormHSD" class="font-bold text-xs sm:text-sm text-slate-900 uppercase">📦 Form Tambah HSD Baru</h3>
-                            <p class="text-[10px] sm:text-[11px] text-slate-400">Menambahkan Upah, Bahan, atau Peralatan ke tabel <code class="bg-slate-100 px-1 rounded font-bold">02_hsd</code></p>
-                        </div>
-                        <span class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">Supabase</span>
+            <!-- FORM TAMBAH / EDIT HSD BARU -->
+            <div id="sectionFormHSD" class="order-1 lg:order-none bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="border-b pb-2 flex justify-between items-center">
+                    <div>
+                        <h3 id="txtHeaderFormHSD" class="font-bold text-xs sm:text-sm text-slate-900 uppercase">📦 Form Tambah HSD Baru</h3>
+                        <p class="text-[10px] sm:text-[11px] text-slate-400">Menambahkan Upah, Bahan, atau Peralatan ke tabel <code class="bg-slate-100 px-1 rounded font-bold">02_hsd</code></p>
                     </div>
-
-                    <form onsubmit="event.preventDefault(); simpanHSDBaru();" class="space-y-3">
-                        <input type="hidden" id="editHsdRowId">
-                        <input type="hidden" id="editHsdOldKode">
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Item <span class="text-[9px] text-blue-600 font-normal">(Auto jika kosong)</span></label>
-                                <input type="text" id="addHsdKode" placeholder="Ex: L.01 / M.05 / Auto" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan</label>
-                                <input type="text" id="addHsdSatuan" required placeholder="OH / kg / m3" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Item (Uraian)</label>
-                            <input type="text" id="addHsdNama" required placeholder="Semen Portland / Tukang Batu" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga Satuan (Rp)</label>
-                                <input type="number" id="addHsdHarga" required placeholder="0" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Wilayah</label>
-                                <input type="text" id="addHsdLokasi" placeholder="INDONESIA / Bandung / Jakarta" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">No. Halaman / Link Referensi <span class="text-[9px] text-slate-400 font-normal">(Opsional)</span></label>
-                            <input type="text" id="addHsdReferensi" placeholder="Contoh: https://katalog-harga.com/semen atau Ref-No: 2026/08/INV" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium text-slate-700">
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button type="submit" id="btnSubmitHsd" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
-                                💾 Simpan Ke Database
-                            </button>
-                            <button type="button" id="btnBatalEditHsd" onclick="resetFormHSD()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
-                                Batal
-                            </button>
-                        </div>
-                    </form>
+                    <span class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">Supabase</span>
                 </div>
 
-                <!-- FORM TAMBAH / EDIT AHSP PEKERJAAN BARU -->
-                <div id="sectionFormAHSP" class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <div class="border-b pb-2 flex justify-between items-center">
+                <form onsubmit="event.preventDefault(); simpanHSDBaru();" class="space-y-3">
+                    <input type="hidden" id="editHsdRowId">
+                    <input type="hidden" id="editHsdOldKode">
+
+                    <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <h3 id="txtHeaderFormAHSP" class="font-bold text-xs sm:text-sm text-slate-900 uppercase">🏗️ Form Tambah AHSP Pekerjaan Baru</h3>
-                            <p class="text-[10px] sm:text-[11px] text-slate-400">Menambahkan analisis & komponen ke tabel <code class="bg-slate-100 px-1 rounded font-bold">01_ahsp</code></p>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode Item <span class="text-[9px] text-blue-600 font-normal">(Auto jika kosong)</span></label>
+                            <input type="text" id="addHsdKode" placeholder="Ex: L.01 / M.05 / Auto" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
                         </div>
-                        <span class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">Supabase</span>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan</label>
+                            <input type="text" id="addHsdSatuan" required placeholder="OH / kg / m3" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
+                        </div>
                     </div>
 
-                    <form onsubmit="event.preventDefault(); simpanAHSPBaru();" class="space-y-3">
-                        <input type="hidden" id="editAhspOldKode">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Item (Uraian)</label>
+                        <input type="text" id="addHsdNama" required placeholder="Semen Portland / Tukang Batu" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium">
+                    </div>
 
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode AHSP <span class="text-[9px] text-amber-600 font-normal">(Auto jika kosong)</span></label>
-                                <input type="text" id="addAhspKode" placeholder="Ex: A.4.4.1.9" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan Pekerjaan</label>
-                                <input type="text" id="addAhspSatuan" required placeholder="m2 / m3 / m1" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
-                            </div>
-                        </div>
-
+                    <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Pekerjaan</label>
-                            <input type="text" id="addAhspNama" required placeholder="Pemasangan 1 m2 Dinding Bata Merah" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga Satuan (Rp)</label>
+                            <input type="number" id="addHsdHarga" required placeholder="0" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold">
                         </div>
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kategori Divisi</label>
-                                <input type="text" id="addAhspKategori" required placeholder="III. PEKERJAAN DINDING" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Overhead (%)</label>
-                                <input type="number" id="addAhspOverhead" value="12" required placeholder="12" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold">
-                            </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Lokasi Wilayah</label>
+                            <input type="text" id="addHsdLokasi" placeholder="INDONESIA / Bandung / Jakarta" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
                         </div>
+                    </div>
 
-                        <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
-                            <div class="flex justify-between items-center">
-                                <label class="block text-[10px] font-bold text-slate-700 uppercase">Komponen Penyusun (A, B, C)</label>
-                                <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
-                            </div>
-                            <div id="containerKomponenBuilder" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1">
-                            </div>
-                        </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">No. Halaman / Link Referensi <span class="text-[9px] text-slate-400 font-normal">(Opsional)</span></label>
+                        <input type="text" id="addHsdReferensi" placeholder="Contoh: https://katalog-harga.com/semen atau Ref-No: 2026/08/INV" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium text-slate-700">
+                    </div>
 
-                        <div class="flex gap-2">
-                            <button type="submit" id="btnSubmitAhsp" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs shadow transition">
-                                💾 Simpan Ke Database
-                            </button>
-                            <button type="button" id="btnBatalEditAhsp" onclick="resetFormAHSP()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
-                                Batal
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
+                    <div class="flex gap-2">
+                        <button type="submit" id="btnSubmitHsd" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-xl text-xs shadow transition">
+                            💾 Simpan Ke Database
+                        </button>
+                        <button type="button" id="btnBatalEditHsd" onclick="resetFormHSD()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                            Batal
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                <!-- MONITOR MASTER HSD -->
-                <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
-                        <div>
-                            <h3 class="font-bold text-xs text-slate-900 uppercase">📋 Master HSD Tersimpan</h3>
-                            <p class="text-[10px] text-slate-400">Database Upah, Bahan, dan Peralatan (<code class="font-bold">02_hsd</code>)</p>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="exportMasterHSD('csv')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export CSV</button>
-                            <span id="badgeCountHsd" class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
-                        </div>
+            <!-- MONITOR MASTER HSD -->
+            <div id="sectionMonitorHSD" class="order-2 lg:order-none bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
+                    <div>
+                        <h3 class="font-bold text-xs text-slate-900 uppercase">📋 Master HSD Tersimpan</h3>
+                        <p class="text-[10px] text-slate-400">Database Upah, Bahan, dan Peralatan (<code class="font-bold">02_hsd</code>)</p>
                     </div>
-
-                    <div class="bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label class="text-[10px] font-bold text-blue-900 uppercase flex items-center gap-1">
-                                <span>📈</span> Penyesuaian Harga Inflasi (%) Item Terpilih
-                            </label>
-                            <span class="text-[9px] text-blue-600 font-medium" id="lblHsdSelectedCountInfo">*0 item diceklis</span>
-                        </div>
-                        <div class="flex gap-2 items-center">
-                            <div class="relative flex-1">
-                                <input type="number" step="0.1" id="inpHsdInflationPercent" placeholder="Contoh: 5 (naik 5%) / -2 (turun 2%)" class="w-full border border-blue-300 p-1.5 text-xs rounded-lg bg-white font-bold text-slate-800 pl-3 pr-7 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <span class="absolute right-2.5 top-1.5 text-xs font-bold text-slate-400">%</span>
-                            </div>
-                            <button onclick="eksekusiAdjustHargaHsdPersentase()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow transition shrink-0">
-                                ⚡ Terapkan Inflasi
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-1.5 items-center">
-                        <div class="relative flex-1">
-                            <input type="text" id="searchHsdInput" onkeydown="handleSearchHsdKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
-                        </div>
-                        <button onclick="renderTabelMonitorHSD(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
-                            🔍 Cari
-                        </button>
-                    </div>
-
-                    <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
-                        <table class="w-full text-left border-collapse text-xs min-w-[550px]">
-                            <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase shadow-sm">
-                                <tr>
-                                    <th class="p-2 border-b bg-slate-100 text-center w-8">
-                                        <input type="checkbox" id="chkSelectAllHSD" onchange="toggleSelectAllHSD(this)" title="Pilih Semua Item">
-                                    </th>
-                                    <th class="p-2 border-b bg-slate-100">KODE</th>
-                                    <th class="p-2 border-b bg-slate-100">NAMA ITEM</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
-                                    <th class="p-2 border-b bg-slate-100 text-right">HARGA (RP)</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center">LOKASI</th>
-                                    <th class="p-2 border-b bg-slate-100">REFERENSI</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center w-24">AKSI</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelMasterHSDMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
-                                <tr><td colspan="8" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- KONTROL PAGINASI HSD -->
-                    <div class="flex items-center justify-between pt-2 text-xs text-slate-500 border-t">
-                        <span id="lblPageHsdInfo">Halaman 1 dari 1</span>
-                        <div class="flex gap-1.5">
-                            <button onclick="gantiHalamanHsd(-1)" id="btnHsdPrev" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">◄ Prev</button>
-                            <button onclick="gantiHalamanHsd(1)" id="btnHsdNext" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">Next ►</button>
-                        </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="exportMasterHSD('csv')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export CSV</button>
+                        <span id="badgeCountHsd" class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
                     </div>
                 </div>
 
-                <!-- MONITOR MASTER AHSP -->
-                <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
-                        <div>
-                            <h3 class="font-bold text-xs text-slate-900 uppercase">📋 Master AHSP Pekerjaan</h3>
-                            <p class="text-[10px] text-slate-400">Database Standar Pekerjaan PUPR (<code class="font-bold">01_ahsp</code>)</p>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="exportMasterAHSP('xlsx')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export Standar PUPR</button>
-                            <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
-                        </div>
+                <div class="bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] font-bold text-blue-900 uppercase flex items-center gap-1">
+                            <span>📈</span> Penyesuaian Harga Inflasi (%) Item Terpilih
+                        </label>
+                        <span class="text-[9px] text-blue-600 font-medium" id="lblHsdSelectedCountInfo">*0 item diceklis</span>
                     </div>
-
-                    <div class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-xl space-y-2">
-                        <div class="flex justify-between items-center">
-                            <label class="text-[10px] font-bold text-amber-900 uppercase flex items-center gap-1">
-                                <span>🏷️</span> Ubah Overhead AHSP Massal (%)
-                            </label>
-                            <span class="text-[9px] text-amber-700 font-medium">*Ubah persen overhead seluruh item</span>
-                        </div>
-                        <div class="flex gap-2 items-center">
-                            <div class="relative flex-1">
-                                <input type="number" step="0.5" id="inpGlobalAhspOverhead" placeholder="Contoh: 15 / 10 / 20" class="w-full border border-amber-300 p-1.5 text-xs rounded-lg bg-white font-bold text-slate-800 pl-3 pr-7 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                <span class="absolute right-2.5 top-1.5 text-xs font-bold text-slate-400">%</span>
-                            </div>
-                            <button onclick="eksekusiUbahGlobalOverheadAHSP()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs shadow transition shrink-0">
-                                ⚙️ Update Overhead
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-1.5 items-center">
+                    <div class="flex gap-2 items-center">
                         <div class="relative flex-1">
-                            <input type="text" id="searchAhspInput" onkeydown="handleSearchAhspKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                            <input type="number" step="0.1" id="inpHsdInflationPercent" placeholder="Contoh: 5 (naik 5%) / -2 (turun 2%)" class="w-full border border-blue-300 p-1.5 text-xs rounded-lg bg-white font-bold text-slate-800 pl-3 pr-7 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <span class="absolute right-2.5 top-1.5 text-xs font-bold text-slate-400">%</span>
                         </div>
-                        <button onclick="renderTabelMonitorAHSP(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
-                            🔍 Cari
+                        <button onclick="eksekusiAdjustHargaHsdPersentase()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow transition shrink-0">
+                            ⚡ Terapkan Inflasi
                         </button>
-                    </div>
-
-                    <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
-                        <table class="w-full text-left border-collapse text-xs min-w-[450px]">
-                            <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase shadow-sm">
-                                <tr>
-                                    <th class="p-2 border-b bg-slate-100">KODE</th>
-                                    <th class="p-2 border-b bg-slate-100">NAMA PEKERJAAN</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center">OVERHEAD</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center w-28">AKSI</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelMasterAHSPMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
-                                <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- KONTROL PAGINASI AHSP -->
-                    <div class="flex items-center justify-between pt-2 text-xs text-slate-500 border-t">
-                        <span id="lblPageAhspInfo">Halaman 1 dari 1</span>
-                        <div class="flex gap-1.5">
-                            <button onclick="gantiHalamanAhsp(-1)" id="btnAhspPrev" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">◄ Prev</button>
-                            <button onclick="gantiHalamanAhsp(1)" id="btnAhspNext" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">Next ►</button>
-                        </div>
                     </div>
                 </div>
 
+                <div class="flex gap-1.5 items-center">
+                    <div class="relative flex-1">
+                        <input type="text" id="searchHsdInput" onkeydown="handleSearchHsdKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                    </div>
+                    <button onclick="renderTabelMonitorHSD(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                        🔍 Cari
+                    </button>
+                </div>
+
+                <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
+                    <table class="w-full text-left border-collapse text-xs min-w-[550px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase shadow-sm">
+                            <tr>
+                                <th class="p-2 border-b bg-slate-100 text-center w-8">
+                                    <input type="checkbox" id="chkSelectAllHSD" onchange="toggleSelectAllHSD(this)" title="Pilih Semua Item">
+                                </th>
+                                <th class="p-2 border-b bg-slate-100">KODE</th>
+                                <th class="p-2 border-b bg-slate-100">NAMA ITEM</th>
+                                <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
+                                <th class="p-2 border-b bg-slate-100 text-right">HARGA (RP)</th>
+                                <th class="p-2 border-b bg-slate-100 text-center">LOKASI</th>
+                                <th class="p-2 border-b bg-slate-100">REFERENSI</th>
+                                <th class="p-2 border-b bg-slate-100 text-center w-24">AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelMasterHSDMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                            <tr><td colspan="8" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- KONTROL PAGINASI HSD -->
+                <div class="flex items-center justify-between pt-2 text-xs text-slate-500 border-t">
+                    <span id="lblPageHsdInfo">Halaman 1 dari 1</span>
+                    <div class="flex gap-1.5">
+                        <button onclick="gantiHalamanHsd(-1)" id="btnHsdPrev" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">◄ Prev</button>
+                        <button onclick="gantiHalamanHsd(1)" id="btnHsdNext" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">Next ►</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORM TAMBAH / EDIT AHSP PEKERJAAN BARU -->
+            <div id="sectionFormAHSP" class="order-3 lg:order-none bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="border-b pb-2 flex justify-between items-center">
+                    <div>
+                        <h3 id="txtHeaderFormAHSP" class="font-bold text-xs sm:text-sm text-slate-900 uppercase">🏗️ Form Tambah AHSP Pekerjaan Baru</h3>
+                        <p class="text-[10px] sm:text-[11px] text-slate-400">Menambahkan analisis & komponen ke tabel <code class="bg-slate-100 px-1 rounded font-bold">01_ahsp</code></p>
+                    </div>
+                    <span class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">Supabase</span>
+                </div>
+
+                <form onsubmit="event.preventDefault(); simpanAHSPBaru();" class="space-y-3">
+                    <input type="hidden" id="editAhspOldKode">
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kode AHSP <span class="text-[9px] text-amber-600 font-normal">(Auto jika kosong)</span></label>
+                            <input type="text" id="addAhspKode" placeholder="Ex: A.4.4.1.9" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-mono font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Satuan Pekerjaan</label>
+                            <input type="text" id="addAhspSatuan" required placeholder="m2 / m3 / m1" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Pekerjaan</label>
+                        <input type="text" id="addAhspNama" required placeholder="Pemasangan 1 m2 Dinding Bata Merah" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kategori Divisi</label>
+                            <input type="text" id="addAhspKategori" required placeholder="III. PEKERJAAN DINDING" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Overhead (%)</label>
+                            <input type="number" id="addAhspOverhead" value="12" required placeholder="12" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-bold">
+                        </div>
+                    </div>
+
+                    <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-[10px] font-bold text-slate-700 uppercase">Komponen Penyusun (A, B, C)</label>
+                            <button type="button" onclick="tambahBarisKomponenBuilder('containerKomponenBuilder')" class="text-[10px] bg-slate-900 text-white font-bold px-2 py-1 rounded hover:bg-slate-800">➕ Tambah</button>
+                        </div>
+                        <div id="containerKomponenBuilder" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="submit" id="btnSubmitAhsp" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs shadow transition">
+                            💾 Simpan Ke Database
+                        </button>
+                        <button type="button" id="btnBatalEditAhsp" onclick="resetFormAHSP()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- MONITOR MASTER AHSP -->
+            <div id="sectionMonitorAHSP" class="order-4 lg:order-none bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
+                    <div>
+                        <h3 class="font-bold text-xs text-slate-900 uppercase">📋 Master AHSP Pekerjaan</h3>
+                        <p class="text-[10px] text-slate-400">Database Standar Pekerjaan PUPR (<code class="font-bold">01_ahsp</code>)</p>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="exportMasterAHSP('xlsx')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export Standar PUPR</button>
+                        <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-xl space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] font-bold text-amber-900 uppercase flex items-center gap-1">
+                            <span>🏷️</span> Ubah Overhead AHSP Massal (%)
+                        </label>
+                        <span class="text-[9px] text-amber-700 font-medium">*Ubah persen overhead seluruh item</span>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <div class="relative flex-1">
+                            <input type="number" step="0.5" id="inpGlobalAhspOverhead" placeholder="Contoh: 15 / 10 / 20" class="w-full border border-amber-300 p-1.5 text-xs rounded-lg bg-white font-bold text-slate-800 pl-3 pr-7 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            <span class="absolute right-2.5 top-1.5 text-xs font-bold text-slate-400">%</span>
+                        </div>
+                        <button onclick="eksekusiUbahGlobalOverheadAHSP()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs shadow transition shrink-0">
+                            ⚙️ Update Overhead
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex gap-1.5 items-center">
+                    <div class="relative flex-1">
+                        <input type="text" id="searchAhspInput" onkeydown="handleSearchAhspKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                    </div>
+                    <button onclick="renderTabelMonitorAHSP(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                        🔍 Cari
+                    </button>
+                </div>
+
+                <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
+                    <table class="w-full text-left border-collapse text-xs min-w-[450px]">
+                        <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase shadow-sm">
+                            <tr>
+                                <th class="p-2 border-b bg-slate-100">KODE</th>
+                                <th class="p-2 border-b bg-slate-100">NAMA PEKERJAAN</th>
+                                <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
+                                <th class="p-2 border-b bg-slate-100 text-center">OVERHEAD</th>
+                                <th class="p-2 border-b bg-slate-100 text-center w-28">AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelMasterAHSPMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
+                            <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- KONTROL PAGINASI AHSP -->
+                <div class="flex items-center justify-between pt-2 text-xs text-slate-500 border-t">
+                    <span id="lblPageAhspInfo">Halaman 1 dari 1</span>
+                    <div class="flex gap-1.5">
+                        <button onclick="gantiHalamanAhsp(-1)" id="btnAhspPrev" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">◄ Prev</button>
+                        <button onclick="gantiHalamanAhsp(1)" id="btnAhspNext" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">Next ►</button>
+                    </div>
+                </div>
             </div>
 
         </div>
