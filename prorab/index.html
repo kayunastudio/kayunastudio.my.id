@@ -1102,24 +1102,26 @@
 
     <!-- MODAL POPUP PREVIEW MASTER AHSP -->
     <div id="modalAHSPPUPR" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[50000] flex items-center justify-center hidden p-3 sm:p-4 no-print">
-        <div class="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
             <div class="flex justify-between items-center border-b pb-2">
                 <div>
                     <h3 id="modalAHSPTitle" class="font-black text-xs sm:text-sm text-slate-900 uppercase">Analisa Koefisien AHSP PUPR</h3>
-                    <p class="text-[10px] text-slate-400">Rincian Komponen, Satuan, dan Koefisien Standar</p>
+                    <p class="text-[10px] text-slate-400">Rincian Komponen, Satuan, Koefisien, Harga, dan Jumlah Biaya</p>
                 </div>
                 <button onclick="tutupModalDetailAHSP()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
             </div>
 
             <div class="border rounded-xl p-2 sm:p-3 bg-slate-50 space-y-3 text-xs overflow-x-auto custom-scroll">
-                <table class="w-full border-collapse border border-slate-300 bg-white text-[11px] min-w-[400px]">
+                <table class="w-full border-collapse border border-slate-300 bg-white text-[11px] min-w-[550px]">
                     <thead>
                         <tr class="bg-slate-800 text-white font-bold border-b border-slate-300 text-[10px] text-center uppercase">
                             <th class="p-2 border border-slate-300 w-10">NO</th>
                             <th class="p-2 border border-slate-300 text-left">URAIAN KOMPONEN</th>
                             <th class="p-2 border border-slate-300 w-20">KODE</th>
                             <th class="p-2 border border-slate-300 w-16">SATUAN</th>
-                            <th class="p-2 border border-slate-300 w-24">KOEFISIEN</th>
+                            <th class="p-2 border border-slate-300 w-20">KOEFISIEN</th>
+                            <th class="p-2 border border-slate-300 w-28 text-right">HARGA SAT. (RP)</th>
+                            <th class="p-2 border border-slate-300 w-32 text-right">JUMLAH (RP)</th>
                         </tr>
                     </thead>
                     <tbody id="tabelAHSPDetailRows" class="divide-y divide-slate-200">
@@ -2210,6 +2212,7 @@
         }
 
         function previewStrukturAHSP(ahspObj) {
+            let lokasiProyek = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase().trim() : "";
             let components = [];
             if (ahspObj.komponen_json) {
                 try {
@@ -2218,39 +2221,92 @@
             }
 
             let rowsHtml = "";
+            let totalA = 0, totalB = 0, totalC = 0;
 
-            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">A</td><td colspan="4" class="p-1.5 border border-slate-300">Tenaga Kerja</td></tr>`;
+            // A. TENAGA KERJA / UPAH
+            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">A</td><td colspan="6" class="p-1.5 border border-slate-300">Tenaga Kerja</td></tr>`;
             let upahList = components.filter(c => c.tipe === "Upah");
             if(upahList.length === 0) {
-                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="4" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen upah)</td></tr>`;
+                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="6" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen upah)</td></tr>`;
             } else {
                 upahList.forEach(c => {
-                    rowsHtml += `<tr><td class="p-1.5 border text-center"></td><td class="p-1.5 border font-medium">${c.uraian}</td><td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td><td class="p-1.5 border text-center font-mono">${c.satuan}</td><td class="p-1.5 border text-center font-mono font-bold text-slate-800">${c.koefisien}</td></tr>`;
+                    let hrg = cariHargaHSD(c, lokasiProyek);
+                    let koef = parseFloat(c.koefisien) || 0;
+                    let sub = koef * hrg;
+                    totalA += sub;
+                    rowsHtml += `<tr>
+                        <td class="p-1.5 border text-center"></td>
+                        <td class="p-1.5 border font-medium">${c.uraian}</td>
+                        <td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td>
+                        <td class="p-1.5 border text-center font-mono">${c.satuan}</td>
+                        <td class="p-1.5 border text-center font-mono font-bold text-slate-800">${koef}</td>
+                        <td class="p-1.5 border text-right font-mono">Rp ${Math.round(hrg).toLocaleString('id-ID')}</td>
+                        <td class="p-1.5 border text-right font-mono font-bold text-slate-900">Rp ${Math.round(sub).toLocaleString('id-ID')}</td>
+                    </tr>`;
                 });
             }
+            rowsHtml += `<tr class="bg-slate-50 font-bold border-b-2 border-slate-300"><td colspan="6" class="p-1.5 border border-slate-300 text-right uppercase">Jumlah Tenaga Kerja (A)</td><td class="p-1.5 border border-slate-300 text-right font-mono text-slate-900">Rp ${Math.round(totalA).toLocaleString('id-ID')}</td></tr>`;
 
-            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">B</td><td colspan="4" class="p-1.5 border border-slate-300">Bahan</td></tr>`;
+            // B. BAHAN
+            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">B</td><td colspan="6" class="p-1.5 border border-slate-300">Bahan</td></tr>`;
             let bahanList = components.filter(c => c.tipe === "Bahan");
             if(bahanList.length === 0) {
-                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="4" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen bahan)</td></tr>`;
+                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="6" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen bahan)</td></tr>`;
             } else {
                 bahanList.forEach(c => {
-                    rowsHtml += `<tr><td class="p-1.5 border text-center"></td><td class="p-1.5 border font-medium">${c.uraian}</td><td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td><td class="p-1.5 border text-center font-mono">${c.satuan}</td><td class="p-1.5 border text-center font-mono font-bold text-slate-800">${c.koefisien}</td></tr>`;
+                    let hrg = cariHargaHSD(c, lokasiProyek);
+                    let koef = parseFloat(c.koefisien) || 0;
+                    let sub = koef * hrg;
+                    totalB += sub;
+                    rowsHtml += `<tr>
+                        <td class="p-1.5 border text-center"></td>
+                        <td class="p-1.5 border font-medium">${c.uraian}</td>
+                        <td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td>
+                        <td class="p-1.5 border text-center font-mono">${c.satuan}</td>
+                        <td class="p-1.5 border text-center font-mono font-bold text-slate-800">${koef}</td>
+                        <td class="p-1.5 border text-right font-mono">Rp ${Math.round(hrg).toLocaleString('id-ID')}</td>
+                        <td class="p-1.5 border text-right font-mono font-bold text-slate-900">Rp ${Math.round(sub).toLocaleString('id-ID')}</td>
+                    </tr>`;
                 });
             }
+            rowsHtml += `<tr class="bg-slate-50 font-bold border-b-2 border-slate-300"><td colspan="6" class="p-1.5 border border-slate-300 text-right uppercase">Jumlah Harga Bahan (B)</td><td class="p-1.5 border border-slate-300 text-right font-mono text-slate-900">Rp ${Math.round(totalB).toLocaleString('id-ID')}</td></tr>`;
 
-            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">C</td><td colspan="4" class="p-1.5 border border-slate-300">Peralatan</td></tr>`;
+            // C. PERALATAN
+            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">C</td><td colspan="6" class="p-1.5 border border-slate-300">Peralatan</td></tr>`;
             let alatList = components.filter(c => c.tipe === "Alat");
             if(alatList.length === 0) {
-                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="4" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen peralatan)</td></tr>`;
+                rowsHtml += `<tr><td class="p-1 border text-center"></td><td colspan="6" class="p-1 border text-slate-400 italic text-[10px]">(Tidak ada komponen peralatan)</td></tr>`;
             } else {
                 alatList.forEach(c => {
-                    rowsHtml += `<tr><td class="p-1.5 border text-center"></td><td class="p-1.5 border font-medium">${c.uraian}</td><td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td><td class="p-1.5 border text-center font-mono">${c.satuan}</td><td class="p-1.5 border text-center font-mono font-bold text-slate-800">${c.koefisien}</td></tr>`;
+                    let hrg = cariHargaHSD(c, lokasiProyek);
+                    let koef = parseFloat(c.koefisien) || 0;
+                    let sub = koef * hrg;
+                    totalC += sub;
+                    rowsHtml += `<tr>
+                        <td class="p-1.5 border text-center"></td>
+                        <td class="p-1.5 border font-medium">${c.uraian}</td>
+                        <td class="p-1.5 border text-center font-mono font-bold text-blue-600">${c.kode||'-'}</td>
+                        <td class="p-1.5 border text-center font-mono">${c.satuan}</td>
+                        <td class="p-1.5 border text-center font-mono font-bold text-slate-800">${koef}</td>
+                        <td class="p-1.5 border text-right font-mono">Rp ${Math.round(hrg).toLocaleString('id-ID')}</td>
+                        <td class="p-1.5 border text-right font-mono font-bold text-slate-900">Rp ${Math.round(sub).toLocaleString('id-ID')}</td>
+                    </tr>`;
                 });
             }
+            rowsHtml += `<tr class="bg-slate-50 font-bold border-b-2 border-slate-300"><td colspan="6" class="p-1.5 border border-slate-300 text-right uppercase">Jumlah Harga Alat (C)</td><td class="p-1.5 border border-slate-300 text-right font-mono text-slate-900">Rp ${Math.round(totalC).toLocaleString('id-ID')}</td></tr>`;
+
+            // KALKULASI TOTAL AKHIR (D, E, F)
+            let totalD = totalA + totalB + totalC;
+            let persenOverhead = parseFloat(ahspObj.overhead_persen || 15);
+            let totalE = (persenOverhead / 100) * totalD;
+            let totalF = totalD + totalE;
+
+            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">D</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Jumlah Harga Bahan, Upah dan Alat (A + B + C)</td><td class="p-1.5 border border-slate-300 text-right font-mono font-bold text-slate-900">Rp ${Math.round(totalD).toLocaleString('id-ID')}</td></tr>`;
+            rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">E</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Overhead & Profit (${persenOverhead}% x D)</td><td class="p-1.5 border border-slate-300 text-right font-mono font-bold text-slate-900">Rp ${Math.round(totalE).toLocaleString('id-ID')}</td></tr>`;
+            rowsHtml += `<tr class="bg-amber-100 font-black text-slate-950"><td class="p-1.5 border border-slate-300">F</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Harga Satuan Pekerjaan (D + E)</td><td class="p-1.5 border border-slate-300 text-right font-mono text-amber-700 text-xs sm:text-sm">Rp ${Math.round(totalF).toLocaleString('id-ID')}</td></tr>`;
 
             document.getElementById('modalAHSPTitle').innerText = `${ahspObj.kode_ahsp || 'AHSP'} — ${ahspObj.nama_pekerjaan}`;
-            document.getElementById('modalAhspOverheadVal').innerText = `${ahspObj.overhead_persen || 15}%`;
+            document.getElementById('modalAhspOverheadVal').innerText = `${persenOverhead}%`;
             document.getElementById('tabelAHSPDetailRows').innerHTML = rowsHtml;
             document.getElementById('modalAHSPPUPR').classList.remove('hidden');
         }
