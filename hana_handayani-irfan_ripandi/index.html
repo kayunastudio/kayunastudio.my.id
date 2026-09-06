@@ -11,18 +11,21 @@
     
     <style>
         /* ==========================================================================
-           COLOR PALETTE & CORE STYLES (Tema: Emerald Green, Maroon & Cream Accent)
+           COLOR PALETTE & CORE STYLES (Tema: Fairy Tale Oil Painting / Storybook)
+           Hijau Sage, Biru Soft Dongeng, Pink Muted Rose, White-Cream Parchment
            ========================================================================= */
         :root {
-            --bg-cream-accent: #F4EAE6; 
+            --bg-cream-accent: #F9F6F0;     /* Cream Kertas Lukisan / Parchment */
             --bg-pure-white: #FFFFFF;
-            --primary-emerald: #0B4434; 
-            --primary-maroon: #4A2828;  
-            --dark-emerald-bg: #052B20; 
-            --accent-warm-gold: #C5A059;
-            --text-dark: #1E2A27;
-            --text-muted: #5F6E6A;
+            --primary-emerald: #527853;     /* Hijau Sage / Soft Forest Green */
+            --primary-maroon: #D07A80;      /* Pink Storybook / Muted Rose */
+            --primary-blue: #2C5282;        /* Biru Soft Fairy Tale */
+            --dark-emerald-bg: #1A3038;     /* Dark Fairy Teal / Night Sky */
+            --accent-warm-gold: #D4A373;    /* Emas Dongeng Soft */
+            --text-dark: #2B3A36;           /* Charcoal Green Tint */
+            --text-muted: #62726D;
             --white: #FFFFFF;
+            --pink-soft: #F4C7C3;
         }
 
         * {
@@ -36,7 +39,7 @@
         }
 
         body {
-            background-color: #031B14; 
+            background-color: #0F1F24; 
             color: var(--text-dark);
             display: flex;
             justify-content: center;
@@ -55,7 +58,7 @@
             background-color: var(--bg-cream-accent);
             position: relative;
             box-shadow: 0 0 40px rgba(0,0,0,0.6);
-            padding-bottom: 70px;
+            padding-bottom: 20px;
         }
 
         .mobile-container::-webkit-scrollbar {
@@ -63,28 +66,33 @@
         }
 
         /* ==========================================================================
-           SISTEM ANIMASI SCROLL REVEAL
+           SISTEM ANIMASI SCROLL REVEAL (FAIRY TALE SMOOTH REVEAL + BLUR)
            ========================================================================== */
         .scroll-reveal {
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 1s cubic-bezier(0.215, 0.610, 0.355, 1), 
-                        transform 1s cubic-bezier(0.215, 0.610, 0.355, 1);
-            will-change: transform, opacity;
+            transform: translateY(28px) scale(0.96);
+            filter: blur(4px);
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
+                        transform 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+                        filter 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity, filter;
         }
 
         .oval-reveal {
             opacity: 0;
-            transform: translateY(30px) scale(0.97);
-            transition: opacity 1.2s cubic-bezier(0.165, 0.84, 0.44, 1), 
-                        transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
-            will-change: transform, opacity;
+            transform: translateY(35px) scale(0.92);
+            filter: blur(6px);
+            transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                        transform 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        filter 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity, filter;
         }
 
         .scroll-reveal.reveal-active,
         .oval-reveal.reveal-active {
             opacity: 1;
             transform: translateY(0) scale(1);
+            filter: blur(0px);
         }
 
         .delay-1 { transition-delay: 150ms; }
@@ -102,8 +110,19 @@
             background-repeat: no-repeat;
             pointer-events: none;
             z-index: 5;
-            opacity: 0.75;
+            opacity: 0.85;
             will-change: transform;
+        }
+
+        #invitation-cover .swaying-leaves {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.2s ease, visibility 1.2s ease;
+        }
+
+        #invitation-cover .cover-content-elements.show-content ~ .swaying-leaves {
+            opacity: 0.85;
+            visibility: visible;
         }
 
         .leaves-top-left {
@@ -161,7 +180,7 @@
         .serif-title {
             font-family: 'Montserrat', sans-serif;
             font-size: 1.4rem;
-            color: var(--primary-emerald);
+            color: var(--primary-blue);
             text-align: center;
             letter-spacing: 0.5px;
             font-weight: 700;
@@ -177,7 +196,7 @@
 
         .divider-line {
             width: 60px;
-            height: 1px;
+            height: 2px;
             background: linear-gradient(to right, transparent, var(--primary-maroon), transparent);
             margin: 12px auto;
         }
@@ -190,10 +209,11 @@
             border-radius: 95px; 
             padding: 4px;
             background: var(--white);
-            box-shadow: 0 6px 16px rgba(11, 68, 52, 0.12);
+            box-shadow: 0 6px 18px rgba(44, 82, 130, 0.15);
             display: flex;
             justify-content: center;
             align-items: center;
+            border: 2px solid var(--pink-soft);
         }
 
         .oval-frame img {
@@ -237,16 +257,15 @@
             filter: brightness(0.85);
         }
 
-        /* Tombol Mute/Unmute Video pada Cover */
         .btn-video-audio {
             position: absolute;
             top: 20px;
             right: 20px;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(44, 82, 130, 0.65);
             backdrop-filter: blur(5px);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 20px;
             padding: 6px 14px;
             font-size: 0.72rem;
@@ -307,7 +326,7 @@
         .guest-box span.dear-text {
             font-family: 'Montserrat', sans-serif;
             font-size: 0.85rem;
-            color: rgba(255,255,255,0.85);
+            color: rgba(255,255,255,0.9);
             display: block;
             margin-bottom: 6px;
             letter-spacing: 1px;
@@ -324,9 +343,9 @@
         }
 
         .btn-open-traditional {
-            background-color: var(--primary-emerald);
+            background-color: var(--primary-blue);
             color: var(--white);
-            border: none;
+            border: 1px solid var(--accent-warm-gold);
             padding: 12px 30px;
             font-size: 0.85rem;
             font-weight: 600;
@@ -356,7 +375,7 @@
         .hero-interior-page {
             width: 100%;
             height: 100vh;
-            background: linear-gradient(rgba(244, 234, 230, 0.5), rgba(244, 234, 230, 0.8)), 
+            background: linear-gradient(rgba(249, 246, 240, 0.65), rgba(249, 246, 240, 0.85)), 
                         url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover.png') no-repeat center center;
             background-size: cover;
             display: flex;
@@ -370,19 +389,19 @@
         }
 
         .hero-interior-page .top-title {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             color: var(--primary-emerald);
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 2px;
             margin-bottom: 20px;
-            font-weight: 300;
+            font-weight: 600;
         }
 
         .hero-interior-page .interior-date {
-            font-size: 0.8rem;
-            font-weight: 300;
-            color: var(--text-dark);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary-blue);
             margin-top: 8px;
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 1px;
@@ -481,7 +500,7 @@
         }
 
         .mempelai-section-bg {
-            background: linear-gradient(rgba(244, 234, 230, 0.8), rgba(244, 234, 230, 0.9)), 
+            background: linear-gradient(rgba(249, 246, 240, 0.88), rgba(249, 246, 240, 0.92)), 
                         url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg') no-repeat center center;
             background-size: cover;
         }
@@ -503,7 +522,7 @@
         .mempelai-card h3 {
             font-family: 'Montserrat', sans-serif;
             font-size: 1.15rem;
-            color: var(--primary-emerald);
+            color: var(--primary-blue);
             font-weight: 700;
             margin-top: 5px;
             margin-bottom: 8px;
@@ -553,7 +572,7 @@
             flex: 1;
             height: 1px;
             background-color: var(--primary-emerald);
-            opacity: 0.25;
+            opacity: 0.3;
         }
 
         .catin-separator span { padding: 0 12px; margin-top: -8px; }
@@ -587,12 +606,13 @@
             height: 60px;
             background-color: var(--bg-cream-accent);
             border-radius: 12px;
-            color: var(--primary-emerald);
+            color: var(--primary-blue);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: 1px solid var(--pink-soft);
         }
 
         .countdown-item span {
@@ -614,10 +634,10 @@
 
         .arch-event-container {
             width: 100%;
-            border: 1px solid rgba(244, 234, 230, 0.3);
+            border: 1px solid rgba(249, 246, 240, 0.25);
             border-radius: 30px;
             padding: 45px 20px 35px 20px;
-            background: linear-gradient(rgba(5, 43, 32, 0.4), rgba(5, 43, 32, 0.75)), 
+            background: linear-gradient(rgba(26, 48, 56, 0.55), rgba(26, 48, 56, 0.85)), 
                         url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg') no-repeat center center;
             background-size: cover;
             text-align: center;
@@ -625,17 +645,17 @@
 
         .event-block { margin-bottom: 35px; }
         .event-block h3 { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: 1.5px; color: var(--bg-cream-accent); text-transform: uppercase; margin-bottom: 10px; }
-        .event-block .horizontal-line { width: 75%; height: 1px; background-color: rgba(244, 234, 230, 0.25); margin: 0 auto 16px auto; }
+        .event-block .horizontal-line { width: 75%; height: 1px; background-color: rgba(249, 246, 240, 0.25); margin: 0 auto 16px auto; }
         .event-detail-row { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 0.85rem; margin-bottom: 8px; font-family: 'Montserrat', sans-serif; color: var(--white); font-weight: 500; }
         .event-detail-row svg { width: 16px; height: 16px; fill: var(--accent-warm-gold); }
-        .event-address { font-size: 0.8rem; line-height: 1.5; color: rgba(244, 234, 230, 0.85); max-width: 250px; margin: 10px auto 0 auto; font-weight: 400; }
+        .event-address { font-size: 0.8rem; line-height: 1.5; color: rgba(249, 246, 240, 0.85); max-width: 250px; margin: 10px auto 0 auto; font-weight: 400; }
         
         .btn-lihat-lokasi { 
             display: inline-flex; 
             align-items: center; 
             gap: 6px; 
             background-color: var(--bg-cream-accent); 
-            color: var(--primary-emerald);           
+            color: var(--primary-blue);           
             text-decoration: none; 
             padding: 8px 24px; 
             font-size: 0.8rem; 
@@ -650,7 +670,7 @@
             letter-spacing: 0.3px;
         }
         
-        .btn-lihat-lokasi svg { width: 14px; height: 14px; fill: var(--primary-emerald); }
+        .btn-lihat-lokasi svg { width: 14px; height: 14px; fill: var(--primary-blue); }
         .btn-lihat-lokasi:active { transform: scale(0.97); opacity: 0.9; }
 
         .flower-separator-svg { 
@@ -661,62 +681,19 @@
             color: var(--accent-warm-gold);
         }
 
-        .gallery-section-bg {
-            background: linear-gradient(rgba(244, 234, 230, 0.85), rgba(244, 234, 230, 0.9)), 
-                        url('https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=600&auto=format&fit=crop') no-repeat center center;
-            background-size: cover;
-        }
-
-        .gallery-intro-text {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.82rem;
-            line-height: 1.5;
-            color: var(--text-muted);
-            max-width: 320px;
-            margin: 8px auto 28px auto;
-            font-weight: 400;
-        }
-
-        .gallery-portrait-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            padding: 0 4px;
-        }
-
-        .gallery-item {
-            position: relative;
-            width: 100%;
-            padding-top: 140%; 
-            overflow: hidden;
-            border-radius: 14px;
-            box-shadow: 0 5px 12px rgba(11, 68, 52, 0.06);
-            background-color: rgba(255,255,255,0.5);
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .gallery-item:hover { transform: scale(1.02); }
-        .gallery-item img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-
-        .gsc-lightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(3, 27, 20, 0.95); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
-        .gsc-lightbox.active { display: flex; opacity: 1; }
-        .gsc-lightbox img { max-width: 90%; max-height: 80%; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2); }
-        .gsc-lightbox-close { position: absolute; top: 25px; right: 25px; color: var(--white); font-size: 2rem; cursor: pointer; background: none; border: none; }
-
         .story-section-bg {
-            background: linear-gradient(rgba(244, 234, 230, 0.9), rgba(244, 234, 230, 0.95)), 
+            background: linear-gradient(rgba(249, 246, 240, 0.92), rgba(249, 246, 240, 0.96)), 
                         url('https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=600&auto=format&fit=crop') no-repeat center center;
             background-size: cover;
         }
 
         .clean-timeline { position: relative; width: 100%; margin-top: 30px; padding: 10px 0; }
-        .clean-timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background-color: var(--primary-emerald); opacity: 0.22; transform: translateX(-50%); }
+        .clean-timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background-color: var(--primary-emerald); opacity: 0.3; transform: translateX(-50%); }
         .timeline-node { position: relative; width: 100%; margin-bottom: 35px; }
-        .node-circle { position: absolute; left: 50%; top: 0; width: 8px; height: 8px; background-color: var(--primary-maroon); border-radius: 50%; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg-cream-accent); }
+        .node-circle { position: absolute; left: 50%; top: 0; width: 10px; height: 10px; background-color: var(--primary-maroon); border-radius: 50%; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 0 4px var(--bg-cream-accent); }
         .node-header { text-align: center; margin-bottom: 12px; padding-top: 16px; }
-        .node-header h3 { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; color: var(--primary-emerald); letter-spacing: 0.3px; display: inline-block; position: relative; text-transform: uppercase; }
-        .node-body-card { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(11, 68, 52, 0.04); border: 1px solid rgba(255, 255, 255, 0.6); text-align: justify; }
+        .node-header h3 { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; color: var(--primary-blue); letter-spacing: 0.3px; display: inline-block; position: relative; text-transform: uppercase; }
+        .node-body-card { background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(44, 82, 130, 0.06); border: 1px solid var(--pink-soft); text-align: justify; }
         .node-body-card p { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; line-height: 1.6; color: var(--text-dark); font-weight: 400; }
 
         .gift-section-bg {
@@ -726,23 +703,23 @@
 
         .gift-section-bg .header-with-lines { display: flex; align-items: center; width: 100%; margin-bottom: 20px; }
         .gift-section-bg .header-with-lines h2 { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; color: var(--bg-cream-accent); font-weight: 700; white-space: nowrap; padding: 0 12px; text-transform: uppercase; letter-spacing: 1px; }
-        .gift-section-bg .header-with-lines .horizontal-line { flex: 1; height: 1px; background-color: rgba(244, 234, 230, 0.25); }
-        .gift-intro-narrative { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; line-height: 1.5; color: rgba(244, 234, 230, 0.85); margin-bottom: 25px; padding: 0 4px; text-align: center; font-style: italic; }
+        .gift-section-bg .header-with-lines .horizontal-line { flex: 1; height: 1px; background-color: rgba(249, 246, 240, 0.25); }
+        .gift-intro-narrative { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; line-height: 1.5; color: rgba(249, 246, 240, 0.85); margin-bottom: 25px; padding: 0 4px; text-align: center; font-style: italic; }
         
-        .white-address-card { background-color: var(--bg-cream-accent); border-radius: 12px; padding: 18px 16px; color: var(--primary-emerald); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        .white-address-card { background-color: var(--bg-cream-accent); border-radius: 12px; padding: 18px 16px; color: var(--primary-blue); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; border: 1px solid var(--pink-soft); }
         .white-address-card h4 { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--primary-maroon); margin-bottom: 8px; }
         .white-address-card p { font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 0.8rem; line-height: 1.5; color: #444444; }
         
         .bank-cards-container { width: 100%; display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
-        .bank-inline-card { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(244, 234, 230, 0.12); border-radius: 10px; padding: 16px; text-align: center; position: relative; }
+        .bank-inline-card { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(249, 246, 240, 0.15); border-radius: 10px; padding: 16px; text-align: center; position: relative; }
         .bank-inline-card .bank-name { font-size: 0.95rem; font-weight: 700; color: var(--accent-warm-gold); letter-spacing: 0.5px; margin-bottom: 2px; }
         .bank-inline-card .account-number { font-size: 1.15rem; font-weight: 700; color: var(--white); letter-spacing: 0.5px; margin: 2px 0; }
-        .bank-inline-card .account-holder { font-size: 0.78rem; color: rgba(244, 234, 230, 0.65); margin-bottom: 10px; font-weight: 400; }
+        .bank-inline-card .account-holder { font-size: 0.78rem; color: rgba(249, 246, 240, 0.75); margin-bottom: 10px; font-weight: 400; }
         
-        .btn-copy-instant { background-color: var(--bg-cream-accent); color: var(--primary-emerald); border: none; padding: 6px 14px; font-size: 0.75rem; font-weight: 600; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-family: 'Montserrat', sans-serif; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: background-color 0.2s; text-transform: uppercase; }
+        .btn-copy-instant { background-color: var(--bg-cream-accent); color: var(--primary-blue); border: none; padding: 6px 14px; font-size: 0.75rem; font-weight: 600; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-family: 'Montserrat', sans-serif; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: background-color 0.2s; text-transform: uppercase; }
         .btn-copy-instant:active { background-color: #e5dad5; }
         
-        .qris-payment-block { background: var(--bg-cream-accent); border-radius: 12px; padding: 18px; color: #111111; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-top: 5px; }
+        .qris-payment-block { background: var(--bg-cream-accent); border-radius: 12px; padding: 18px; color: #111111; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-top: 5px; border: 1px solid var(--pink-soft); }
         .qris-logo-header { width: 50px; height: auto; margin: 0 auto 12px auto; display: block; }
         .qris-image-frame { width: 160px; height: 160px; margin: 0 auto 10px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 6px; display: flex; justify-content: center; align-items: center; }
         .qris-image-frame img { width: 100%; height: 100%; object-fit: contain; }
@@ -755,29 +732,29 @@
 
         .rsvp-section-bg .header-with-lines { display: flex; align-items: center; width: 100%; margin-bottom: 30px; }
         .rsvp-section-bg .header-with-lines h2 { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; color: var(--bg-cream-accent); font-weight: 700; white-space: nowrap; padding: 0 12px; text-transform: uppercase; letter-spacing: 1px; }
-        .rsvp-section-bg .header-with-lines .horizontal-line { flex: 1; height: 1px; background-color: rgba(244, 234, 230, 0.25); }
+        .rsvp-section-bg .header-with-lines .horizontal-line { flex: 1; height: 1px; background-color: rgba(249, 246, 240, 0.25); }
         .rsvp-clean-form { width: 100%; text-align: left; }
         .rsvp-clean-form .form-group { margin-bottom: 18px; }
         .rsvp-clean-form label { display: block; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--bg-cream-accent); margin-bottom: 6px; }
-        .rsvp-clean-form .form-control { width: 100%; padding: 10px 12px; border: none; border-radius: 4px; background-color: var(--bg-cream-accent); font-size: 0.85rem; color: var(--text-dark); font-family: 'Montserrat', sans-serif; }
-        .rsvp-clean-form .form-control::placeholder { color: #9faeab; font-weight: 400; }
-        .rsvp-clean-form select.form-control { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%230B4434'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; background-size: 18px; padding-right: 30px; color: var(--primary-emerald); font-weight: 600; }
+        .rsvp-clean-form .form-control { width: 100%; padding: 10px 12px; border: none; border-radius: 6px; background-color: var(--bg-cream-accent); font-size: 0.85rem; color: var(--text-dark); font-family: 'Montserrat', sans-serif; }
+        .rsvp-clean-form .form-control::placeholder { color: #8A9A96; font-weight: 400; }
+        .rsvp-clean-form select.form-control { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%232C5282'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; background-size: 18px; padding-right: 30px; color: var(--primary-blue); font-weight: 600; }
         
         .btn-rsvp-submit-custom { background-color: var(--primary-maroon); color: var(--white); border: none; padding: 10px 28px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; cursor: pointer; font-family: 'Montserrat', sans-serif; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-top: 8px; transition: background-color 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-rsvp-submit-custom:hover { opacity: 0.9; }
         
         .ucapan-feed-area { margin-top: 30px; max-height: 230px; overflow-y: auto; text-align: left; }
-        .ucapan-card-item { background: rgba(255, 255, 255, 0.06); padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(244, 234, 230, 0.08); }
+        .ucapan-card-item { background: rgba(255, 255, 255, 0.08); padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(249, 246, 240, 0.12); }
         .ucapan-card-title { font-size: 0.8rem; font-weight: 600; color: var(--accent-warm-gold); }
-        .ucapan-card-count { font-size: 0.65rem; background: rgba(244, 234, 230, 0.18); color: var(--white); padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 500; }
-        .ucapan-card-body { font-size: 0.8rem; color: rgba(244, 234, 230, 0.9); margin-top: 4px; line-height: 1.45; font-weight: 400; }
+        .ucapan-card-count { font-size: 0.65rem; background: rgba(249, 246, 240, 0.2); color: var(--white); padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 500; }
+        .ucapan-card-body { font-size: 0.8rem; color: rgba(249, 246, 240, 0.9); margin-top: 4px; line-height: 1.45; font-weight: 400; }
 
         .thankyou-section-luxury {
             width: 100%;
             padding: 70px 25px 35px 25px;
             text-align: center;
-            background: linear-gradient(rgba(244, 234, 230, 0.85), rgba(244, 234, 230, 0.88)), 
-                        url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover.png') no-repeat center center;
+            background: linear-gradient(rgba(249, 246, 240, 0.88), rgba(249, 246, 240, 0.92)), 
+                        url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg') no-repeat center center;
             background-size: cover;
             position: relative;
             overflow: hidden;
@@ -791,21 +768,22 @@
             border-radius: 85px; 
             padding: 4px;
             background: var(--white);
-            box-shadow: 0 8px 20px rgba(11, 68, 52, 0.15);
+            box-shadow: 0 8px 20px rgba(44, 82, 130, 0.15);
             display: flex;
             justify-content: center;
             align-items: center;
+            border: 2px solid var(--pink-soft);
         }
 
         .closing-capsule-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 81px; }
-        .thankyou-paragraph-text { font-family: 'Montserrat', sans-serif; font-style: italic; font-size: 0.85rem; line-height: 1.65; color: var(--primary-emerald); max-width: 330px; margin: 0 auto 25px auto; text-align: center; font-weight: 500; }
+        .thankyou-paragraph-text { font-family: 'Montserrat', sans-serif; font-style: italic; font-size: 0.85rem; line-height: 1.65; color: var(--primary-blue); max-width: 330px; margin: 0 auto 25px auto; text-align: center; font-weight: 500; }
         .signature-intro-label { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 400; color: var(--text-muted); margin-bottom: 5px; }
         .signature-couple-name { font-family: 'Alex Brush', cursive; color: var(--primary-maroon); font-size: 3.5rem; font-weight: 400; margin-top: 2px; line-height: 1.1; }
 
         .kayuna-branding-footer {
             background-color: var(--primary-emerald);
             color: var(--bg-cream-accent);
-            padding: 25px 20px 90px 20px;
+            padding: 25px 20px 30px 20px;
             text-align: center;
             font-size: 0.7rem;
             letter-spacing: 0.5px;
@@ -813,8 +791,8 @@
             border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .kayuna-branding-footer p { opacity: 0.65; margin-bottom: 4px; }
-        .kayuna-branding-footer .studio-link { font-family: 'Montserrat', sans-serif; font-style: italic; font-weight: 600; font-size: 0.82rem; color: var(--accent-warm-gold); text-decoration: none; display: inline-block; margin-bottom: 10px; }
+        .kayuna-branding-footer p { opacity: 0.75; margin-bottom: 4px; }
+        .kayuna-branding-footer .studio-link { font-family: 'Montserrat', sans-serif; font-style: italic; font-weight: 600; font-size: 0.82rem; color: var(--bg-cream-accent); text-decoration: none; display: inline-block; margin-bottom: 10px; }
         
         .kayuna-social-row {
             display: flex;
@@ -825,7 +803,7 @@
         }
         .kayuna-social-row a {
             color: var(--bg-cream-accent);
-            opacity: 0.55;
+            opacity: 0.75;
             text-decoration: none;
             transition: opacity 0.2s, color 0.2s;
             display: inline-flex;
@@ -835,7 +813,7 @@
         }
         .kayuna-social-row a:hover {
             opacity: 1;
-            color: var(--accent-warm-gold);
+            color: var(--pink-soft);
         }
         .kayuna-social-row svg {
             width: 13px;
@@ -845,10 +823,10 @@
 
         .music-control {
             position: fixed;
-            bottom: 85px;
+            bottom: 25px;
             right: calc(50% - 200px);
             z-index: 998;
-            background: rgba(11, 68, 52, 0.85);
+            background: rgba(44, 82, 130, 0.85);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             color: var(--white);
@@ -860,43 +838,9 @@
             align-items: center;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         @media (max-width: 450px) { .music-control { right: 18px; } }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 450px;
-            background-color: var(--primary-emerald);
-            height: 64px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 999;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.25);
-            border-top-left-radius: 14px;
-            border-top-right-radius: 14px;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: rgba(244, 234, 230, 0.45);
-            text-decoration: none;
-            font-size: 0.65rem;
-            gap: 4px;
-            flex: 1;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .nav-item svg { width: 18px; height: 18px; fill: currentColor; }
-        .nav-item.active { color: var(--white); font-weight: 600; }
     </style>
 </head>
 <body>
@@ -907,23 +851,19 @@
            1. COVER DEPAN BERBASIS VIDEO BACKGROUND
            ========================================================================== -->
         <div id="invitation-cover">
-            <!-- VIDEO BACKGROUND COVER (Atribut loop dihapus agar event ended terpicu di JS) -->
+            <!-- VIDEO BACKGROUND COVER -->
             <video id="coverVideo" class="cover-bg-video" autoplay muted playsinline preload="auto">
                 <source src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/hana_handayani-irfan_ripandi/video_cover.mp4" type="video/mp4">
             </video>
 
-            <!-- TOMBOL IKON ELEGAN UNTUK MENGAKTIFKAN SUARA BAWAAN VIDEO -->
+            <!-- TOMBOL IKON UNTUK MENGAKTIFKAN SUARA BAWAAN VIDEO -->
             <button class="btn-video-audio" id="btnVideoSound" onclick="toggleVideoSound()">
                 <svg id="iconMuted" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
                 <svg id="iconUnmuted" viewBox="0 0 24 24" style="display:none;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
                 <span id="textVideoSound">Suara Video</span>
             </button>
 
-            <div class="swaying-leaves leaves-top-left"></div>
-            <div class="swaying-leaves leaves-top-right"></div>
-            <div class="swaying-leaves leaves-bottom-left"></div>
-            <div class="swaying-leaves leaves-bottom-right"></div>
-
+            <!-- KONTEN COVER UTAMA -->
             <div class="cover-content-elements" id="coverContent">
                 <div class="cover-top">
                     <p>Our Wedding Invitation</p>
@@ -945,6 +885,12 @@
                 </div>
                 <div></div>
             </div>
+
+            <!-- BUNGA YANG BARU MUNCUL BERSAMAAN DENGAN COVER OVERLAY -->
+            <div class="swaying-leaves leaves-top-left"></div>
+            <div class="swaying-leaves leaves-top-right"></div>
+            <div class="swaying-leaves leaves-bottom-left"></div>
+            <div class="swaying-leaves leaves-bottom-right"></div>
         </div>
 
 
@@ -957,7 +903,7 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
             </div>
 
-            <!-- TAB 1: HOME PAGE UTAMA -->
+            <!-- HOME PAGE UTAMA -->
             <div id="section-home" class="hero-interior-page">
                 <div class="swaying-leaves leaves-top-left"></div>
                 <div class="swaying-leaves leaves-top-right"></div>
@@ -994,7 +940,7 @@
                 <div class="divider-line scroll-reveal"></div>
             </div>
 
-            <!-- TAB 2: MEMPELAI SECTION -->
+            <!-- MEMPELAI SECTION -->
             <div id="section-mempelai" class="section-padding mempelai-section-bg">
                 <h2 class="serif-title scroll-reveal">Assalamu’alaikum Wr. Wb.</h2>
                 <div class="divider-line scroll-reveal"></div>
@@ -1033,7 +979,7 @@
                 </div>
             </div>
 
-            <!-- TAB 3: EVENT/ACARA SECTION -->
+            <!-- EVENT/ACARA SECTION -->
             <div id="section-event" class="section-padding event-section-bg">
                 <h2 class="save-the-date-title">Save The Date</h2>
 
@@ -1090,31 +1036,7 @@
                 </div>
             </div>
 
-            <!-- TAB 4: GALLERY SECTION -->
-            <div id="section-gallery" class="section-padding gallery-section-bg">
-                <h2 class="serif-title">Gallery</h2>
-                <div class="divider-line scroll-reveal"></div>
-                <p class="gallery-intro-text scroll-reveal delay-1">
-                    Kami bersyukur, dipertemukan Allah diwaktu terbaik, Kini kami menanti hari istimewa kami.
-                </p>
-                
-                <div class="gallery-portrait-grid">
-                    <div class="gallery-item oval-reveal" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-1.JPG')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-1.png" alt="Galeri Pernikahan 1">
-                    </div>
-                    <div class="gallery-item oval-reveal delay-1" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-2.JPG')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-2.png" alt="Galeri Pernikahan 2">
-                    </div>
-                    <div class="gallery-item oval-reveal" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-3.JPG')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-3.png" alt="Galeri Pernikahan 3">
-                    </div>
-                    <div class="gallery-item oval-reveal delay-1" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-4.JPG')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/galeri-4.png" alt="Galeri Pernikahan 4">
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 5: LOVE STORY SECTION -->
+            <!-- LOVE STORY SECTION -->
             <div id="section-story" class="section-padding story-section-bg" style="padding-top: 30px;">
                 <h2 class="serif-title scroll-reveal">Love Story</h2>
                 <div class="divider-line scroll-reveal"></div>
@@ -1146,7 +1068,7 @@
                 </div>
             </div>
 
-            <!-- TAB 6: WEDDING GIFT SECTION -->
+            <!-- WEDDING GIFT SECTION -->
             <div id="section-gift" class="section-padding gift-section-bg">
                 <div class="header-with-lines scroll-reveal">
                     <div class="horizontal-line"></div>
@@ -1194,7 +1116,7 @@
                 </div>
             </div>
 
-            <!-- TAB 7: RSVP SECTION -->
+            <!-- RSVP SECTION -->
             <div id="section-wishes" class="section-padding rsvp-section-bg">
                 <div class="header-with-lines scroll-reveal">
                     <div class="horizontal-line"></div>
@@ -1246,13 +1168,7 @@
                 </div>
             </div>
 
-            <!-- POP-UP LIGHTBOX LAYOUT FOR GALLERY -->
-            <div id="gsc-lightbox-modal" class="gsc-lightbox">
-                <button class="gsc-lightbox-close" onclick="closeLightbox()">&times;</button>
-                <img id="gsc-lightbox-img" src="" alt="Pembesar Gambar">
-            </div>
-
-            <!-- TAB 8: PENUTUP UCAPAN TERIMA KASIH -->
+            <!-- PENUTUP UCAPAN TERIMA KASIH -->
             <div class="thankyou-section-luxury">
                 <div class="swaying-leaves leaves-top-left"></div>
                 <div class="swaying-leaves leaves-top-right"></div>
@@ -1269,7 +1185,7 @@
                 <div class="signature-couple-name scroll-reveal delay-3">Hana &amp; Irfan</div>
             </div>
 
-            <!-- SECTION BRANDING ATRIBUSI KAYUNA STUDIO ELEGAN WITH SOCIAL LINKS -->
+            <!-- FOOTER BRANDING KAYUNA STUDIO -->
             <footer class="kayuna-branding-footer scroll-reveal">
                 <p>Designed &amp; Crafted with Love by</p>
                 <a href="https://kayunastudio.my.id" target="_blank" class="studio-link">Kayuna Studio</a>
@@ -1289,30 +1205,6 @@
                     </a>
                 </div>
             </footer>
-
-            <!-- BOTTOM NAVIGATION BAR -->
-            <nav class="bottom-nav">
-                <a href="#section-home" class="nav-item active" onclick="setNavActive(this)">
-                    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-                    <span>Home</span>
-                </a>
-                <a href="#section-mempelai" class="nav-item" onclick="setNavActive(this)">
-                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                    <span>Mempelai</span>
-                </a>
-                <a href="#section-event" class="nav-item" onclick="setNavActive(this)">
-                    <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7v-5z"/></svg>
-                    <span>Event</span>
-                </a>
-                <a href="#section-gallery" class="nav-item" onclick="setNavActive(this)">
-                    <svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>
-                    <span>Gallery</span>
-                </a>
-                <a href="#section-wishes" class="nav-item" onclick="setNavActive(this)">
-                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-                    <span>Wishes</span>
-                </a>
-            </nav>
 
         </div>
 
@@ -1356,12 +1248,11 @@
         function showCoverOverlay() {
             if (!coverContent.classList.contains('show-content')) {
                 coverContent.classList.add('show-content');
-                coverVideo.loop = true; // Setelah muncul, video di-loop secara berkelanjutan
+                coverVideo.loop = true; 
                 coverVideo.play().catch(err => console.log(err));
             }
         }
 
-        // Penghitung jumlah pemutaran video
         let loopCount = 0;
         coverVideo.addEventListener('ended', function() {
             loopCount++;
@@ -1372,14 +1263,12 @@
             }
         });
 
-        // Diputar saat pertama kali halaman dimuat
         coverVideo.play().catch(err => console.log(err));
 
         function openInvitation() {
             cover.classList.add('opened');
             mainContent.classList.add('show');
             
-            // Matikan suara video saat cover ditutup
             coverVideo.muted = true;
             coverVideo.pause();
 
@@ -1422,23 +1311,6 @@
             }
         }
 
-        function setNavActive(element) {
-            const items = document.querySelectorAll('.nav-item');
-            items.forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        const lightboxModal = document.getElementById('gsc-lightbox-modal');
-        const lightboxImg = document.getElementById('gsc-lightbox-img');
-        
-        function openLightbox(imgUrl) {
-            lightboxImg.src = imgUrl;
-            lightboxModal.classList.add('active');
-        }
-        function closeLightbox() {
-            lightboxModal.classList.remove('active');
-        }
-
         function copyAccountText(text) {
             navigator.clipboard.writeText(text).then(() => { 
                 alert("Nomor rekening berhasil disalin: " + text); 
@@ -1447,7 +1319,7 @@
             });
         }
 
-        const targetDate = new Date(2026, 9, 25, 08, 00, 00).getTime(); 
+        const targetDate = new Date(2026, 9, 25, 8, 0, 0).getTime(); 
         
         setInterval(function() {
             const distance = targetDate - new Date().getTime();
