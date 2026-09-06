@@ -137,7 +137,7 @@
 
             <!-- KATEGORI RASIO & MEMO BELANJA -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
-                <!-- LAPORAN BULANAN RINCIAN KATEGORI DENGAN FILTER BULAN (DIBUAT RAPAT KETAT TANPA JEDA KOSONG) -->
+                <!-- LAPORAN BULANAN RINCIAN KATEGORI -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-start gap-2 min-h-[220px]">
                     <div class="w-full flex justify-between items-center border-b border-slate-100 pb-2">
                         <div>
@@ -196,6 +196,7 @@
             <!-- FORM & TABEL REKENING KORAN + WISHLIST -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
                 
+                <!-- KOLOM KIRI: FORM & NET ARUS KAS -->
                 <div class="lg:col-span-1 space-y-4 sm:space-y-6 no-print">
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm">
                         <h2 id="formTitle" class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider mb-3 border-b pb-1.5">Catat Mutasi Keuangan</h2>
@@ -260,6 +261,7 @@
                         </form>
                     </div>
                     
+                    <!-- NET ARUS KAS DIPINDAHKAN KELUAR / KANAN BAWAH LAPORAN BULANAN ATAU DI SAMPING FORM -->
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/60 shadow-sm space-y-2.5">
                         <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Arus Kas Anggota Keluarga</span>
                         <div class="grid grid-cols-3 gap-1.5 text-center text-[9px]">
@@ -270,6 +272,7 @@
                     </div>
                 </div>
 
+                <!-- KOLOM KANAN: REKENING KORAN & WISHLIST & DAFTAR KEBUTUHAN -->
                 <div class="lg:col-span-2 space-y-4 sm:space-y-6 w-full">
                     
                     <!-- REKENING KORAN & GRAFIK DENGAN SCROLL/SLIDE -->
