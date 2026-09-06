@@ -137,14 +137,23 @@
 
             <!-- KATEGORI RASIO & MEMO BELANJA -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
-                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col items-center justify-center min-h-[180px] sm:min-h-[220px]">
-                    <div class="w-full flex justify-between items-center mb-2 border-b border-slate-50 pb-1">
-                        <h3 class="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">📊 Kategori Rasio Global</h3>
-                        <span class="text-[9px] sm:text-[10px] text-slate-400 font-semibold">Bulan Ini</span>
+                <!-- LAPORAN BULANAN RINCIAN KATEGORI DENGAN FILTER BULAN (DIBUAT RAPAT KETAT TANPA JEDA KOSONG) -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-start gap-2 min-h-[220px]">
+                    <div class="w-full flex justify-between items-center border-b border-slate-100 pb-2">
+                        <div>
+                            <h3 class="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">📊 Laporan Rincian Bulanan</h3>
+                            <p class="text-[9px] text-slate-400 font-medium">Breakdown kategori pengeluaran per bulan</p>
+                        </div>
+                        <!-- DROPDOWN FILTER BULAN DINAMIS -->
+                        <select id="filterBulanLaporan" onchange="renderLaporanBulanan()" class="text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
+                            <option value="ALL">Semua Bulan</option>
+                        </select>
                     </div>
-                    <div class="w-full flex items-center gap-3 sm:gap-4">
-                        <div class="w-20 h-20 sm:w-28 sm:h-28 shrink-0 relative"><canvas id="kategoriPieChart"></canvas></div>
-                        <div class="text-[10px] sm:text-[11px] text-slate-400 leading-relaxed">Diagram pembagian segmentasi alokasi biaya pengeluaran domestik.</div>
+                    
+                    <div class="overflow-y-auto max-h-56 custom-scroll pr-1">
+                        <div id="laporanBulananContainer" class="space-y-2 text-[10px] sm:text-[11px]">
+                            <div class="text-slate-400 italic text-center py-4">Memuat rincian laporan bulanan...</div>
+                        </div>
                     </div>
                 </div>
 
@@ -155,19 +164,24 @@
                     <div class="w-full flex justify-between items-center border-b border-slate-100 pb-2">
                         <div>
                             <h3 class="text-[11px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1.5"><span>📝</span> Memo & Daftar Belanja</h3>
-                            <p class="text-[9px] sm:text-[10px] text-slate-400 mt-0.5">Ceklis item untuk langsung mengarsipkan/menghapus memo</p>
+                            <p class="text-[9px] sm:text-[10px] text-slate-400 mt-0.5">Kalkulasi harga otomatis (Qty × Harga Est.) saat menyimpan ke memo</p>
                         </div>
                         <span class="text-[8px] sm:text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm px-2.5 py-1 rounded-full font-bold" id="lblTotalMemo">0 Item</span>
                     </div>
                     
-                    <form onsubmit="event.preventDefault(); tambahMemoBelanja();" class="flex flex-col sm:flex-row gap-2 no-print border-b border-slate-100 pb-3 mb-1">
-                        <input type="text" id="memoInputTitle" placeholder="Nama barang / memo..." required class="w-full sm:flex-1 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition">
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <input type="number" id="memoInputQty" placeholder="Qty" value="1" min="1" class="w-16 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:border-amber-400 text-center">
-                            <input type="number" id="memoInputPrice" placeholder="Est. Rp" class="flex-1 sm:w-28 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:border-amber-400">
-                            <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-2 sm:py-2.5 rounded-xl text-xs transition shadow-sm hover:shadow-md flex items-center justify-center gap-1">
-                                <span>➕</span> <span class="hidden sm:inline">Tambah</span>
-                            </button>
+                    <form onsubmit="event.preventDefault(); tambahMemoBelanja();" class="flex flex-col gap-1.5 no-print border-b border-slate-100 pb-3 mb-1">
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" id="memoInputTitle" placeholder="Nama barang / memo..." required class="w-full sm:flex-1 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition">
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <input type="number" id="memoInputQty" oninput="kalkulasiOtomatisMemoPreview()" placeholder="Qty" value="1" min="1" class="w-16 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:border-amber-400 text-center">
+                                <input type="number" id="memoInputPrice" oninput="kalkulasiOtomatisMemoPreview()" placeholder="Harga Satuan (Rp)" class="flex-1 sm:w-32 border border-slate-200 p-2 sm:p-2.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:border-amber-400">
+                                <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-2 sm:py-2.5 rounded-xl text-xs transition shadow-sm hover:shadow-md flex items-center justify-center gap-1">
+                                    <span>➕</span> <span class="hidden sm:inline">Tambah</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="memoCalcPreview" class="text-[10px] text-amber-700 font-mono font-bold hidden pl-1">
+                            Total Est. Memo: <span id="txtMemoCalcPreview">Rp 0</span>
                         </div>
                     </form>
 
@@ -195,7 +209,7 @@
                                 <div>
                                     <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Anggota (PIC)</label>
                                     <select id="txPic" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-medium">
-                                        <option value="Bersama">👥 Bersama</option>
+                                        <option value="Tabungan">🏦 Tabungan</option>
                                         <option value="Irfan">👨 Irfan</option>
                                         <option value="Hana">👩 Hana</option>
                                         <option value="Anak">👦 Anak</option>
@@ -249,7 +263,7 @@
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/60 shadow-sm space-y-2.5">
                         <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Arus Kas Anggota Keluarga</span>
                         <div class="grid grid-cols-3 gap-1.5 text-center text-[9px]">
-                            <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Bersama</div><div id="txtTotalBersama" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartBersama"></canvas></div></div>
+                            <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Tabungan</div><div id="txtTotalTabungan" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartTabungan"></canvas></div></div>
                             <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Irfan</div><div id="txtTotalIrfan" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartIrfan"></canvas></div></div>
                             <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Hana</div><div id="txtTotalHana" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartHana"></canvas></div></div>
                         </div>
@@ -394,7 +408,7 @@
         let logNeedsWants = [];
         let stringFileBase64 = "";
         let totalSaldoAktifGlobal = 0;
-        let chartInstances = { Bersama: null, Irfan: null, Hana: null, Kategori: null, MutasiLine: null };
+        let chartInstances = { Tabungan: null, Irfan: null, Hana: null, MutasiLine: null };
 
         document.addEventListener("DOMContentLoaded", () => {
             if (sessionStorage.getItem("fincheck_unlocked") === "true") {
@@ -484,19 +498,25 @@
             // 1. Financial Records
             try {
                 const dataKas = await fetchAllRows('financial_records');
-                logArusKeuanganKeluarga = (dataKas || []).map(row => ({
-                    id: row.noinvoice || row.id || "TX-UNKNOWN",
-                    pic: row.pelanggan || row.pic || row.member || "Bersama",
-                    tanggal: row.tanggal || row.created_at || new Date().toISOString().split('T')[0],
-                    nominal: parseFloat(row.total !== undefined ? row.total : (row.nominal || row.amount || 0)),
-                    jenis: row.status || row.jenis || row.type || "Pengeluaran",
-                    deskripsi: row.deskripsi || row.description || row.title || "Mutasi Kas",
-                    kategori: row.kategori || row.category || "Lain-lain",
-                    buktiUrl: row.buktiurl || row.bukti_url || row.attachment || ""
-                })).sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+                logArusKeuanganKeluarga = (dataKas || []).map(row => {
+                    let rawPic = row.pelanggan || row.pic || row.member || "Tabungan";
+                    if (rawPic === "Bersama") rawPic = "Tabungan";
+
+                    return {
+                        id: row.noinvoice || row.id || "TX-UNKNOWN",
+                        pic: rawPic,
+                        tanggal: row.tanggal || row.created_at || new Date().toISOString().split('T')[0],
+                        nominal: parseFloat(row.total !== undefined ? row.total : (row.nominal || row.amount || 0)),
+                        jenis: row.status || row.jenis || row.type || "Pengeluaran",
+                        deskripsi: row.deskripsi || row.description || row.title || "Mutasi Kas",
+                        kategori: row.kategori || row.category || "Lain-lain",
+                        buktiUrl: row.buktiurl || row.bukti_url || row.attachment || ""
+                    };
+                }).sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
 
                 kalkulasiDasborStatistik();
-                updateSegalaPieCharts(); 
+                updateSegalaCharts(); 
+                renderLaporanBulanan();
                 buatKesimpulanPengeluaranOtomatis();
                 renderTabelJurnal(logArusKeuanganKeluarga);
             } catch (err) {
@@ -526,11 +546,26 @@
         async function muatMemoBelanja() {
             try {
                 const data = await fetchAllRows('shopping_memo');
-                // Menyaring item agar item yang is_bought true tidak ditampilkan (otomatis terhapus/terarsip)
                 logMemoBelanja = (data || []).filter(item => !item.is_bought);
                 renderMemoBelanja();
             } catch (err) {
                 document.getElementById('memoListContainer').innerHTML = `<li class="text-amber-600 italic text-center py-4 text-xs">Tabel 'shopping_memo' belum dibuat di Supabase.</li>`;
+            }
+        }
+
+        function kalkulasiOtomatisMemoPreview() {
+            const qty = parseInt(document.getElementById('memoInputQty').value) || 0;
+            const price = parseFloat(document.getElementById('memoInputPrice').value) || 0;
+            const total = qty * price;
+
+            const previewDiv = document.getElementById('memoCalcPreview');
+            const previewTxt = document.getElementById('txtMemoCalcPreview');
+
+            if (qty > 0 && price > 0) {
+                previewTxt.innerText = `Rp ${total.toLocaleString('id-ID')} (${qty} × Rp ${price.toLocaleString('id-ID')})`;
+                previewDiv.classList.remove('hidden');
+            } else {
+                previewDiv.classList.add('hidden');
             }
         }
 
@@ -550,6 +585,8 @@
                 
                 const svgDelete = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>`;
 
+                const estPriceTotal = parseFloat(item.estimated_price || 0);
+
                 li.innerHTML = `
                     <div class="flex items-start sm:items-center gap-2.5 w-full">
                         <input type="checkbox" onchange="toggleStatusMemo('${item.id}', this.checked)" class="mt-0.5 sm:mt-0 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer flex-shrink-0" title="Centang untuk menyelesaikan & menghapus item">
@@ -559,7 +596,7 @@
                         </div>
                     </div>
                     <div class="flex items-center justify-between w-full sm:w-auto pl-6 sm:pl-0 border-t border-slate-200/50 sm:border-0 pt-2 sm:pt-0 mt-1 sm:mt-0">
-                        <span class="font-mono font-bold text-[11px] sm:text-xs text-slate-500">Rp ${parseFloat(item.estimated_price || 0).toLocaleString('id-ID')}</span>
+                        <span class="font-mono font-bold text-[11px] sm:text-xs text-slate-600">Rp ${estPriceTotal.toLocaleString('id-ID')}</span>
                         <button onclick="hapusMemo('${item.id}')" class="text-rose-400 hover:text-rose-600 bg-white hover:bg-rose-50 p-1.5 rounded-lg border border-slate-100 shadow-sm transition ml-3" title="Hapus Belanjaan">
                             ${svgDelete}
                         </button>
@@ -574,14 +611,17 @@
             const qty = parseInt(document.getElementById('memoInputQty').value) || 1;
             const price = parseFloat(document.getElementById('memoInputPrice').value) || 0;
 
+            const totalCalculatedPrice = qty * price;
+
             const { error } = await supabaseClient
                 .from('shopping_memo')
-                .insert([{ title, qty, estimated_price: price, is_bought: false }]);
+                .insert([{ title, qty, estimated_price: totalCalculatedPrice, is_bought: false }]);
 
             if (!error) {
                 document.getElementById('memoInputTitle').value = "";
                 document.getElementById('memoInputQty').value = "1";
                 document.getElementById('memoInputPrice').value = "";
+                document.getElementById('memoCalcPreview').classList.add('hidden');
                 muatMemoBelanja();
             } else {
                 alert("Gagal menyimpan memo: " + error.message);
@@ -589,7 +629,6 @@
         }
 
         async function toggleStatusMemo(id, isBought) {
-            // Ketika dicek, hapus item dari Supabase agar memo otomatis bersih/terarsip
             if (isBought) {
                 await hapusMemo(id);
             }
@@ -709,7 +748,7 @@
             const uniqueId = "GOAL-" + Date.now();
             const payloadTarget = {
                 noinvoice: uniqueId,
-                pelanggan: "Bersama",
+                pelanggan: "Tabungan",
                 tanggal: document.getElementById('targetDeadline').value,
                 total: parseFloat(document.getElementById('targetNominal').value) || 0,
                 status: "Target Wishlist",
@@ -759,32 +798,102 @@
             });
         }
 
-        function updateSegalaPieCharts() {
-            let rekap = { Bersama: { masuk: 0, keluar: 0 }, Irfan: { masuk: 0, keluar: 0 }, Hana: { masuk: 0, keluar: 0 } };
+        /* --- FUNGSI DINAMIS POPULASI OPTION BULAN & RENDER LAPORAN RINCIAN BULANAN --- */
+        function isiDropdownFilterBulan() {
+            const selectFilter = document.getElementById('filterBulanLaporan');
+            if (!selectFilter) return;
+
+            const nilaiTerpilih = selectFilter.value;
+            selectFilter.innerHTML = '<option value="ALL">Semua Bulan</option>';
+
+            let setBulan = new Set();
+            logArusKeuanganKeluarga.forEach(tx => {
+                if (tx.tanggal) {
+                    const bulanKey = tx.tanggal.substring(0, 7);
+                    setBulan.add(bulanKey);
+                }
+            });
+
+            const sortedBulan = Array.from(setBulan).sort().reverse();
+
+            sortedBulan.forEach(bKey => {
+                const [tahun, bulan] = bKey.split('-');
+                const namaBulanList = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+                const namaBulan = `${namaBulanList[parseInt(bulan) - 1]} ${tahun}`;
+
+                const opt = document.createElement('option');
+                opt.value = bKey;
+                opt.innerText = namaBulan;
+                selectFilter.appendChild(opt);
+            });
+
+            if (nilaiTerpilih && Array.from(selectFilter.options).some(o => o.value === nilaiTerpilih)) {
+                selectFilter.value = nilaiTerpilih;
+            }
+        }
+
+        function renderLaporanBulanan() {
+            isiDropdownFilterBulan();
+
+            const container = document.getElementById('laporanBulananContainer');
+            const filterBulan = document.getElementById('filterBulanLaporan').value;
+            container.innerHTML = "";
+
+            let totalOutflow = 0;
             let ringkasanKategori = {};
 
             logArusKeuanganKeluarga.forEach(tx => {
-                if (rekap[tx.pic]) {
-                    if (tx.jenis === "Pemasukan") rekap[tx.pic].masuk += tx.nominal;
-                    else rekap[tx.pic].keluar += tx.nominal;
+                if (tx.jenis === "Pengeluaran") {
+                    const bulanTx = tx.tanggal ? tx.tanggal.substring(0, 7) : "";
+                    
+                    if (filterBulan === "ALL" || bulanTx === filterBulan) {
+                        totalOutflow += tx.nominal;
+                        ringkasanKategori[tx.kategori] = (ringkasanKategori[tx.kategori] || 0) + tx.nominal;
+                    }
                 }
-                if (tx.jenis === "Pengeluaran") { ringkasanKategori[tx.kategori] = (ringkasanKategori[tx.kategori] || 0) + tx.nominal; }
             });
 
-            bikinSinglePieChart('chartBersama', 'txtTotalBersama', rekap.Bersama, 'Bersama');
+            const sortedCategories = Object.entries(ringkasanKategori).sort((a, b) => b[1] - a[1]);
+
+            if (sortedCategories.length === 0) {
+                container.innerHTML = `<div class="text-slate-400 italic text-center py-6">Belum ada catatan pengeluaran untuk periode ini.</div>`;
+                return;
+            }
+
+            sortedCategories.forEach(([kat, total]) => {
+                const persen = totalOutflow > 0 ? ((total / totalOutflow) * 100).toFixed(1) : 0;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "p-2 bg-slate-50/80 rounded-xl border border-slate-100 flex flex-col gap-1";
+                itemDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-slate-700 truncate">${kat}</span>
+                        <span class="font-mono font-bold text-slate-900">Rp ${total.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-rose-500 h-1.5 rounded-full" style="width: ${persen}%"></div>
+                        </div>
+                        <span class="text-[9px] font-mono text-slate-400 font-bold w-10 text-right">${persen}%</span>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function updateSegalaCharts() {
+            let rekap = { Tabungan: { masuk: 0, keluar: 0 }, Irfan: { masuk: 0, keluar: 0 }, Hana: { masuk: 0, keluar: 0 } };
+
+            logArusKeuanganKeluarga.forEach(tx => {
+                const picKey = tx.pic === "Bersama" ? "Tabungan" : tx.pic;
+                if (rekap[picKey]) {
+                    if (tx.jenis === "Pemasukan") rekap[picKey].masuk += tx.nominal;
+                    else rekap[picKey].keluar += tx.nominal;
+                }
+            });
+
+            bikinSinglePieChart('chartTabungan', 'txtTotalTabungan', rekap.Tabungan, 'Tabungan');
             bikinSinglePieChart('chartIrfan', 'txtTotalIrfan', rekap.Irfan, 'Irfan');
             bikinSinglePieChart('chartHana', 'txtTotalHana', rekap.Hana, 'Hana');
-
-            const labelsKategori = Object.keys(ringkasanKategori); const dataKategori = Object.values(ringkasanKategori);
-            if (chartInstances.Kategori) { chartInstances.Kategori.destroy(); }
-            const ctxKat = document.getElementById('kategoriPieChart').getContext('2d');
-            if(labelsKategori.length > 0) {
-                chartInstances.Kategori = new Chart(ctxKat, {
-                    type: 'doughnut',
-                    data: { labels: labelsKategori, datasets: [{ data: dataKategori, backgroundColor: ['#2DD4BF', '#60A5FA', '#FB7185', '#C084FC', '#F59E0B'], borderWidth: 1 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
-                });
-            }
         }
 
         function bikinSinglePieChart(canvasId, textId, dataObj, key) {
@@ -802,7 +911,8 @@
         function bukaModeEditTransaksi(idTx) {
             const target = logArusKeuanganKeluarga.find(tx => tx.id === idTx); if(!target) return;
             document.getElementById('txId').value = target.id; document.getElementById('txTanggal').value = target.tanggal;
-            document.getElementById('txPic').value = target.pic; document.getElementById('txJenis').value = target.jenis;
+            document.getElementById('txPic').value = target.pic === "Bersama" ? "Tabungan" : target.pic; 
+            document.getElementById('txJenis').value = target.jenis;
             document.getElementById('txKategori').value = target.kategori; document.getElementById('txDeskripsi').value = target.deskripsi;
             document.getElementById('txNominal').value = target.nominal; stringFileBase64 = target.buktiUrl || ""; 
             document.getElementById('formTitle').innerText = "✏️ Ubah Transaksi"; document.getElementById('btnSubmitForm').innerText = "💾 Perbarui & Sinkron";
@@ -811,7 +921,7 @@
 
         function resetFormMutasi() {
             document.getElementById('txId').value = ""; document.getElementById('txTanggal').value = new Date().toISOString().split('T')[0];
-            document.getElementById('txPic').value = "Bersama"; document.getElementById('txJenis').value = "Pengeluaran";
+            document.getElementById('txPic').value = "Tabungan"; document.getElementById('txJenis').value = "Pengeluaran";
             document.getElementById('txKategori').value = "Makanan & Bahan Dapur"; document.getElementById('txDeskripsi').value = "";
             document.getElementById('txNominal').value = ""; document.getElementById('txFileBukti').value = ""; stringFileBase64 = "";
             document.getElementById('formTitle').innerText = "Catat Mutasi Keuangan"; document.getElementById('btnSubmitForm').innerText = "💾 Simpan Transaksi";
