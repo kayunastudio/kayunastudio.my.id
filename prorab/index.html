@@ -2158,9 +2158,10 @@
                 badgeCell.className = `px-2 py-0.5 rounded text-[9px] font-bold ${statusVal === 'Completed' ? "bg-emerald-100 text-emerald-800" : (statusVal === 'In Progress' ? "bg-blue-100 text-blue-800" : (statusVal === 'Delayed' ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-600"))} lbl-status-real`;
             }
 
-            let idx = listScheduleMaster.findIndex(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
+            let existingSch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
             let updatedObj = {
-                id: "SCH-" + bqId, id_proyek: proyekAktif.id, id_bq: bqId,
+                id_proyek: proyekAktif.id, 
+                id_bq: String(bqId),
                 tgl_mulai: tr ? tr.querySelector('.inp-sch-start').value : '',
                 tgl_selesai: tr ? tr.querySelector('.inp-sch-finish').value : '',
                 predecessor: tr ? tr.querySelector('.inp-sch-pred').value : '-',
@@ -2171,24 +2172,62 @@
                 remaining_duration: parseFloat(document.getElementById('trackRemainingDuration').value) || 0,
                 notes: document.getElementById('trackNotes').value
             };
+
+            if (existingSch && existingSch.id) {
+                updatedObj.id = existingSch.id;
+            }
+
+            let idx = listScheduleMaster.findIndex(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
             if(idx >= 0) listScheduleMaster[idx] = updatedObj; else listScheduleMaster.push(updatedObj);
 
             tutupModalTrackingReal(); renderKurvaSChart(); showToast("Tracking realisasi disimpan!");
         }
 
         async function simpanJadwalSemua() {
-            if(!proyekAktif) return;
-            const payload = Array.from(document.querySelectorAll('.row-schedule-item')).map(r => {
-                let existingSch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == r.dataset.bqid) || {};
-                return {
-                    id: "SCH-" + r.dataset.bqid, id_proyek: proyekAktif.id, id_bq: r.dataset.bqid,
-                    tgl_mulai: r.querySelector('.inp-sch-start').value, tgl_selesai: r.querySelector('.inp-sch-finish').value,
-                    predecessor: r.querySelector('.inp-sch-pred').value, progress_persen: existingSch.progress_persen || 0,
-                    status: existingSch.status || 'Not Started', actual_start: existingSch.actual_start || '', actual_finish: existingSch.actual_finish || ''
+            if(!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
+            
+            const rows = Array.from(document.querySelectorAll('.row-schedule-item'));
+            if(rows.length === 0) return showToast("Tidak ada item jadwal untuk disimpan", "error");
+
+            showToast("Sedang menyimpan rencana jadwal...", "success", 4000);
+
+            const payload = rows.map(r => {
+                let bqIdStr = String(r.dataset.bqid);
+                let existingSch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && String(s.id_bq) === bqIdStr) || {};
+                
+                let itemData = {
+                    id_proyek: proyekAktif.id, 
+                    id_bq: bqIdStr,
+                    tgl_mulai: r.querySelector('.inp-sch-start').value, 
+                    tgl_selesai: r.querySelector('.inp-sch-finish').value,
+                    predecessor: r.querySelector('.inp-sch-pred').value || '-', 
+                    progress_persen: parseFloat(existingSch.progress_persen) || 0,
+                    status: existingSch.status || 'Not Started', 
+                    actual_start: existingSch.actual_start || null, 
+                    actual_finish: existingSch.actual_finish || null
                 };
+
+                if (existingSch.id) {
+                    itemData.id = existingSch.id;
+                }
+
+                return itemData;
             });
-            const { error } = await supabaseClient.from('03_schedule').upsert(payload);
-            if(!error) showToast("Jadwal & Kurva S Disimpan!"); else showToast("Gagal simpan jadwal: " + error.message, "error");
+
+            const { data, error } = await supabaseClient.from('03_schedule').upsert(payload, { onConflict: 'id_proyek,id_bq' });
+            
+            if(!error) {
+                showToast("Jadwal & Rencana S-Curve Berhasil Disimpan!");
+                muatDataProyekSemua();
+            } else {
+                const retryRes = await supabaseClient.from('03_schedule').upsert(payload);
+                if(!retryRes.error) {
+                    showToast("Jadwal & Rencana S-Curve Berhasil Disimpan!");
+                    muatDataProyekSemua();
+                } else {
+                    showToast("Gagal simpan jadwal: " + retryRes.error.message, "error");
+                }
+            }
         }
 
         function renderTabelMonitorHSD(targetPage = pageHsdCurrent) {
