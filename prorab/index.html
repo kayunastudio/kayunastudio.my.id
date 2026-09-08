@@ -370,7 +370,7 @@
 
                                 <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
                                     <span class="font-bold text-slate-500 uppercase text-[10px] block">TERBILANG:</span>
-                                    <p id="txtTerbilangTotal" class="font-bold italic text-slate-800 mt-0.5">Zero Rupiah</p>
+                                    <p id="txtTerbilangTotal" class="font-bold italic text-slate-800 mt-0.5">Nol Rupiah</p>
                                 </div>
                             </div>
 
@@ -471,9 +471,8 @@
             </div>
         </div>
 
-        <!-- PAGE 2: AHSP & HSD MASTER (DIPISAH PEMBUNGKUSNYA AGAR HIDDEN BERFUNGSI SEMPURNA) -->
+        <!-- PAGE 2: AHSP & HSD MASTER -->
         <div id="pageMaster" class="hidden">
-            <!-- INNER WRAPPER UNTUK GRID -->
             <div class="flex flex-col lg:grid lg:grid-cols-2 gap-6">
                 <!-- FORM INPUT HSD -->
                 <div id="sectionFormHSD" class="order-1 lg:order-none bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -1226,6 +1225,30 @@
         let pageAhspCurrent = 1; const pageAhspSize = 10;
         let activeBuilderInputTarget = null;
 
+        // FUNGSI KONVERSI ANGKA TERBILANG RUPIAH
+        function terbilangRupiah(nilai) {
+            let angka = Math.floor(Math.abs(Number(nilai) || 0));
+            if (angka === 0) return "Nol Rupiah";
+
+            const huruf = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+            
+            function konversi(n) {
+                if (n < 12) return " " + huruf[n];
+                else if (n < 20) return konversi(n - 10) + " Belas";
+                else if (n < 100) return konversi(Math.floor(n / 10)) + " Puluh" + konversi(n % 10);
+                else if (n < 200) return " Seratus" + konversi(n - 100);
+                else if (n < 1000) return konversi(Math.floor(n / 100)) + " Ratus" + konversi(n % 100);
+                else if (n < 2000) return " Seribu" + konversi(n - 1000);
+                else if (n < 1000000) return konversi(Math.floor(n / 1000)) + " Ribu" + konversi(n % 1000);
+                else if (n < 1000000000) return konversi(Math.floor(n / 1000000)) + " Juta" + konversi(n % 1000000);
+                else if (n < 1000000000000) return konversi(Math.floor(n / 1000000000)) + " Miliar" + konversi(n % 1000000000);
+                else if (n < 1000000000000000) return konversi(Math.floor(n / 1000000000000)) + " Triliun" + konversi(n % 1000000000000);
+                return "";
+            }
+
+            return (konversi(angka).trim() + " Rupiah").replace(/\s+/g, ' ');
+        }
+
         function showToast(message, type = 'success', duration = 3000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -1388,7 +1411,6 @@
             periksaSesiLogin();
             tambahBarisKomponenBuilder('containerKomponenBuilder');
             
-            // Global click outside listener
             document.addEventListener('click', (e) => {
                 const container = document.getElementById('dropdownAhspContainer');
                 if (container && !container.contains(e.target)) {
@@ -1404,7 +1426,6 @@
             window.addEventListener('resize', updatePopoverPosition);
         });
 
-        // TAB SWITCHING
         function switchTab(tabName) {
             const pages = ['pageRAB', 'pageMaster', 'pageDaily', 'pageSchedule'];
             pages.forEach(p => document.getElementById(p).classList.add('hidden'));
@@ -1892,8 +1913,9 @@
             const tbodyBQ = document.getElementById('tabelBQDetailRows'); tbodyBQ.innerHTML = "";
             let rekapMap = {}; let totalKasar = 0;
 
-            if(!bqArray.length) tbodyBQ.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada item BQ.</td></tr>`;
-            else {
+            if(!bqArray.length) {
+                tbodyBQ.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada item BQ.</td></tr>`;
+            } else {
                 bqArray.forEach((item, idx) => {
                     let sub = item.vol * item.hargaSatuan; totalKasar += sub;
                     rekapMap[item.kategori] = (rekapMap[item.kategori] || 0) + sub;
@@ -1908,13 +1930,17 @@
             }
 
             const ppn = totalKasar * 0.11;
+            const grandTotalPlusPPN = totalKasar + ppn;
+
             document.getElementById('txtGrandTotalDPA').innerText = "Rp " + totalKasar.toLocaleString('id-ID');
             document.getElementById('txtGrandTotalPPN').innerText = "Rp " + ppn.toLocaleString('id-ID');
-            document.getElementById('txtGrandTotalPlusPPN').innerText = "Rp " + (totalKasar+ppn).toLocaleString('id-ID');
+            document.getElementById('txtGrandTotalPlusPPN').innerText = "Rp " + grandTotalPlusPPN.toLocaleString('id-ID');
             document.getElementById('txtTotalBobot').innerText = totalKasar > 0 ? "100.00%" : "0.00%";
+            
+            // PEMBARUAN OTOMATIS TULISAN TERBILANG
+            document.getElementById('txtTerbilangTotal').innerText = terbilangRupiah(grandTotalPlusPPN);
         }
 
-        // FUNGSI JADWAL PREDECESSOR BERANTAI
         function onScheduleDurationChange(trElement) {
             const startVal = trElement.querySelector('.inp-sch-start').value;
             const durasiVal = parseInt(trElement.querySelector('.inp-sch-duration').value) || 1;
@@ -2001,6 +2027,7 @@
             renderKurvaSChart();
         }
 
+        // PEMBARUAN KURVA S: GARIS X MEMUAT MINGGU & BULAN
         function renderKurvaSChart() {
             const ctx = document.getElementById('kurvaSChart')?.getContext('2d');
             if(!ctx) return;
@@ -2038,12 +2065,17 @@
             let labels = []; let planData = []; let actualData = [];
             let stepDays = totalSpanDays / bucketCount;
             let today = new Date();
+            const namaBulanSingkat = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
 
             for (let i = 1; i <= bucketCount; i++) {
-                labels.push("M " + i);
                 let targetDate = new Date(startDate.getTime());
                 targetDate.setDate(targetDate.getDate() + Math.round(i * stepDays));
                 if(i === bucketCount) targetDate = finishDate;
+
+                // FORMATION LABEL SUMBU X: MINGGU & BULAN (Contoh: "M-1 (Okt 2026)")
+                let blnStr = namaBulanSingkat[targetDate.getMonth()];
+                let thnStr = targetDate.getFullYear();
+                labels.push(`M-${i} (${blnStr} ${thnStr})`);
 
                 let accPlan = 0;
                 tasks.forEach(t => {
@@ -2075,7 +2107,24 @@
                         { label: 'Realisasi Lapangan (Actual)', data: actualData, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2.5, tension: 0.4, fill: false }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: {
+                            ticks: {
+                                font: { size: 10, weight: 'bold' },
+                                maxRotation: 45,
+                                minRotation: 0
+                            }
+                        },
+                        y: { 
+                            min: 0, 
+                            max: 100, 
+                            ticks: { callback: v => v + '%' } 
+                        } 
+                    } 
+                }
             });
         }
 
