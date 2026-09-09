@@ -85,7 +85,7 @@
                     📋 Laporan Harian
                 </button>
                 <button id="btnTabSchedule" onclick="switchTab('schedule')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 whitespace-nowrap text-slate-300 hover:text-white">
-                    📈 Jadwal & Kurva S
+                    📈 Jadwal, Gantt & Kurva S
                 </button>
             </div>
 
@@ -115,7 +115,7 @@
                 <button onclick="switchTab('rab'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">📊 Dashboard & RAB</button>
                 <button onclick="switchTab('master'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">➕ AHSP & HSD Master</button>
                 <button onclick="switchTab('daily'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">📋 Laporan Harian</button>
-                <button onclick="switchTab('schedule'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">📈 Kurva S & Jadwal</button>
+                <button onclick="switchTab('schedule'); toggleMobileMenu();" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-bold text-left text-slate-200 flex items-center gap-2">📈 Jadwal & Kurva S</button>
             </div>
             
             <div class="pt-2 border-t border-slate-800/80 flex justify-between items-center text-xs">
@@ -171,7 +171,7 @@
                             <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider">📍 HSD Lokasi Proyek</span>
                             <span id="lblLokasiProyekAktif" class="text-xs font-mono font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded">-</span>
                         </div>
-                        <p class="text-[10px] sm:text-[11px] text-slate-600 leading-relaxed">AHSP otomatis mencari HSD termurah lokasi proyek, fallback ke INDONESIA / NASIONAL jika kosong.</p>
+                        <p class="text-[10px] sm:text-[11px] text-slate-600 leading-relaxed">Saat memilih AHSP, harga dihitung murni menggunakan HSD Master lokasi proyek. Setelah item disimpan ke BQ, Anda dapat menyesuaikan harga atau memilih material dari HSD Master di Lampiran 3.</p>
                     </div>
 
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -233,7 +233,7 @@
                                     <button type="button" onclick="bukaModalDetailAHSP()" id="btnDetailAHSP" class="hidden text-[10px] text-blue-600 font-bold hover:underline">🔍 Preview Rincian Standar</button>
                                 </div>
                                 <input type="number" id="inpHargaSatuan" readonly required placeholder="0" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-100 font-bold text-slate-800 cursor-not-allowed">
-                                <p class="text-[9px] text-slate-400 mt-0.5">* Terhitung otomatis dari HSD termurah lokasi proyek</p>
+                                <p class="text-[9px] text-slate-400 mt-0.5">* Terhitung murni dari HSD lokasi proyek</p>
                             </div>
 
                             <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex justify-between items-center">
@@ -441,7 +441,11 @@
                                     <span class="text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded font-mono uppercase">LAMPIRAN 3</span>
                                     <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider mt-1">DAFTAR HARGA SATUAN DASAR (HSD) TERPAKAI PROYEK</h3>
                                 </div>
-                                <span class="lblFooterCompanyName text-[10px] font-mono text-slate-400">Kayuna Studio</span>
+                                <div class="flex items-center gap-2 no-print">
+                                    <button type="button" onclick="simpanOverrideHsdProyek()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1 rounded-lg shadow transition">
+                                        💾 Simpan Override HSD Proyek
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="overflow-x-auto custom-scroll">
@@ -450,11 +454,11 @@
                                         <tr class="bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider">
                                             <th class="p-2 w-8 text-center">NO</th>
                                             <th class="p-2 w-20 text-center">TIPE</th>
-                                            <th class="p-2 w-24">KODE</th>
+                                            <th class="p-2 w-28">KODE</th>
                                             <th class="p-2">NAMA ITEM / BAHAN / UPAH / ALAT</th>
                                             <th class="p-2 text-center w-16">SATUAN</th>
-                                            <th class="p-2 text-right w-32">HARGA SAT. LOKASI (RP)</th>
-                                            <th class="p-2 w-32">REFERENSI</th>
+                                            <th class="p-2 text-right w-36">HARGA SAT. PROYEK (RP)</th>
+                                            <th class="p-2 w-32">REFERENSI LOKASI</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tabelLampiranHSDDetailRows" class="divide-y divide-slate-200 font-medium text-slate-700">
@@ -844,7 +848,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 gap-3">
                     <div>
                         <h2 class="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                            <span>📈</span> MANAJEMEN JADWAL & GRAFIK KURVA S
+                            <span>📈</span> MANAJEMEN JADWAL, GANTT CHART & KURVA S
                         </h2>
                         <p class="text-xs text-slate-500">Penjadwalan Berbasis Durasi Efektif (Sabtu-Minggu Masuk, Hanya Libur Nasional Off)</p>
                     </div>
@@ -862,7 +866,7 @@
                         <span class="flex items-center gap-1"><span class="w-3 h-3 bg-emerald-500 rounded-sm inline-block"></span> Sabtu & Minggu Masuk</span>
                         <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-sm inline-block"></span> Tanggal Merah (Libur Nasional)</span>
                     </div>
-                    <span class="font-mono text-[10px] sm:text-[11px] text-amber-700 font-bold">* S-Curve otomatis terkalkulasi berdasarkan Bobot & Durasi Task</span>
+                    <span class="font-mono text-[10px] sm:text-[11px] text-amber-700 font-bold">* Urutan otomatis menyesuaikan Predecessor yang diatur</span>
                 </div>
 
                 <div class="overflow-x-auto custom-scroll border rounded-xl">
@@ -887,9 +891,24 @@
                     </table>
                 </div>
 
+                <!-- GANTT CHART VISUALIZATION -->
+                <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200 space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                            <span>📊</span> GANTT CHART JADWAL PEKERJAAN
+                        </h3>
+                        <span class="text-[10px] text-slate-500 font-mono">*Bar biru: Rencana | Isian Amber: Progress Real</span>
+                    </div>
+                    <div class="overflow-x-auto custom-scroll border rounded-xl bg-white p-2">
+                        <div id="ganttChartContainer" class="min-w-[700px] text-xs space-y-2">
+                            <p class="text-center text-slate-400 italic py-4">Pilih proyek untuk menampilkan Gantt Chart.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200 space-y-3">
                     <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                        <span>📊</span> GRAFIK KURVA S (RENCANA VS REALISASI LAPANGAN)
+                        <span>📈</span> GRAFIK KURVA S (RENCANA VS REALISASI LAPANGAN)
                     </h3>
                     <div class="relative w-full h-64 sm:h-80">
                         <canvas id="kurvaSChart"></canvas>
@@ -1178,7 +1197,7 @@
                     <input type="text" id="modalLokasi" required placeholder="Contoh: Bandung / Jakarta" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 focus:outline-none">
                 </div>
                 <div class="pt-2 flex gap-2">
-                    <button type="submit" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold p-2.5 rounded-xl text-xs transition">💾 Simpan Proyek</button>
+                    <button type="submit" id="btnSimpanProyekSubmit" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold p-2.5 rounded-xl text-xs transition">💾 Simpan Proyek</button>
                     <button type="button" onclick="tutupModalBuatProyek()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition">Batal</button>
                 </div>
             </form>
@@ -1537,8 +1556,10 @@
 
                 listProyek = (dataProject || []).map(item => {
                     let parsedBQ = [];
-                    try { parsedBQ = typeof item.data_bq === 'string' ? JSON.parse(item.data_bq) : item.data_bq; } catch(e){}
-                    return { ...item, status: item.status || 'active', data_bq: parsedBQ };
+                    try { parsedBQ = typeof item.data_bq === 'string' ? JSON.parse(item.data_bq) : (item.data_bq || []); } catch(e){}
+                    let parsedCustomHSD = {};
+                    try { parsedCustomHSD = typeof item.custom_hsd === 'string' ? JSON.parse(item.custom_hsd) : (item.custom_hsd || {}); } catch(e){}
+                    return { ...item, status: item.status || 'active', data_bq: parsedBQ, custom_hsd: parsedCustomHSD };
                 });
 
                 listAHSPMaster = dataAHSP || []; listHSDMaster = dataHSD || [];
@@ -1643,7 +1664,7 @@
                     let nama = hsd.nama_item || hsd.uraian || "";
                     let isMatch = tokens.every(t => nama.toLowerCase().includes(t) || (hsd.kode||'').toLowerCase().includes(t));
                     if(nama && isMatch && !map[nama.toLowerCase()]) {
-                        map[nama.toLowerCase()] = { nama: nama, kode: hsd.kode||'', satuan: hsd.satuan||'' };
+                        map[nama.toLowerCase()] = { nama: nama, kode: hsd.kode||'', satuan: hsd.satuan||'', harga: hsd.harga||0, lokasi: hsd.lokasi||'Nasional' };
                         count++;
                     }
                 }
@@ -1655,7 +1676,7 @@
                 list.forEach(item => {
                     const div = document.createElement('div');
                     div.className = "p-1.5 hover:bg-amber-50 rounded-lg cursor-pointer flex justify-between text-xs border-b border-slate-50";
-                    div.innerHTML = `<div class="truncate"><span class="font-bold text-slate-800 block truncate">${item.nama}</span><span class="font-mono text-[9px] text-blue-600 block">${item.kode}</span></div><span class="font-mono text-[9px] text-slate-500 bg-slate-100 px-1 rounded ml-1">${item.satuan}</span>`;
+                    div.innerHTML = `<div class="truncate"><span class="font-bold text-slate-800 block truncate">${item.nama}</span><span class="font-mono text-[9px] text-blue-600 block">${item.kode} — Rp ${parseFloat(item.harga).toLocaleString('id-ID')}</span></div><span class="font-mono text-[9px] text-slate-500 bg-slate-100 px-1 rounded ml-1 font-bold">${item.satuan}</span>`;
                     div.onclick = () => {
                         inputElem.value = item.nama;
                         const row = inputElem.closest('.row-komponen-builder');
@@ -1663,6 +1684,27 @@
                             if(item.kode) row.querySelector('.builder-kode').value = item.kode;
                             if(item.satuan) row.querySelector('.builder-satuan').value = item.satuan;
                         }
+
+                        // JIKA DIPANGGUL DARI LAMPIRAN 3
+                        const trLampiran = inputElem.closest('tr.row-hsd-lampiran');
+                        if (trLampiran) {
+                            let key = trLampiran.dataset.originalkey;
+                            let inpHarga = trLampiran.querySelector('.inp-override-hsd');
+                            let cellKode = trLampiran.querySelector('.cell-hsd-kode');
+                            let cellSatuan = trLampiran.querySelector('.cell-hsd-satuan');
+                            let cellLokasi = trLampiran.querySelector('.cell-hsd-lokasi');
+
+                            if(inpHarga) inpHarga.value = item.harga;
+                            if(cellKode) cellKode.innerText = item.kode || '-';
+                            if(cellSatuan) cellSatuan.innerText = item.satuan || '-';
+                            if(cellLokasi) cellLokasi.innerText = item.lokasi || 'Master HSD';
+
+                            if (proyekAktif) {
+                                proyekAktif.custom_hsd = proyekAktif.custom_hsd || {};
+                                proyekAktif.custom_hsd[key] = parseFloat(item.harga) || 0;
+                            }
+                        }
+
                         popover.classList.add('hidden');
                     };
                     container.appendChild(div);
@@ -1763,7 +1805,7 @@
                     document.getElementById('inpKategori').value = item.kategori || 'I. PEKERJAAN PERSIAPAN';
                     document.getElementById('inpSubPekerjaan').value = item.nama_pekerjaan;
                     document.getElementById('inpSatuan').value = item.satuan || 'm²';
-                    document.getElementById('inpHargaSatuan').value = Math.round(hitungKalkulasiAHSPPUPR(item));
+                    document.getElementById('inpHargaSatuan').value = Math.round(hitungKalkulasiAHSPPUPR(item, false));
                     document.getElementById('btnDetailAHSP').classList.remove('hidden');
                     hitungPreviewHargaItem();
                 };
@@ -1772,35 +1814,96 @@
         }
         function filterAhspDropdownOptions() { renderAhspCustomDropdownOptions(document.getElementById('searchAhspDropdownInput').value); }
 
-        function cariHsdObjectLengkap(komponen, lokasiProyek) {
-            let matches = listHSDMaster.filter(h => 
-                (!komponen.tipe || (h.tipe||'').toLowerCase() === komponen.tipe.toLowerCase()) &&
-                ((h.kode||'').toLowerCase() === (komponen.kode||'').toLowerCase() || (h.nama_item||h.uraian||'').toLowerCase() === (komponen.uraian||'').toLowerCase())
-            ).sort((a,b) => parseFloat(a.harga) - parseFloat(b.harga));
+        function normalizeString(str) {
+            return (str || '').toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
 
-            if(lokasiProyek) {
-                let locMatch = matches.find(h => (h.lokasi||'').toLowerCase().includes(lokasiProyek));
-                if(locMatch) return locMatch;
+        // ==========================================
+        // PRESISE LOGIK PENCARIAN HSD (TERMASUK PEKERJA)
+        // ==========================================
+        function cariHsdObjectLengkap(komponen, lokasiProyek, gunakanOverrideProyek = false) {
+            let rawKode = (komponen.kode || '').trim();
+            let rawUraian = (komponen.uraian || '').trim();
+            let normKode = normalizeString(rawKode);
+            let normUraian = normalizeString(rawUraian);
+
+            // 1. Check Custom Override Proyek (Lampiran 3)
+            if (gunakanOverrideProyek && proyekAktif && proyekAktif.custom_hsd) {
+                for (let k in proyekAktif.custom_hsd) {
+                    let normK = normalizeString(k);
+                    if (normK === normKode || normK === normUraian) {
+                        return {
+                            kode: komponen.kode,
+                            nama_item: komponen.uraian,
+                            satuan: komponen.satuan,
+                            harga: proyekAktif.custom_hsd[k],
+                            lokasi: (proyekAktif.lokasi || "OVERRIDE PROYEK")
+                        };
+                    }
+                }
             }
-            let indoMatch = matches.find(h => ["indonesia","nasional"].includes((h.lokasi||'').toLowerCase()));
+
+            // 2. Pencarian Presisi di Master Data HSD (02_hsd)
+            if (normKode) {
+                let exactKodeMatches = listHSDMaster.filter(h => normalizeString(h.kode) === normKode);
+                if (exactKodeMatches.length > 0) {
+                    return pilihHsdBerdasarkanLokasi(exactKodeMatches, lokasiProyek);
+                }
+            }
+
+            if (normUraian) {
+                let exactNameMatches = listHSDMaster.filter(h => normalizeString(h.nama_item || h.uraian) === normUraian);
+                if (exactNameMatches.length > 0) {
+                    return pilihHsdBerdasarkanLokasi(exactNameMatches, lokasiProyek);
+                }
+            }
+
+            let partialMatches = listHSDMaster.filter(h => {
+                let hNama = normalizeString(h.nama_item || h.uraian);
+                if (normUraian === "pekerja" && hNama.includes("pekerjaan")) return false;
+                return normUraian && (hNama.includes(normUraian) || normUraian.includes(hNama));
+            });
+
+            if (partialMatches.length > 0) {
+                return pilihHsdBerdasarkanLokasi(partialMatches, lokasiProyek);
+            }
+
+            return null;
+        }
+
+        function pilihHsdBerdasarkanLokasi(matches, lokasiProyek) {
+            if (lokasiProyek) {
+                let normLokasi = normalizeString(lokasiProyek);
+                let locMatch = matches.find(h => {
+                    let hLok = normalizeString(h.lokasi);
+                    return hLok === normLokasi || hLok.includes(normLokasi) || normLokasi.includes(hLok);
+                });
+                if (locMatch) return locMatch;
+            }
+            
+            let indoMatch = matches.find(h => {
+                let hLok = normalizeString(h.lokasi);
+                return hLok === "indonesia" || hLok === "nasional" || hLok === "default" || hLok === "";
+            });
+            
             return indoMatch || matches[0];
         }
 
-        function cariHargaHSD(komponen, lokasiProyek) {
-            const hsd = cariHsdObjectLengkap(komponen, lokasiProyek);
-            return hsd ? parseFloat(hsd.harga) || 0 : parseFloat(komponen.hargaFallback) || 0;
+        function cariHargaHSD(komponen, lokasiProyek, gunakanOverrideProyek = false) {
+            const hsd = cariHsdObjectLengkap(komponen, lokasiProyek, gunakanOverrideProyek);
+            return hsd ? parseFloat(hsd.harga) || 0 : parseFloat(komponen.harga || komponen.hargaFallback) || 0;
         }
 
-        function hitungKalkulasiAHSPPUPR(ahsp) {
+        function hitungKalkulasiAHSPPUPR(ahsp, gunakanOverrideProyek = false) {
             let loc = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase() : "";
-            let comp = []; try { comp = JSON.parse(ahsp.komponen_json || "[]"); } catch(e){}
-            let baseTotal = comp.reduce((sum, c) => sum + (parseFloat(c.koefisien) * cariHargaHSD(c, loc)), 0);
+            let comp = []; try { comp = typeof ahsp.komponen_json === 'string' ? JSON.parse(ahsp.komponen_json || "[]") : (ahsp.komponen_json || []); } catch(e){}
+            let baseTotal = comp.reduce((sum, c) => sum + (parseFloat(c.koefisien) * cariHargaHSD(c, loc, gunakanOverrideProyek)), 0);
             return baseTotal * (1 + (parseFloat(ahsp.overhead_persen || 15) / 100));
         }
 
         function previewStrukturAHSP(ahsp) {
             let loc = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase() : "";
-            let comp = []; try { comp = JSON.parse(ahsp.komponen_json || "[]"); } catch(e){}
+            let comp = []; try { comp = typeof ahsp.komponen_json === 'string' ? JSON.parse(ahsp.komponen_json || "[]") : (ahsp.komponen_json || []); } catch(e){}
             let rowsHtml = "";
             let subtotalGroup = { 'Upah': 0, 'Bahan': 0, 'Alat': 0 };
 
@@ -1808,7 +1911,7 @@
                 let list = comp.filter(c => c.tipe === tipe);
                 rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">${['A','B','C'][i]}</td><td colspan="6" class="p-1.5 border border-slate-300">${tipe}</td></tr>`;
                 list.forEach(c => {
-                    let hrg = cariHargaHSD(c, loc); let sub = parseFloat(c.koefisien) * hrg; subtotalGroup[tipe] += sub;
+                    let hrg = cariHargaHSD(c, loc, true); let sub = parseFloat(c.koefisien) * hrg; subtotalGroup[tipe] += sub;
                     rowsHtml += `<tr><td class="p-1.5 border"></td><td class="p-1.5 border">${c.uraian}</td><td class="p-1.5 border font-mono text-center text-blue-600">${c.kode||'-'}</td><td class="p-1.5 border font-mono text-center">${c.satuan}</td><td class="p-1.5 border font-mono text-center">${c.koefisien}</td><td class="p-1.5 border font-mono text-right">Rp ${hrg.toLocaleString('id-ID')}</td><td class="p-1.5 border font-mono text-right">Rp ${sub.toLocaleString('id-ID')}</td></tr>`;
                 });
                 rowsHtml += `<tr class="bg-slate-50 font-bold border-b-2"><td colspan="6" class="p-1.5 border text-right uppercase">Jumlah Harga ${tipe}</td><td class="p-1.5 border text-right font-mono">Rp ${Math.round(subtotalGroup[tipe]).toLocaleString('id-ID')}</td></tr>`;
@@ -1846,9 +1949,24 @@
             document.getElementById('docKodeProyek').innerText = "ID Proyek: " + proyekAktif.id;
 
             perbaruiTanggalTtdEkspor();
+            
+            reKalkulasiBQProyekAktif();
             renderBQDanRekapitulasi(proyekAktif.data_bq || []);
+            renderLampiranHSDProyek();
             renderTabelLaporanHarian();
             showToast(`Proyek "${proyekAktif.nama_proyek}" dipilih`);
+        }
+
+        function reKalkulasiBQProyekAktif() {
+            if(!proyekAktif || !proyekAktif.data_bq) return;
+            proyekAktif.data_bq.forEach(item => {
+                if(item.kode_ahsp && item.kode_ahsp !== 'LUMPSUM') {
+                    let masterAhsp = listAHSPMaster.find(a => a.kode_ahsp === item.kode_ahsp);
+                    if(masterAhsp) {
+                        item.hargaSatuan = Math.round(hitungKalkulasiAHSPPUPR(masterAhsp, true));
+                    }
+                }
+            });
         }
 
         function unselectProyek() {
@@ -1857,6 +1975,7 @@
             ['lblActiveProjectBadge', 'badgeScheduleProject', 'badgeDailyProject'].forEach(el => document.getElementById(el).innerText = 'PILIH PROYEK');
             ['btnSimpanItem', 'btnSimpanLsItem', 'btnSimpanDaily'].forEach(el => document.getElementById(el).disabled = true);
             renderDaftarProyekKartu(); renderBQDanRekapitulasi([]); renderTabelLaporanHarian();
+            document.getElementById('tabelLampiranHSDDetailRows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek untuk melihat rincian HSD terpakai.</td></tr>`;
         }
 
         function hitungPreviewHargaItem() { document.getElementById('txtSubtotalPreview').innerText = "Rp " + ((parseFloat(document.getElementById('inpVolume').value)||0) * (parseFloat(document.getElementById('inpHargaSatuan').value)||0)).toLocaleString('id-ID'); }
@@ -1901,11 +2020,13 @@
 
         async function simpanBQKeSupabase(bqArray) {
             const total = bqArray.reduce((sum, i) => sum + (i.vol * i.hargaSatuan), 0) * 1.11;
-            const { error } = await supabaseClient.from('project').update({ data_bq: JSON.stringify(bqArray), total_biaya: total }).eq('id', proyekAktif.id);
+            const { error } = await supabaseClient.from('project').update({ data_bq: bqArray, total_biaya: total }).eq('id', proyekAktif.id);
             if (!error) {
                 showToast("BQ diperbarui");
                 document.getElementById('formItemPekerjaan').reset(); document.getElementById('formLumpsumPekerjaan').reset();
                 muatDataProyekSemua();
+            } else {
+                showToast("Gagal update BQ: " + error.message, "error");
             }
         }
 
@@ -1937,8 +2058,105 @@
             document.getElementById('txtGrandTotalPlusPPN').innerText = "Rp " + grandTotalPlusPPN.toLocaleString('id-ID');
             document.getElementById('txtTotalBobot').innerText = totalKasar > 0 ? "100.00%" : "0.00%";
             
-            // PEMBARUAN OTOMATIS TULISAN TERBILANG
             document.getElementById('txtTerbilangTotal').innerText = terbilangRupiah(grandTotalPlusPPN);
+        }
+
+        // ==========================================
+        // FITUR LAMPIRAN 3: INTERAKTIF DENGAN MASTER HSD
+        // ==========================================
+        function renderLampiranHSDProyek() {
+            const tbody = document.getElementById('tabelLampiranHSDDetailRows');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek untuk melihat rincian HSD terpakai.</td></tr>`;
+                return;
+            }
+
+            let mapHsd = {};
+            let loc = (proyekAktif.lokasi || "").toLowerCase();
+
+            proyekAktif.data_bq.forEach(bq => {
+                if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM') {
+                    let masterAhsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if (masterAhsp) {
+                        let comp = [];
+                        try { comp = typeof masterAhsp.komponen_json === 'string' ? JSON.parse(masterAhsp.komponen_json || "[]") : (masterAhsp.komponen_json || []); } catch(e){}
+                        comp.forEach(c => {
+                            let hsdObj = cariHsdObjectLengkap(c, loc, true);
+                            let key = (c.kode || c.uraian || "").trim().toLowerCase();
+                            if (hsdObj && !mapHsd[key]) {
+                                mapHsd[key] = {
+                                    keyOriginal: key,
+                                    kode: c.kode || hsdObj.kode || '-',
+                                    nama: c.uraian || hsdObj.nama_item || hsdObj.uraian,
+                                    satuan: c.satuan || hsdObj.satuan,
+                                    harga: cariHargaHSD(c, loc, true),
+                                    tipe: c.tipe || hsdObj.tipe || 'Bahan',
+                                    lokasi: hsdObj.lokasi || 'Nasional'
+                                };
+                            }
+                        });
+                    }
+                }
+            });
+
+            const listUsed = Object.values(mapHsd);
+            if (listUsed.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Tidak ada item HSD terpakai pada BQ ini.</td></tr>`;
+                return;
+            }
+
+            listUsed.forEach((item, idx) => {
+                let currentVal = item.harga;
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50 transition row-hsd-lampiran" data-originalkey="${item.keyOriginal}">
+                        <td class="p-2 text-center">${idx + 1}</td>
+                        <td class="p-2 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">${item.tipe}</span></td>
+                        <td class="p-2 font-mono font-bold text-blue-600 cell-hsd-kode">${item.kode}</td>
+                        <td class="p-2">
+                            <input type="text" value="${item.nama}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="w-full border border-slate-200 p-1 rounded font-bold text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none bg-slate-50/50">
+                        </td>
+                        <td class="p-2 text-center font-mono cell-hsd-satuan">${item.satuan}</td>
+                        <td class="p-2 text-right">
+                            <input type="number" data-hsdkey="${item.keyOriginal}" value="${currentVal}" class="inp-override-hsd border border-amber-300 p-1 text-xs rounded font-mono font-bold text-right w-32 focus:ring-2 focus:ring-amber-500 focus:outline-none bg-amber-50/50">
+                        </td>
+                        <td class="p-2 text-xs text-slate-500 cell-hsd-lokasi">${item.lokasi}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function simpanOverrideHsdProyek() {
+            if (!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
+
+            let customHSDMap = { ...(proyekAktif.custom_hsd || {}) };
+            let inputs = document.querySelectorAll('.inp-override-hsd');
+            inputs.forEach(inp => {
+                let key = inp.dataset.hsdkey;
+                let val = parseFloat(inp.value) || 0;
+                customHSDMap[key] = val;
+            });
+
+            showToast("Menyimpan override HSD khusus proyek...", "success", 3000);
+
+            let res = await supabaseClient.from('project').update({ custom_hsd: customHSDMap }).eq('id', proyekAktif.id);
+            if(res.error) {
+                res = await supabaseClient.from('project').update({ custom_hsd: JSON.stringify(customHSDMap) }).eq('id', proyekAktif.id);
+            }
+
+            if (!res.error) {
+                proyekAktif.custom_hsd = customHSDMap;
+                reKalkulasiBQProyekAktif();
+                const total = proyekAktif.data_bq.reduce((sum, i) => sum + (i.vol * i.hargaSatuan), 0) * 1.11;
+                await supabaseClient.from('project').update({ data_bq: proyekAktif.data_bq, total_biaya: total }).eq('id', proyekAktif.id);
+                
+                showToast("Override HSD Proyek Berhasil Disimpan & RAB Diperbarui!");
+                muatDataProyekSemua();
+            } else {
+                showToast("Gagal menyimpan override HSD: " + res.error.message, "error");
+            }
         }
 
         function onScheduleDurationChange(trElement) {
@@ -1959,7 +2177,7 @@
         function evaluasiPenyesuaianPredecessor() {
             const rows = Array.from(document.querySelectorAll('.row-schedule-item'));
             let isAdjusted = false;
-            let maxIterations = 3; 
+            let maxIterations = 5; 
 
             for(let iter = 0; iter < maxIterations; iter++) {
                 let changedInIter = false;
@@ -1985,12 +2203,33 @@
                 if(!changedInIter) break; 
             }
 
-            if (isAdjusted) renderKurvaSChart();
+            if (isAdjusted) {
+                renderGanttChartVisual();
+                renderKurvaSChart();
+            }
+        }
+
+        function urutkanTabelSesuaiPredecessor() {
+            const rows = Array.from(document.querySelectorAll('.row-schedule-item'));
+            if(rows.length === 0) return;
+
+            rows.sort((a, b) => {
+                let startA = new Date(a.querySelector('.inp-sch-start').value || '1970-01-01');
+                let startB = new Date(b.querySelector('.inp-sch-start').value || '1970-01-01');
+                return startA - startB;
+            });
+
+            const tbody = document.getElementById('tabelScheduleRows');
+            rows.forEach((row, idx) => {
+                row.querySelector('td:first-child').innerText = idx + 1;
+                tbody.appendChild(row);
+            });
         }
 
         function renderTabelPenjadwalan() {
             const tbody = document.getElementById('tabelScheduleRows'); tbody.innerHTML = "";
             if(!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
+                document.getElementById('ganttChartContainer').innerHTML = `<p class="text-center text-slate-400 italic py-4">Pilih proyek untuk menampilkan Gantt Chart.</p>`;
                 return tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu di tab 'Dashboard & RAB Proyek'.</td></tr>`;
             }
 
@@ -2013,10 +2252,10 @@
                         <td class="p-2 text-center">${idx + 1}</td>
                         <td class="p-2 font-bold">${bq.sub}</td>
                         <td class="p-2 text-center font-mono font-bold text-amber-600">${bobot}%</td>
-                        <td class="p-2 text-center"><input type="date" value="${sch.tgl_mulai}" onchange="onScheduleDateChange(this.closest('tr')); evaluasiPenyesuaianPredecessor(); renderKurvaSChart();" class="inp-sch-start border rounded px-1 w-full text-[10px]"></td>
-                        <td class="p-2 text-center"><input type="number" min="1" value="${hitungHariKerjaEfektif(sch.tgl_mulai, sch.tgl_selesai)||1}" onchange="onScheduleDurationChange(this.closest('tr')); evaluasiPenyesuaianPredecessor(); renderKurvaSChart();" class="inp-sch-duration border rounded px-1 w-full text-center"></td>
-                        <td class="p-2 text-center"><input type="date" value="${sch.tgl_selesai}" onchange="onScheduleDateChange(this.closest('tr')); evaluasiPenyesuaianPredecessor(); renderKurvaSChart();" class="inp-sch-finish border rounded px-1 w-full text-[10px]"></td>
-                        <td class="p-2 text-center"><input type="text" value="${sch.predecessor||'-'}" onchange="evaluasiPenyesuaianPredecessor(); renderKurvaSChart();" class="inp-sch-pred border rounded px-1 w-full text-center"></td>
+                        <td class="p-2 text-center"><input type="date" value="${sch.tgl_mulai}" onchange="onScheduleDateChange(this.closest('tr')); evaluasiPenyesuaianPredecessor(); urutkanTabelSesuaiPredecessor(); renderGanttChartVisual(); renderKurvaSChart();" class="inp-sch-start border rounded px-1 w-full text-[10px]"></td>
+                        <td class="p-2 text-center"><input type="number" min="1" value="${hitungHariKerjaEfektif(sch.tgl_mulai, sch.tgl_selesai)||1}" onchange="onScheduleDurationChange(this.closest('tr')); evaluasiPenyesuaianPredecessor(); renderGanttChartVisual(); renderKurvaSChart();" class="inp-sch-duration border rounded px-1 w-full text-center"></td>
+                        <td class="p-2 text-center"><input type="date" value="${sch.tgl_selesai}" onchange="onScheduleDateChange(this.closest('tr')); evaluasiPenyesuaianPredecessor(); urutkanTabelSesuaiPredecessor(); renderGanttChartVisual(); renderKurvaSChart();" class="inp-sch-finish border rounded px-1 w-full text-[10px]"></td>
+                        <td class="p-2 text-center"><input type="text" value="${sch.predecessor||'-'}" onchange="evaluasiPenyesuaianPredecessor(); urutkanTabelSesuaiPredecessor(); renderGanttChartVisual(); renderKurvaSChart();" class="inp-sch-pred border rounded px-1 w-full text-center"></td>
                         <td class="p-2 text-center font-bold text-blue-600 font-mono lbl-progress-real">${sch.progress_persen}%</td>
                         <td class="p-2 text-center"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${statusBadgeClass} lbl-status-real">${sch.status}</span></td>
                         <td class="p-2 text-center"><button onclick="bukaModalTrackingReal(${bq.id})" class="bg-blue-600 text-white font-bold px-2 py-1 rounded">Tracking</button></td>
@@ -2024,10 +2263,68 @@
                 `;
             });
             evaluasiPenyesuaianPredecessor();
+            urutkanTabelSesuaiPredecessor();
+            renderGanttChartVisual();
             renderKurvaSChart();
         }
 
-        // PEMBARUAN KURVA S: GARIS X MEMUAT MINGGU & BULAN
+        function renderGanttChartVisual() {
+            const container = document.getElementById('ganttChartContainer');
+            if(!container) return;
+            container.innerHTML = "";
+
+            const rows = document.querySelectorAll('.row-schedule-item');
+            if(rows.length === 0) return;
+
+            let minDateStr = "9999-12-31"; let maxDateStr = "1970-01-01";
+            let taskList = [];
+
+            rows.forEach(r => {
+                let name = r.dataset.sub;
+                let startStr = r.querySelector('.inp-sch-start').value;
+                let finishStr = r.querySelector('.inp-sch-finish').value;
+                let bqId = r.dataset.bqid;
+
+                if(startStr && startStr < minDateStr) minDateStr = startStr;
+                if(finishStr && finishStr > maxDateStr) maxDateStr = finishStr;
+
+                let sch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
+                let prog = sch ? parseFloat(sch.progress_persen || 0) : 0;
+
+                taskList.push({ name, startStr, finishStr, prog });
+            });
+
+            if (minDateStr === "9999-12-31") return;
+
+            let minTime = new Date(minDateStr).getTime();
+            let maxTime = new Date(maxDateStr).getTime();
+            let totalTimeSpan = Math.max(1, maxTime - minTime);
+
+            let html = `<div class="space-y-3 pt-2">`;
+            taskList.forEach((t, i) => {
+                let startT = new Date(t.startStr).getTime();
+                let finishT = new Date(t.finishStr).getTime();
+
+                let leftPercent = Math.max(0, ((startT - minTime) / totalTimeSpan) * 100);
+                let widthPercent = Math.max(2, (((finishT - startT) || 86400000) / totalTimeSpan) * 100);
+
+                html += `
+                    <div class="flex items-center gap-2">
+                        <div class="w-48 text-[11px] font-bold text-slate-800 truncate" title="${t.name}">${i+1}. ${t.name}</div>
+                        <div class="flex-1 bg-slate-100 h-6 rounded-lg relative overflow-hidden border border-slate-200">
+                            <div class="absolute top-0 bottom-0 bg-blue-500/80 rounded-md flex items-center justify-between px-2 text-[10px] text-white font-bold shadow-sm" style="left: ${leftPercent}%; width: ${widthPercent}%;">
+                                <span class="truncate">${t.startStr} s/d ${t.finishStr}</span>
+                                <span class="font-mono bg-blue-900/50 px-1 rounded text-[9px]">${t.prog}%</span>
+                                <div class="absolute top-0 bottom-0 left-0 bg-amber-400/90 rounded-l-md" style="width: ${t.prog}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
         function renderKurvaSChart() {
             const ctx = document.getElementById('kurvaSChart')?.getContext('2d');
             if(!ctx) return;
@@ -2072,7 +2369,6 @@
                 targetDate.setDate(targetDate.getDate() + Math.round(i * stepDays));
                 if(i === bucketCount) targetDate = finishDate;
 
-                // FORMATION LABEL SUMBU X: MINGGU & BULAN (Contoh: "M-1 (Okt 2026)")
                 let blnStr = namaBulanSingkat[targetDate.getMonth()];
                 let thnStr = targetDate.getFullYear();
                 labels.push(`M-${i} (${blnStr} ${thnStr})`);
@@ -2180,7 +2476,7 @@
             let idx = listScheduleMaster.findIndex(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
             if(idx >= 0) listScheduleMaster[idx] = updatedObj; else listScheduleMaster.push(updatedObj);
 
-            tutupModalTrackingReal(); renderKurvaSChart(); showToast("Tracking realisasi disimpan!");
+            tutupModalTrackingReal(); renderGanttChartVisual(); renderKurvaSChart(); showToast("Tracking realisasi disimpan!");
         }
 
         async function simpanJadwalSemua() {
@@ -2337,6 +2633,7 @@
 
             let error;
             if (idToEdit) {
+                payload.id = idToEdit;
                 const res = await supabaseClient.from('02_hsd').update(payload).eq('id', idToEdit);
                 error = res.error;
             } else {
@@ -2345,16 +2642,16 @@
             }
 
             if (!error) {
-                showToast("Data HSD berhasil disimpan!");
+                showToast(idToEdit ? "Data HSD berhasil diperbarui!" : "Data HSD berhasil disimpan!");
                 resetFormHSD();
                 muatDataProyekSemua();
             } else {
-                showToast("Gagal menyimpan HSD", "error");
+                showToast("Gagal menyimpan HSD: " + error.message, "error");
             }
         }
 
         function editHSD(id) {
-            const item = listHSDMaster.find(h => h.id === id);
+            const item = listHSDMaster.find(h => String(h.id) === String(id));
             if (item) {
                 document.getElementById('editHsdRowId').value = item.id;
                 document.getElementById('editHsdOldKode').value = item.kode;
@@ -2402,7 +2699,7 @@
                 satuan: document.getElementById('addAhspSatuan').value,
                 kategori: document.getElementById('addAhspKategori').value,
                 overhead_persen: parseFloat(document.getElementById('addAhspOverhead').value) || 15,
-                komponen_json: JSON.stringify(komponenList)
+                komponen_json: komponenList
             };
 
             let error;
@@ -2415,16 +2712,16 @@
             }
 
             if (!error) {
-                showToast("Data AHSP berhasil disimpan!");
+                showToast(oldKode ? "Data AHSP berhasil diperbarui!" : "Data AHSP berhasil disimpan!");
                 resetFormAHSP();
                 muatDataProyekSemua();
             } else {
-                showToast("Gagal menyimpan AHSP", "error");
+                showToast("Gagal menyimpan AHSP: " + error.message, "error");
             }
         }
 
         function editAHSP(id) {
-            const item = listAHSPMaster.find(a => a.id === id);
+            const item = listAHSPMaster.find(a => String(a.id) === String(id));
             if (item) {
                 document.getElementById('editAhspOldKode').value = item.kode_ahsp;
                 document.getElementById('addAhspKode').value = item.kode_ahsp;
@@ -2436,7 +2733,7 @@
                 const container = document.getElementById('containerKomponenBuilder');
                 container.innerHTML = "";
                 let komponen = [];
-                try { komponen = JSON.parse(item.komponen_json || "[]"); } catch (e) {}
+                try { komponen = typeof item.komponen_json === 'string' ? JSON.parse(item.komponen_json) : (item.komponen_json || []); } catch (e) {}
                 
                 if (komponen.length === 0) {
                     tambahBarisKomponenBuilder('containerKomponenBuilder');
@@ -2477,7 +2774,7 @@
             }
 
             dailyList.forEach((item, idx) => {
-                let fotos = []; try { fotos = JSON.parse(item.foto_base64 || "[]"); } catch(e){}
+                let fotos = []; try { fotos = typeof item.foto_base64 === 'string' ? JSON.parse(item.foto_base64) : (item.foto_base64 || []); } catch(e){}
                 tbody.innerHTML += `
                     <tr class="border-b hover:bg-slate-50 transition">
                         <td class="p-2.5 text-center">${idx + 1}</td>
@@ -2509,7 +2806,7 @@
                 material: document.getElementById('dailyMaterial').value,
                 kegiatan: document.getElementById('dailyKegiatan').value,
                 kendala: document.getElementById('dailyKendala').value,
-                foto_base64: JSON.stringify(dailyFotoBase64Array)
+                foto_base64: dailyFotoBase64Array
             };
 
             const { error } = await supabaseClient.from('04_daily_report').insert([payload]);
@@ -2528,7 +2825,7 @@
                 dailyFotoBase64Array = [];
                 muatDataProyekSemua();
             } else {
-                showToast("Gagal menyimpan Laporan Harian", "error");
+                showToast("Gagal menyimpan Laporan Harian: " + error.message, "error");
             }
         }
 
@@ -2576,7 +2873,7 @@
 
             const galeri = document.getElementById('viewDailyFotoGallery');
             galeri.innerHTML = "";
-            let fotos = []; try { fotos = JSON.parse(item.foto_base64 || "[]"); } catch(e){}
+            let fotos = []; try { fotos = typeof item.foto_base64 === 'string' ? JSON.parse(item.foto_base64) : (item.foto_base64 || []); } catch(e){}
             
             if(fotos.length > 0) {
                 fotos.forEach(src => galeri.innerHTML += `<img src="${src}" class="w-full h-32 object-cover rounded-lg border shadow-sm">`);
@@ -2635,27 +2932,44 @@
         }
 
         async function eksekusiSimpanProyekBaru() {
+            const btnSubmit = document.getElementById('btnSimpanProyekSubmit');
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "⏳ Menyimpan...";
+
             const payload = { 
                 id: "PRJ-" + Date.now().toString().slice(-4), 
-                user_id: currentUser.userId, 
+                user_id: currentUser ? currentUser.userId : "guest", 
                 nama_proyek: document.getElementById('modalNamaProyek').value, 
                 pemilik: document.getElementById('modalPemilik').value, 
                 lokasi: document.getElementById('modalLokasi').value, 
                 tanggal: new Date().toLocaleDateString('id-ID'), 
                 status: 'active', 
                 total_biaya: 0, 
-                data_bq: "[]" 
+                data_bq: [], 
+                custom_hsd: {}
             };
-            const { error } = await supabaseClient.from('project').insert([payload]);
-            if (!error) { 
-                showToast("Proyek Dibuat!"); 
+
+            let res = await supabaseClient.from('project').insert([payload]);
+            
+            if (res.error && res.error.message.includes('custom_hsd')) {
+                payload.custom_hsd = "{}";
+                payload.data_bq = "[]";
+                res = await supabaseClient.from('project').insert([payload]);
+            }
+
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "💾 Simpan Proyek";
+
+            if (!res.error) { 
+                showToast("Proyek Berhasil Dibuat!"); 
                 tutupModalBuatProyek(); 
                 document.getElementById('modalNamaProyek').value = '';
                 document.getElementById('modalPemilik').value = '';
                 document.getElementById('modalLokasi').value = '';
                 muatDataProyekSemua(); 
             } else {
-                showToast("Gagal membuat proyek", "error");
+                console.error("Supabase Error:", res.error);
+                showToast("Gagal membuat proyek: " + res.error.message, "error");
             }
         }
         
