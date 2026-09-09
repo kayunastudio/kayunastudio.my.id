@@ -2633,7 +2633,6 @@
 
             let error;
             if (idToEdit) {
-                payload.id = idToEdit;
                 const res = await supabaseClient.from('02_hsd').update(payload).eq('id', idToEdit);
                 error = res.error;
             } else {
