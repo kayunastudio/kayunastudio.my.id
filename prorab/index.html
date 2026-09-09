@@ -1151,7 +1151,7 @@
                 <button onclick="tutupModalEditBQ()" class="text-slate-400 hover:text-slate-600 font-bold">&times;</button>
             </div>
             
-            <form onsubmit="event.preventDefault(); eksekusiSimpanEditBQ();" class="space-y-3">
+            <form onsubmit="event.preventDefault(); eksekekusiSimpanEditBQ();" class="space-y-3">
                 <input type="hidden" id="editBqId">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Uraian Pekerjaan</label>
@@ -1617,7 +1617,7 @@
             let successCount = 0;
             for (let item of targetItems) {
                 let newHarga = Math.round((parseFloat(item.harga) || 0) * (1 + (inputVal / 100)));
-                const { error } = await supabaseClient.from('02_hsd').update({ harga: newHarga }).eq(item.id ? 'id' : 'kode', item.id || item.kode);
+                const { error } = await supabaseClient.from('02_hsd').update({ harga: newHarga }).eq('kode', item.kode);
                 if (!error) successCount++;
             }
             showToast(`Berhasil update ${successCount} item HSD!`);
@@ -1725,6 +1725,9 @@
             }
         }
 
+        // ==========================
+        // FITUR HAPUS PROYEK (DIJAMIN JALAN)
+        // ==========================
         async function arsipkanProyek(id, e) {
             e.stopPropagation();
             const prj = listProyek.find(p => p.id === id);
@@ -1734,6 +1737,8 @@
             if (!error) {
                 if(proyekAktif && proyekAktif.id === id) unselectProyek();
                 muatDataProyekSemua();
+            } else {
+                showToast("Gagal mengarsipkan: " + error.message, "error");
             }
         }
 
@@ -1743,7 +1748,10 @@
             const { error } = await supabaseClient.from('project').delete().eq('id', id);
             if (!error) {
                 if(proyekAktif && proyekAktif.id === id) unselectProyek();
+                showToast("Proyek berhasil dihapus permanen.");
                 muatDataProyekSemua();
+            } else {
+                showToast("Gagal menghapus proyek: " + error.message, "error");
             }
         }
 
@@ -1772,8 +1780,8 @@
                             <span class="font-mono font-bold text-xs text-amber-600">Rp ${parseFloat(prj.total_biaya || 0).toLocaleString('id-ID')}</span>
                         </div>
                         <div class="flex items-center gap-1">
-                            <button onclick="arsipkanProyek('${prj.id}', event)" class="p-1 rounded hover:bg-slate-200 text-xs">${prj.status === 'archived' ? '📂' : '📦'}</button>
-                            <button onclick="hapusProyekPermanen('${prj.id}', event)" class="p-1 rounded hover:bg-rose-100 text-rose-600 text-xs">🗑️</button>
+                            <button onclick="arsipkanProyek('${prj.id}', event)" class="p-1 rounded hover:bg-slate-200 text-xs" title="Arsipkan">${prj.status === 'archived' ? '📂' : '📦'}</button>
+                            <button onclick="hapusProyekPermanen('${prj.id}', event)" class="p-1 rounded hover:bg-rose-100 text-rose-600 text-xs" title="Hapus Permanen">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -1819,7 +1827,7 @@
         }
 
         // ==========================================
-        // PRESISE LOGIK PENCARIAN HSD (TERMASUK PEKERJA)
+        // PRESISE LOGIK PENCARIAN HSD
         // ==========================================
         function cariHsdObjectLengkap(komponen, lokasiProyek, gunakanOverrideProyek = false) {
             let rawKode = (komponen.kode || '').trim();
@@ -2010,17 +2018,23 @@
         }
         function tutupModalEditBQ() { document.getElementById('modalEditBQ').classList.add('hidden'); }
 
-        function eksekusiSimpanEditBQ() {
+        function eksekekusiSimpanEditBQ() {
             const id = parseFloat(document.getElementById('editBqId').value);
             simpanBQKeSupabase((proyekAktif.data_bq || []).map(item => item.id === id ? { ...item, sub: document.getElementById('editBqSub').value, vol: parseFloat(document.getElementById('editBqVol').value) || 0 } : item));
             tutupModalEditBQ();
         }
 
-        function hapusItemBQ(id) { if(confirm("Hapus item BQ?")) simpanBQKeSupabase((proyekAktif.data_bq || []).filter(i => i.id !== id)); }
+        function hapusItemBQ(id) { 
+            if(confirm("Hapus item BQ?")) {
+                const targetId = Number(id);
+                simpanBQKeSupabase((proyekAktif.data_bq || []).filter(i => Number(i.id) !== targetId)); 
+            }
+        }
 
         async function simpanBQKeSupabase(bqArray) {
             const total = bqArray.reduce((sum, i) => sum + (i.vol * i.hargaSatuan), 0) * 1.11;
-            const { error } = await supabaseClient.from('project').update({ data_bq: bqArray, total_biaya: total }).eq('id', proyekAktif.id);
+            // Dikonversi ke string JSON (JSON.stringify) untuk menjaga kompatibilitas kolom Supabase
+            const { error } = await supabaseClient.from('project').update({ data_bq: JSON.stringify(bqArray), total_biaya: total }).eq('id', proyekAktif.id);
             if (!error) {
                 showToast("BQ diperbarui");
                 document.getElementById('formItemPekerjaan').reset(); document.getElementById('formLumpsumPekerjaan').reset();
@@ -2061,9 +2075,6 @@
             document.getElementById('txtTerbilangTotal').innerText = terbilangRupiah(grandTotalPlusPPN);
         }
 
-        // ==========================================
-        // FITUR LAMPIRAN 3: INTERAKTIF DENGAN MASTER HSD
-        // ==========================================
         function renderLampiranHSDProyek() {
             const tbody = document.getElementById('tabelLampiranHSDDetailRows');
             if(!tbody) return;
@@ -2141,16 +2152,13 @@
 
             showToast("Menyimpan override HSD khusus proyek...", "success", 3000);
 
-            let res = await supabaseClient.from('project').update({ custom_hsd: customHSDMap }).eq('id', proyekAktif.id);
-            if(res.error) {
-                res = await supabaseClient.from('project').update({ custom_hsd: JSON.stringify(customHSDMap) }).eq('id', proyekAktif.id);
-            }
+            let res = await supabaseClient.from('project').update({ custom_hsd: JSON.stringify(customHSDMap) }).eq('id', proyekAktif.id);
 
             if (!res.error) {
                 proyekAktif.custom_hsd = customHSDMap;
                 reKalkulasiBQProyekAktif();
                 const total = proyekAktif.data_bq.reduce((sum, i) => sum + (i.vol * i.hargaSatuan), 0) * 1.11;
-                await supabaseClient.from('project').update({ data_bq: proyekAktif.data_bq, total_biaya: total }).eq('id', proyekAktif.id);
+                await supabaseClient.from('project').update({ data_bq: JSON.stringify(proyekAktif.data_bq), total_biaya: total }).eq('id', proyekAktif.id);
                 
                 showToast("Override HSD Proyek Berhasil Disimpan & RAB Diperbarui!");
                 muatDataProyekSemua();
@@ -2556,8 +2564,8 @@
                             <td class="p-2 text-right font-mono font-bold">Rp ${parseFloat(item.harga || 0).toLocaleString('id-ID')}</td>
                             <td class="p-2 text-center">${item.lokasi || '-'}</td>
                             <td class="p-2 text-center">
-                                <button onclick="editHSD('${item.id}')" class="text-amber-500 hover:text-amber-600 px-1">✏️</button>
-                                <button onclick="hapusHSD('${item.id}')" class="text-rose-500 hover:text-rose-600 px-1">🗑️</button>
+                                <button onclick="editHSD('${item.kode}')" class="text-amber-500 hover:text-amber-600 px-1">✏️</button>
+                                <button onclick="hapusHSD('${item.kode}')" class="text-rose-500 hover:text-rose-600 px-1">🗑️</button>
                             </td>
                         </tr>
                     `;
@@ -2603,8 +2611,8 @@
                             <td class="p-2 text-center font-bold">${item.overhead_persen || 15}%</td>
                             <td class="p-2 text-center w-28">
                                 <button onclick="previewStrukturAHSP(listAHSPMaster.find(a => a.kode_ahsp === '${item.kode_ahsp}'))" class="text-blue-500 hover:text-blue-600 px-1">🔍</button>
-                                <button onclick="editAHSP('${item.id}')" class="text-amber-500 hover:text-amber-600 px-1">✏️</button>
-                                <button onclick="hapusAHSP('${item.id}')" class="text-rose-500 hover:text-rose-600 px-1">🗑️</button>
+                                <button onclick="editAHSP('${item.kode_ahsp}')" class="text-amber-500 hover:text-amber-600 px-1">✏️</button>
+                                <button onclick="hapusAHSP('${item.kode_ahsp}')" class="text-rose-500 hover:text-rose-600 px-1">🗑️</button>
                             </td>
                         </tr>
                     `;
@@ -2620,25 +2628,23 @@
         function gantiHalamanAhsp(delta) { renderTabelMonitorAHSP(pageAhspCurrent + delta); }
 
         // ==========================================
-        // PERBAIKAN: SIMPAN HSD TERUJI
+        // PERBAIKAN: HAPUS & EDIT BERDASARKAN KODE
         // ==========================================
         async function simpanHSDBaru() {
-            const idToEdit = document.getElementById('editHsdRowId').value;
+            const oldKode = document.getElementById('editHsdOldKode').value;
             
-            // Payload murni tanpa ID untuk insert baru
             const payload = {
                 kode: document.getElementById('addHsdKode').value || "HSD-" + Date.now().toString().slice(-6),
                 nama_item: document.getElementById('addHsdNama').value,
                 satuan: document.getElementById('addHsdSatuan').value,
                 harga: parseFloat(document.getElementById('addHsdHarga').value) || 0,
                 lokasi: document.getElementById('addHsdLokasi').value || "INDONESIA",
-                referensi: document.getElementById('addHsdReferensi').value || null,
-                tipe: "Bahan" 
+                referensi: document.getElementById('addHsdReferensi').value || null
             };
 
             let error;
-            if (idToEdit && idToEdit.trim() !== "") {
-                const res = await supabaseClient.from('02_hsd').update(payload).eq('id', idToEdit);
+            if (oldKode && oldKode.trim() !== "") {
+                const res = await supabaseClient.from('02_hsd').update(payload).eq('kode', oldKode);
                 error = res.error;
             } else {
                 const res = await supabaseClient.from('02_hsd').insert([payload]);
@@ -2646,19 +2652,19 @@
             }
 
             if (!error) {
-                showToast(idToEdit ? "Data HSD berhasil diperbarui!" : "Data HSD berhasil disimpan!");
+                showToast(oldKode ? "Data HSD berhasil diperbarui!" : "Data HSD berhasil disimpan!");
                 resetFormHSD();
                 muatDataProyekSemua();
             } else {
-                console.error("Supabase Schema Error:", error);
+                console.error("Supabase Error:", error);
                 showToast("Gagal menyimpan HSD: " + error.message, "error");
             }
         }
 
-        function editHSD(id) {
-            const item = listHSDMaster.find(h => String(h.id) === String(id));
+        function editHSD(kode) {
+            const item = listHSDMaster.find(h => String(h.kode) === String(kode));
             if (item) {
-                document.getElementById('editHsdRowId').value = item.id;
+                document.getElementById('editHsdRowId').value = item.id; 
                 document.getElementById('editHsdOldKode').value = item.kode;
                 document.getElementById('addHsdKode').value = item.kode;
                 document.getElementById('addHsdNama').value = item.nama_item || item.uraian;
@@ -2674,19 +2680,18 @@
             }
         }
 
-        async function hapusHSD(id) {
-            if (confirm("Yakin ingin menghapus item HSD ini?")) {
-                const { error } = await supabaseClient.from('02_hsd').delete().eq('id', id);
+        async function hapusHSD(kode) {
+            if (confirm(`Yakin ingin menghapus item HSD [${kode}] ini?`)) {
+                const { error } = await supabaseClient.from('02_hsd').delete().eq('kode', kode);
                 if (!error) {
-                    showToast("HSD dihapus!");
+                    showToast("HSD berhasil dihapus!");
                     muatDataProyekSemua();
+                } else {
+                    showToast("Gagal menghapus HSD: " + error.message, "error");
                 }
             }
         }
 
-        // ==========================================
-        // PERBAIKAN: SIMPAN AHSP TERUJI
-        // ==========================================
         async function simpanAHSPBaru() {
             const oldKode = document.getElementById('editAhspOldKode').value;
             const komponenList = [];
@@ -2708,7 +2713,7 @@
                 satuan: document.getElementById('addAhspSatuan').value,
                 kategori: document.getElementById('addAhspKategori').value,
                 overhead_persen: parseFloat(document.getElementById('addAhspOverhead').value) || 15,
-                komponen_json: komponenList
+                komponen_json: JSON.stringify(komponenList)
             };
 
             let error;
@@ -2725,13 +2730,13 @@
                 resetFormAHSP();
                 muatDataProyekSemua();
             } else {
-                console.error("Supabase Schema Error:", error);
+                console.error("Supabase Error:", error);
                 showToast("Gagal menyimpan AHSP: " + error.message, "error");
             }
         }
 
-        function editAHSP(id) {
-            const item = listAHSPMaster.find(a => String(a.id) === String(id));
+        function editAHSP(kode) {
+            const item = listAHSPMaster.find(a => String(a.kode_ahsp) === String(kode));
             if (item) {
                 document.getElementById('editAhspOldKode').value = item.kode_ahsp;
                 document.getElementById('addAhspKode').value = item.kode_ahsp;
@@ -2758,233 +2763,30 @@
             }
         }
 
-        async function hapusAHSP(id) {
-            if (confirm("Yakin ingin menghapus item AHSP ini?")) {
-                const { error } = await supabaseClient.from('01_ahsp').delete().eq('id', id);
+        async function hapusAHSP(kode) {
+            if (confirm(`Yakin ingin menghapus item AHSP [${kode}] ini?`)) {
+                const { error } = await supabaseClient.from('01_ahsp').delete().eq('kode_ahsp', kode);
                 if (!error) {
-                    showToast("AHSP dihapus!");
+                    showToast("AHSP berhasil dihapus!");
                     muatDataProyekSemua();
+                } else {
+                    showToast("Gagal menghapus AHSP: " + error.message, "error");
                 }
-            }
-        }
-
-        function renderTabelLaporanHarian() {
-            const tbody = document.getElementById('tabelDailyReportRows');
-            tbody.innerHTML = "";
-            if (!proyekAktif) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu di tab 'Dashboard & RAB Proyek'.</td></tr>`;
-                return;
-            }
-
-            const dailyList = listDailyMaster.filter(d => d.id_proyek === proyekAktif.id).sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
-            
-            if (dailyList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada laporan harian untuk proyek ini.</td></tr>`;
-                return;
-            }
-
-            dailyList.forEach((item, idx) => {
-                let fotos = []; try { fotos = typeof item.foto_base64 === 'string' ? JSON.parse(item.foto_base64) : (item.foto_base64 || []); } catch(e){}
-                tbody.innerHTML += `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-2.5 text-center">${idx + 1}</td>
-                        <td class="p-2.5 text-center font-mono font-bold">${item.tanggal}</td>
-                        <td class="p-2.5 text-center font-bold">Ke-${item.hari_ke}</td>
-                        <td class="p-2.5 text-center">${item.cuaca}</td>
-                        <td class="p-2.5 text-xs truncate max-w-[200px]">${item.kegiatan}</td>
-                        <td class="p-2.5 text-center font-bold text-amber-600">${fotos.length} Foto</td>
-                        <td class="p-2.5 text-center">
-                            <button onclick="previewDailyReport('${item.id}')" class="text-blue-500 hover:text-blue-600 px-1">👁️</button>
-                            <button onclick="hapusLaporanHarian('${item.id}')" class="text-rose-500 hover:text-rose-600 px-1">🗑️</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        async function simpanLaporanHarian() {
-            if (!proyekAktif) return;
-            document.getElementById('btnSimpanDaily').disabled = true;
-            document.getElementById('btnSimpanDaily').innerText = "⏳ Menyimpan...";
-
-            const payload = {
-                id_proyek: proyekAktif.id,
-                tanggal: document.getElementById('dailyTanggal').value,
-                hari_ke: parseInt(document.getElementById('dailyHariKe').value) || 1,
-                cuaca: document.getElementById('dailyCuaca').value,
-                tenaga_kerja: document.getElementById('dailyTenaga').value,
-                material: document.getElementById('dailyMaterial').value,
-                kegiatan: document.getElementById('dailyKegiatan').value,
-                kendala: document.getElementById('dailyKendala').value,
-                foto_base64: dailyFotoBase64Array
-            };
-
-            const { error } = await supabaseClient.from('04_daily_report').insert([payload]);
-            
-            document.getElementById('btnSimpanDaily').disabled = false;
-            document.getElementById('btnSimpanDaily').innerText = "💾 Simpan Laporan Harian";
-
-            if (!error) {
-                showToast("Laporan Harian Tersimpan!");
-                document.getElementById('dailyHariKe').value = parseInt(document.getElementById('dailyHariKe').value) + 1;
-                document.getElementById('dailyKegiatan').value = '';
-                document.getElementById('dailyMaterial').value = '';
-                document.getElementById('dailyKendala').value = '';
-                document.getElementById('dailyFotoInput').value = '';
-                document.getElementById('previewFotoDailyContainer').innerHTML = `<span class="text-[10px] text-slate-400 italic col-span-3">Belum ada foto dipilih.</span>`;
-                dailyFotoBase64Array = [];
-                muatDataProyekSemua();
-            } else {
-                showToast("Gagal menyimpan Laporan Harian: " + error.message, "error");
             }
         }
 
         async function hapusLaporanHarian(id) {
             if (confirm("Yakin ingin menghapus laporan harian ini?")) {
-                const { error } = await supabaseClient.from('04_daily_report').delete().eq('id', id);
+                const targetId = isNaN(id) ? id : Number(id);
+                const { error } = await supabaseClient.from('04_daily_report').delete().eq('id', targetId);
                 if (!error) {
-                    showToast("Laporan dihapus!");
+                    showToast("Laporan berhasil dihapus!");
                     muatDataProyekSemua();
+                } else {
+                    showToast("Gagal menghapus laporan: " + error.message, "error");
                 }
             }
         }
-
-        function handlePreviewFotoDaily(input) {
-            dailyFotoBase64Array = [];
-            const container = document.getElementById('previewFotoDailyContainer');
-            container.innerHTML = "";
-            
-            if (input.files && input.files.length > 0) {
-                Array.from(input.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        dailyFotoBase64Array.push(e.target.result);
-                        container.innerHTML += `<img src="${e.target.result}" class="w-full h-16 object-cover rounded-lg border">`;
-                    };
-                    reader.readAsDataURL(file);
-                });
-            } else {
-                container.innerHTML = `<span class="text-[10px] text-slate-400 italic col-span-3">Belum ada foto dipilih.</span>`;
-            }
-        }
-
-        function previewDailyReport(id) {
-            const item = listDailyMaster.find(d => d.id === id);
-            if (!item) return;
-
-            document.getElementById('viewDailyNamaProyek').innerText = proyekAktif.nama_proyek;
-            document.getElementById('viewDailyTgl').innerText = formatTanggalIndoFormal(item.tanggal);
-            document.getElementById('viewDailyHariKe').innerText = `Hari Ke-${item.hari_ke}`;
-            document.getElementById('viewDailyCuaca').innerText = item.cuaca || '-';
-            document.getElementById('viewDailyTenaga').innerText = item.tenaga_kerja || '-';
-            document.getElementById('viewDailyMaterial').innerText = item.material || '-';
-            document.getElementById('viewDailyKegiatan').innerText = item.kegiatan || '-';
-            document.getElementById('viewDailyKendala').innerText = item.kendala || '-';
-
-            const galeri = document.getElementById('viewDailyFotoGallery');
-            galeri.innerHTML = "";
-            let fotos = []; try { fotos = typeof item.foto_base64 === 'string' ? JSON.parse(item.foto_base64) : (item.foto_base64 || []); } catch(e){}
-            
-            if(fotos.length > 0) {
-                fotos.forEach(src => galeri.innerHTML += `<img src="${src}" class="w-full h-32 object-cover rounded-lg border shadow-sm">`);
-            } else {
-                galeri.innerHTML = `<span class="text-xs text-slate-400 italic">Tidak ada foto dokumentasi.</span>`;
-            }
-
-            document.getElementById('modalPrintDaily').classList.remove('hidden');
-        }
-
-        function tutupModalPrintDaily() { document.getElementById('modalPrintDaily').classList.add('hidden'); }
-
-        function cetakDokumenDailyPDF() {
-            const element = document.getElementById('areaCetakDaily');
-            const opt = {
-                margin: [10, 10, 10, 10],
-                filename: `Laporan_Harian_${proyekAktif.nama_proyek.replace(/\s+/g, '_')}_Hari_${document.getElementById('viewDailyHariKe').innerText.replace(/\s+/g, '')}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
-
-        function tambahBarisKomponenBuilder(id, preset) { 
-            const div = document.createElement('div'); div.className = "flex gap-1.5 items-center row-komponen-builder";
-            div.innerHTML = `<select class="builder-tipe border p-1 text-[11px] rounded font-bold w-16 sm:w-20"><option ${preset&&preset.tipe==='Upah'?'selected':''}>Upah</option><option ${preset&&preset.tipe==='Bahan'?'selected':''}>Bahan</option><option ${preset&&preset.tipe==='Alat'?'selected':''}>Alat</option></select><input type="text" placeholder="Kode" value="${preset?preset.kode||'':''}" class="builder-kode border p-1 text-[11px] rounded w-16 font-mono"><div class="flex-1 min-w-0"><input type="text" placeholder="Uraian" value="${preset?preset.uraian||'':''}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian border p-1 text-[11px] rounded w-full"></div><input type="text" placeholder="Sat" value="${preset?preset.satuan||'':''}" class="builder-satuan border p-1 text-[11px] rounded w-10 text-center font-mono"><input type="number" step="any" placeholder="Koef" value="${preset?preset.koefisien||'':''}" class="builder-koefisien border p-1 text-[11px] rounded w-14 font-bold text-right"><button type="button" onclick="this.parentElement.remove()" class="text-rose-500 font-bold px-1 text-xs">✕</button>`;
-            document.getElementById(id).appendChild(div);
-        }
-
-        function resetFormHSD() { 
-            document.getElementById('editHsdRowId').value=''; 
-            document.getElementById('editHsdOldKode').value=''; 
-            document.getElementById('addHsdKode').value=''; 
-            document.getElementById('addHsdNama').value=''; 
-            document.getElementById('addHsdSatuan').value=''; 
-            document.getElementById('addHsdHarga').value=''; 
-            document.getElementById('addHsdLokasi').value=''; 
-            document.getElementById('addHsdReferensi').value=''; 
-            document.getElementById('txtHeaderFormHSD').innerText = "📦 Form Tambah HSD Baru";
-            document.getElementById('btnSubmitHsd').innerHTML = "💾 Simpan Ke Database";
-            document.getElementById('btnBatalEditHsd').classList.add('hidden'); 
-        }
-
-        function resetFormAHSP() { 
-            document.getElementById('editAhspOldKode').value=''; 
-            document.getElementById('addAhspKode').value=''; 
-            document.getElementById('addAhspNama').value=''; 
-            document.getElementById('addAhspKategori').value=''; 
-            document.getElementById('addAhspSatuan').value=''; 
-            document.getElementById('containerKomponenBuilder').innerHTML=''; 
-            tambahBarisKomponenBuilder('containerKomponenBuilder'); 
-            document.getElementById('txtHeaderFormAHSP').innerText = "🏗️ Form Tambah AHSP Pekerjaan";
-            document.getElementById('btnSubmitAhsp').innerHTML = "💾 Simpan Ke Database";
-            document.getElementById('btnBatalEditAhsp').classList.add('hidden'); 
-        }
-
-        async function eksekusiSimpanProyekBaru() {
-            const btnSubmit = document.getElementById('btnSimpanProyekSubmit');
-            btnSubmit.disabled = true;
-            btnSubmit.innerText = "⏳ Menyimpan...";
-
-            const payload = { 
-                id: "PRJ-" + Date.now().toString().slice(-4), 
-                user_id: currentUser ? currentUser.userId : "guest", 
-                nama_proyek: document.getElementById('modalNamaProyek').value, 
-                pemilik: document.getElementById('modalPemilik').value, 
-                lokasi: document.getElementById('modalLokasi').value, 
-                tanggal: new Date().toLocaleDateString('id-ID'), 
-                status: 'active', 
-                total_biaya: 0, 
-                data_bq: [], 
-                custom_hsd: {}
-            };
-
-            let res = await supabaseClient.from('project').insert([payload]);
-            
-            if (res.error && res.error.message.includes('custom_hsd')) {
-                payload.custom_hsd = "{}";
-                payload.data_bq = "[]";
-                res = await supabaseClient.from('project').insert([payload]);
-            }
-
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "💾 Simpan Proyek";
-
-            if (!res.error) { 
-                showToast("Proyek Berhasil Dibuat!"); 
-                tutupModalBuatProyek(); 
-                document.getElementById('modalNamaProyek').value = '';
-                document.getElementById('modalPemilik').value = '';
-                document.getElementById('modalLokasi').value = '';
-                muatDataProyekSemua(); 
-            } else {
-                console.error("Supabase Error:", res.error);
-                showToast("Gagal membuat proyek: " + res.error.message, "error");
-            }
-        }
-        
-        function bukaModalBuatProyek() { document.getElementById('modalProyek').classList.remove('hidden'); }
-        function tutupModalBuatProyek() { document.getElementById('modalProyek').classList.add('hidden'); }
 
         function exportToPDFSummary() {
             if(!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
@@ -3031,9 +2833,9 @@
         }
 
         function exportMasterHSD() {
-            let data = [["KODE", "NAMA ITEM", "SATUAN", "HARGA (RP)", "LOKASI", "TIPE", "REFERENSI"]];
+            let data = [["KODE", "NAMA ITEM", "SATUAN", "HARGA (RP)", "LOKASI", "REFERENSI"]];
             listHSDMaster.forEach(item => {
-                data.push([item.kode, item.nama_item || item.uraian, item.satuan, item.harga, item.lokasi, item.tipe, item.referensi]);
+                data.push([item.kode, item.nama_item || item.uraian, item.satuan, item.harga, item.lokasi, item.referensi]);
             });
             const ws = XLSX.utils.aoa_to_sheet(data);
             const wb = XLSX.utils.book_new();
