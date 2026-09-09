@@ -2619,20 +2619,25 @@
 
         function gantiHalamanAhsp(delta) { renderTabelMonitorAHSP(pageAhspCurrent + delta); }
 
+        // ==========================================
+        // PERBAIKAN: SIMPAN HSD TERUJI
+        // ==========================================
         async function simpanHSDBaru() {
             const idToEdit = document.getElementById('editHsdRowId').value;
+            
+            // Payload murni tanpa ID untuk insert baru
             const payload = {
                 kode: document.getElementById('addHsdKode').value || "HSD-" + Date.now().toString().slice(-6),
                 nama_item: document.getElementById('addHsdNama').value,
                 satuan: document.getElementById('addHsdSatuan').value,
                 harga: parseFloat(document.getElementById('addHsdHarga').value) || 0,
                 lokasi: document.getElementById('addHsdLokasi').value || "INDONESIA",
-                referensi: document.getElementById('addHsdReferensi').value,
+                referensi: document.getElementById('addHsdReferensi').value || null,
                 tipe: "Bahan" 
             };
 
             let error;
-            if (idToEdit) {
+            if (idToEdit && idToEdit.trim() !== "") {
                 const res = await supabaseClient.from('02_hsd').update(payload).eq('id', idToEdit);
                 error = res.error;
             } else {
@@ -2645,6 +2650,7 @@
                 resetFormHSD();
                 muatDataProyekSemua();
             } else {
+                console.error("Supabase Schema Error:", error);
                 showToast("Gagal menyimpan HSD: " + error.message, "error");
             }
         }
@@ -2678,9 +2684,13 @@
             }
         }
 
+        // ==========================================
+        // PERBAIKAN: SIMPAN AHSP TERUJI
+        // ==========================================
         async function simpanAHSPBaru() {
             const oldKode = document.getElementById('editAhspOldKode').value;
             const komponenList = [];
+            
             document.querySelectorAll('.row-komponen-builder').forEach(row => {
                 const tipe = row.querySelector('.builder-tipe').value;
                 const kode = row.querySelector('.builder-kode').value;
@@ -2702,7 +2712,7 @@
             };
 
             let error;
-            if (oldKode) {
+            if (oldKode && oldKode.trim() !== "") {
                 const res = await supabaseClient.from('01_ahsp').update(payload).eq('kode_ahsp', oldKode);
                 error = res.error;
             } else {
@@ -2715,6 +2725,7 @@
                 resetFormAHSP();
                 muatDataProyekSemua();
             } else {
+                console.error("Supabase Schema Error:", error);
                 showToast("Gagal menyimpan AHSP: " + error.message, "error");
             }
         }
