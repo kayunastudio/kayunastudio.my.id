@@ -1244,6 +1244,18 @@
         let pageAhspCurrent = 1; const pageAhspSize = 10;
         let activeBuilderInputTarget = null;
 
+        // SAFE PARSE UTILITY FUNCTION (CEGAH CRASH PARSING JSON NULL)
+        function safeJSONParse(val, fallback) {
+            if (!val) return fallback;
+            if (typeof val === 'object') return val;
+            try {
+                const res = JSON.parse(val);
+                return res !== null && res !== undefined ? res : fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
         // FUNGSI KONVERSI ANGKA TERBILANG RUPIAH
         function terbilangRupiah(nilai) {
             let angka = Math.floor(Math.abs(Number(nilai) || 0));
@@ -1293,14 +1305,16 @@
             const savedUser = localStorage.getItem('prorab_current_user');
             const overlay = document.getElementById('loginOverlay');
             if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                muatProfilIdentitasAkun();
-                overlay.classList.add('hidden');
-                perbaruiUIUser();
-                muatDataProyekSemua();
-            } else {
-                overlay.classList.remove('hidden');
+                currentUser = safeJSONParse(savedUser, null);
+                if (currentUser) {
+                    muatProfilIdentitasAkun();
+                    overlay.classList.add('hidden');
+                    perbaruiUIUser();
+                    muatDataProyekSemua();
+                    return;
+                }
             }
+            overlay.classList.remove('hidden');
         }
 
         function eksekusiLoginPasscode() {
@@ -1327,7 +1341,7 @@
             const storageKey = `prorab_profile_${currentUser.userId}`;
             const savedProfile = localStorage.getItem(storageKey);
             if (savedProfile) {
-                try { userProfile = JSON.parse(savedProfile); } catch(e){}
+                userProfile = safeJSONParse(savedProfile, null);
             } 
             if(!userProfile) {
                 userProfile = {
@@ -1475,7 +1489,7 @@
         function formatTanggalIndoFormal(dateObj = new Date()) {
             let d = dateObj;
             if (typeof dateObj === 'string') d = new Date(dateObj);
-            if (isNaN(d.getTime())) return '-';
+            if (!d || isNaN(d.getTime())) return '-';
             const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             return `${d.getDate()} ${bulanIndo[d.getMonth()]} ${d.getFullYear()}`;
         }
@@ -1487,6 +1501,7 @@
         }
 
         function isHariLibur(date) {
+            if (!date || isNaN(date.getTime())) return false;
             return HARI_LIBUR_NASIONAL_2026.includes(date.toISOString().split('T')[0]);
         }
 
@@ -1494,7 +1509,7 @@
             if(!startStr || !finishStr) return 0;
             let current = new Date(startStr);
             let end = new Date(finishStr);
-            if(current > end) return 0;
+            if(isNaN(current.getTime()) || isNaN(end.getTime()) || current > end) return 0;
             let count = 0;
             while(current <= end) {
                 if(!isHariLibur(current)) count++;
@@ -1505,6 +1520,7 @@
 
         function dapatkanHariKerjaBerikutnya(dateObj) {
             let next = new Date(dateObj);
+            if (isNaN(next.getTime())) next = new Date();
             next.setDate(next.getDate() + 1);
             while (isHariLibur(next)) {
                 next.setDate(next.getDate() + 1);
@@ -1515,6 +1531,7 @@
         function hitungFinishDateDariDurasi(startStr, durasi) {
             if(!startStr || isNaN(durasi) || durasi <= 0) return startStr;
             let current = new Date(startStr);
+            if (isNaN(current.getTime())) return startStr;
             let count = 1;
             while (count < durasi) {
                 current.setDate(current.getDate() + 1);
@@ -1555,10 +1572,8 @@
                 ]);
 
                 listProyek = (dataProject || []).map(item => {
-                    let parsedBQ = [];
-                    try { parsedBQ = typeof item.data_bq === 'string' ? JSON.parse(item.data_bq) : (item.data_bq || []); } catch(e){}
-                    let parsedCustomHSD = {};
-                    try { parsedCustomHSD = typeof item.custom_hsd === 'string' ? JSON.parse(item.custom_hsd) : (item.custom_hsd || {}); } catch(e){}
+                    let parsedBQ = safeJSONParse(item.data_bq, []);
+                    let parsedCustomHSD = safeJSONParse(item.custom_hsd, {});
                     return { ...item, status: item.status || 'active', data_bq: parsedBQ, custom_hsd: parsedCustomHSD };
                 });
 
@@ -1572,10 +1587,18 @@
 
                 if (proyekAktif) {
                     const reRefreshed = listProyek.find(p => p.id === proyekAktif.id);
-                    if (reRefreshed) pilihProyek(reRefreshed.id);
-                    else unselectProyek();
+                    if (reRefreshed) {
+                        proyekAktif = reRefreshed;
+                        reKalkulasiBQProyekAktif();
+                        renderBQDanRekapitulasi(proyekAktif.data_bq || []);
+                        renderLampiranHSDProyek();
+                        renderTabelLaporanHarian();
+                    } else {
+                        unselectProyek();
+                    }
                 }
             } catch (err) {
+                console.error("Gagal memuat database:", err);
                 showToast("Gagal terhubung ke Database Supabase", "error");
             }
         }
@@ -1685,7 +1708,6 @@
                             if(item.satuan) row.querySelector('.builder-satuan').value = item.satuan;
                         }
 
-                        // JIKA DIPANGGUL DARI LAMPIRAN 3
                         const trLampiran = inputElem.closest('tr.row-hsd-lampiran');
                         if (trLampiran) {
                             let key = trLampiran.dataset.originalkey;
@@ -1725,9 +1747,6 @@
             }
         }
 
-        // ==========================
-        // FITUR HAPUS PROYEK (DIJAMIN JALAN)
-        // ==========================
         async function arsipkanProyek(id, e) {
             e.stopPropagation();
             const prj = listProyek.find(p => p.id === id);
@@ -1826,16 +1845,12 @@
             return (str || '').toString().toLowerCase().replace(/[^a-z0-9]/g, '');
         }
 
-        // ==========================================
-        // PRESISE LOGIK PENCARIAN HSD
-        // ==========================================
         function cariHsdObjectLengkap(komponen, lokasiProyek, gunakanOverrideProyek = false) {
             let rawKode = (komponen.kode || '').trim();
             let rawUraian = (komponen.uraian || '').trim();
             let normKode = normalizeString(rawKode);
             let normUraian = normalizeString(rawUraian);
 
-            // 1. Check Custom Override Proyek (Lampiran 3)
             if (gunakanOverrideProyek && proyekAktif && proyekAktif.custom_hsd) {
                 for (let k in proyekAktif.custom_hsd) {
                     let normK = normalizeString(k);
@@ -1851,7 +1866,6 @@
                 }
             }
 
-            // 2. Pencarian Presisi di Master Data HSD (02_hsd)
             if (normKode) {
                 let exactKodeMatches = listHSDMaster.filter(h => normalizeString(h.kode) === normKode);
                 if (exactKodeMatches.length > 0) {
@@ -1904,14 +1918,14 @@
 
         function hitungKalkulasiAHSPPUPR(ahsp, gunakanOverrideProyek = false) {
             let loc = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase() : "";
-            let comp = []; try { comp = typeof ahsp.komponen_json === 'string' ? JSON.parse(ahsp.komponen_json || "[]") : (ahsp.komponen_json || []); } catch(e){}
+            let comp = safeJSONParse(ahsp.komponen_json, []);
             let baseTotal = comp.reduce((sum, c) => sum + (parseFloat(c.koefisien) * cariHargaHSD(c, loc, gunakanOverrideProyek)), 0);
             return baseTotal * (1 + (parseFloat(ahsp.overhead_persen || 15) / 100));
         }
 
         function previewStrukturAHSP(ahsp) {
             let loc = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase() : "";
-            let comp = []; try { comp = typeof ahsp.komponen_json === 'string' ? JSON.parse(ahsp.komponen_json || "[]") : (ahsp.komponen_json || []); } catch(e){}
+            let comp = safeJSONParse(ahsp.komponen_json, []);
             let rowsHtml = "";
             let subtotalGroup = { 'Upah': 0, 'Bahan': 0, 'Alat': 0 };
 
@@ -2033,7 +2047,6 @@
 
         async function simpanBQKeSupabase(bqArray) {
             const total = bqArray.reduce((sum, i) => sum + (i.vol * i.hargaSatuan), 0) * 1.11;
-            // Dikonversi ke string JSON (JSON.stringify) untuk menjaga kompatibilitas kolom Supabase
             const { error } = await supabaseClient.from('project').update({ data_bq: JSON.stringify(bqArray), total_biaya: total }).eq('id', proyekAktif.id);
             if (!error) {
                 showToast("BQ diperbarui");
@@ -2092,8 +2105,7 @@
                 if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM') {
                     let masterAhsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
                     if (masterAhsp) {
-                        let comp = [];
-                        try { comp = typeof masterAhsp.komponen_json === 'string' ? JSON.parse(masterAhsp.komponen_json || "[]") : (masterAhsp.komponen_json || []); } catch(e){}
+                        let comp = safeJSONParse(masterAhsp.komponen_json, []);
                         comp.forEach(c => {
                             let hsdObj = cariHsdObjectLengkap(c, loc, true);
                             let key = (c.kode || c.uraian || "").trim().toLowerCase();
@@ -2222,9 +2234,9 @@
             if(rows.length === 0) return;
 
             rows.sort((a, b) => {
-                let startA = new Date(a.querySelector('.inp-sch-start').value || '1970-01-01');
-                let startB = new Date(b.querySelector('.inp-sch-start').value || '1970-01-01');
-                return startA - startB;
+                let dateA = new Date(a.querySelector('.inp-sch-start').value || '1970-01-01');
+                let dateB = new Date(b.querySelector('.inp-sch-start').value || '1970-01-01');
+                return (isNaN(dateA.getTime()) ? 0 : dateA) - (isNaN(dateB.getTime()) ? 0 : dateB);
             });
 
             const tbody = document.getElementById('tabelScheduleRows');
@@ -2306,6 +2318,7 @@
 
             let minTime = new Date(minDateStr).getTime();
             let maxTime = new Date(maxDateStr).getTime();
+            if (isNaN(minTime) || isNaN(maxTime)) return;
             let totalTimeSpan = Math.max(1, maxTime - minTime);
 
             let html = `<div class="space-y-3 pt-2">`;
@@ -2364,6 +2377,8 @@
 
             let startDate = new Date(minDateStr);
             let finishDate = new Date(maxDateStr);
+            if (isNaN(startDate.getTime()) || isNaN(finishDate.getTime())) return;
+
             let totalSpanDays = Math.max(1, Math.ceil((finishDate - startDate) / (1000 * 60 * 60 * 24)) + 1);
             let bucketCount = Math.max(4, Math.ceil(totalSpanDays / 7)); 
 
@@ -2627,9 +2642,6 @@
 
         function gantiHalamanAhsp(delta) { renderTabelMonitorAHSP(pageAhspCurrent + delta); }
 
-        // ==========================================
-        // PERBAIKAN: HAPUS & EDIT BERDASARKAN KODE
-        // ==========================================
         async function simpanHSDBaru() {
             const oldKode = document.getElementById('editHsdOldKode').value;
             
@@ -2747,8 +2759,7 @@
 
                 const container = document.getElementById('containerKomponenBuilder');
                 container.innerHTML = "";
-                let komponen = [];
-                try { komponen = typeof item.komponen_json === 'string' ? JSON.parse(item.komponen_json) : (item.komponen_json || []); } catch (e) {}
+                let komponen = safeJSONParse(item.komponen_json, []);
                 
                 if (komponen.length === 0) {
                     tambahBarisKomponenBuilder('containerKomponenBuilder');
@@ -2852,6 +2863,238 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Master AHSP");
             XLSX.writeFile(wb, "Master_Data_AHSP.xlsx");
+        }
+
+        function bukaModalBuatProyek() {
+            document.getElementById('modalProyek').classList.remove('hidden');
+        }
+
+        function tutupModalBuatProyek() {
+            document.getElementById('modalProyek').classList.add('hidden');
+        }
+
+        async function eksekusiSimpanProyekBaru() {
+            if (!currentUser) return showToast("Silakan login terlebih dahulu", "error");
+            
+            const btnSubmit = document.getElementById('btnSimpanProyekSubmit');
+            const originalText = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = "Menyimpan..."; 
+            btnSubmit.disabled = true;
+
+            const payload = {
+                id: "PRJ-" + Date.now().toString().slice(-6),
+                nama_proyek: document.getElementById('modalNamaProyek').value,
+                pemilik: document.getElementById('modalPemilik').value,
+                lokasi: document.getElementById('modalLokasi').value,
+                tanggal: new Date().toISOString().split('T')[0],
+                user_id: currentUser.userId,
+                status: 'active',
+                data_bq: "[]",
+                custom_hsd: "{}"
+            };
+
+            const { error } = await supabaseClient.from('project').insert([payload]);
+            
+            btnSubmit.innerHTML = originalText; 
+            btnSubmit.disabled = false;
+
+            if (!error) {
+                showToast("Proyek baru berhasil dibuat!");
+                tutupModalBuatProyek();
+                document.getElementById('modalNamaProyek').value = '';
+                document.getElementById('modalPemilik').value = '';
+                document.getElementById('modalLokasi').value = '';
+                muatDataProyekSemua();
+            } else {
+                showToast("Gagal membuat proyek: " + error.message, "error");
+            }
+        }
+
+        function resetFormHSD() {
+            document.getElementById('editHsdRowId').value = '';
+            document.getElementById('editHsdOldKode').value = '';
+            document.getElementById('addHsdKode').value = '';
+            document.getElementById('addHsdNama').value = '';
+            document.getElementById('addHsdSatuan').value = '';
+            document.getElementById('addHsdHarga').value = '';
+            document.getElementById('addHsdLokasi').value = '';
+            document.getElementById('addHsdReferensi').value = '';
+            
+            document.getElementById('txtHeaderFormHSD').innerText = "📦 Form Tambah HSD Baru";
+            document.getElementById('btnSubmitHsd').innerHTML = "💾 Simpan Ke Database";
+            document.getElementById('btnBatalEditHsd').classList.add('hidden');
+        }
+
+        function resetFormAHSP() {
+            document.getElementById('editAhspOldKode').value = '';
+            document.getElementById('addAhspKode').value = '';
+            document.getElementById('addAhspNama').value = '';
+            document.getElementById('addAhspSatuan').value = '';
+            document.getElementById('addAhspKategori').value = '';
+            document.getElementById('addAhspOverhead').value = '15';
+            
+            document.getElementById('containerKomponenBuilder').innerHTML = '';
+            tambahBarisKomponenBuilder('containerKomponenBuilder');
+            
+            document.getElementById('txtHeaderFormAHSP').innerText = "🏗️ Form Tambah AHSP Pekerjaan";
+            document.getElementById('btnSubmitAhsp').innerHTML = "💾 Simpan Ke Database";
+            document.getElementById('btnBatalEditAhsp').classList.add('hidden');
+        }
+
+        function tambahBarisKomponenBuilder(containerId, data = null) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = "flex gap-2 items-center bg-white p-2 rounded border border-slate-200 row-komponen-builder";
+            div.innerHTML = `
+                <select class="builder-tipe border p-1 rounded text-[10px] font-bold">
+                    <option value="Upah" ${data && data.tipe === 'Upah' ? 'selected' : ''}>Upah</option>
+                    <option value="Bahan" ${data && data.tipe === 'Bahan' ? 'selected' : ''}>Bahan</option>
+                    <option value="Alat" ${data && data.tipe === 'Alat' ? 'selected' : ''}>Alat</option>
+                </select>
+                <input type="text" placeholder="Kode" value="${data ? (data.kode||'') : ''}" class="builder-kode w-16 border p-1 rounded text-[10px] font-mono">
+                <input type="text" placeholder="Uraian (Ketik untuk cari)" value="${data ? (data.uraian||'') : ''}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="builder-uraian flex-1 border p-1 rounded text-[10px] font-bold">
+                <input type="text" placeholder="Sat" value="${data ? (data.satuan||'') : ''}" class="builder-satuan w-12 border p-1 rounded text-[10px] text-center">
+                <input type="number" step="0.0001" placeholder="Koef" value="${data ? (data.koefisien||'') : ''}" class="builder-koefisien w-20 border p-1 rounded text-[10px] text-center font-bold">
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 font-bold px-1">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function renderTabelLaporanHarian() {
+            const tbody = document.getElementById('tabelDailyReportRows');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!proyekAktif) {
+                return tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu.</td></tr>`;
+            }
+
+            const dailyProj = listDailyMaster.filter(d => d.id_proyek === proyekAktif.id).sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            if (dailyProj.length === 0) {
+                return tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada laporan harian untuk proyek ini.</td></tr>`;
+            }
+
+            dailyProj.forEach((item, idx) => {
+                let fotoArr = safeJSONParse(item.foto_json, []);
+                
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="p-2.5 text-center">${idx + 1}</td>
+                        <td class="p-2.5 text-center font-mono font-bold text-slate-800">${item.tanggal}</td>
+                        <td class="p-2.5 text-center font-bold text-amber-600">Hari ${item.hari_ke}</td>
+                        <td class="p-2.5 text-center">${item.cuaca}</td>
+                        <td class="p-2.5 whitespace-pre-line text-[11px] truncate max-w-[200px]" title="${item.kegiatan}">${item.kegiatan}</td>
+                        <td class="p-2.5 text-center font-bold text-blue-600">${fotoArr.length} Foto</td>
+                        <td class="p-2.5 text-center w-28">
+                            <button onclick="bukaModalPrintDaily(${item.id})" class="bg-blue-600 text-white font-bold px-2 py-1 rounded text-[10px] mb-1 w-full">📄 Lihat / Cetak</button>
+                            <button onclick="hapusLaporanHarian(${item.id})" class="bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded text-[10px] w-full">🗑️ Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function handlePreviewFotoDaily(input) {
+            const container = document.getElementById('previewFotoDailyContainer');
+            container.innerHTML = "";
+            dailyFotoBase64Array = [];
+
+            if (input.files && input.files.length > 0) {
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        dailyFotoBase64Array.push(e.target.result);
+                        container.innerHTML += `<div class="aspect-video bg-slate-200 rounded border overflow-hidden"><img src="${e.target.result}" class="w-full h-full object-cover"></div>`;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                container.innerHTML = `<span class="text-[10px] text-slate-400 italic col-span-3">Belum ada foto dipilih.</span>`;
+            }
+        }
+
+        async function simpanLaporanHarian() {
+            if (!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
+
+            const btn = document.getElementById('btnSimpanDaily');
+            btn.innerHTML = "Menyimpan..."; btn.disabled = true;
+
+            const payload = {
+                id_proyek: proyekAktif.id,
+                tanggal: document.getElementById('dailyTanggal').value,
+                hari_ke: parseInt(document.getElementById('dailyHariKe').value) || 1,
+                cuaca: document.getElementById('dailyCuaca').value,
+                tenaga_kerja: document.getElementById('dailyTenaga').value,
+                material: document.getElementById('dailyMaterial').value,
+                kegiatan: document.getElementById('dailyKegiatan').value,
+                kendala: document.getElementById('dailyKendala').value,
+                foto_json: JSON.stringify(dailyFotoBase64Array)
+            };
+
+            const { error } = await supabaseClient.from('04_daily_report').insert([payload]);
+            btn.innerHTML = "💾 Simpan Laporan Harian"; btn.disabled = false;
+
+            if (!error) {
+                showToast("Laporan harian berhasil disimpan!");
+                document.getElementById('dailyTanggal').value = '';
+                document.getElementById('dailyHariKe').value = '';
+                document.getElementById('dailyTenaga').value = '';
+                document.getElementById('dailyMaterial').value = '';
+                document.getElementById('dailyKegiatan').value = '';
+                document.getElementById('dailyKendala').value = '';
+                document.getElementById('dailyFotoInput').value = '';
+                document.getElementById('previewFotoDailyContainer').innerHTML = '<span class="text-[10px] text-slate-400 italic col-span-3">Belum ada foto dipilih.</span>';
+                dailyFotoBase64Array = [];
+                muatDataProyekSemua();
+            } else {
+                showToast("Gagal menyimpan laporan: " + error.message, "error");
+            }
+        }
+
+        function bukaModalPrintDaily(id) {
+            const item = listDailyMaster.find(d => d.id === id);
+            if(!item) return;
+
+            document.getElementById('viewDailyNamaProyek').innerText = proyekAktif ? proyekAktif.nama_proyek : '-';
+            document.getElementById('viewDailyTgl').innerText = item.tanggal;
+            document.getElementById('viewDailyHariKe').innerText = `Hari Ke-${item.hari_ke}`;
+            document.getElementById('viewDailyCuaca').innerText = item.cuaca;
+            document.getElementById('viewDailyTenaga').innerText = item.tenaga_kerja;
+            document.getElementById('viewDailyMaterial').innerText = item.material || '-';
+            document.getElementById('viewDailyKegiatan').innerText = item.kegiatan;
+            document.getElementById('viewDailyKendala').innerText = item.kendala || '-';
+
+            const gal = document.getElementById('viewDailyFotoGallery');
+            gal.innerHTML = "";
+            let fotoArr = safeJSONParse(item.foto_json, []);
+            
+            if(fotoArr.length === 0) {
+                gal.innerHTML = "<span class='text-slate-400 italic text-[10px]'>Tidak ada dokumentasi foto.</span>";
+            } else {
+                fotoArr.forEach(b64 => {
+                    gal.innerHTML += `<div class="aspect-video bg-slate-200 rounded border overflow-hidden"><img src="${b64}" class="w-full h-full object-cover"></div>`;
+                });
+            }
+
+            document.getElementById('modalPrintDaily').classList.remove('hidden');
+        }
+
+        function tutupModalPrintDaily() {
+            document.getElementById('modalPrintDaily').classList.add('hidden');
+        }
+
+        function cetakDokumenDailyPDF() {
+            const element = document.getElementById('areaCetakDaily');
+            const projectName = proyekAktif ? proyekAktif.nama_proyek.replace(/\s+/g, '_') : 'Proyek';
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `Laporan_Harian_${projectName}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 </body>
