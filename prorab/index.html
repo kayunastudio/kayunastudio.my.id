@@ -588,7 +588,7 @@
                                     <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
                                     <th class="p-2 border-b bg-slate-100 text-right">HARGA (RP)</th>
                                     <th class="p-2 border-b bg-slate-100 text-center">LOKASI</th>
-                                    <th class="p-2 border-b bg-slate-100 text-center w-24">AKSI</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center w-28">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelMasterHSDMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
@@ -2465,7 +2465,7 @@
 
         function tutupModalTrackingReal() { document.getElementById('modalTrackingReal').classList.add('hidden'); }
 
-        function simpanTrackingReal() {
+        async function simpanTrackingReal() {
             const bqId = document.getElementById('trackBqId').value;
             const progressVal = parseFloat(document.getElementById('trackProgress').value) || 0;
             const statusVal = document.getElementById('trackStatus').value;
@@ -2477,7 +2477,7 @@
                 badgeCell.className = `px-2 py-0.5 rounded text-[9px] font-bold ${statusVal === 'Completed' ? "bg-emerald-100 text-emerald-800" : (statusVal === 'In Progress' ? "bg-blue-100 text-blue-800" : (statusVal === 'Delayed' ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-600"))} lbl-status-real`;
             }
 
-            let existingSch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
+            let existingSch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && String(s.id_bq) === String(bqId));
             let updatedObj = {
                 id_proyek: proyekAktif.id, 
                 id_bq: String(bqId),
@@ -2485,21 +2485,31 @@
                 tgl_selesai: tr ? tr.querySelector('.inp-sch-finish').value : '',
                 predecessor: tr ? tr.querySelector('.inp-sch-pred').value : '-',
                 progress_persen: progressVal, status: statusVal,
-                actual_start: document.getElementById('trackActualStart').value,
-                actual_finish: document.getElementById('trackActualFinish').value,
+                actual_start: document.getElementById('trackActualStart').value || null,
+                actual_finish: document.getElementById('trackActualFinish').value || null,
                 actual_duration: parseFloat(document.getElementById('trackActualDuration').value) || 0,
                 remaining_duration: parseFloat(document.getElementById('trackRemainingDuration').value) || 0,
-                notes: document.getElementById('trackNotes').value
+                notes: document.getElementById('trackNotes').value || ''
             };
 
             if (existingSch && existingSch.id) {
                 updatedObj.id = existingSch.id;
             }
 
-            let idx = listScheduleMaster.findIndex(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
-            if(idx >= 0) listScheduleMaster[idx] = updatedObj; else listScheduleMaster.push(updatedObj);
+            const { data, error } = await supabaseClient.from('03_schedule').upsert([updatedObj], { onConflict: 'id_proyek,id_bq' }).select();
 
-            tutupModalTrackingReal(); renderGanttChartVisual(); renderKurvaSChart(); showToast("Tracking realisasi disimpan!");
+            if (!error && data && data.length > 0) {
+                let savedItem = data[0];
+                let idx = listScheduleMaster.findIndex(s => s.id_proyek === proyekAktif.id && String(s.id_bq) === String(bqId));
+                if(idx >= 0) listScheduleMaster[idx] = savedItem; else listScheduleMaster.push(savedItem);
+
+                tutupModalTrackingReal(); 
+                renderGanttChartVisual(); 
+                renderKurvaSChart(); 
+                showToast("Tracking realisasi berhasil disimpan ke database!");
+            } else {
+                showToast("Gagal menyimpan tracking: " + (error ? error.message : "Error tidak diketahui"), "error");
+            }
         }
 
         async function simpanJadwalSemua() {
@@ -2523,7 +2533,10 @@
                     progress_persen: parseFloat(existingSch.progress_persen) || 0,
                     status: existingSch.status || 'Not Started', 
                     actual_start: existingSch.actual_start || null, 
-                    actual_finish: existingSch.actual_finish || null
+                    actual_finish: existingSch.actual_finish || null,
+                    actual_duration: existingSch.actual_duration || 0,
+                    remaining_duration: existingSch.remaining_duration || 0,
+                    notes: existingSch.notes || ''
                 };
 
                 if (existingSch.id) {
@@ -2533,19 +2546,37 @@
                 return itemData;
             });
 
-            const { data, error } = await supabaseClient.from('03_schedule').upsert(payload, { onConflict: 'id_proyek,id_bq' });
+            const { data, error } = await supabaseClient.from('03_schedule').upsert(payload, { onConflict: 'id_proyek,id_bq' }).select();
             
-            if(!error) {
+            if(!error && data) {
+                data.forEach(savedItem => {
+                    let idx = listScheduleMaster.findIndex(s => s.id_proyek === savedItem.id_proyek && String(s.id_bq) === String(savedItem.id_bq));
+                    if(idx >= 0) listScheduleMaster[idx] = savedItem; else listScheduleMaster.push(savedItem);
+                });
                 showToast("Jadwal & Rencana S-Curve Berhasil Disimpan!");
-                muatDataProyekSemua();
+                renderTabelPenjadwalan();
             } else {
-                const retryRes = await supabaseClient.from('03_schedule').upsert(payload);
-                if(!retryRes.error) {
-                    showToast("Jadwal & Rencana S-Curve Berhasil Disimpan!");
-                    muatDataProyekSemua();
-                } else {
-                    showToast("Gagal simpan jadwal: " + retryRes.error.message, "error");
-                }
+                showToast("Gagal simpan jadwal: " + (error ? error.message : "Database Error"), "error");
+            }
+        }
+
+        function duplikatHSD(kode) {
+            const item = listHSDMaster.find(h => String(h.kode) === String(kode));
+            if (item) {
+                document.getElementById('editHsdRowId').value = ''; 
+                document.getElementById('editHsdOldKode').value = '';
+                document.getElementById('addHsdKode').value = (item.kode || 'HSD') + '-COPY';
+                document.getElementById('addHsdNama').value = (item.nama_item || item.uraian || '') + ' (Salinan)';
+                document.getElementById('addHsdSatuan').value = item.satuan || '';
+                document.getElementById('addHsdHarga').value = item.harga || 0;
+                document.getElementById('addHsdLokasi').value = item.lokasi || '';
+                document.getElementById('addHsdReferensi').value = item.referensi || '';
+                
+                document.getElementById('txtHeaderFormHSD').innerText = "📋 Duplikat Master HSD";
+                document.getElementById('btnSubmitHsd').innerHTML = "💾 Simpan Duplikat Ke Database";
+                document.getElementById('btnBatalEditHsd').classList.remove('hidden');
+                document.getElementById('addHsdKode').focus();
+                showToast(`Form terisi duplikat HSD [${kode}]`);
             }
         }
 
@@ -2579,8 +2610,9 @@
                             <td class="p-2 text-right font-mono font-bold">Rp ${parseFloat(item.harga || 0).toLocaleString('id-ID')}</td>
                             <td class="p-2 text-center">${item.lokasi || '-'}</td>
                             <td class="p-2 text-center">
-                                <button onclick="editHSD('${item.kode}')" class="text-amber-500 hover:text-amber-600 px-1">✏️</button>
-                                <button onclick="hapusHSD('${item.kode}')" class="text-rose-500 hover:text-rose-600 px-1">🗑️</button>
+                                <button onclick="duplikatHSD('${item.kode}')" class="text-blue-500 hover:text-blue-600 px-1" title="Duplikat Item">📋</button>
+                                <button onclick="editHSD('${item.kode}')" class="text-amber-500 hover:text-amber-600 px-1" title="Edit Item">✏️</button>
+                                <button onclick="hapusHSD('${item.kode}')" class="text-rose-500 hover:text-rose-600 px-1" title="Hapus Item">🗑️</button>
                             </td>
                         </tr>
                     `;
@@ -2597,6 +2629,34 @@
         }
 
         function gantiHalamanHsd(delta) { renderTabelMonitorHSD(pageHsdCurrent + delta); }
+
+        function duplikatAHSP(kode) {
+            const item = listAHSPMaster.find(a => String(a.kode_ahsp) === String(kode));
+            if (item) {
+                document.getElementById('editAhspOldKode').value = '';
+                document.getElementById('addAhspKode').value = (item.kode_ahsp || 'AHSP') + '-COPY';
+                document.getElementById('addAhspNama').value = (item.nama_pekerjaan || '') + ' (Salinan)';
+                document.getElementById('addAhspKategori').value = item.kategori || '';
+                document.getElementById('addAhspSatuan').value = item.satuan || '';
+                document.getElementById('addAhspOverhead').value = item.overhead_persen || 15;
+
+                const container = document.getElementById('containerKomponenBuilder');
+                container.innerHTML = "";
+                let komponen = safeJSONParse(item.komponen_json, []);
+                
+                if (komponen.length === 0) {
+                    tambahBarisKomponenBuilder('containerKomponenBuilder');
+                } else {
+                    komponen.forEach(k => tambahBarisKomponenBuilder('containerKomponenBuilder', k));
+                }
+
+                document.getElementById('txtHeaderFormAHSP').innerText = "📋 Duplikat Master AHSP";
+                document.getElementById('btnSubmitAhsp').innerHTML = "💾 Simpan Duplikat Ke Database";
+                document.getElementById('btnBatalEditAhsp').classList.remove('hidden');
+                document.getElementById('addAhspKode').focus();
+                showToast(`Form terisi duplikat AHSP [${kode}]`);
+            }
+        }
 
         function renderTabelMonitorAHSP(targetPage = pageAhspCurrent) {
             const keyword = (document.getElementById('searchAhspInput').value || "").toLowerCase().trim();
@@ -2625,9 +2685,10 @@
                             <td class="p-2 text-center font-mono">${item.satuan}</td>
                             <td class="p-2 text-center font-bold">${item.overhead_persen || 15}%</td>
                             <td class="p-2 text-center w-28">
-                                <button onclick="previewStrukturAHSP(listAHSPMaster.find(a => a.kode_ahsp === '${item.kode_ahsp}'))" class="text-blue-500 hover:text-blue-600 px-1">🔍</button>
-                                <button onclick="editAHSP('${item.kode_ahsp}')" class="text-amber-500 hover:text-amber-600 px-1">✏️</button>
-                                <button onclick="hapusAHSP('${item.kode_ahsp}')" class="text-rose-500 hover:text-rose-600 px-1">🗑️</button>
+                                <button onclick="previewStrukturAHSP(listAHSPMaster.find(a => a.kode_ahsp === '${item.kode_ahsp}'))" class="text-blue-500 hover:text-blue-600 px-1" title="Preview Detail">🔍</button>
+                                <button onclick="duplikatAHSP('${item.kode_ahsp}')" class="text-emerald-500 hover:text-emerald-600 px-1" title="Duplikat Item">📋</button>
+                                <button onclick="editAHSP('${item.kode_ahsp}')" class="text-amber-500 hover:text-amber-600 px-1" title="Edit Item">✏️</button>
+                                <button onclick="hapusAHSP('${item.kode_ahsp}')" class="text-rose-500 hover:text-rose-600 px-1" title="Hapus Item">🗑️</button>
                             </td>
                         </tr>
                     `;
@@ -2791,8 +2852,9 @@
                 const targetId = isNaN(id) ? id : Number(id);
                 const { error } = await supabaseClient.from('04_daily_report').delete().eq('id', targetId);
                 if (!error) {
+                    listDailyMaster = listDailyMaster.filter(d => Number(d.id) !== targetId);
                     showToast("Laporan berhasil dihapus!");
-                    muatDataProyekSemua();
+                    renderTabelLaporanHarian();
                 } else {
                     showToast("Gagal menghapus laporan: " + error.message, "error");
                 }
@@ -3032,11 +3094,12 @@
                 foto_json: JSON.stringify(dailyFotoBase64Array)
             };
 
-            const { error } = await supabaseClient.from('04_daily_report').insert([payload]);
+            const { data, error } = await supabaseClient.from('04_daily_report').insert([payload]).select();
             btn.innerHTML = "💾 Simpan Laporan Harian"; btn.disabled = false;
 
-            if (!error) {
-                showToast("Laporan harian berhasil disimpan!");
+            if (!error && data && data.length > 0) {
+                listDailyMaster.push(data[0]);
+                showToast("Laporan harian berhasil disimpan ke database!");
                 document.getElementById('dailyTanggal').value = '';
                 document.getElementById('dailyHariKe').value = '';
                 document.getElementById('dailyTenaga').value = '';
@@ -3046,9 +3109,9 @@
                 document.getElementById('dailyFotoInput').value = '';
                 document.getElementById('previewFotoDailyContainer').innerHTML = '<span class="text-[10px] text-slate-400 italic col-span-3">Belum ada foto dipilih.</span>';
                 dailyFotoBase64Array = [];
-                muatDataProyekSemua();
+                renderTabelLaporanHarian();
             } else {
-                showToast("Gagal menyimpan laporan: " + error.message, "error");
+                showToast("Gagal menyimpan laporan: " + (error ? error.message : "Error tidak diketahui"), "error");
             }
         }
 
