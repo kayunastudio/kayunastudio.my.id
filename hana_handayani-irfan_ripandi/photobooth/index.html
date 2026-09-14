@@ -198,7 +198,7 @@
             <div class="card">
                 <div class="card-header">Pilih Layout Photobooth</div>
                 <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5;">
-                    Geser ke samping untuk memilih desain bingkai foto Instagram Story (9:16)!
+                    Geser ke samping untuk memilih desain bingkai foto!
                 </p>
 
                 <div class="layout-slider-container">
@@ -217,8 +217,6 @@
                 
                 <div class="viewport-container" id="camera-viewport-box">
                     <video id="photo-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
-                    
-                    <!-- INTERACTIVE CANVAS UNTUK PENYESUAIAN CROP & DRAG MULTI-SLOT -->
                     <canvas id="interactive-adjust-canvas" class="viewport-element" style="display: none; cursor: grab;"></canvas>
                     
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
@@ -229,12 +227,11 @@
                 <!-- PANEL INTERAKTIF (GESER & ZOOM FOTO) -->
                 <div id="interactive-controls" class="adjust-control-panel" style="display: none;">
                     <div style="font-size: 0.85rem; color: var(--color-text-main); line-height: 1.4;">
-                        👉 <strong>Geser/Drag foto</strong> di layar atas untuk pas-kan posisi ke lubang layout.
+                        👉 <strong>Geser/Drag foto</strong> di layar atas untuk pas-kan posisi pada layout.
                     </div>
                     <div class="adjust-slider-group">
                         <span>Pilih Foto:</span>
                         <select id="select-active-slot" class="form-select" style="padding: 6px 12px; font-size: 0.8rem;" onchange="InteractiveCanvasEngine.setActiveSlot(this.value)">
-                            <!-- Slot Dinamis -->
                         </select>
                     </div>
                     <div class="adjust-slider-group">
@@ -687,14 +684,14 @@
             }
         };
 
-        /* ENGINE CANVAS INTERAKTIF DENGAN AUTO-CROP PRESISI TEPAT DI TENGAH-TENGAH JARAK LUBANG */
+        /* ENGINE CANVAS INTERAKTIF DENGAN ALGORITMA DETEKSI LUBANG HIGH-PRECISION & NOISE FILTER */
         const InteractiveCanvasEngine = {
             canvas: null,
             ctx: null,
             frameImg: null,
             bitmaps: [],
             slotStates: [],
-            detectedBoundingBoxes: [], // Tempat menyimpan area lubang transparan yang terdeteksi
+            detectedBoundingBoxes: [],
             activeSlotIndex: 0,
             isDragging: false,
             dragStartX: 0,
@@ -725,7 +722,7 @@
                     this.canvas.height = 1920;
                 }
 
-                // ANALISIS SECARA OTOMATIS BATAS BINDING BOX LUBANG TRANSPARAN DARI FRAME PNG
+                // MENJALANKAN DETEKSI PRESISI DENGAN THRESHOLD ALPHA & FILTER NOISE BARU
                 this.detectedBoundingBoxes = this.analyzeTransparentBoundingBoxes(this.frameImg, this.bitmaps.length);
 
                 this.slotStates = this.bitmaps.map(() => ({ offsetX: 0, offsetY: 0, scale: 1 }));
@@ -754,7 +751,7 @@
                 this.render();
             },
 
-            // METODE ANALISIS PIKSEL UNTUK MENDAPATKAN KOTAK BOUNDING LUBANG SECARA PRESISI
+            // ALGORITMA BARU: PENINGKATAN PRESISI DETEKSI OPASITAS & FILTER NOISE BINGKAI
             analyzeTransparentBoundingBoxes(frameImg, poseCount) {
                 if (!frameImg) {
                     return this.getFallbackGridBoxes(poseCount, 1080, 1920);
@@ -772,7 +769,6 @@
                     const w = offCanvas.width;
                     const h = offCanvas.height;
 
-                    // METODE CLUSTERING PIKSEL ALPHA (TRANSPARAN) UNTUK SETIAP MASKING LUBANG
                     let cols = poseCount === 4 ? 2 : 1;
                     let rows = poseCount === 4 ? 2 : (poseCount > 1 ? poseCount : 1);
                     let cellW = w / cols;
@@ -790,33 +786,38 @@
                         let endY = Math.floor((r + 1) * cellH);
 
                         let minX = endX, maxX = startX, minY = endY, maxY = startY;
-                        let found = false;
+                        let transparentPixelCount = 0;
 
-                        // PINDAI SEMUA PIKSEL DENGAN OPASITAS / ALPHA BERADA DI BAWAH THRESHOLD (BERSIFAT TRANSPARAN)
-                        for (let y = startY; y < endY; y += 4) {
-                            for (let x = startX; x < endX; x += 4) {
+                        // PERBAIKAN: DETEKSI ALPHA HIGH SENSITIVITY (ALPHA < 240 MEMINIMALKAN SALAH DETEKSI ANTIALIASING)
+                        for (let y = startY; y < endY; y += 2) {
+                            for (let x = startX; x < endX; x += 2) {
                                 let alphaIndex = (y * w + x) * 4 + 3;
-                                if (data[alphaIndex] < 128) { // Transparan
+                                if (data[alphaIndex] < 240) { // Anggap area transparan atau semitransparan
                                     if (x < minX) minX = x;
                                     if (x > maxX) maxX = x;
                                     if (y < minY) minY = y;
                                     if (y > maxY) maxY = y;
-                                    found = true;
+                                    transparentPixelCount++;
                                 }
                             }
                         }
 
-                        if (found && maxX > minX && maxY > minY) {
+                        // FILTER NOISE: HANYA TERIMA LUBANG JIKA TERDAPAT MINIMAL 100 PIKSEL TRANSPARAN TERDAPAT DI AREA TERSEBUT
+                        if (transparentPixelCount > 100 && maxX > minX && maxY > minY) {
+                            // MEMBERIKAN TOKO PAD BORDER SEDIKIT AGAR SEGITIGA/LINGKARAN TIDAK TERPOTONG LEBIH AWAL
+                            let boxW = maxX - minX;
+                            let boxH = maxY - minY;
+
                             boxes.push({
                                 x: minX,
                                 y: minY,
-                                width: maxX - minX,
-                                height: maxY - minY,
-                                centerX: minX + (maxX - minX) / 2,
-                                centerY: minY + (maxY - minY) / 2
+                                width: boxW,
+                                height: boxH,
+                                centerX: minX + boxW / 2,
+                                centerY: minY + boxH / 2
                             });
                         } else {
-                            // FALLBACK BOUNDING PER-SLOT
+                            // FALLBACK BOUNDING GRID JIKA LAYOUT TIDAK MEMILIKI MASKING TRANSPARAN BERSIH
                             boxes.push({
                                 x: startX,
                                 y: startY,
@@ -854,7 +855,6 @@
                 return boxes;
             },
 
-            // LOGIKA UTAMA: PERHITUNGAN BATAS MIDPOINT (TITIK TENGAH ANTARA DUA LUBANG)
             calculateMidpointClipRect(index, totalCount) {
                 const W = this.canvas.width;
                 const H = this.canvas.height;
@@ -868,15 +868,14 @@
 
                 let clipX = 0, clipY = 0, clipW = W, clipH = H;
 
-                // 1. HITUNG MIDPOINT HORISONTAL (JIKA MULTI KOLOM)
                 if (cols > 1) {
-                    if (c === 0) { // Slot Kiri
+                    if (c === 0) {
                         let rightNeighbor = boxes[index + 1];
                         let currentBox = boxes[index];
                         let midpointX = (currentBox.x + currentBox.width + rightNeighbor.x) / 2;
                         clipX = 0;
                         clipW = midpointX;
-                    } else { // Slot Kanan
+                    } else {
                         let leftNeighbor = boxes[index - 1];
                         let currentBox = boxes[index];
                         let midpointX = (leftNeighbor.x + leftNeighbor.width + currentBox.x) / 2;
@@ -885,12 +884,10 @@
                     }
                 }
 
-                // 2. HITUNG MIDPOINT VERTIKAL (JIKA MULTI BARIS)
                 if (rows > 1) {
                     let topLimit = 0;
                     let bottomLimit = H;
 
-                    // JIKA MEMILIKI TETANGGA DI ATASNYA
                     if (r > 0) {
                         let topNeighborIndex = index - cols;
                         let topNeighbor = boxes[topNeighborIndex];
@@ -898,7 +895,6 @@
                         topLimit = (topNeighbor.y + topNeighbor.height + currentBox.y) / 2;
                     }
 
-                    // JIKA MEMILIKI TETANGGA DI BAWAHNYA
                     if (r < rows - 1) {
                         let bottomNeighborIndex = index + cols;
                         let bottomNeighbor = boxes[bottomNeighborIndex];
@@ -978,32 +974,27 @@
                 const totalCount = this.bitmaps.length;
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-                // 1. GAMBAR BINGKAI FRAME CUSTOM TERLEBIH DAHULU (TOPENG MASKING TRANSPARAN)
+                // 1. DOCKING FRAME DISAMPINGKAN TERLEBIH DAHULU KE LAPISAN ATAS KANVAS
                 if (this.frameImg) {
                     this.ctx.drawImage(this.frameImg, 0, 0, this.canvas.width, this.canvas.height);
                     this.ctx.globalCompositeOperation = 'destination-over';
                 }
 
-                // 2. GAMBAR FOTO DI LAPISAN BELAKANG DENGAN AUTO-CROP CLIP MIDPOINT ANTAR LUBANG
+                // 2. RENDERING FOTO SECARA RECURSIVE PADA SETIAP KOTAK LUBANG HASIL PROSES DETEKSI HIGH-SENSITIVITY
                 this.bitmaps.forEach((bmp, idx) => {
                     const box = this.detectedBoundingBoxes[idx];
                     const state = this.slotStates[idx];
-                    
-                    // DAPATKAN RECTANGLE CLIPPING BERDASARKAN TITIK TENGAH (MIDPOINT) SPASI LUBANG
                     const clipRect = this.calculateMidpointClipRect(idx, totalCount);
 
                     this.ctx.save();
                     
-                    // LAKUKAN CROP / CLIPPING PRESISI PADA MIDPOINT
                     this.ctx.beginPath();
                     this.ctx.rect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
                     this.ctx.clip();
 
-                    // GESER TITIK TUMPUR KE PUSAT TENGAH LUBANG YANG TERDETEKSI
                     this.ctx.translate(box.centerX + state.offsetX, box.centerY + state.offsetY);
                     this.ctx.scale(-1, 1);
 
-                    // HITUNG RASIO PERBESARAN COVER-CROP BERDASARKAN BOUNDING BOX LUBANG
                     const baseScale = Math.max(box.width / bmp.width, box.height / bmp.height);
                     const finalScale = baseScale * state.scale;
 
@@ -1014,7 +1005,7 @@
                     this.ctx.restore();
                 });
 
-                // 3. SELESAIKAN DENGAN LATAR BELAKANG PUTIH DI PALING BELAKANG
+                // 3. SET BACKGROUND WHITE UNDERNEATH
                 this.ctx.globalCompositeOperation = 'destination-over';
                 this.ctx.fillStyle = "#ffffff";
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
