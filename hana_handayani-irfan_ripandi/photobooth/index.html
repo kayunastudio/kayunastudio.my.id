@@ -183,9 +183,9 @@
         <!-- 1. SECTION: HOME -->
         <section id="section-home" class="component-section active-section">
             <div class="card">
-                <div class="card-header">Pilih Varian Grid Layout Foto</div>
+                <div class="card-header">Pilih Grid Layout Foto</div>
                 <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5;">
-                    Pilih bentuk susunan grid foto yang kamu inginkan di atas background!
+                    Pilih susunan grid foto yang kamu inginkan!
                 </p>
 
                 <div class="layout-slider-container">
@@ -276,7 +276,7 @@
             <div class="card">
                 <div class="card-header">🖼️ Galeri Photobooth</div>
                 <p style="font-size: 0.85rem; color: var(--color-text-muted);">
-                    Lihat hasil foto pemotretan berlayout milikmu dan bagikan kembali ke Instagram Story kapan saja!
+                    Lihat hasil fotomu dan bagikan kembali ke Instagram Story!
                 </p>
                 <div class="gallery-grid-layout" id="gallery-grid-container"></div>
             </div>
@@ -285,7 +285,7 @@
         <!-- 5. SECTION: ADMIN -->
         <section id="section-admin" class="component-section">
             <div class="card">
-                <div class="card-header">🖼️ Upload Background Utuh Tunggal</div>
+                <div class="card-header">🖼️ Upload Background</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
                     <div class="form-group">
                         <label class="form-label">Nama Background Utama</label>
@@ -441,10 +441,12 @@
             singleBackgroundUrl: null,
 
             gridLayoutOptions: [
-                { id: 'single_scaled_1', title: 'Single Portrait 9:16 (1 Foto)', pose_count: 1, rows: '1fr', cols: '1fr' },
-                { id: 'duo_vertical_2', title: 'Duo Story (2 Foto)', pose_count: 2, rows: '1fr 1fr', cols: '1fr' },
+                { id: 'single_scaled_1', title: 'Single Portrait (1 Foto)', pose_count: 1, rows: '1fr', cols: '1fr' },
+                { id: 'grid_2x1_horizontal_2', title: '2x1 Strip Horizontal (2 Foto)', pose_count: 2, rows: '1fr', cols: '1fr 1fr' },
+                { id: 'duo_vertical_2', title: 'Duo Story Vertikal (2 Foto)', pose_count: 2, rows: '1fr 1fr', cols: '1fr' },
                 { id: 'strip_classic_3', title: 'Classic Strip (3 Foto)', pose_count: 3, rows: '1fr 1fr 1fr', cols: '1fr' },
-                { id: 'quad_grid_4', title: 'Quad 2x2 (4 Foto)', pose_count: 4, rows: '1fr 1fr', cols: '1fr 1fr' }
+                { id: 'quad_grid_4', title: 'Quad 2x2 (4 Foto)', pose_count: 4, rows: '1fr 1fr', cols: '1fr 1fr' },
+                { id: 'grid_2x3_6', title: 'Grid 2x3 (6 Foto)', pose_count: 6, rows: '1fr 1fr 1fr', cols: '1fr 1fr' }
             ],
 
             async loadPublicLayouts() {
@@ -537,9 +539,10 @@
 
             slotPositionLabels: {
                 1: ["Slot Foto Utama (9:16)"],
-                2: ["Atas (Foto 1)", "Bawah (Foto 2)"],
+                2: ["Kiri (Foto 1)", "Kanan (Foto 2)"],
                 3: ["Atas (Foto 1)", "Tengah (Foto 2)", "Bawah (Foto 3)"],
-                4: ["Kiri Atas (Foto 1)", "Kanan Atas (Foto 2)", "Kiri Bawah (Foto 3)", "Kanan Bawah (Foto 4)"]
+                4: ["Kiri Atas (Foto 1)", "Kanan Atas (Foto 2)", "Kiri Bawah (Foto 3)", "Kanan Bawah (Foto 4)"],
+                6: ["Kiri Atas (Foto 1)", "Kanan Atas (Foto 2)", "Kiri Tengah (Foto 3)", "Kanan Tengah (Foto 4)", "Kiri Bawah (Foto 5)", "Kanan Bawah (Foto 6)"]
             },
 
             async startCamera() {
@@ -653,7 +656,7 @@
             }
         };
 
-        /* ENGINE OVERLAY CANVAS (DENGAN LAYOUT SINGLE 9:16 DITEMPEL DI ATAS BACKGROUND) */
+        /* ENGINE OVERLAY CANVAS (DENGAN LAYOUT 2x1 STRIP HORIZONTAL & MULTI GRID) */
         const OverlayCanvasEngine = {
             canvas: null,
             ctx: null,
@@ -703,13 +706,13 @@
                 const marginX = 80;       
                 const marginTop = 110;    
                 const marginBottom = 360; // SPACE KETERANGAN BAWAH POLAROID
-                const gap = 30;           
+                const gap = 24;           
 
                 const availableW = canvasW - (marginX * 2);
                 const availableH = canvasH - marginTop - marginBottom;
 
                 if (layoutType === 'single_scaled_1') {
-                    // SINGLE FOTO: TETAP MEMAKAI PROPORSI 9:16 (PORTRAIT) YANG DI-SCALE DI ATAS BACKGROUND
+                    // SINGLE PORTRAIT 9:16
                     const targetRatio = 9 / 16;
                     let slotW = availableW;
                     let slotH = slotW / targetRatio;
@@ -723,22 +726,46 @@
                     const startY = marginTop + (availableH - slotH) / 2;
 
                     slots.push({ x: startX, y: startY, width: slotW, height: slotH });
+                } else if (layoutType === 'grid_2x1_horizontal_2') {
+                    // 2x1 STRIP HORIZONTAL (2 FOTO BERDAMPINGAN KIRI - KANAN)
+                    const slotW = (availableW - gap) / 2;
+                    const slotH = availableH;
+
+                    slots.push({ x: marginX, y: marginTop, width: slotW, height: slotH });
+                    slots.push({ x: marginX + slotW + gap, y: marginTop, width: slotW, height: slotH });
                 } else if (layoutType === 'duo_vertical_2') {
+                    // DUO STORY VERTIKAL (2 FOTO ATAS - BAWAH)
                     const slotH = (availableH - gap) / 2;
                     slots.push({ x: marginX, y: marginTop, width: availableW, height: slotH });
                     slots.push({ x: marginX, y: marginTop + slotH + gap, width: availableW, height: slotH });
                 } else if (layoutType === 'strip_classic_3') {
+                    // CLASSIC STRIP (3 FOTO ATAS - TENGAH - BAWAH)
                     const slotH = (availableH - (gap * 2)) / 3;
                     slots.push({ x: marginX, y: marginTop, width: availableW, height: slotH });
                     slots.push({ x: marginX, y: marginTop + slotH + gap, width: availableW, height: slotH });
                     slots.push({ x: marginX, y: marginTop + (slotH * 2) + (gap * 2), width: availableW, height: slotH });
                 } else if (layoutType === 'quad_grid_4') {
+                    // QUAD GRID 2x2 (4 FOTO)
                     const slotW = (availableW - gap) / 2;
                     const slotH = (availableH - gap) / 2;
                     slots.push({ x: marginX, y: marginTop, width: slotW, height: slotH });
                     slots.push({ x: marginX + slotW + gap, y: marginTop, width: slotW, height: slotH });
                     slots.push({ x: marginX, y: marginTop + slotH + gap, width: slotW, height: slotH });
                     slots.push({ x: marginX + slotW + gap, y: marginTop + slotH + gap, width: slotW, height: slotH });
+                } else if (layoutType === 'grid_2x3_6') {
+                    // GRID 2x3 (6 FOTO: 2 KOLOM x 3 BARIS)
+                    const slotW = (availableW - gap) / 2;
+                    const slotH = (availableH - (gap * 2)) / 3;
+
+                    // Baris 1
+                    slots.push({ x: marginX, y: marginTop, width: slotW, height: slotH });
+                    slots.push({ x: marginX + slotW + gap, y: marginTop, width: slotW, height: slotH });
+                    // Baris 2
+                    slots.push({ x: marginX, y: marginTop + slotH + gap, width: slotW, height: slotH });
+                    slots.push({ x: marginX + slotW + gap, y: marginTop + slotH + gap, width: slotW, height: slotH });
+                    // Baris 3
+                    slots.push({ x: marginX, y: marginTop + (slotH * 2) + (gap * 2), width: slotW, height: slotH });
+                    slots.push({ x: marginX + slotW + gap, y: marginTop + (slotH * 2) + (gap * 2), width: slotW, height: slotH });
                 }
 
                 return { slots, marginBottomY: canvasH - marginBottom };
