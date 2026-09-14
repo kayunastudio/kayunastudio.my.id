@@ -102,13 +102,13 @@
         .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border); transition: all 0.3s; }
         .dot.active { width: 20px; border-radius: 10px; background: var(--color-primary); }
 
-        /* VIEWPORT CAMERA & PREVIEW INSTAGRAM STORY RATIO (9:16 - UNZOOMED / WIDE ANGLE FIX) */
+        /* VIEWPORT CAMERA & PREVIEW INSTAGRAM STORY RATIO (9:16) */
         .viewport-container { position: relative; width: 100%; max-width: 420px; aspect-ratio: 9/16; max-height: 70vh; margin: 0 auto; background: #000000; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .viewport-element { width: 100%; height: 100%; object-fit: contain; }
         .viewport-element.camera-mirror { transform: scaleX(-1); object-fit: contain; }
-        .live-frame-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; z-index: 2; display: none; }
 
         .badge-overlay { position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.65); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; z-index: 4; backdrop-filter: blur(4px); }
+        .slot-indicator-badge { position: absolute; top: 14px; right: 14px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; z-index: 4; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .countdown-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; font-size: 4.5rem; font-weight: 900; color: white; z-index: 10; backdrop-filter: blur(2px); }
 
         /* FORMS & CARDS */
@@ -208,17 +208,17 @@
             </div>
         </section>
 
-        <!-- 2. SECTION: CAPTURE PHOTOBOOTH (INSTAGRAM STORY 9:16 CAMERA VIEW - OPTIMIZED WIDE ANGLE) -->
+        <!-- 2. SECTION: CAPTURE PHOTOBOOTH -->
         <section id="section-photo" class="component-section">
             <div class="card">
                 <div class="card-header" id="photo-session-title">Sesi Pemotretan (Foto 1 dari 1)</div>
                 
                 <div class="viewport-container" id="camera-viewport-box">
                     <video id="photo-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
-                    <img id="photo-live-frame" class="live-frame-overlay" />
                     <img id="photo-preview-result" class="viewport-element" style="display: none;" />
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
                     <div id="photo-badge" class="badge-overlay">📷 Wide Angle Camera</div>
+                    <div id="photo-slot-badge" class="slot-indicator-badge" style="display: none;">📍 Slot Foto 1</div>
                 </div>
 
                 <div class="btn-group">
@@ -229,7 +229,7 @@
             </div>
         </section>
 
-        <!-- 3. SECTION: GUESTBOOK (BAGIKAN HASIL FOTO LAYOUT / UPLOAD UCAPAN) -->
+        <!-- 3. SECTION: GUESTBOOK -->
         <section id="section-guestbook" class="component-section">
             <div class="card">
                 <div class="card-header">📝 Pesan Ucapan & Opsi Berbagi Foto Layout</div>
@@ -275,7 +275,6 @@
                     <textarea id="input-guest-message" class="form-textarea" placeholder="Tulis ucapan untuk kedua mempelai..."></textarea>
                 </div>
 
-                <!-- TOMBOL BAGIKAN FOTO LAYOUT KE IG STORY BERSAMAAN DENGAN UPLOAD GUESTBOOK -->
                 <div class="btn-group" style="margin-top: 6px;">
                     <button id="btn-submit-upload" class="btn btn-primary" style="padding: 16px; flex: 2;" onclick="UploadController.executeUploadProcess()">🚀 Upload ke Digital Guestbook</button>
                     <button id="btn-share-ig-guestbook" class="btn btn-instagram" style="padding: 16px; flex: 1.2;" onclick="SocialShareEngine.shareResultToInstagram()">📸 Bagikan Foto ke IG Story</button>
@@ -283,7 +282,7 @@
             </div>
         </section>
 
-        <!-- 4. SECTION: GALERI LOKAL (TOMBOL IG STORY DI SETIAP KARTU FOTO HASIL LAYOUT) -->
+        <!-- 4. SECTION: GALERI LOKAL -->
         <section id="section-gallery" class="component-section">
             <div class="card">
                 <div class="card-header">🖼️ Galeri Photobooth</div>
@@ -453,7 +452,7 @@
             }
         };
 
-        /* LAYOUT CONTROLLER WITH SOFT CAROUSEL SLIDER */
+        /* LAYOUT CONTROLLER */
         const LayoutController = {
             requiredPhotosCount: 1,
             selectedFrameUrl: null,
@@ -521,13 +520,11 @@
                         `;
                         container.appendChild(card);
 
-                        // DOTS INDICATOR
                         const dot = document.createElement('div');
                         dot.className = `dot ${idx === 0 ? 'active' : ''}`;
                         dotsContainer.appendChild(dot);
                     });
 
-                    // SLIDER SCROLL LISTENERS FOR DOTS
                     container.onscroll = () => {
                         const scrollPos = container.scrollLeft;
                         const cardW = container.querySelector('.layout-card').offsetWidth + 16;
@@ -550,12 +547,19 @@
             }
         };
 
-        /* PHOTO ENGINE WITH OPTIMIZED WIDE ANGLE & PROPORTIONAL FIT */
+        /* PHOTO ENGINE WITH UNIVERSAL TRANSPARENT MASKING (LINGKARAN, SEGITIGA, ROUNDED, DLL) */
         const CameraEngine = {
             stream: null,
             capturedBitmaps: [],
             currentPoseIndex: 1,
             finalMergedBlob: null,
+
+            slotPositionLabels: {
+                1: ["Tengah / Utama"],
+                2: ["Atas (Foto 1)", "Bawah (Foto 2)"],
+                3: ["Atas (Foto 1)", "Tengah (Foto 2)", "Bawah (Foto 3)"],
+                4: ["Kiri Atas (Foto 1)", "Kanan Atas (Foto 2)", "Kiri Bawah (Foto 3)", "Kanan Bawah (Foto 4)"]
+            },
 
             async startCamera() {
                 this.stopStream();
@@ -565,7 +569,6 @@
                 }
 
                 try {
-                    // MENGGUNAKAN IDEAL RESOLUSI TANPA MEMAKSA CROP BERLEBIHAN PADA BROWSER
                     this.stream = await navigator.mediaDevices.getUserMedia({ 
                         video: { 
                             width: { ideal: 1920 }, 
@@ -579,27 +582,29 @@
                     video.srcObject = this.stream;
                     video.style.display = 'block';
                     document.getElementById('photo-preview-result').style.display = 'none';
-                    document.getElementById('photo-session-title').innerText = `Sesi Pemotretan (Foto ${this.currentPoseIndex} dari ${LayoutController.requiredPhotosCount})`;
+                    
+                    this.updateSlotBadgeText();
 
-                    const liveFrame = document.getElementById('photo-live-frame');
                     const viewportBox = document.getElementById('camera-viewport-box');
-
-                    if (LayoutController.selectedFrameUrl) {
-                        liveFrame.src = LayoutController.selectedFrameUrl;
-                        liveFrame.style.display = 'block';
-
-                        const tempImg = new Image();
-                        tempImg.crossOrigin = "anonymous";
-                        tempImg.onload = () => {
-                            viewportBox.style.aspectRatio = `${tempImg.naturalWidth} / ${tempImg.naturalHeight}`;
-                        };
-                        tempImg.src = LayoutController.selectedFrameUrl;
-                    } else {
-                        liveFrame.style.display = 'none';
-                        viewportBox.style.aspectRatio = '9 / 16';
-                    }
+                    viewportBox.style.aspectRatio = '9 / 16';
 
                 } catch (e) { alert("Gagal mengaktifkan kamera: " + e.message); }
+            },
+
+            updateSlotBadgeText() {
+                const total = LayoutController.requiredPhotosCount;
+                const current = this.currentPoseIndex;
+                document.getElementById('photo-session-title').innerText = `Sesi Pemotretan (Foto ${current} dari ${total})`;
+
+                const slotBadge = document.getElementById('photo-slot-badge');
+                if (total > 1) {
+                    const labels = this.slotPositionLabels[total] || [];
+                    const posName = labels[current - 1] || `Slot ${current}`;
+                    slotBadge.innerText = `📍 Posisi: ${posName}`;
+                    slotBadge.style.display = 'block';
+                } else {
+                    slotBadge.style.display = 'none';
+                }
             },
 
             stopStream() {
@@ -635,8 +640,8 @@
 
                     if (this.capturedBitmaps.length < LayoutController.requiredPhotosCount) {
                         this.currentPoseIndex++;
-                        document.getElementById('photo-session-title').innerText = `Sesi Pemotretan (Foto ${this.currentPoseIndex} dari ${LayoutController.requiredPhotosCount})`;
-                        alert(`Pose ${this.currentPoseIndex - 1} selesai! Bersiap untuk pose berikutnya (${this.currentPoseIndex}).`);
+                        this.updateSlotBadgeText();
+                        alert(`Foto ke-${this.currentPoseIndex - 1} berhasil diambil! Bersiap untuk posisi berikutnya: ${this.slotPositionLabels[LayoutController.requiredPhotosCount][this.currentPoseIndex - 1] || 'Foto ' + this.currentPoseIndex}.`);
                     } else {
                         this.renderLayoutGridCanvas();
                     }
@@ -671,8 +676,15 @@
                     canvas.height = 1920;
                 }
 
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 1. JIKA ADA BINGKAI FRAME CUSTOM, GAMBAR DULUAN SEBAGAI TOPENG MASKING TRANSPARAN AUTOMATIS
+                if (frameImg) {
+                    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+                    // MENGUBAH MODE KOMPOSISI KANVAS KEDALAM LAYER BELAKANG (DESTINATION-OVER)
+                    // SEGALA ENTITAS FOTO BARU AKAN DIGAMBAR TEPAT DI BELAKANG AREA TRANSPARAN FRAME (APAPUN BENTUK LUBANGNYA)
+                    ctx.globalCompositeOperation = 'destination-over';
+                }
 
                 const cellW = canvas.width / cols;
                 const cellH = canvas.height / rows;
@@ -687,8 +699,8 @@
                     ctx.translate(x + cellW, y);
                     ctx.scale(-1, 1);
 
-                    // PROPORTIONAL CONTAIN DRAWING SUPAYA FOTO PAS & TIDAK TERPOTONG ZOOM
-                    const scale = Math.min(cellW / bmp.width, cellH / bmp.height);
+                    // PENGHITUNGAN COVER-CROP AUTOFIT
+                    const scale = Math.max(cellW / bmp.width, cellH / bmp.height);
                     const drawW = bmp.width * scale;
                     const drawH = bmp.height * scale;
                     const offsetX = (cellW - drawW) / 2;
@@ -698,26 +710,29 @@
                     ctx.restore();
                 });
 
-                if (frameImg) {
-                    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-                }
+                // 2. TENTUKAN LATAR BELAKANG PUTIH DI LAPISAN PALING BAWAH
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // KEMBALIKAN KE MODE NORMAL
+                ctx.globalCompositeOperation = 'source-over';
 
                 canvas.toBlob((blob) => {
                     this.finalMergedBlob = blob;
                     const preview = document.getElementById('photo-preview-result');
                     const video = document.getElementById('photo-camera-stream');
-                    const liveFrame = document.getElementById('photo-live-frame');
 
                     const previewUrl = URL.createObjectURL(blob);
                     preview.src = previewUrl;
                     
                     video.style.display = 'none';
-                    liveFrame.style.display = 'none';
                     preview.style.display = 'block';
 
                     const viewportBox = document.getElementById('camera-viewport-box');
                     viewportBox.style.aspectRatio = `${canvas.width} / ${canvas.height}`;
 
+                    document.getElementById('photo-slot-badge').style.display = 'none';
                     document.getElementById('btn-photo-snap').style.display = 'none';
                     document.getElementById('btn-photo-retake').style.display = 'inline-flex';
                     document.getElementById('btn-photo-accept').style.display = 'inline-flex';
