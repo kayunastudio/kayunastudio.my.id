@@ -1137,7 +1137,7 @@
             </div>
 
             <div id="modalAHSPFooterInfo" class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl flex justify-between items-center text-[11px] text-amber-900 font-bold">
-                <span>Overhead Standar: <strong id="modalAhspOverheadVal">15%</strong></span>
+                <span>Overhead Standar: <strong id="modalAhspOverheadVal">12%</strong></span>
                 <button onclick="tutupModalDetailAHSP()" class="bg-slate-900 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow">Tutup</button>
             </div>
         </div>
@@ -1940,14 +1940,14 @@
             });
 
             let base = subtotalGroup.Upah + subtotalGroup.Bahan + subtotalGroup.Alat;
-            let oh = base * (parseFloat(ahsp.overhead_persen||15)/100);
+            let oh = base * (parseFloat(ahsp.overhead_persen||12)/100);
             
             rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">D</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Jumlah Harga Bahan, Upah dan Alat (A + B + C)</td><td class="p-1.5 border border-slate-300 text-right font-mono font-bold">Rp ${Math.round(base).toLocaleString('id-ID')}</td></tr>`;
             rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300">E</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Overhead & Profit (${ahsp.overhead_persen}% x D)</td><td class="p-1.5 border border-slate-300 text-right font-mono font-bold">Rp ${Math.round(oh).toLocaleString('id-ID')}</td></tr>`;
             rowsHtml += `<tr class="bg-amber-100 font-black"><td class="p-1.5 border border-slate-300">F</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Harga Satuan Pekerjaan (D + E)</td><td class="p-1.5 border border-slate-300 text-right font-mono text-amber-700">Rp ${Math.round(base+oh).toLocaleString('id-ID')}</td></tr>`;
 
             document.getElementById('modalAHSPTitle').innerText = `${ahsp.kode_ahsp || 'AHSP'} — ${ahsp.nama_pekerjaan}`;
-            document.getElementById('modalAhspOverheadVal').innerText = `${ahsp.overhead_persen||15}%`;
+            document.getElementById('modalAhspOverheadVal').innerText = `${ahsp.overhead_persen||12}%`;
             document.getElementById('tabelAHSPDetailRows').innerHTML = rowsHtml;
             document.getElementById('modalAHSPPUPR').classList.remove('hidden');
         }
@@ -2017,7 +2017,7 @@
 
         function previewItemBQ(id) {
             const item = (proyekAktif.data_bq || []).find(i => i.id === id);
-            if(item) previewStrukturAHSP(listAHSPMaster.find(a => a.kode_ahsp === item.kode_ahsp) || { kode_ahsp: item.kode_ahsp, nama_pekerjaan: item.sub, overhead_persen: 15, komponen_json: "[]" });
+            if(item) previewStrukturAHSP(listAHSPMaster.find(a => a.kode_ahsp === item.kode_ahsp) || { kode_ahsp: item.kode_ahsp, nama_pekerjaan: item.sub, overhead_persen: 12, komponen_json: "[]" });
         }
 
         function editItemBQ(id) {
@@ -2638,7 +2638,7 @@
                 document.getElementById('addAhspNama').value = (item.nama_pekerjaan || '') + ' (Salinan)';
                 document.getElementById('addAhspKategori').value = item.kategori || '';
                 document.getElementById('addAhspSatuan').value = item.satuan || '';
-                document.getElementById('addAhspOverhead').value = item.overhead_persen || 15;
+                document.getElementById('addAhspOverhead').value = item.overhead_persen || 12;
 
                 const container = document.getElementById('containerKomponenBuilder');
                 container.innerHTML = "";
@@ -2683,7 +2683,7 @@
                             <td class="p-2 font-mono font-bold text-amber-600">${item.kode_ahsp}</td>
                             <td class="p-2 font-bold">${item.nama_pekerjaan}</td>
                             <td class="p-2 text-center font-mono">${item.satuan}</td>
-                            <td class="p-2 text-center font-bold">${item.overhead_persen || 15}%</td>
+                            <td class="p-2 text-center font-bold">${item.overhead_persen || 12}%</td>
                             <td class="p-2 text-center w-28">
                                 <button onclick="previewStrukturAHSP(listAHSPMaster.find(a => a.kode_ahsp === '${item.kode_ahsp}'))" class="text-blue-500 hover:text-blue-600 px-1" title="Preview Detail">🔍</button>
                                 <button onclick="duplikatAHSP('${item.kode_ahsp}')" class="text-emerald-500 hover:text-emerald-600 px-1" title="Duplikat Item">📋</button>
@@ -2785,7 +2785,7 @@
                 nama_pekerjaan: document.getElementById('addAhspNama').value,
                 satuan: document.getElementById('addAhspSatuan').value,
                 kategori: document.getElementById('addAhspKategori').value,
-                overhead_persen: parseFloat(document.getElementById('addAhspOverhead').value) || 15,
+                overhead_persen: parseFloat(document.getElementById('addAhspOverhead').value) || 12,
                 komponen_json: JSON.stringify(komponenList)
             };
 
@@ -2816,7 +2816,7 @@
                 document.getElementById('addAhspNama').value = item.nama_pekerjaan;
                 document.getElementById('addAhspKategori').value = item.kategori;
                 document.getElementById('addAhspSatuan').value = item.satuan;
-                document.getElementById('addAhspOverhead').value = item.overhead_persen || 15;
+                document.getElementById('addAhspOverhead').value = item.overhead_persen || 12;
 
                 const container = document.getElementById('containerKomponenBuilder');
                 container.innerHTML = "";
