@@ -89,7 +89,7 @@
             100% { filter: blur(0) grayscale(0%); opacity: 1; }
         }
 
-        /* CAROUSEL SLIDER UNTUK LAYOUT DESAIN (ESTETIK & SOFT MOBILE SLIDE) */
+        /* CAROUSEL SLIDER UNTUK LAYOUT DESAIN */
         .layout-slider-container { position: relative; width: 100%; margin: 10px 0; }
         .layout-slider { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 12px 4px 20px 4px; scrollbar-width: none; }
         .layout-slider::-webkit-scrollbar { display: none; }
@@ -102,7 +102,7 @@
         .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border); transition: all 0.3s; }
         .dot.active { width: 20px; border-radius: 10px; background: var(--color-primary); }
 
-        /* VIEWPORT CAMERA & PREVIEW INSTAGRAM STORY RATIO (9:16) */
+        /* VIEWPORT CAMERA & INTERACTIVE CANVAS */
         .viewport-container { position: relative; width: 100%; max-width: 420px; aspect-ratio: 9/16; max-height: 70vh; margin: 0 auto; background: #000000; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .viewport-element { width: 100%; height: 100%; object-fit: contain; }
         .viewport-element.camera-mirror { transform: scaleX(-1); object-fit: contain; }
@@ -110,6 +110,11 @@
         .badge-overlay { position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.65); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; z-index: 4; backdrop-filter: blur(4px); }
         .slot-indicator-badge { position: absolute; top: 14px; right: 14px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; z-index: 4; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .countdown-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; font-size: 4.5rem; font-weight: 900; color: white; z-index: 10; backdrop-filter: blur(2px); }
+
+        /* INTERACTIVE CONTROL PANEL */
+        .adjust-control-panel { background: var(--color-surface-card); border: 1.5px solid var(--color-border); border-radius: var(--radius-btn); padding: 14px; margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .adjust-slider-group { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 700; color: var(--color-secondary); }
+        .adjust-slider-group input[type=range] { flex: 1; accent-color: var(--color-primary); }
 
         /* FORMS & CARDS */
         .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -145,7 +150,7 @@
 </head>
 <body>
 
-    <!-- 0. COVER PAGE LANDING (POLAROID PRINT ANIMATION) -->
+    <!-- 0. COVER PAGE LANDING -->
     <div id="cover-screen">
         <div style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary); margin-bottom: 24px; letter-spacing: -0.5px;">
             Hana & Irfan
@@ -196,11 +201,8 @@
                     Geser ke samping untuk memilih desain bingkai foto Instagram Story (9:16)!
                 </p>
 
-                <!-- SLIDER CAROUSEL DESAIN -->
                 <div class="layout-slider-container">
-                    <div class="layout-slider" id="public-layout-grid">
-                        <!-- Dynamic Slider Layout Cards Loaded from DB -->
-                    </div>
+                    <div class="layout-slider" id="public-layout-grid"></div>
                     <div class="slider-dots" id="slider-dots-container"></div>
                 </div>
 
@@ -208,17 +210,37 @@
             </div>
         </section>
 
-        <!-- 2. SECTION: CAPTURE PHOTOBOOTH -->
+        <!-- 2. SECTION: CAPTURE & INTERACTIVE ADJUST PHOTOBOOTH -->
         <section id="section-photo" class="component-section">
             <div class="card">
                 <div class="card-header" id="photo-session-title">Sesi Pemotretan (Foto 1 dari 1)</div>
                 
                 <div class="viewport-container" id="camera-viewport-box">
                     <video id="photo-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
-                    <img id="photo-preview-result" class="viewport-element" style="display: none;" />
+                    
+                    <!-- INTERACTIVE CANVAS UNTUK PENYESUAIAN CROP & DRAG MULTI-SLOT -->
+                    <canvas id="interactive-adjust-canvas" class="viewport-element" style="display: none; cursor: grab;"></canvas>
+                    
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
                     <div id="photo-badge" class="badge-overlay">📷 Wide Angle Camera</div>
                     <div id="photo-slot-badge" class="slot-indicator-badge" style="display: none;">📍 Slot Foto 1</div>
+                </div>
+
+                <!-- PANEL INTERAKTIF (GESER & ZOOM FOTO) -->
+                <div id="interactive-controls" class="adjust-control-panel" style="display: none;">
+                    <div style="font-size: 0.85rem; color: var(--color-text-main); line-height: 1.4;">
+                        👉 <strong>Geser/Drag foto</strong> di layar atas untuk pas-kan posisi ke lubang layout.
+                    </div>
+                    <div class="adjust-slider-group">
+                        <span>Pilih Foto:</span>
+                        <select id="select-active-slot" class="form-select" style="padding: 6px 12px; font-size: 0.8rem;" onchange="InteractiveCanvasEngine.setActiveSlot(this.value)">
+                            <!-- Slot Dinamis -->
+                        </select>
+                    </div>
+                    <div class="adjust-slider-group">
+                        <span>🔍 Zoom:</span>
+                        <input type="range" id="zoom-slider" min="0.5" max="2.5" step="0.05" value="1" oninput="InteractiveCanvasEngine.updateZoom(this.value)">
+                    </div>
                 </div>
 
                 <div class="btn-group">
@@ -365,6 +387,7 @@
         Wedding Photobooth & Digital Guestbook by Kayuna Studio &copy; 2026.
     </footer>
 
+    <!-- CANVAS ENGINE HARNESS -->
     <canvas id="hidden-processing-canvas" style="display: none;"></canvas>
 
     <!-- MODAL ADMIN LOGIN -->
@@ -426,7 +449,11 @@
             },
 
             openGuestbookStep() {
-                this.switchRoute('guestbook');
+                // EXPORT HASIL INTERACTIVE CANVAS KE BLOB SEBELUM KE UCAPAN
+                InteractiveCanvasEngine.exportFinalImageBlob((blob) => {
+                    CameraEngine.finalMergedBlob = blob;
+                    this.switchRoute('guestbook');
+                });
             },
 
             toggleVideoRecorder() {
@@ -547,7 +574,7 @@
             }
         };
 
-        /* PHOTO ENGINE WITH UNIVERSAL TRANSPARENT MASKING (LINGKARAN, SEGITIGA, ROUNDED, DLL) */
+        /* PHOTO ENGINE */
         const CameraEngine = {
             stream: null,
             capturedBitmaps: [],
@@ -581,7 +608,8 @@
                     const video = document.getElementById('photo-camera-stream');
                     video.srcObject = this.stream;
                     video.style.display = 'block';
-                    document.getElementById('photo-preview-result').style.display = 'none';
+                    document.getElementById('interactive-adjust-canvas').style.display = 'none';
+                    document.getElementById('interactive-controls').style.display = 'none';
                     
                     this.updateSlotBadgeText();
 
@@ -643,101 +671,10 @@
                         this.updateSlotBadgeText();
                         alert(`Foto ke-${this.currentPoseIndex - 1} berhasil diambil! Bersiap untuk posisi berikutnya: ${this.slotPositionLabels[LayoutController.requiredPhotosCount][this.currentPoseIndex - 1] || 'Foto ' + this.currentPoseIndex}.`);
                     } else {
-                        this.renderLayoutGridCanvas();
+                        // Selesai seluruh pose, aktifkan Interactive Adjust Canvas (Opsi 2)
+                        InteractiveCanvasEngine.initializeAdjustStage(this.capturedBitmaps, LayoutController.selectedFrameUrl);
                     }
                 } catch(err) { alert("Gagal mengambil foto: " + err.message); }
-            },
-
-            async renderLayoutGridCanvas() {
-                const canvas = document.getElementById('hidden-processing-canvas');
-                const ctx = canvas.getContext('2d');
-                const count = this.capturedBitmaps.length;
-
-                let cols = count === 4 ? 2 : 1;
-                let rows = count === 4 ? 2 : (count > 1 ? count : 1);
-
-                let frameImg = null;
-
-                if (LayoutController.selectedFrameUrl) {
-                    frameImg = await new Promise((resolve) => {
-                        const img = new Image();
-                        img.crossOrigin = "anonymous";
-                        img.onload = () => resolve(img);
-                        img.onerror = () => resolve(null);
-                        img.src = LayoutController.selectedFrameUrl;
-                    });
-                }
-
-                if (frameImg) {
-                    canvas.width = frameImg.naturalWidth || frameImg.width;
-                    canvas.height = frameImg.naturalHeight || frameImg.height;
-                } else {
-                    canvas.width = 1080;
-                    canvas.height = 1920;
-                }
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // 1. JIKA ADA BINGKAI FRAME CUSTOM, GAMBAR DULUAN SEBAGAI TOPENG MASKING TRANSPARAN AUTOMATIS
-                if (frameImg) {
-                    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-                    // MENGUBAH MODE KOMPOSISI KANVAS KEDALAM LAYER BELAKANG (DESTINATION-OVER)
-                    // SEGALA ENTITAS FOTO BARU AKAN DIGAMBAR TEPAT DI BELAKANG AREA TRANSPARAN FRAME (APAPUN BENTUK LUBANGNYA)
-                    ctx.globalCompositeOperation = 'destination-over';
-                }
-
-                const cellW = canvas.width / cols;
-                const cellH = canvas.height / rows;
-
-                this.capturedBitmaps.forEach((bmp, idx) => {
-                    let c = idx % cols;
-                    let r = Math.floor(idx / cols);
-                    let x = c * cellW;
-                    let y = r * cellH;
-
-                    ctx.save();
-                    ctx.translate(x + cellW, y);
-                    ctx.scale(-1, 1);
-
-                    // PENGHITUNGAN COVER-CROP AUTOFIT
-                    const scale = Math.max(cellW / bmp.width, cellH / bmp.height);
-                    const drawW = bmp.width * scale;
-                    const drawH = bmp.height * scale;
-                    const offsetX = (cellW - drawW) / 2;
-                    const offsetY = (cellH - drawH) / 2;
-
-                    ctx.drawImage(bmp, offsetX, offsetY, drawW, drawH);
-                    ctx.restore();
-                });
-
-                // 2. TENTUKAN LATAR BELAKANG PUTIH DI LAPISAN PALING BAWAH
-                ctx.globalCompositeOperation = 'destination-over';
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // KEMBALIKAN KE MODE NORMAL
-                ctx.globalCompositeOperation = 'source-over';
-
-                canvas.toBlob((blob) => {
-                    this.finalMergedBlob = blob;
-                    const preview = document.getElementById('photo-preview-result');
-                    const video = document.getElementById('photo-camera-stream');
-
-                    const previewUrl = URL.createObjectURL(blob);
-                    preview.src = previewUrl;
-                    
-                    video.style.display = 'none';
-                    preview.style.display = 'block';
-
-                    const viewportBox = document.getElementById('camera-viewport-box');
-                    viewportBox.style.aspectRatio = `${canvas.width} / ${canvas.height}`;
-
-                    document.getElementById('photo-slot-badge').style.display = 'none';
-                    document.getElementById('btn-photo-snap').style.display = 'none';
-                    document.getElementById('btn-photo-retake').style.display = 'inline-flex';
-                    document.getElementById('btn-photo-accept').style.display = 'inline-flex';
-                    document.getElementById('photo-session-title').innerText = `Preview Hasil Photobooth (${canvas.width}x${canvas.height}px)`;
-                }, 'image/jpeg', 1.0);
             },
 
             resetPhotoStage() {
@@ -749,6 +686,194 @@
                 document.getElementById('btn-photo-retake').style.display = 'none';
                 document.getElementById('btn-photo-accept').style.display = 'none';
                 this.startCamera();
+            }
+        };
+
+        /* OPSI 2 ENGINE: INTERACTIVE CANVAS WITH PER-SLOT CLIPPING CROP */
+        const InteractiveCanvasEngine = {
+            canvas: null,
+            ctx: null,
+            frameImg: null,
+            bitmaps: [],
+            slotStates: [], // Menyimpan X, Y offset & Scale per foto
+            activeSlotIndex: 0,
+            isDragging: false,
+            dragStartX: 0,
+            dragStartY: 0,
+
+            async initializeAdjustStage(capturedBitmaps, frameUrl) {
+                this.canvas = document.getElementById('interactive-adjust-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.bitmaps = capturedBitmaps;
+
+                if (frameUrl) {
+                    this.frameImg = await new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                        img.src = frameUrl;
+                    });
+                } else {
+                    this.frameImg = null;
+                }
+
+                if (this.frameImg) {
+                    this.canvas.width = this.frameImg.naturalWidth || 1080;
+                    this.canvas.height = this.frameImg.naturalHeight || 1920;
+                } else {
+                    this.canvas.width = 1080;
+                    this.canvas.height = 1920;
+                }
+
+                // Inisialisasi state awal (Offset X=0, Y=0, Scale=1) untuk tiap slot
+                this.slotStates = this.bitmaps.map(() => ({ offsetX: 0, offsetY: 0, scale: 1 }));
+                this.activeSlotIndex = 0;
+
+                // Build Opsi Dropdown Slot Foto
+                const selectEl = document.getElementById('select-active-slot');
+                selectEl.innerHTML = '';
+                this.bitmaps.forEach((_, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.innerText = `Foto ${idx + 1}`;
+                    selectEl.appendChild(opt);
+                });
+
+                // Sembunyikan Video Kamera, Tampilkan Interactive Canvas & Panel Slider
+                document.getElementById('photo-camera-stream').style.display = 'none';
+                this.canvas.style.display = 'block';
+                document.getElementById('interactive-controls').style.display = 'flex';
+                document.getElementById('photo-slot-badge').style.display = 'none';
+                
+                document.getElementById('btn-photo-snap').style.display = 'none';
+                document.getElementById('btn-photo-retake').style.display = 'inline-flex';
+                document.getElementById('btn-photo-accept').style.display = 'inline-flex';
+                document.getElementById('photo-session-title').innerText = `Atur & Pas-kan Foto Pada Layout`;
+
+                this.bindMouseAndTouchEvents();
+                this.render();
+            },
+
+            setActiveSlot(index) {
+                this.activeSlotIndex = parseInt(index);
+                const currentScale = this.slotStates[this.activeSlotIndex].scale;
+                document.getElementById('zoom-slider').value = currentScale;
+            },
+
+            updateZoom(value) {
+                if (this.slotStates[this.activeSlotIndex]) {
+                    this.slotStates[this.activeSlotIndex].scale = parseFloat(value);
+                    this.render();
+                }
+            },
+
+            bindMouseAndTouchEvents() {
+                const getCoords = (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return {
+                        x: (clientX - rect.left) * (this.canvas.width / rect.width),
+                        y: (clientY - rect.top) * (this.canvas.height / rect.height)
+                    };
+                };
+
+                const startDrag = (e) => {
+                    this.isDragging = true;
+                    const c = getCoords(e);
+                    this.dragStartX = c.x;
+                    this.dragStartY = c.y;
+                    this.canvas.style.cursor = 'grabbing';
+                };
+
+                const moveDrag = (e) => {
+                    if (!this.isDragging) return;
+                    e.preventDefault();
+                    const c = getCoords(e);
+                    const dx = c.x - this.dragStartX;
+                    const dy = c.y - this.dragStartY;
+
+                    this.slotStates[this.activeSlotIndex].offsetX += dx;
+                    this.slotStates[this.activeSlotIndex].offsetY += dy;
+
+                    this.dragStartX = c.x;
+                    this.dragStartY = c.y;
+                    this.render();
+                };
+
+                const stopDrag = () => {
+                    this.isDragging = false;
+                    this.canvas.style.cursor = 'grab';
+                };
+
+                this.canvas.onmousedown = startDrag;
+                this.canvas.onmousemove = moveDrag;
+                window.onmouseup = stopDrag;
+
+                this.canvas.ontouchstart = startDrag;
+                this.canvas.ontouchmove = moveDrag;
+                window.ontouchend = stopDrag;
+            },
+
+            render() {
+                const count = this.bitmaps.length;
+                let cols = count === 4 ? 2 : 1;
+                let rows = count === 4 ? 2 : (count > 1 ? count : 1);
+
+                const cellW = this.canvas.width / cols;
+                const cellH = this.canvas.height / rows;
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // GABUNGKAN GAMBAR FRAME DULUAN (MASKING TRANSPARAN AUTOMATIS)
+                if (this.frameImg) {
+                    this.ctx.drawImage(this.frameImg, 0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.globalCompositeOperation = 'destination-over';
+                }
+
+                // RENDERING FOTO PER-SLOT DENGAN CLIPPING CROPPING BATAS PERSEGI KANVAS (MENCEGAH PENUTUPAN FOTO LAIN)
+                this.bitmaps.forEach((bmp, idx) => {
+                    let c = idx % cols;
+                    let r = Math.floor(idx / cols);
+                    let x = c * cellW;
+                    let y = r * cellH;
+
+                    const state = this.slotStates[idx];
+
+                    this.ctx.save();
+                    
+                    // CRITICAL AUTO-CROP CLIPPING: BATASI LAYER RECT KANVAS AGAR FOTO BENTUK LAIN TIDAK SANGGUP MENUTUPI FOTO LAIN
+                    this.ctx.beginPath();
+                    this.ctx.rect(x, y, cellW, cellH);
+                    this.ctx.clip();
+
+                    this.ctx.translate(x + cellW / 2 + state.offsetX, y + cellH / 2 + state.offsetY);
+                    this.ctx.scale(-1, 1);
+
+                    // PENGHITUNGAN COVER SCALE & ZOOM SLIDER
+                    const baseScale = Math.max(cellW / bmp.width, cellH / bmp.height);
+                    const finalScale = baseScale * state.scale;
+
+                    const drawW = bmp.width * finalScale;
+                    const drawH = bmp.height * finalScale;
+
+                    this.ctx.drawImage(bmp, -drawW / 2, -drawH / 2, drawW, drawH);
+                    this.ctx.restore();
+                });
+
+                // LAPISAN BACKGROUND PUTIH DI PALING BAWAH
+                this.ctx.globalCompositeOperation = 'destination-over';
+                this.ctx.fillStyle = "#ffffff";
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.ctx.globalCompositeOperation = 'source-over';
+            },
+
+            exportFinalImageBlob(callback) {
+                this.canvas.toBlob((blob) => {
+                    callback(blob);
+                }, 'image/jpeg', 1.0);
             }
         };
 
@@ -932,7 +1057,7 @@
             }
         };
 
-        /* GALERI LOKAL (TOMBOL IG STORY KHUSUS FOTO LAYOUT) */
+        /* GALERI LOKAL */
         const GalleryEngine = {
             async loadDeviceGallery() {
                 const container = document.getElementById('gallery-grid-container');
@@ -1208,7 +1333,7 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Tetap di Halaman Cover saat pertama kali dibuka
+            // Landing Cover Screen Initial State
         });
     </script>
 </body>
