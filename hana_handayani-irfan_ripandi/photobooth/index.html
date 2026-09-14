@@ -449,7 +449,6 @@
             },
 
             openGuestbookStep() {
-                // EXPORT HASIL INTERACTIVE CANVAS KE BLOB SEBELUM KE UCAPAN
                 InteractiveCanvasEngine.exportFinalImageBlob((blob) => {
                     CameraEngine.finalMergedBlob = blob;
                     this.switchRoute('guestbook');
@@ -671,7 +670,6 @@
                         this.updateSlotBadgeText();
                         alert(`Foto ke-${this.currentPoseIndex - 1} berhasil diambil! Bersiap untuk posisi berikutnya: ${this.slotPositionLabels[LayoutController.requiredPhotosCount][this.currentPoseIndex - 1] || 'Foto ' + this.currentPoseIndex}.`);
                     } else {
-                        // Selesai seluruh pose, aktifkan Interactive Adjust Canvas (Opsi 2)
                         InteractiveCanvasEngine.initializeAdjustStage(this.capturedBitmaps, LayoutController.selectedFrameUrl);
                     }
                 } catch(err) { alert("Gagal mengambil foto: " + err.message); }
@@ -689,13 +687,14 @@
             }
         };
 
-        /* OPSI 2 ENGINE: INTERACTIVE CANVAS WITH PER-SLOT CLIPPING CROP */
+        /* ENGINE CANVAS INTERAKTIF DENGAN AUTO-CROP PRESISI TEPAT DI TENGAH-TENGAH JARAK LUBANG */
         const InteractiveCanvasEngine = {
             canvas: null,
             ctx: null,
             frameImg: null,
             bitmaps: [],
-            slotStates: [], // Menyimpan X, Y offset & Scale per foto
+            slotStates: [],
+            detectedBoundingBoxes: [], // Tempat menyimpan area lubang transparan yang terdeteksi
             activeSlotIndex: 0,
             isDragging: false,
             dragStartX: 0,
@@ -726,11 +725,12 @@
                     this.canvas.height = 1920;
                 }
 
-                // Inisialisasi state awal (Offset X=0, Y=0, Scale=1) untuk tiap slot
+                // ANALISIS SECARA OTOMATIS BATAS BINDING BOX LUBANG TRANSPARAN DARI FRAME PNG
+                this.detectedBoundingBoxes = this.analyzeTransparentBoundingBoxes(this.frameImg, this.bitmaps.length);
+
                 this.slotStates = this.bitmaps.map(() => ({ offsetX: 0, offsetY: 0, scale: 1 }));
                 this.activeSlotIndex = 0;
 
-                // Build Opsi Dropdown Slot Foto
                 const selectEl = document.getElementById('select-active-slot');
                 selectEl.innerHTML = '';
                 this.bitmaps.forEach((_, idx) => {
@@ -740,7 +740,6 @@
                     selectEl.appendChild(opt);
                 });
 
-                // Sembunyikan Video Kamera, Tampilkan Interactive Canvas & Panel Slider
                 document.getElementById('photo-camera-stream').style.display = 'none';
                 this.canvas.style.display = 'block';
                 document.getElementById('interactive-controls').style.display = 'flex';
@@ -753,6 +752,165 @@
 
                 this.bindMouseAndTouchEvents();
                 this.render();
+            },
+
+            // METODE ANALISIS PIKSEL UNTUK MENDAPATKAN KOTAK BOUNDING LUBANG SECARA PRESISI
+            analyzeTransparentBoundingBoxes(frameImg, poseCount) {
+                if (!frameImg) {
+                    return this.getFallbackGridBoxes(poseCount, 1080, 1920);
+                }
+
+                const offCanvas = document.createElement('canvas');
+                offCanvas.width = frameImg.naturalWidth;
+                offCanvas.height = frameImg.naturalHeight;
+                const offCtx = offCanvas.getContext('2d');
+                offCtx.drawImage(frameImg, 0, 0);
+
+                try {
+                    const imgData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+                    const data = imgData.data;
+                    const w = offCanvas.width;
+                    const h = offCanvas.height;
+
+                    // METODE CLUSTERING PIKSEL ALPHA (TRANSPARAN) UNTUK SETIAP MASKING LUBANG
+                    let cols = poseCount === 4 ? 2 : 1;
+                    let rows = poseCount === 4 ? 2 : (poseCount > 1 ? poseCount : 1);
+                    let cellW = w / cols;
+                    let cellH = h / rows;
+
+                    let boxes = [];
+
+                    for (let idx = 0; idx < poseCount; idx++) {
+                        let c = idx % cols;
+                        let r = Math.floor(idx / cols);
+
+                        let startX = Math.floor(c * cellW);
+                        let endX = Math.floor((c + 1) * cellW);
+                        let startY = Math.floor(r * cellH);
+                        let endY = Math.floor((r + 1) * cellH);
+
+                        let minX = endX, maxX = startX, minY = endY, maxY = startY;
+                        let found = false;
+
+                        // PINDAI SEMUA PIKSEL DENGAN OPASITAS / ALPHA BERADA DI BAWAH THRESHOLD (BERSIFAT TRANSPARAN)
+                        for (let y = startY; y < endY; y += 4) {
+                            for (let x = startX; x < endX; x += 4) {
+                                let alphaIndex = (y * w + x) * 4 + 3;
+                                if (data[alphaIndex] < 128) { // Transparan
+                                    if (x < minX) minX = x;
+                                    if (x > maxX) maxX = x;
+                                    if (y < minY) minY = y;
+                                    if (y > maxY) maxY = y;
+                                    found = true;
+                                }
+                            }
+                        }
+
+                        if (found && maxX > minX && maxY > minY) {
+                            boxes.push({
+                                x: minX,
+                                y: minY,
+                                width: maxX - minX,
+                                height: maxY - minY,
+                                centerX: minX + (maxX - minX) / 2,
+                                centerY: minY + (maxY - minY) / 2
+                            });
+                        } else {
+                            // FALLBACK BOUNDING PER-SLOT
+                            boxes.push({
+                                x: startX,
+                                y: startY,
+                                width: cellW,
+                                height: cellH,
+                                centerX: startX + cellW / 2,
+                                centerY: startY + cellH / 2
+                            });
+                        }
+                    }
+
+                    return boxes;
+                } catch (e) {
+                    return this.getFallbackGridBoxes(poseCount, frameImg.naturalWidth, frameImg.naturalHeight);
+                }
+            },
+
+            getFallbackGridBoxes(poseCount, w, h) {
+                let cols = poseCount === 4 ? 2 : 1;
+                let rows = poseCount === 4 ? 2 : (poseCount > 1 ? poseCount : 1);
+                let cellW = w / cols;
+                let cellH = h / rows;
+                let boxes = [];
+
+                for (let idx = 0; idx < poseCount; idx++) {
+                    let c = idx % cols;
+                    let r = Math.floor(idx / cols);
+                    let x = c * cellW;
+                    let y = r * cellH;
+                    boxes.push({
+                        x: x, y: y, width: cellW, height: cellH,
+                        centerX: x + cellW / 2, centerY: y + cellH / 2
+                    });
+                }
+                return boxes;
+            },
+
+            // LOGIKA UTAMA: PERHITUNGAN BATAS MIDPOINT (TITIK TENGAH ANTARA DUA LUBANG)
+            calculateMidpointClipRect(index, totalCount) {
+                const W = this.canvas.width;
+                const H = this.canvas.height;
+                const boxes = this.detectedBoundingBoxes;
+
+                let cols = totalCount === 4 ? 2 : 1;
+                let rows = totalCount === 4 ? 2 : (totalCount > 1 ? totalCount : 1);
+
+                let c = index % cols;
+                let r = Math.floor(index / cols);
+
+                let clipX = 0, clipY = 0, clipW = W, clipH = H;
+
+                // 1. HITUNG MIDPOINT HORISONTAL (JIKA MULTI KOLOM)
+                if (cols > 1) {
+                    if (c === 0) { // Slot Kiri
+                        let rightNeighbor = boxes[index + 1];
+                        let currentBox = boxes[index];
+                        let midpointX = (currentBox.x + currentBox.width + rightNeighbor.x) / 2;
+                        clipX = 0;
+                        clipW = midpointX;
+                    } else { // Slot Kanan
+                        let leftNeighbor = boxes[index - 1];
+                        let currentBox = boxes[index];
+                        let midpointX = (leftNeighbor.x + leftNeighbor.width + currentBox.x) / 2;
+                        clipX = midpointX;
+                        clipW = W - midpointX;
+                    }
+                }
+
+                // 2. HITUNG MIDPOINT VERTIKAL (JIKA MULTI BARIS)
+                if (rows > 1) {
+                    let topLimit = 0;
+                    let bottomLimit = H;
+
+                    // JIKA MEMILIKI TETANGGA DI ATASNYA
+                    if (r > 0) {
+                        let topNeighborIndex = index - cols;
+                        let topNeighbor = boxes[topNeighborIndex];
+                        let currentBox = boxes[index];
+                        topLimit = (topNeighbor.y + topNeighbor.height + currentBox.y) / 2;
+                    }
+
+                    // JIKA MEMILIKI TETANGGA DI BAWAHNYA
+                    if (r < rows - 1) {
+                        let bottomNeighborIndex = index + cols;
+                        let bottomNeighbor = boxes[bottomNeighborIndex];
+                        let currentBox = boxes[index];
+                        bottomLimit = (currentBox.y + currentBox.height + bottomNeighbor.y) / 2;
+                    }
+
+                    clipY = topLimit;
+                    clipH = bottomLimit - topLimit;
+                }
+
+                return { x: clipX, y: clipY, width: clipW, height: clipH };
             },
 
             setActiveSlot(index) {
@@ -817,42 +975,36 @@
             },
 
             render() {
-                const count = this.bitmaps.length;
-                let cols = count === 4 ? 2 : 1;
-                let rows = count === 4 ? 2 : (count > 1 ? count : 1);
-
-                const cellW = this.canvas.width / cols;
-                const cellH = this.canvas.height / rows;
-
+                const totalCount = this.bitmaps.length;
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-                // GABUNGKAN GAMBAR FRAME DULUAN (MASKING TRANSPARAN AUTOMATIS)
+                // 1. GAMBAR BINGKAI FRAME CUSTOM TERLEBIH DAHULU (TOPENG MASKING TRANSPARAN)
                 if (this.frameImg) {
                     this.ctx.drawImage(this.frameImg, 0, 0, this.canvas.width, this.canvas.height);
                     this.ctx.globalCompositeOperation = 'destination-over';
                 }
 
-                // RENDERING FOTO PER-SLOT DENGAN CLIPPING CROPPING BATAS PERSEGI KANVAS (MENCEGAH PENUTUPAN FOTO LAIN)
+                // 2. GAMBAR FOTO DI LAPISAN BELAKANG DENGAN AUTO-CROP CLIP MIDPOINT ANTAR LUBANG
                 this.bitmaps.forEach((bmp, idx) => {
-                    let c = idx % cols;
-                    let r = Math.floor(idx / cols);
-                    let x = c * cellW;
-                    let y = r * cellH;
-
+                    const box = this.detectedBoundingBoxes[idx];
                     const state = this.slotStates[idx];
+                    
+                    // DAPATKAN RECTANGLE CLIPPING BERDASARKAN TITIK TENGAH (MIDPOINT) SPASI LUBANG
+                    const clipRect = this.calculateMidpointClipRect(idx, totalCount);
 
                     this.ctx.save();
                     
-                    // CRITICAL AUTO-CROP CLIPPING: BATASI LAYER RECT KANVAS AGAR FOTO BENTUK LAIN TIDAK SANGGUP MENUTUPI FOTO LAIN
+                    // LAKUKAN CROP / CLIPPING PRESISI PADA MIDPOINT
                     this.ctx.beginPath();
-                    this.ctx.rect(x, y, cellW, cellH);
+                    this.ctx.rect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
                     this.ctx.clip();
 
-                    this.ctx.translate(x + cellW / 2 + state.offsetX, y + cellH / 2 + state.offsetY);
+                    // GESER TITIK TUMPUR KE PUSAT TENGAH LUBANG YANG TERDETEKSI
+                    this.ctx.translate(box.centerX + state.offsetX, box.centerY + state.offsetY);
                     this.ctx.scale(-1, 1);
 
-                    // PENGHITUNGAN COVER SCALE & ZOOM SLIDER
-                    const baseScale = Math.max(cellW / bmp.width, cellH / bmp.height);
+                    // HITUNG RASIO PERBESARAN COVER-CROP BERDASARKAN BOUNDING BOX LUBANG
+                    const baseScale = Math.max(box.width / bmp.width, box.height / bmp.height);
                     const finalScale = baseScale * state.scale;
 
                     const drawW = bmp.width * finalScale;
@@ -862,7 +1014,7 @@
                     this.ctx.restore();
                 });
 
-                // LAPISAN BACKGROUND PUTIH DI PALING BAWAH
+                // 3. SELESAIKAN DENGAN LATAR BELAKANG PUTIH DI PALING BELAKANG
                 this.ctx.globalCompositeOperation = 'destination-over';
                 this.ctx.fillStyle = "#ffffff";
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
