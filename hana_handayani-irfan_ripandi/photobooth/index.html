@@ -8,14 +8,11 @@
     <!-- Supabase JS Client v2 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- JSZip & FileSaver CDN untuk Fitur Batch Download ZIP Admin -->
+    <!-- JSZip & FileSaver CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <style>
-        /* ==========================================================================
-           ELEGAN PEACH & WARM CREAM DESIGN SYSTEM WITH POLAROID ANIMATION
-           ========================================================================== */
         :root {
             --color-primary: #e07a5f;
             --color-primary-hover: #cb6347;
@@ -46,12 +43,10 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family-base); }
         body { background-color: var(--color-bg-app); color: var(--color-text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-        /* HEADER & FOOTER */
         header { background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
         main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         footer { border-top: 1px solid var(--color-border); padding: 20px; text-align: center; font-size: 0.8rem; color: var(--color-text-muted); margin-top: auto; background: var(--color-surface); }
 
-        /* BUTTON SYSTEM */
         .btn { border: none; padding: 12px 22px; border-radius: var(--radius-btn); font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all var(--transition-speed); display: inline-flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
         .btn:active:not(:disabled) { transform: translateY(0); }
@@ -69,7 +64,6 @@
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-group .btn { flex: 1; min-width: 120px; }
 
-        /* COVER PAGE & POLAROID PRINT ANIMATION */
         #cover-screen { position: fixed; inset: 0; background: #f7f2ea; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; transition: opacity 0.5s ease, visibility 0.5s ease; }
         #cover-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
@@ -89,20 +83,20 @@
             100% { filter: blur(0) grayscale(0%); opacity: 1; }
         }
 
-        /* CAROUSEL SLIDER UNTUK LAYOUT DESAIN */
+        /* GRID LAYOUT SELECTOR CAROUSEL */
         .layout-slider-container { position: relative; width: 100%; margin: 10px 0; }
         .layout-slider { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 12px 4px 20px 4px; scrollbar-width: none; }
         .layout-slider::-webkit-scrollbar { display: none; }
 
-        .layout-card { flex: 0 0 75%; max-width: 240px; scroll-snap-align: center; background: var(--color-surface-card); border: 2px solid var(--color-border); border-radius: var(--radius-card); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: all var(--transition-speed); position: relative; box-shadow: 0 6px 16px rgba(0,0,0,0.03); }
+        .layout-card { flex: 0 0 75%; max-width: 220px; scroll-snap-align: center; background: var(--color-surface-card); border: 2px solid var(--color-border); border-radius: var(--radius-card); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: all var(--transition-speed); position: relative; box-shadow: 0 6px 16px rgba(0,0,0,0.03); }
         .layout-card:hover, .layout-card.selected { border-color: var(--color-primary); background: #fff5f2; transform: translateY(-3px); box-shadow: 0 10px 24px rgba(224, 122, 95, 0.18); }
-        .layout-preview-box { width: 100%; aspect-ratio: 9/16; background: #eae2d6; border: 1.5px dashed var(--color-secondary); border-radius: 12px; display: grid; padding: 8px; gap: 6px; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        .layout-preview-box { width: 100%; aspect-ratio: 9/16; background: #eae2d6; border: 1.5px dashed var(--color-secondary); border-radius: 12px; display: grid; padding: 12px 12px 40px 12px; gap: 8px; background-size: cover; background-repeat: no-repeat; background-position: center; }
+        .layout-preview-box div { background: rgba(224, 122, 95, 0.3); border: 1px dashed var(--color-primary); border-radius: 4px; }
 
         .slider-dots { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border); transition: all 0.3s; }
         .dot.active { width: 20px; border-radius: 10px; background: var(--color-primary); }
 
-        /* VIEWPORT CAMERA & AUTO-TWIBBON CANVAS */
         .viewport-container { position: relative; width: 100%; max-width: 420px; aspect-ratio: 9/16; max-height: 70vh; margin: 0 auto; background: #000000; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .viewport-element { width: 100%; height: 100%; object-fit: contain; }
         .viewport-element.camera-mirror { transform: scaleX(-1); object-fit: contain; }
@@ -111,7 +105,6 @@
         .slot-indicator-badge { position: absolute; top: 14px; right: 14px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; z-index: 4; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .countdown-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; font-size: 4.5rem; font-weight: 900; color: white; z-index: 10; backdrop-filter: blur(2px); }
 
-        /* FORMS & CARDS */
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-label { font-size: 0.75rem; font-weight: 700; color: var(--color-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
         .form-input, .form-textarea, .form-select { width: 100%; padding: 14px; border-radius: var(--radius-btn); border: 1.5px solid var(--color-border); background: var(--color-surface-card); color: var(--color-text-main); font-size: 0.9rem; outline: none; transition: border-color var(--transition-speed); }
@@ -188,12 +181,12 @@
             <button id="nav-btn-gallery" class="tab-button" onclick="AppRouter.switchRoute('gallery')">🖼️ Galeri</button>
         </nav>
 
-        <!-- 1. SECTION: HOME (CAROUSEL LAYOUT SLIDER) -->
+        <!-- 1. SECTION: HOME (MEMILIH VARIAN GRID LAYOUT) -->
         <section id="section-home" class="component-section active-section">
             <div class="card">
-                <div class="card-header">Pilih Layout Photobooth</div>
+                <div class="card-header">Pilih Varian Grid Layout Foto</div>
                 <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5;">
-                    Geser ke samping untuk memilih desain bingkai foto Instagram Story (9:16)!
+                    Pilih bentuk susunan grid polaroid yang kamu inginkan!
                 </p>
 
                 <div class="layout-slider-container">
@@ -201,19 +194,19 @@
                     <div class="slider-dots" id="slider-dots-container"></div>
                 </div>
 
-                <button class="btn btn-primary" style="margin-top: 10px; padding: 16px; font-size: 1rem;" onclick="LayoutController.startPhotoboothSession()">🚀 Mulai Sesi Pemotretan</button>
+                <button class="btn btn-primary" style="margin-top: 14px; padding: 16px; font-size: 1rem;" onclick="LayoutController.startPhotoboothSession()">🚀 Mulai Sesi Pemotretan</button>
             </div>
         </section>
 
-        <!-- 2. SECTION: CAPTURE & AUTO-TWIBBON PHOTOBOOTH -->
+        <!-- 2. SECTION: CAPTURE & OVERLAY CANVAS -->
         <section id="section-photo" class="component-section">
             <div class="card">
                 <div class="card-header" id="photo-session-title">Sesi Pemotretan (Foto 1 dari 1)</div>
                 
                 <div class="viewport-container" id="camera-viewport-box">
                     <video id="photo-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
-                    <!-- KANVAS AUTO TWIBBONIZE (OTOMATIS FIT, POSITION & CROP) -->
-                    <canvas id="auto-twibbon-canvas" class="viewport-element" style="display: none;"></canvas>
+                    <!-- KANVAS PEMROSESAN OVERLAY FOTO POLAROID -->
+                    <canvas id="photo-overlay-canvas" class="viewport-element" style="display: none;"></canvas>
                     
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
                     <div id="photo-badge" class="badge-overlay">📷 Wide Angle Camera</div>
@@ -241,7 +234,6 @@
                     </div>
                 </div>
 
-                <!-- VIDEO CONTAINER -->
                 <div id="opt-video-container" style="display: none; flex-direction: column; gap: 10px;">
                     <div class="viewport-container">
                         <video id="video-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
@@ -253,7 +245,6 @@
                     </div>
                 </div>
 
-                <!-- AUDIO CONTAINER -->
                 <div id="opt-audio-container" style="display: none; flex-direction: column; gap: 10px;">
                     <div style="background: #1c1917; padding: 24px; border-radius: var(--radius-btn); text-align: center;">
                         <div id="audio-status-label" style="font-size: 0.9rem; color: #d6d3d1; margin-bottom: 12px;">🎙️ Mikrofon Siap</div>
@@ -295,36 +286,26 @@
         <!-- 5. SECTION: ADMIN -->
         <section id="section-admin" class="component-section">
             <div class="card">
-                <div class="card-header">🖼️ Tambah Desain Layout Frame (PNG Transparan High-Res 9:16)</div>
+                <div class="card-header">🖼️ Upload Background Utuh Tunggal</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
                     <div class="form-group">
-                        <label class="form-label">Nama Layout Frame</label>
-                        <input type="text" id="adm-frame-title" class="form-input" placeholder="Misal: Story Peach Floral 1080x1920">
+                        <label class="form-label">Nama Background Utama</label>
+                        <input type="text" id="adm-frame-title" class="form-input" placeholder="Misal: Hana & Irfan Wedding Background 1080x1920">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Jumlah Pose Foto</label>
-                        <select id="adm-frame-poses" class="form-select">
-                            <option value="1">1 Pose Foto</option>
-                            <option value="2">2 Pose Foto</option>
-                            <option value="3">3 Pose Foto</option>
-                            <option value="4">4 Pose Foto</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">File PNG Transparan (Disarankan 1080x1920)</label>
-                        <input type="file" id="adm-frame-file" class="form-input" accept="image/png">
+                        <label class="form-label">File Background Tunggal (PNG/JPG 1080x1920)</label>
+                        <input type="file" id="adm-frame-file" class="form-input" accept="image/*">
                     </div>
                 </div>
-                <button class="btn btn-primary btn-sm" style="align-self: flex-start; margin-top: 4px;" onclick="AdminEngine.uploadFrame()">➕ Upload Desain Frame</button>
+                <button class="btn btn-primary btn-sm" style="align-self: flex-start; margin-top: 4px;" onclick="AdminEngine.uploadFrame()">➕ Upload Background Utama</button>
 
                 <div class="table-container" style="margin-top: 10px;">
-                    <div style="padding: 12px 16px; font-weight: 700; color: var(--color-secondary); font-size: 0.85rem;">Daftar Frame Aktif:</div>
+                    <div style="padding: 12px 16px; font-weight: 700; color: var(--color-secondary); font-size: 0.85rem;">Background Utama Aktif:</div>
                     <table>
                         <thead>
                             <tr>
                                 <th>Preview</th>
-                                <th>Nama Frame</th>
-                                <th>Jumlah Pose</th>
+                                <th>Nama Template</th>
                                 <th style="text-align: right;">Aksi</th>
                             </tr>
                         </thead>
@@ -364,7 +345,6 @@
         Wedding Photobooth & Digital Guestbook by Kayuna Studio &copy; 2026.
     </footer>
 
-    <!-- CANVAS ENGINE HARNESS -->
     <canvas id="hidden-processing-canvas" style="display: none;"></canvas>
 
     <!-- MODAL ADMIN LOGIN -->
@@ -426,7 +406,7 @@
             },
 
             openGuestbookStep() {
-                AutoTwibbonEngine.exportFinalImageBlob((blob) => {
+                OverlayCanvasEngine.exportFinalImageBlob((blob) => {
                     CameraEngine.finalMergedBlob = blob;
                     this.switchRoute('guestbook');
                 });
@@ -455,71 +435,69 @@
             }
         };
 
-        /* LAYOUT CONTROLLER */
+        /* LAYOUT & GRID CONTROLLER */
         const LayoutController = {
+            selectedLayoutType: 'polaroid_classic_1',
             requiredPhotosCount: 1,
-            selectedFrameUrl: null,
+            singleBackgroundUrl: null,
 
-            defaultLayouts: [
-                { id: 'def_1', title: 'Single Story Pose (1 Foto)', pose_count: 1, storage_path: null },
-                { id: 'def_2', title: 'Duo Story Pose (2 Foto)', pose_count: 2, storage_path: null },
-                { id: 'def_3', title: 'Trio Story Strip (3 Foto)', pose_count: 3, storage_path: null },
-                { id: 'def_4', title: 'Quad Story Grid (4 Foto)', pose_count: 4, storage_path: null }
+            // Pilihan Varian Grid Layout
+            gridLayoutOptions: [
+                { id: 'polaroid_classic_1', title: 'Solo Polaroid (1 Foto)', pose_count: 1, rows: '1fr', cols: '1fr' },
+                { id: 'duo_vertical_2', title: 'Duo Vertical (2 Foto)', pose_count: 2, rows: '1fr 1fr', cols: '1fr' },
+                { id: 'strip_classic_3', title: 'Classic Strip (3 Foto)', pose_count: 3, rows: '1fr 1fr 1fr', cols: '1fr' },
+                { id: 'quad_grid_4', title: 'Quad 2x2 Grid (4 Foto)', pose_count: 4, rows: '1fr 1fr', cols: '1fr 1fr' },
+                { id: 'duo_square_2', title: 'Duo Square Center (2 Foto)', pose_count: 2, rows: '1fr 1fr', cols: '1fr' }
             ],
 
             async loadPublicLayouts() {
                 const container = document.getElementById('public-layout-grid');
                 const dotsContainer = document.getElementById('slider-dots-container');
-                container.innerHTML = "<p style='grid-column: 1/-1;'>Memuat layout desain...</p>";
+                container.innerHTML = "<p style='grid-column: 1/-1;'>Memuat pilihan grid layout...</p>";
 
                 try {
-                    const { data: customFrames } = await supabaseClient.from('frames').select('*').order('created_at', { ascending: false });
+                    // Ambil 1 Background Utama Dari Admin (jika ada)
+                    const { data: customFrames } = await supabaseClient.from('frames').select('*').order('created_at', { ascending: false }).limit(1);
                     
-                    let allLayouts = [...this.defaultLayouts];
                     if (customFrames && customFrames.length > 0) {
-                        allLayouts = [...customFrames, ...this.defaultLayouts];
+                        const { data: u } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(customFrames[0].storage_path);
+                        this.singleBackgroundUrl = u.publicUrl;
+                    } else {
+                        this.singleBackgroundUrl = null;
                     }
 
                     container.innerHTML = "";
                     dotsContainer.innerHTML = "";
 
-                    allLayouts.forEach((item, idx) => {
+                    this.gridLayoutOptions.forEach((item, idx) => {
                         const card = document.createElement('div');
                         card.className = `layout-card ${idx === 0 ? 'selected' : ''}`;
                         card.setAttribute('data-index', idx);
-                        
-                        let framePublicUrl = '';
-                        if (item.storage_path) {
-                            const { data: u } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(item.storage_path);
-                            framePublicUrl = u.publicUrl;
-                        }
 
                         if (idx === 0) {
+                            this.selectedLayoutType = item.id;
                             this.requiredPhotosCount = item.pose_count;
-                            this.selectedFrameUrl = framePublicUrl;
                         }
 
                         card.onclick = () => {
                             document.querySelectorAll('.layout-card').forEach(c => c.classList.remove('selected'));
                             card.classList.add('selected');
+                            this.selectedLayoutType = item.id;
                             this.requiredPhotosCount = item.pose_count;
-                            this.selectedFrameUrl = framePublicUrl;
                         };
 
-                        let bgStyle = framePublicUrl ? `background-image: url('${framePublicUrl}');` : '';
+                        let bgStyle = this.singleBackgroundUrl ? `background-image: url('${this.singleBackgroundUrl}');` : 'background: #eae2d6;';
+
                         let innerBoxes = '';
                         for(let i=0; i<item.pose_count; i++) {
-                            innerBoxes += `<div style="background: rgba(224, 122, 95, 0.15); border-radius: 4px;"></div>`;
+                            innerBoxes += `<div></div>`;
                         }
 
-                        let rows = item.pose_count === 4 ? '1fr 1fr' : (item.pose_count > 1 ? `repeat(${item.pose_count}, 1fr)` : '1fr');
-                        let cols = item.pose_count === 4 ? '1fr 1fr' : '1fr';
-
                         card.innerHTML = `
-                            <div class="layout-preview-box" style="grid-template-rows: ${rows}; grid-template-columns: ${cols}; ${bgStyle}">
+                            <div class="layout-preview-box" style="grid-template-rows: ${item.rows}; grid-template-columns: ${item.cols}; ${bgStyle}">
                                 ${innerBoxes}
                             </div>
-                            <strong style="color: var(--color-text-main); font-size: 0.9rem;">${item.title}</strong>
+                            <strong style="color: var(--color-text-main); font-size: 0.85rem; text-align:center;">${item.title}</strong>
                         `;
                         container.appendChild(card);
 
@@ -584,7 +562,7 @@
                     const video = document.getElementById('photo-camera-stream');
                     video.srcObject = this.stream;
                     video.style.display = 'block';
-                    document.getElementById('auto-twibbon-canvas').style.display = 'none';
+                    document.getElementById('photo-overlay-canvas').style.display = 'none';
                     
                     this.updateSlotBadgeText();
 
@@ -646,8 +624,8 @@
                         this.updateSlotBadgeText();
                         alert(`Foto ke-${this.currentPoseIndex - 1} berhasil diambil! Bersiap untuk posisi berikutnya: ${this.slotPositionLabels[LayoutController.requiredPhotosCount][this.currentPoseIndex - 1] || 'Foto ' + this.currentPoseIndex}.`);
                     } else {
-                        // SETELAH SOKET PEMOTRETAN SELESAI, JALANKAN PROSES OTOMATIS GAYA TWIBBONIZE
-                        AutoTwibbonEngine.processTwibbonLayout(this.capturedBitmaps, LayoutController.selectedFrameUrl);
+                        // PENERAPAN OTOMATIS VARIAN GRID LAYOUT DI ATAS BACKGROUND
+                        OverlayCanvasEngine.processPhotosOnTemplate(this.capturedBitmaps, LayoutController.singleBackgroundUrl, LayoutController.selectedLayoutType);
                     }
                 } catch(err) { alert("Gagal mengambil foto: " + err.message); }
             },
@@ -664,43 +642,35 @@
             }
         };
 
-        /* ENGINE AUTOMATIC TWIBBONIZE: AUTO-FIT, AUTO-CENTER & AUTO-CROP PER-LUBANG */
-        const AutoTwibbonEngine = {
+        /* ENGINE OVERLAY CANVAS (PENGATURAN MULTI GRID LAYOUT DENGAN SPACE KETERANGAN POLAROID) */
+        const OverlayCanvasEngine = {
             canvas: null,
             ctx: null,
-            frameImg: null,
+            templateImg: null,
             bitmaps: [],
-            detectedBoundingBoxes: [],
+            layoutType: 'polaroid_classic_1',
 
-            async processTwibbonLayout(capturedBitmaps, frameUrl) {
-                this.canvas = document.getElementById('auto-twibbon-canvas');
+            async processPhotosOnTemplate(capturedBitmaps, templateUrl, layoutType) {
+                this.canvas = document.getElementById('photo-overlay-canvas');
                 this.ctx = this.canvas.getContext('2d');
                 this.bitmaps = capturedBitmaps;
+                this.layoutType = layoutType;
 
-                if (frameUrl) {
-                    this.frameImg = await new Promise((resolve) => {
+                if (templateUrl) {
+                    this.templateImg = await new Promise((resolve) => {
                         const img = new Image();
                         img.crossOrigin = "anonymous";
                         img.onload = () => resolve(img);
                         img.onerror = () => resolve(null);
-                        img.src = frameUrl;
+                        img.src = templateUrl;
                     });
                 } else {
-                    this.frameImg = null;
+                    this.templateImg = null;
                 }
 
-                if (this.frameImg) {
-                    this.canvas.width = this.frameImg.naturalWidth || 1080;
-                    this.canvas.height = this.frameImg.naturalHeight || 1920;
-                } else {
-                    this.canvas.width = 1080;
-                    this.canvas.height = 1920;
-                }
+                this.canvas.width = 1080;
+                this.canvas.height = 1920;
 
-                // ANALISIS DETEKSI PIKSEL LAYOUT UNTUK MENDAPATKAN AREA LUBANG TRANSPARAN
-                this.detectedBoundingBoxes = this.analyzeTransparentBoundingBoxes(this.frameImg, this.bitmaps.length);
-
-                // SEMBUNYIKAN VIDEO STREAM & TAMPILKAN HASIL OTOMATIS TWIBBON
                 document.getElementById('photo-camera-stream').style.display = 'none';
                 this.canvas.style.display = 'block';
                 document.getElementById('photo-slot-badge').style.display = 'none';
@@ -713,202 +683,118 @@
                 this.render();
             },
 
-            analyzeTransparentBoundingBoxes(frameImg, poseCount) {
-                if (!frameImg) {
-                    return this.getFallbackGridBoxes(poseCount, 1080, 1920);
+            // METODE DYNAMICAL GRID LAYOUT CALCULATOR
+            calculateCustomGridSlots(layoutType, canvasW, canvasH) {
+                let slots = [];
+                
+                const marginX = 80;       
+                const marginTop = 110;    
+                const marginBottom = 360; // SPACE KETERANGAN POLAROID DI BAWAH
+                const gap = 30;           
+
+                const availableW = canvasW - (marginX * 2);
+                const availableH = canvasH - marginTop - marginBottom;
+
+                if (layoutType === 'polaroid_classic_1') {
+                    // 1 Foto Solo Polaroid Square
+                    const slotSide = Math.min(availableW, availableH);
+                    const startX = marginX + (availableW - slotSide) / 2;
+                    const startY = marginTop + (availableH - slotSide) / 2;
+                    slots.push({ x: startX, y: startY, width: slotSide, height: slotSide });
+
+                } else if (layoutType === 'duo_vertical_2') {
+                    // 2 Foto Vertikal Full
+                    const slotH = (availableH - gap) / 2;
+                    slots.push({ x: marginX, y: marginTop, width: availableW, height: slotH });
+                    slots.push({ x: marginX, y: marginTop + slotH + gap, width: availableW, height: slotH });
+
+                } else if (layoutType === 'duo_square_2') {
+                    // 2 Foto Square (Lebih kecil & Manis)
+                    const slotH = (availableH - (gap * 3)) / 2;
+                    const slotW = availableW * 0.85;
+                    const startX = marginX + (availableW - slotW) / 2;
+                    slots.push({ x: startX, y: marginTop + gap, width: slotW, height: slotH });
+                    slots.push({ x: startX, y: marginTop + slotH + (gap * 2), width: slotW, height: slotH });
+
+                } else if (layoutType === 'strip_classic_3') {
+                    // 3 Foto Strip Vertikal
+                    const slotH = (availableH - (gap * 2)) / 3;
+                    slots.push({ x: marginX, y: marginTop, width: availableW, height: slotH });
+                    slots.push({ x: marginX, y: marginTop + slotH + gap, width: availableW, height: slotH });
+                    slots.push({ x: marginX, y: marginTop + (slotH * 2) + (gap * 2), width: availableW, height: slotH });
+
+                } else if (layoutType === 'quad_grid_4') {
+                    // 4 Foto Grid 2x2
+                    const slotW = (availableW - gap) / 2;
+                    const slotH = (availableH - gap) / 2;
+                    slots.push({ x: marginX, y: marginTop, width: slotW, height: slotH });
+                    slots.push({ x: marginX + slotW + gap, y: marginTop, width: slotW, height: slotH });
+                    slots.push({ x: marginX, y: marginTop + slotH + gap, width: slotW, height: slotH });
+                    slots.push({ x: marginX + slotW + gap, y: marginTop + slotH + gap, width: slotW, height: slotH });
                 }
 
-                const offCanvas = document.createElement('canvas');
-                offCanvas.width = frameImg.naturalWidth;
-                offCanvas.height = frameImg.naturalHeight;
-                const offCtx = offCanvas.getContext('2d');
-                offCtx.drawImage(frameImg, 0, 0);
-
-                try {
-                    const imgData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
-                    const data = imgData.data;
-                    const w = offCanvas.width;
-                    const h = offCanvas.height;
-
-                    let cols = poseCount === 4 ? 2 : 1;
-                    let rows = poseCount === 4 ? 2 : (poseCount > 1 ? poseCount : 1);
-                    let cellW = w / cols;
-                    let cellH = h / rows;
-
-                    let boxes = [];
-
-                    for (let idx = 0; idx < poseCount; idx++) {
-                        let c = idx % cols;
-                        let r = Math.floor(idx / cols);
-
-                        let startX = Math.floor(c * cellW);
-                        let endX = Math.floor((c + 1) * cellW);
-                        let startY = Math.floor(r * cellH);
-                        let endY = Math.floor((r + 1) * cellH);
-
-                        let minX = endX, maxX = startX, minY = endY, maxY = startY;
-                        let transparentPixelCount = 0;
-
-                        for (let y = startY; y < endY; y += 2) {
-                            for (let x = startX; x < endX; x += 2) {
-                                let alphaIndex = (y * w + x) * 4 + 3;
-                                if (data[alphaIndex] < 240) {
-                                    if (x < minX) minX = x;
-                                    if (x > maxX) maxX = x;
-                                    if (y < minY) minY = y;
-                                    if (y > maxY) maxY = y;
-                                    transparentPixelCount++;
-                                }
-                            }
-                        }
-
-                        if (transparentPixelCount > 100 && maxX > minX && maxY > minY) {
-                            let boxW = maxX - minX;
-                            let boxH = maxY - minY;
-
-                            boxes.push({
-                                x: minX,
-                                y: minY,
-                                width: boxW,
-                                height: boxH,
-                                centerX: minX + boxW / 2,
-                                centerY: minY + boxH / 2
-                            });
-                        } else {
-                            boxes.push({
-                                x: startX,
-                                y: startY,
-                                width: cellW,
-                                height: cellH,
-                                centerX: startX + cellW / 2,
-                                centerY: startY + cellH / 2
-                            });
-                        }
-                    }
-
-                    return boxes;
-                } catch (e) {
-                    return this.getFallbackGridBoxes(poseCount, frameImg.naturalWidth, frameImg.naturalHeight);
-                }
+                return { slots, marginBottomY: canvasH - marginBottom };
             },
 
-            getFallbackGridBoxes(poseCount, w, h) {
-                let cols = poseCount === 4 ? 2 : 1;
-                let rows = poseCount === 4 ? 2 : (poseCount > 1 ? poseCount : 1);
-                let cellW = w / cols;
-                let cellH = h / rows;
-                let boxes = [];
-
-                for (let idx = 0; idx < poseCount; idx++) {
-                    let c = idx % cols;
-                    let r = Math.floor(idx / cols);
-                    let x = c * cellW;
-                    let y = r * cellH;
-                    boxes.push({
-                        x: x, y: y, width: cellW, height: cellH,
-                        centerX: x + cellW / 2, centerY: y + cellH / 2
-                    });
-                }
-                return boxes;
-            },
-
-            calculateMidpointClipRect(index, totalCount) {
+            render() {
                 const W = this.canvas.width;
                 const H = this.canvas.height;
-                const boxes = this.detectedBoundingBoxes;
 
-                let cols = totalCount === 4 ? 2 : 1;
-                let rows = totalCount === 4 ? 2 : (totalCount > 1 ? totalCount : 1);
+                this.ctx.clearRect(0, 0, W, H);
 
-                let c = index % cols;
-                let r = Math.floor(index / cols);
-
-                let clipX = 0, clipY = 0, clipW = W, clipH = H;
-
-                if (cols > 1) {
-                    if (c === 0) {
-                        let rightNeighbor = boxes[index + 1];
-                        let currentBox = boxes[index];
-                        let midpointX = (currentBox.x + currentBox.width + rightNeighbor.x) / 2;
-                        clipX = 0;
-                        clipW = midpointX;
-                    } else {
-                        let leftNeighbor = boxes[index - 1];
-                        let currentBox = boxes[index];
-                        let midpointX = (leftNeighbor.x + leftNeighbor.width + currentBox.x) / 2;
-                        clipX = midpointX;
-                        clipW = W - midpointX;
-                    }
+                // 1. GAMBAR BACKGROUND TUNGGAL (JIKA ADA)
+                if (this.templateImg) {
+                    this.ctx.drawImage(this.templateImg, 0, 0, W, H);
+                } else {
+                    // Default Background Warm Cream Polaroid
+                    this.ctx.fillStyle = "#faf7f2";
+                    this.ctx.fillRect(0, 0, W, H);
                 }
 
-                if (rows > 1) {
-                    let topLimit = 0;
-                    let bottomLimit = H;
+                // 2. HITUNG POSISI BERDASARKAN VARIAN GRID LAYOUT TERPILIH
+                const { slots, marginBottomY } = this.calculateCustomGridSlots(this.layoutType, W, H);
 
-                    if (r > 0) {
-                        let topNeighborIndex = index - cols;
-                        let topNeighbor = boxes[topNeighborIndex];
-                        let currentBox = boxes[index];
-                        topLimit = (topNeighbor.y + topNeighbor.height + currentBox.y) / 2;
-                    }
-
-                    if (r < rows - 1) {
-                        let bottomNeighborIndex = index + cols;
-                        let bottomNeighbor = boxes[bottomNeighborIndex];
-                        let currentBox = boxes[index];
-                        bottomLimit = (currentBox.y + currentBox.height + bottomNeighbor.y) / 2;
-                    }
-
-                    clipY = topLimit;
-                    clipH = bottomLimit - topLimit;
-                }
-
-                return { x: clipX, y: clipY, width: clipW, height: clipH };
-            },
-
-            /* RENDERING OTOMATIS GAYA TWIBBONIZE */
-            render() {
-                const totalCount = this.bitmaps.length;
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-                // 1. GAMBAR BINGKAI LAYOUT FRAME PNG TRANSPARAN DI DEPAN
-                if (this.frameImg) {
-                    this.ctx.drawImage(this.frameImg, 0, 0, this.canvas.width, this.canvas.height);
-                    this.ctx.globalCompositeOperation = 'destination-over';
-                }
-
-                // 2. OTOMATISASI PENEMPATAN FOTO: AUTO-CENTER, AUTO-COVER & AUTO-CROP
+                // 3. SUSUN DAN CROP FOTO OTOMATIS DI ATAS BACKGROUND
                 this.bitmaps.forEach((bmp, idx) => {
-                    const box = this.detectedBoundingBoxes[idx];
-                    const clipRect = this.calculateMidpointClipRect(idx, totalCount);
+                    const slot = slots[idx];
+                    if (!slot) return;
 
                     this.ctx.save();
                     
-                    // Batasi area potong foto sesuai midpoint spasi antar lubang
                     this.ctx.beginPath();
-                    this.ctx.rect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
+                    this.ctx.rect(slot.x, slot.y, slot.width, slot.height);
                     this.ctx.clip();
 
-                    // Posisikan foto tepat di titik tengah (Center) lubang
-                    this.ctx.translate(box.centerX, box.centerY);
-                    this.ctx.scale(-1, 1); // Mirroring kamera depan
+                    const centerX = slot.x + slot.width / 2;
+                    const centerY = slot.y + slot.height / 2;
 
-                    // Hitung skala otomatis agar foto memenuhi area lubang secara presisi
-                    const scale = Math.max(box.width / bmp.width, box.height / bmp.height);
+                    this.ctx.translate(centerX, centerY);
+                    this.ctx.scale(-1, 1); // MIRRORING KAMERA DEPAN
 
+                    const scale = Math.max(slot.width / bmp.width, slot.height / bmp.height);
                     const drawW = bmp.width * scale;
                     const drawH = bmp.height * scale;
 
                     this.ctx.drawImage(bmp, -drawW / 2, -drawH / 2, drawW, drawH);
                     this.ctx.restore();
+
+                    // LIST FRAME / BORDER POLAROID AROUND EACH PHOTO
+                    this.ctx.strokeStyle = "rgba(0, 0, 0, 0.08)";
+                    this.ctx.lineWidth = 4;
+                    this.ctx.strokeRect(slot.x, slot.y, slot.width, slot.height);
                 });
 
-                // 3. SELESAIKAN DENGAN LATAR BELAKANG PUTIH DI BELAKANG
-                this.ctx.globalCompositeOperation = 'destination-over';
-                this.ctx.fillStyle = "#ffffff";
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                // 4. JIKA TIDAK ADA IMAGE TEMPLATE DARI ADMIN, TAMPILKAN DEKORASI TEKS DI SPACE BAWAH
+                if (!this.templateImg) {
+                    this.ctx.textAlign = "center";
+                    this.ctx.fillStyle = "#2b2d42";
+                    this.ctx.font = "bold 42px 'Courier New', Courier, monospace";
+                    this.ctx.fillText("Hana & Irfan", W / 2, marginBottomY + 120);
 
-                this.ctx.globalCompositeOperation = 'source-over';
+                    this.ctx.fillStyle = "#8d7b68";
+                    this.ctx.font = "32px system-ui, sans-serif";
+                    this.ctx.fillText("Wedding Photobooth Memories", W / 2, marginBottomY + 180);
+                }
             },
 
             exportFinalImageBlob(callback) {
@@ -918,7 +804,7 @@
             }
         };
 
-        /* SOCIAL SHARE ENGINE KHUSUS BERKAS FOTO HASIL LAYOUT */
+        /* SOCIAL SHARE ENGINE */
         const SocialShareEngine = {
             async shareResultToInstagram(imageUrl = null) {
                 try {
@@ -1192,7 +1078,7 @@
 
             async loadAdminFrames() {
                 const tbody = document.getElementById('admin-frames-table-body');
-                tbody.innerHTML = "<tr><td colspan='4'>Memuat data frame...</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='3'>Memuat data background...</td></tr>";
 
                 try {
                     const { data, error } = await supabaseClient.from('frames').select('*').order('created_at', { ascending: false });
@@ -1200,7 +1086,7 @@
 
                     tbody.innerHTML = "";
                     if (!data || data.length === 0) {
-                        tbody.innerHTML = "<tr><td colspan='4'>Belum ada frame custom.</td></tr>";
+                        tbody.innerHTML = "<tr><td colspan='3'>Belum ada template background custom.</td></tr>";
                         return;
                     }
 
@@ -1210,46 +1096,41 @@
                         tr.innerHTML = `
                             <td><img src="${u.publicUrl}" style="height:40px; border-radius:6px; background:#1c1917;" /></td>
                             <td><strong>${f.title}</strong></td>
-                            <td>${f.pose_count} Pose</td>
                             <td style="text-align: right;">
                                 <button class="btn btn-danger btn-sm" onclick="AdminEngine.deleteFrame('${f.id}', '${f.storage_path}')">🗑️ Hapus</button>
                             </td>
                         `;
                         tbody.appendChild(tr);
                     });
-                } catch(e) { tbody.innerHTML = `<tr><td colspan='4' style='color:var(--color-danger);'>Gagal: ${e.message}</td></tr>`; }
+                } catch(e) { tbody.innerHTML = `<tr><td colspan='3' style='color:var(--color-danger);'>Gagal: ${e.message}</td></tr>`; }
             },
 
             async uploadFrame() {
                 const title = document.getElementById('adm-frame-title').value.trim();
-                const poseCount = parseInt(document.getElementById('adm-frame-poses').value);
                 const fileInput = document.getElementById('adm-frame-file');
 
                 if (!title || fileInput.files.length === 0) {
-                    return alert("Harap isi nama layout dan pilih berkas PNG transparan.");
+                    return alert("Harap isi nama background dan pilih berkas gambar.");
                 }
 
                 const file = fileInput.files[0];
-                if (file.type !== 'image/png') {
-                    return alert("Berkas frame harus berformat PNG transparan.");
-                }
 
                 try {
                     const timestamp = Date.now();
                     const path = `frames/frame_${timestamp}.png`;
 
-                    const { data: sData, error: sErr } = await supabaseClient.storage.from('wedding-photobooth').upload(path, file, { contentType: 'image/png' });
+                    const { data: sData, error: sErr } = await supabaseClient.storage.from('wedding-photobooth').upload(path, file, { contentType: file.type });
                     if (sErr) throw sErr;
 
                     const { error: dbErr } = await supabaseClient.from('frames').insert([{
                         title: title,
-                        pose_count: poseCount,
+                        pose_count: 1,
                         storage_path: sData.path
                     }]);
 
                     if (dbErr) throw dbErr;
 
-                    alert("✅ Desain Frame PNG High-Res Berhasil Diunggah!");
+                    alert("✅ Background Utama Berhasil Diunggah!");
                     document.getElementById('adm-frame-title').value = '';
                     fileInput.value = '';
                     this.loadAdminFrames();
@@ -1257,7 +1138,7 @@
             },
 
             async deleteFrame(id, storagePath) {
-                if (!confirm("Hapus desain frame ini?")) return;
+                if (!confirm("Hapus template background ini?")) return;
                 try {
                     await supabaseClient.from('frames').delete().eq('id', id);
                     await supabaseClient.storage.from('wedding-photobooth').remove([storagePath]);
@@ -1374,7 +1255,6 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Landing Cover Screen Initial State
         });
     </script>
 </body>
