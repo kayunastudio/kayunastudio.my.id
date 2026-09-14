@@ -96,15 +96,15 @@
 
         .layout-card { flex: 0 0 75%; max-width: 240px; scroll-snap-align: center; background: var(--color-surface-card); border: 2px solid var(--color-border); border-radius: var(--radius-card); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: all var(--transition-speed); position: relative; box-shadow: 0 6px 16px rgba(0,0,0,0.03); }
         .layout-card:hover, .layout-card.selected { border-color: var(--color-primary); background: #fff5f2; transform: translateY(-3px); box-shadow: 0 10px 24px rgba(224, 122, 95, 0.18); }
-        .layout-preview-box { width: 100%; aspect-ratio: 3/4; background: #eae2d6; border: 1.5px dashed var(--color-secondary); border-radius: 12px; display: grid; padding: 8px; gap: 6px; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        .layout-preview-box { width: 100%; aspect-ratio: 9/16; background: #eae2d6; border: 1.5px dashed var(--color-secondary); border-radius: 12px; display: grid; padding: 8px; gap: 6px; background-size: contain; background-repeat: no-repeat; background-position: center; }
 
         .slider-dots { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border); transition: all 0.3s; }
         .dot.active { width: 20px; border-radius: 10px; background: var(--color-primary); }
 
-        /* VIEWPORT CAMERA & PREVIEW */
-        .viewport-container { position: relative; width: 100%; max-height: 75vh; background: #1c1917; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-        .viewport-element { width: 100%; height: 100%; object-fit: contain; }
+        /* VIEWPORT CAMERA & PREVIEW INSTAGRAM STORY RATIO (9:16) */
+        .viewport-container { position: relative; width: 100%; max-width: 420px; aspect-ratio: 9/16; max-height: 70vh; margin: 0 auto; background: #1c1917; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .viewport-element { width: 100%; height: 100%; object-fit: cover; }
         .viewport-element.camera-mirror { transform: scaleX(-1); object-fit: cover; }
         .live-frame-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; z-index: 2; display: none; }
 
@@ -130,7 +130,7 @@
 
         .gallery-grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
         .gallery-item-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-card); }
-        .gallery-item-media { width: 100%; object-fit: contain; background: #1c1917; }
+        .gallery-item-media { width: 100%; aspect-ratio: 9/16; object-fit: contain; background: #1c1917; }
         .gallery-item-content { padding: 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 
         .table-container { width: 100%; overflow-x: auto; border-radius: var(--radius-btn); border: 1px solid var(--color-border); }
@@ -193,7 +193,7 @@
             <div class="card">
                 <div class="card-header">Pilih Layout Photobooth</div>
                 <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5;">
-                    Geser ke samping untuk memilih desain bingkai foto yang paling estetik!
+                    Geser ke samping untuk memilih desain bingkai foto!
                 </p>
 
                 <!-- SLIDER CAROUSEL DESAIN -->
@@ -204,11 +204,11 @@
                     <div class="slider-dots" id="slider-dots-container"></div>
                 </div>
 
-                <button class="btn btn-primary" style="margin-top: 10px; padding: 16px; font-size: 1rem;" onclick="LayoutController.startPhotoboothSession()">🚀 Mulai Sesi Photobooth</button>
+                <button class="btn btn-primary" style="margin-top: 10px; padding: 16px; font-size: 1rem;" onclick="LayoutController.startPhotoboothSession()">🚀 Mulai Sesi Pemotretan</button>
             </div>
         </section>
 
-        <!-- 2. SECTION: CAPTURE PHOTOBOOTH -->
+        <!-- 2. SECTION: CAPTURE PHOTOBOOTH (INSTAGRAM STORY 9:16 CAMERA VIEW) -->
         <section id="section-photo" class="component-section">
             <div class="card">
                 <div class="card-header" id="photo-session-title">Sesi Pemotretan (Foto 1 dari 1)</div>
@@ -218,23 +218,21 @@
                     <img id="photo-live-frame" class="live-frame-overlay" />
                     <img id="photo-preview-result" class="viewport-element" style="display: none;" />
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
-                    <div id="photo-badge" class="badge-overlay">📷 Kamera Siap</div>
+                    <div id="photo-badge" class="badge-overlay">📷 1080x1920 IG Story</div>
                 </div>
 
                 <div class="btn-group">
                     <button id="btn-photo-snap" class="btn btn-primary" onclick="CameraEngine.triggerSnapSequence()">📸 Ambil Foto</button>
                     <button id="btn-photo-retake" class="btn btn-secondary" style="display: none;" onclick="CameraEngine.resetPhotoStage()">🔄 Foto Ulang</button>
-                    <!-- FITUR SHARE IG STORY PADA AKHIR FOTO -->
-                    <button id="btn-photo-share-ig" class="btn btn-instagram" style="display: none;" onclick="SocialShareEngine.shareResultToInstagram()">📸 Bagikan ke IG Story</button>
-                    <button id="btn-photo-accept" class="btn btn-success" style="display: none;" onclick="AppRouter.openGuestbookStep()">✅ Lanjut Ucapan</button>
+                    <button id="btn-photo-accept" class="btn btn-success" style="display: none;" onclick="AppRouter.openGuestbookStep()">✅ Lanjut ke Pesan & Ucapan</button>
                 </div>
             </div>
         </section>
 
-        <!-- 3. SECTION: GUESTBOOK -->
+        <!-- 3. SECTION: GUESTBOOK (BAGIKAN HASIL FOTO LAYOUT / UPLOAD UCAPAN) -->
         <section id="section-guestbook" class="component-section">
             <div class="card">
-                <div class="card-header">📝 Pesan Ucapan & Pilihan Media Tambahan</div>
+                <div class="card-header">📝 Pesan Ucapan & Opsi Berbagi Foto Layout</div>
                 
                 <div style="background: var(--color-surface-card); border: 1px solid var(--color-border); padding: 16px; border-radius: var(--radius-btn); display: flex; flex-direction: column; gap: 12px;">
                     <div><strong>🎥 / 🎙️ Tambahkan Rekaman Ucapan (Opsional):</strong></div>
@@ -246,7 +244,7 @@
 
                 <!-- VIDEO CONTAINER -->
                 <div id="opt-video-container" style="display: none; flex-direction: column; gap: 10px;">
-                    <div class="viewport-container" style="aspect-ratio: 16/9;">
+                    <div class="viewport-container">
                         <video id="video-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
                         <video id="video-playback-result" class="viewport-element" controls style="display: none;"></video>
                     </div>
@@ -277,18 +275,20 @@
                     <textarea id="input-guest-message" class="form-textarea" placeholder="Tulis ucapan untuk kedua mempelai..."></textarea>
                 </div>
 
-                <div class="btn-group">
-                    <button id="btn-submit-upload" class="btn btn-primary" style="padding: 16px;" onclick="UploadController.executeUploadProcess()">🚀 Upload ke Digital Guestbook</button>
+                <!-- TOMBOL BAGIKAN FOTO LAYOUT KE IG STORY BERSAMAAN DENGAN UPLOAD GUESTBOOK -->
+                <div class="btn-group" style="margin-top: 6px;">
+                    <button id="btn-submit-upload" class="btn btn-primary" style="padding: 16px; flex: 2;" onclick="UploadController.executeUploadProcess()">🚀 Upload ke Digital Guestbook</button>
+                    <button id="btn-share-ig-guestbook" class="btn btn-instagram" style="padding: 16px; flex: 1.2;" onclick="SocialShareEngine.shareResultToInstagram()">📸 Bagikan Foto ke IG Story</button>
                 </div>
             </div>
         </section>
 
-        <!-- 4. SECTION: GALERI LOKAL -->
+        <!-- 4. SECTION: GALERI LOKAL (TOMBOL IG STORY DI SETIAP KARTU FOTO HASIL LAYOUT) -->
         <section id="section-gallery" class="component-section">
             <div class="card">
-                <div class="card-header">🖼️ Galeri</div>
+                <div class="card-header">🖼️ Galeri Photobooth</div>
                 <p style="font-size: 0.85rem; color: var(--color-text-muted);">
-                    Lihat dan bagikan hasil fotomu di sini!
+                    Lihat hasil foto pemotretan berlayout milikmu dan bagikan kembali ke Instagram Story kapan saja!
                 </p>
                 <div class="gallery-grid-layout" id="gallery-grid-container"></div>
             </div>
@@ -297,11 +297,11 @@
         <!-- 5. SECTION: ADMIN -->
         <section id="section-admin" class="component-section">
             <div class="card">
-                <div class="card-header">🖼️ Tambah Desain Layout Frame (PNG Transparan High-Res)</div>
+                <div class="card-header">🖼️ Tambah Desain Layout Frame (PNG Transparan High-Res 9:16)</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
                     <div class="form-group">
                         <label class="form-label">Nama Layout Frame</label>
-                        <input type="text" id="adm-frame-title" class="form-input" placeholder="Misal: Peach Floral Gold">
+                        <input type="text" id="adm-frame-title" class="form-input" placeholder="Misal: Story Peach Floral 1080x1920">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Jumlah Pose Foto</label>
@@ -313,7 +313,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">File PNG Transparan</label>
+                        <label class="form-label">File PNG Transparan (Disarankan 1080x1920)</label>
                         <input type="file" id="adm-frame-file" class="form-input" accept="image/png">
                     </div>
                 </div>
@@ -459,10 +459,10 @@
             selectedFrameUrl: null,
 
             defaultLayouts: [
-                { id: 'def_1', title: 'Single Pose (1 Foto)', pose_count: 1, storage_path: null },
-                { id: 'def_2', title: 'Duo Pose (2 Foto)', pose_count: 2, storage_path: null },
-                { id: 'def_3', title: 'Trio Strip (3 Foto)', pose_count: 3, storage_path: null },
-                { id: 'def_4', title: 'Quad Grid (4 Foto)', pose_count: 4, storage_path: null }
+                { id: 'def_1', title: 'Single Story Pose (1 Foto)', pose_count: 1, storage_path: null },
+                { id: 'def_2', title: 'Duo Story Pose (2 Foto)', pose_count: 2, storage_path: null },
+                { id: 'def_3', title: 'Trio Story Strip (3 Foto)', pose_count: 3, storage_path: null },
+                { id: 'def_4', title: 'Quad Story Grid (4 Foto)', pose_count: 4, storage_path: null }
             ],
 
             async loadPublicLayouts() {
@@ -510,10 +510,11 @@
                             innerBoxes += `<div style="background: rgba(224, 122, 95, 0.15); border-radius: 4px;"></div>`;
                         }
 
-                        let cols = item.pose_count === 4 ? '1fr 1fr' : (item.pose_count > 1 ? `repeat(${item.pose_count}, 1fr)` : '1fr');
+                        let rows = item.pose_count === 4 ? '1fr 1fr' : (item.pose_count > 1 ? `repeat(${item.pose_count}, 1fr)` : '1fr');
+                        let cols = item.pose_count === 4 ? '1fr 1fr' : '1fr';
 
                         card.innerHTML = `
-                            <div class="layout-preview-box" style="grid-template-columns: ${cols}; ${bgStyle}">
+                            <div class="layout-preview-box" style="grid-template-rows: ${rows}; grid-template-columns: ${cols}; ${bgStyle}">
                                 ${innerBoxes}
                             </div>
                             <strong style="color: var(--color-text-main); font-size: 0.9rem;">${item.title}</strong>
@@ -549,7 +550,7 @@
             }
         };
 
-        /* PHOTO ENGINE WITH LIVE FRAME OVERLAY */
+        /* PHOTO ENGINE WITH 9:16 INSTAGRAM STORY NATIVE CAMERA VIEWPORT */
         const CameraEngine = {
             stream: null,
             capturedBitmaps: [],
@@ -565,9 +566,15 @@
 
                 try {
                     this.stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: "user" }, 
+                        video: { 
+                            width: { ideal: 1080 }, 
+                            height: { ideal: 1920 }, 
+                            aspectRatio: { ideal: 9/16 },
+                            facingMode: "user" 
+                        }, 
                         audio: false 
                     });
+                    
                     const video = document.getElementById('photo-camera-stream');
                     video.srcObject = this.stream;
                     video.style.display = 'block';
@@ -589,7 +596,7 @@
                         tempImg.src = LayoutController.selectedFrameUrl;
                     } else {
                         liveFrame.style.display = 'none';
-                        viewportBox.style.aspectRatio = '16/9';
+                        viewportBox.style.aspectRatio = '9 / 16';
                     }
 
                 } catch (e) { alert("Gagal mengaktifkan kamera: " + e.message); }
@@ -641,8 +648,8 @@
                 const ctx = canvas.getContext('2d');
                 const count = this.capturedBitmaps.length;
 
-                let cols = count === 4 ? 2 : (count > 1 ? count : 1);
-                let rows = count === 4 ? 2 : 1;
+                let cols = count === 4 ? 2 : 1;
+                let rows = count === 4 ? 2 : (count > 1 ? count : 1);
 
                 let frameImg = null;
 
@@ -660,8 +667,8 @@
                     canvas.width = frameImg.naturalWidth || frameImg.width;
                     canvas.height = frameImg.naturalHeight || frameImg.height;
                 } else {
-                    canvas.width = 1280 * cols;
-                    canvas.height = 960 * rows;
+                    canvas.width = 1080;
+                    canvas.height = 1920;
                 }
 
                 ctx.fillStyle = "#ffffff";
@@ -712,7 +719,6 @@
 
                     document.getElementById('btn-photo-snap').style.display = 'none';
                     document.getElementById('btn-photo-retake').style.display = 'inline-flex';
-                    document.getElementById('btn-photo-share-ig').style.display = 'inline-flex';
                     document.getElementById('btn-photo-accept').style.display = 'inline-flex';
                     document.getElementById('photo-session-title').innerText = `Preview Hasil Photobooth (${canvas.width}x${canvas.height}px)`;
                 }, 'image/jpeg', 1.0);
@@ -725,42 +731,45 @@
 
                 document.getElementById('btn-photo-snap').style.display = 'inline-flex';
                 document.getElementById('btn-photo-retake').style.display = 'none';
-                document.getElementById('btn-photo-share-ig').style.display = 'none';
                 document.getElementById('btn-photo-accept').style.display = 'none';
                 this.startCamera();
             }
         };
 
-        /* SOCIAL SHARE ENGINE UNTUK INSTAGRAM STORY */
+        /* SOCIAL SHARE ENGINE KHUSUS BERKAS FOTO HASIL LAYOUT */
         const SocialShareEngine = {
             async shareResultToInstagram(imageUrl = null) {
                 try {
                     let fileToShare = null;
 
+                    // Mengambil berkas gambar hasil foto layout (Blob) atau URL Gambar Galeri
                     if (CameraEngine.finalMergedBlob && !imageUrl) {
-                        fileToShare = new File([CameraEngine.finalMergedBlob], 'wedding_photobooth.jpg', { type: 'image/jpeg' });
+                        fileToShare = new File([CameraEngine.finalMergedBlob], 'wedding_photobooth_layout.jpg', { type: 'image/jpeg' });
                     } else if (imageUrl) {
                         const res = await fetch(imageUrl);
                         const blob = await res.blob();
-                        fileToShare = new File([blob], 'wedding_photobooth.jpg', { type: 'image/jpeg' });
+                        fileToShare = new File([blob], 'wedding_photobooth_layout.jpg', { type: 'image/jpeg' });
                     }
 
-                    if (navigator.share && fileToShare && navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
+                    if (!fileToShare) {
+                        return alert("Tidak ada berkas foto hasil layout yang dapat dibagikan.");
+                    }
+
+                    // Panggilan API Navigasi Native Share Perangkat Mobile
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
                         await navigator.share({
                             files: [fileToShare],
                             title: 'Wedding Photobooth Hana & Irfan',
                             text: 'Bahagianya bisa hadir di Pernikahan Hana & Irfan! 💖 #HanaIrfanWedding'
                         });
                     } else {
-                        // FALLBACK DESKTOP/BROWSER TANPA WEB SHARE
-                        if (fileToShare) {
-                            saveAs(fileToShare, 'wedding_photobooth.jpg');
-                        }
-                        alert("📲 Berkas foto telah otomatis diunduh! Buka aplikasi Instagram di HP Anda, buat Story baru, lalu pilih gambar ini dari Galeri.");
+                        // Fallback jika browser desktop / tanpa API Share
+                        saveAs(fileToShare, 'wedding_photobooth_layout.jpg');
+                        alert("📲 Hasil foto berlayout telah otomatis diunduh! Buka aplikasi Instagram di HP Anda, buat Story baru, lalu pilih foto ini dari Galeri.");
                     }
                 } catch (e) {
                     if (e.name !== 'AbortError') {
-                        alert("Gagal mengaktifkan menu berbagi: " + e.message);
+                        alert("Gagal membagikan foto: " + e.message);
                     }
                 }
             }
@@ -910,7 +919,7 @@
             }
         };
 
-        /* GALERI LOKAL (DENGAN DUKUNGAN SHARE IG STORY) */
+        /* GALERI LOKAL (TOMBOL IG STORY KHUSUS FOTO LAYOUT) */
         const GalleryEngine = {
             async loadDeviceGallery() {
                 const container = document.getElementById('gallery-grid-container');
@@ -946,12 +955,13 @@
                                 mediaHtml = `<img src="${urlData.publicUrl}" class="gallery-item-media" loading="lazy" />`;
                             }
 
-                            let shareBtn = isPhoto ? `<button class="btn btn-instagram btn-sm" onclick="SocialShareEngine.shareResultToInstagram('${urlData.publicUrl}')">📸 IG Story</button>` : '';
+                            // Tombol IG Story khusus untuk tipe media foto berlayout
+                            let shareBtn = isPhoto ? `<button class="btn btn-instagram btn-sm" style="flex:1;" onclick="SocialShareEngine.shareResultToInstagram('${urlData.publicUrl}')">📸 IG Story</button>` : '';
 
                             card.innerHTML = `
                                 ${mediaHtml}
                                 <div class="gallery-item-content">
-                                    <div style="display:flex; gap:6px; margin-top:auto;">
+                                    <div style="display:flex; gap:8px; margin-top:auto;">
                                         <a href="${urlData.publicUrl}" target="_blank" download class="btn btn-secondary btn-sm" style="flex:1;">💾 Unduh</a>
                                         ${shareBtn}
                                     </div>
