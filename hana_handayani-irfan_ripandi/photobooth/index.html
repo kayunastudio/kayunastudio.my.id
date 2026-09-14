@@ -7,103 +7,138 @@
 
     <!-- Supabase JS Client v2 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- JSZip & FileSaver CDN untuk Fitur Batch Download ZIP Admin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <style>
+        /* ==========================================================================
+           ELEGAN PEACH & WARM CREAM DESIGN SYSTEM
+           ========================================================================== */
         :root {
-            --color-primary: #d97706;
-            --color-primary-hover: #b45309;
-            --color-secondary: #475569;
-            --color-secondary-hover: #334155;
-            --color-success: #10b981;
-            --color-warning: #f59e0b;
-            --color-danger: #ef4444;
+            /* Palette Utama */
+            --color-primary: #e07a5f;
+            --color-primary-hover: #cb6347;
+            --color-secondary: #8d7b68;
+            --color-secondary-hover: #726251;
+            
+            --color-success: #6b9080;
+            --color-warning: #e9c46a;
+            --color-danger: #e63946;
 
-            --color-bg-app: #0f172a;
-            --color-surface: #1e293b;
-            --color-border: #334155;
+            /* Neutral Backgrounds */
+            --color-bg-app: #faf7f2;
+            --color-surface: #ffffff;
+            --color-surface-card: #fdfbf7;
+            --color-border: #ece2d0;
 
-            --color-text-main: #f8fafc;
-            --color-text-muted: #94a3b8;
+            /* Typography Colors */
+            --color-text-main: #2b2d42;
+            --color-text-muted: #8d8d99;
+            --color-text-inverse: #ffffff;
 
-            --font-family-base: system-ui, -apple-system, sans-serif;
-            --radius-btn: 10px;
-            --radius-card: 16px;
-            --radius-modal: 20px;
-            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-            --transition-speed: 0.2s ease;
+            /* Spacing & Radii */
+            --font-family-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --radius-btn: 12px;
+            --radius-card: 20px;
+            --radius-modal: 24px;
+            --shadow-card: 0 10px 30px -5px rgba(141, 123, 104, 0.12);
+            --transition-speed: 0.25s ease;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family-base); }
         body { background-color: var(--color-bg-app); color: var(--color-text-main); min-height: 100vh; display: flex; flex-direction: column; }
 
-        header { background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-        main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-        footer { border-top: 1px solid var(--color-border); padding: 16px; text-align: center; font-size: 0.75rem; color: var(--color-text-muted); margin-top: auto; }
+        header { background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; }
+        footer { border-top: 1px solid var(--color-border); padding: 20px; text-align: center; font-size: 0.8rem; color: var(--color-text-muted); margin-top: auto; background: var(--color-surface); }
 
-        .btn { border: none; padding: 12px 20px; border-radius: var(--radius-btn); font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: background-color var(--transition-speed); display: inline-flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; color: var(--color-text-main); }
+        /* BUTTON SYSTEM */
+        .btn { border: none; padding: 12px 22px; border-radius: var(--radius-btn); font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all var(--transition-speed); display: inline-flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+        .btn:active:not(:disabled) { transform: translateY(0); }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        
         .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
         .btn-secondary { background: var(--color-secondary); color: white; }
+        .btn-secondary:hover:not(:disabled) { background: var(--color-secondary-hover); }
         .btn-danger { background: var(--color-danger); color: white; }
         .btn-success { background: var(--color-success); color: white; }
-        .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
+        .btn-sm { padding: 8px 14px; font-size: 0.75rem; border-radius: 8px; }
 
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn-group .btn { flex: 1; min-width: 120px; }
+        .btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn-group .btn { flex: 1; min-width: 130px; }
 
+        /* FORMS */
         .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-label { font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; }
-        .form-input, .form-textarea { width: 100%; padding: 12px; border-radius: var(--radius-btn); border: 1px solid var(--color-border); background: rgba(0,0,0,0.3); color: var(--color-text-main); font-size: 0.875rem; }
-        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-label { font-size: 0.75rem; font-weight: 700; color: var(--color-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input, .form-textarea, .form-select { width: 100%; padding: 14px; border-radius: var(--radius-btn); border: 1.5px solid var(--color-border); background: var(--color-surface-card); color: var(--color-text-main); font-size: 0.9rem; transition: border-color var(--transition-speed); outline: none; }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--color-primary); background: var(--color-surface); }
+        .form-textarea { resize: vertical; min-height: 90px; }
 
-        .tab-navigation { display: flex; background: rgba(0,0,0,0.4); padding: 4px; border-radius: var(--radius-btn); gap: 4px; }
-        .tab-button { flex: 1; padding: 12px; border: none; background: transparent; color: var(--color-text-muted); font-weight: 700; font-size: 0.95rem; border-radius: calc(var(--radius-btn) - 2px); cursor: pointer; transition: var(--transition-speed); }
-        .tab-button.active { background: var(--color-surface); color: var(--color-primary); }
+        /* NAVIGATION TABS */
+        .tab-navigation { display: flex; background: #f3ece1; padding: 6px; border-radius: 16px; gap: 6px; border: 1px solid var(--color-border); }
+        .tab-button { flex: 1; padding: 12px; border: none; background: transparent; color: var(--color-secondary); font-weight: 700; font-size: 0.95rem; border-radius: 10px; cursor: pointer; transition: var(--transition-speed); }
+        .tab-button.active { background: var(--color-surface); color: var(--color-primary); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
 
-        .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: 20px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 16px; }
-        .card-header { font-size: 1.125rem; font-weight: 700; }
+        /* CARDS */
+        .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: 24px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 18px; }
+        .card-header { font-size: 1.25rem; font-weight: 800; color: var(--color-text-main); }
         
         .component-section { display: none; }
-        .component-section.active-section { display: flex; flex-direction: column; gap: 16px; }
+        .component-section.active-section { display: flex; flex-direction: column; gap: 20px; }
 
-        .layout-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-        .layout-card { background: rgba(0,0,0,0.3); border: 2px solid var(--color-border); border-radius: var(--radius-btn); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: var(--transition-speed); }
-        .layout-card:hover, .layout-card.selected { border-color: var(--color-primary); background: rgba(217, 119, 6, 0.1); }
-        .layout-preview-box { width: 100%; aspect-ratio: 4/3; background: #000; border: 1px dashed var(--color-text-muted); border-radius: 8px; display: grid; padding: 6px; gap: 4px; }
+        /* LAYOUT GRID SELECTION */
+        .layout-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
+        .layout-card { background: var(--color-surface-card); border: 2px solid var(--color-border); border-radius: var(--radius-card); padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 14px; cursor: pointer; transition: all var(--transition-speed); position: relative; }
+        .layout-card:hover, .layout-card.selected { border-color: var(--color-primary); background: #fff5f2; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(224, 122, 95, 0.15); }
+        .layout-preview-box { width: 100%; aspect-ratio: 3/4; background: #eae2d6; border: 1.5px dashed var(--color-secondary); border-radius: 12px; display: grid; padding: 8px; gap: 6px; background-size: contain; background-repeat: no-repeat; background-position: center; }
 
-        .viewport-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        .viewport-element { width: 100%; height: 100%; object-fit: cover; }
-        .viewport-element.camera-mirror { transform: scaleX(-1); }
+        /* VIEWPORT CAMERA & PREVIEW */
+        .viewport-container { position: relative; width: 100%; max-height: 75vh; background: #1c1917; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .viewport-element { width: 100%; height: 100%; object-fit: contain; }
+        .viewport-element.camera-mirror { transform: scaleX(-1); object-fit: cover; }
 
-        .badge-overlay { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; z-index: 3; }
-        .countdown-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; font-size: 4rem; font-weight: 900; color: white; z-index: 10; }
+        /* LIVE OVERLAY FRAME ATAS KAMERA */
+        .live-frame-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; z-index: 2; display: none; }
 
-        .gallery-grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-        .gallery-item-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow: hidden; display: flex; flex-direction: column; }
-        .gallery-item-media { width: 100%; aspect-ratio: 16/9; background: #000; object-fit: cover; }
-        .gallery-item-content { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .badge-overlay { position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.65); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; z-index: 4; backdrop-filter: blur(4px); }
+        .countdown-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; font-size: 4.5rem; font-weight: 900; color: white; z-index: 10; backdrop-filter: blur(2px); }
 
-        .table-container { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
-        th, td { padding: 12px; border-bottom: 1px solid var(--color-border); }
-        th { background: rgba(0,0,0,0.3); color: var(--color-text-muted); text-transform: uppercase; font-size: 0.75rem; }
+        /* GALLERY & TABLES */
+        .gallery-grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+        .gallery-item-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-card); transition: transform var(--transition-speed); }
+        .gallery-item-card:hover { transform: translateY(-4px); }
+        .gallery-item-media { width: 100%; object-fit: contain; background: #1c1917; }
+        .gallery-item-content { padding: 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
-        .modal-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-modal); max-width: 500px; width: 100%; padding: 20px; display: flex; flex-direction: column; gap: 16px; position: relative; }
-        .modal-close-button { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.5); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        .table-container { width: 100%; overflow-x: auto; border-radius: var(--radius-btn); border: 1px solid var(--color-border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; background: var(--color-surface); }
+        th, td { padding: 14px 16px; border-bottom: 1px solid var(--color-border); }
+        th { background: #f7f3ec; color: var(--color-secondary); text-transform: uppercase; font-size: 0.75rem; font-weight: 800; }
+
+        /* MODAL */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(43, 45, 66, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(6px); }
+        .modal-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-modal); max-width: 480px; width: 100%; padding: 28px; display: flex; flex-direction: column; gap: 18px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .modal-close-button { position: absolute; top: 16px; right: 16px; background: #f3ece1; border: none; color: var(--color-secondary); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; transition: var(--transition-speed); }
+        .modal-close-button:hover { background: var(--color-primary); color: white; }
     </style>
 </head>
 <body>
 
+    <!-- HEADER SECTION -->
     <header>
-        <div style="font-weight: 900; font-size: 1.125rem; color: var(--color-primary);">
-            💍 Wedding Photobooth
+        <div style="font-weight: 900; font-size: 1.25rem; color: var(--color-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;">
+            <span>🌸</span> Wedding Photobooth
         </div>
         <button class="btn btn-secondary btn-sm" onclick="AuthEngine.toggleAdminModal()">
             🔒 Admin Access
         </button>
     </header>
 
+    <!-- MAIN APP ROUTER -->
     <main>
         <nav class="tab-navigation">
             <button id="nav-btn-home" class="tab-button active" onclick="AppRouter.switchRoute('home')">🏠 Home (Pilih Layout)</button>
@@ -114,44 +149,15 @@
         <section id="section-home" class="component-section active-section">
             <div class="card">
                 <div class="card-header">Pilih Layout Photobooth</div>
-                <p style="color: var(--color-text-muted); font-size: 0.875rem;">
-                    Silakan pilih jumlah pose foto yang ingin diambil sebelum memulai sesi pemotretan.
+                <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5;">
+                    Silakan pilih layout desain bingkai foto yang ingin kamu gunakan sebelum memulai sesi pemotretan.
                 </p>
 
-                <div class="layout-grid">
-                    <div class="layout-card selected" onclick="LayoutController.selectLayout(1, this)">
-                        <div class="layout-preview-box" style="grid-template-columns: 1fr;">
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                        </div>
-                        <strong>Single Pose (1 Foto)</strong>
-                    </div>
-                    <div class="layout-card" onclick="LayoutController.selectLayout(2, this)">
-                        <div class="layout-preview-box" style="grid-template-columns: 1fr 1fr;">
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                        </div>
-                        <strong>Duo Pose (2 Foto)</strong>
-                    </div>
-                    <div class="layout-card" onclick="LayoutController.selectLayout(3, this)">
-                        <div class="layout-preview-box" style="grid-template-columns: 1fr 1fr 1fr;">
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                        </div>
-                        <strong>Trio Strip (3 Foto)</strong>
-                    </div>
-                    <div class="layout-card" onclick="LayoutController.selectLayout(4, this)">
-                        <div class="layout-preview-box" style="grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;">
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                            <div style="background: rgba(255,255,255,0.2); border-radius: 4px;"></div>
-                        </div>
-                        <strong>Quad Grid (4 Foto)</strong>
-                    </div>
+                <div class="layout-grid" id="public-layout-grid">
+                    <!-- Dynamic Layouts Loaded from DB -->
                 </div>
 
-                <button class="btn btn-primary" style="margin-top: 10px;" onclick="LayoutController.startPhotoboothSession()">🚀 Mulai Sesi Photobooth</button>
+                <button class="btn btn-primary" style="margin-top: 10px; padding: 16px; font-size: 1rem;" onclick="LayoutController.startPhotoboothSession()">🚀 Mulai Sesi Photobooth</button>
             </div>
         </section>
 
@@ -160,8 +166,11 @@
             <div class="card">
                 <div class="card-header" id="photo-session-title">Sesi Pemotretan (Foto 1 dari 1)</div>
                 
-                <div class="viewport-container">
+                <div class="viewport-container" id="camera-viewport-box">
                     <video id="photo-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
+                    <!-- ELEMEN BINGKAI LIVE DI ATAS STREAM KAMERA -->
+                    <img id="photo-live-frame" class="live-frame-overlay" />
+                    
                     <img id="photo-preview-result" class="viewport-element" style="display: none;" />
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
                     <div id="photo-badge" class="badge-overlay">📷 Kamera Siap</div>
@@ -180,7 +189,7 @@
             <div class="card">
                 <div class="card-header">📝 Pesan Ucapan & Pilihan Media Tambahan</div>
                 
-                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--color-border); padding: 14px; border-radius: var(--radius-btn); display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: var(--color-surface-card); border: 1px solid var(--color-border); padding: 16px; border-radius: var(--radius-btn); display: flex; flex-direction: column; gap: 12px;">
                     <div><strong>🎥 / 🎙️ Tambahkan Rekaman Ucapan (Opsional):</strong></div>
                     <div class="btn-group">
                         <button id="btn-opt-video" class="btn btn-secondary btn-sm" onclick="AppRouter.toggleVideoRecorder()">🎥 Rekam Video Ucapan</button>
@@ -202,8 +211,8 @@
 
                 <!-- AUDIO CONTAINER -->
                 <div id="opt-audio-container" style="display: none; flex-direction: column; gap: 10px;">
-                    <div style="background: #000; padding: 20px; border-radius: var(--radius-btn); text-align: center;">
-                        <div id="audio-status-label" style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 10px;">🎙️ Mikrofon Siap</div>
+                    <div style="background: #1c1917; padding: 24px; border-radius: var(--radius-btn); text-align: center;">
+                        <div id="audio-status-label" style="font-size: 0.9rem; color: #d6d3d1; margin-bottom: 12px;">🎙️ Mikrofon Siap</div>
                         <audio id="audio-playback-result" controls style="display: none; width: 100%;"></audio>
                     </div>
                     <div class="btn-group">
@@ -222,7 +231,7 @@
                 </div>
 
                 <div class="btn-group">
-                    <button id="btn-submit-upload" class="btn btn-primary" onclick="UploadController.executeUploadProcess()">🚀 Upload ke Digital Guestbook</button>
+                    <button id="btn-submit-upload" class="btn btn-primary" style="padding: 16px;" onclick="UploadController.executeUploadProcess()">🚀 Upload ke Digital Guestbook</button>
                 </div>
             </div>
         </section>
@@ -231,8 +240,8 @@
         <section id="section-gallery" class="component-section">
             <div class="card">
                 <div class="card-header">🖼️ Galeri Hasil Foto Perangkat Ini</div>
-                <p style="font-size: 0.8rem; color: var(--color-text-muted);">
-                    Hanya menampilkan hasil foto & ucapan yang dibuat dari perangkat/browser ini demi privasi tamu.
+                <p style="font-size: 0.85rem; color: var(--color-text-muted);">
+                    Hanya menampilkan hasil foto & ucapan yang dibuat dari perangkat/browser ini demi menjaga privasi tamu.
                 </p>
                 <div class="gallery-grid-layout" id="gallery-grid-container"></div>
             </div>
@@ -241,9 +250,51 @@
         <!-- 5. SECTION: ADMIN -->
         <section id="section-admin" class="component-section">
             <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="card-header">🔒 Admin Console</div>
-                    <button class="btn btn-danger btn-sm" onclick="AuthEngine.logoutAdmin()">Sign Out Admin</button>
+                <div class="card-header">🖼️ Tambah Desain Layout Frame (PNG Transparan High-Res)</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                    <div class="form-group">
+                        <label class="form-label">Nama Layout Frame</label>
+                        <input type="text" id="adm-frame-title" class="form-input" placeholder="Misal: Peach Floral Gold">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Jumlah Pose Foto</label>
+                        <select id="adm-frame-poses" class="form-select">
+                            <option value="1">1 Pose Foto</option>
+                            <option value="2">2 Pose Foto</option>
+                            <option value="3">3 Pose Foto</option>
+                            <option value="4">4 Pose Foto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">File PNG Transparan</label>
+                        <input type="file" id="adm-frame-file" class="form-input" accept="image/png">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm" style="align-self: flex-start; margin-top: 4px;" onclick="AdminEngine.uploadFrame()">➕ Upload Desain Frame</button>
+
+                <div class="table-container" style="margin-top: 10px;">
+                    <div style="padding: 12px 16px; font-weight: 700; color: var(--color-secondary); font-size: 0.85rem;">Daftar Frame Aktif:</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Preview</th>
+                                <th>Nama Frame</th>
+                                <th>Jumlah Pose</th>
+                                <th style="text-align: right;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-frames-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div class="card-header">🔒 Admin Console (Data Tamu)</div>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btn-admin-download-all" class="btn btn-success btn-sm" onclick="AdminEngine.downloadAllMediaZip()">📦 Unduh Semua (.ZIP)</button>
+                        <button class="btn btn-danger btn-sm" onclick="AuthEngine.logoutAdmin()">Sign Out Admin</button>
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -266,7 +317,7 @@
     </main>
 
     <footer>
-        Wedding Photobooth & Digital Guestbook Engine &copy; 2026.
+        Wedding Photobooth & Digital Guestbook by Kayuna Studio &copy; 2026.
     </footer>
 
     <canvas id="hidden-processing-canvas" style="display: none;"></canvas>
@@ -284,10 +335,11 @@
                 <label class="form-label">Password</label>
                 <input type="password" id="modal-adm-pass" class="form-input" placeholder="••••••••">
             </div>
-            <button class="btn btn-primary" onclick="AuthEngine.loginAdmin()">Sign In</button>
+            <button class="btn btn-primary" style="padding: 14px;" onclick="AuthEngine.loginAdmin()">Sign In</button>
         </div>
     </div>
 
+    <!-- APPLICATION ENGINE -->
     <script>
         const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
@@ -316,9 +368,8 @@
                 VideoEngine.stopStream();
                 AudioEngine.stopStream();
 
-                if (routeName === 'photo') {
-                    setTimeout(() => CameraEngine.startCamera(), 100);
-                }
+                if (routeName === 'home') LayoutController.loadPublicLayouts();
+                if (routeName === 'photo') setTimeout(() => CameraEngine.startCamera(), 100);
                 if (routeName === 'gallery') GalleryEngine.loadDeviceGallery();
                 if (routeName === 'admin') AdminEngine.loadDashboard();
             },
@@ -352,11 +403,69 @@
 
         const LayoutController = {
             requiredPhotosCount: 1,
+            selectedFrameUrl: null,
 
-            selectLayout(count, elem) {
-                this.requiredPhotosCount = count;
-                document.querySelectorAll('.layout-card').forEach(c => c.classList.remove('selected'));
-                elem.classList.add('selected');
+            defaultLayouts: [
+                { id: 'def_1', title: 'Single Pose (1 Foto)', pose_count: 1, storage_path: null },
+                { id: 'def_2', title: 'Duo Pose (2 Foto)', pose_count: 2, storage_path: null },
+                { id: 'def_3', title: 'Trio Strip (3 Foto)', pose_count: 3, storage_path: null },
+                { id: 'def_4', title: 'Quad Grid (4 Foto)', pose_count: 4, storage_path: null }
+            ],
+
+            async loadPublicLayouts() {
+                const container = document.getElementById('public-layout-grid');
+                container.innerHTML = "<p style='grid-column: 1/-1;'>Memuat layout desain...</p>";
+
+                try {
+                    const { data: customFrames } = await supabaseClient.from('frames').select('*').order('created_at', { ascending: false });
+                    
+                    let allLayouts = [...this.defaultLayouts];
+                    if (customFrames && customFrames.length > 0) {
+                        allLayouts = [...customFrames, ...this.defaultLayouts];
+                    }
+
+                    container.innerHTML = "";
+                    allLayouts.forEach((item, idx) => {
+                        const card = document.createElement('div');
+                        card.className = `layout-card ${idx === 0 ? 'selected' : ''}`;
+                        
+                        let framePublicUrl = '';
+                        if (item.storage_path) {
+                            const { data: u } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(item.storage_path);
+                            framePublicUrl = u.publicUrl;
+                        }
+
+                        if (idx === 0) {
+                            this.requiredPhotosCount = item.pose_count;
+                            this.selectedFrameUrl = framePublicUrl;
+                        }
+
+                        card.onclick = () => {
+                            document.querySelectorAll('.layout-card').forEach(c => c.classList.remove('selected'));
+                            card.classList.add('selected');
+                            this.requiredPhotosCount = item.pose_count;
+                            this.selectedFrameUrl = framePublicUrl;
+                        };
+
+                        let bgStyle = framePublicUrl ? `background-image: url('${framePublicUrl}');` : '';
+                        let innerBoxes = '';
+                        for(let i=0; i<item.pose_count; i++) {
+                            innerBoxes += `<div style="background: rgba(224, 122, 95, 0.15); border-radius: 4px;"></div>`;
+                        }
+
+                        let cols = item.pose_count === 4 ? '1fr 1fr' : (item.pose_count > 1 ? `repeat(${item.pose_count}, 1fr)` : '1fr');
+
+                        card.innerHTML = `
+                            <div class="layout-preview-box" style="grid-template-columns: ${cols}; ${bgStyle}">
+                                ${innerBoxes}
+                            </div>
+                            <strong style="color: var(--color-text-main); font-size: 0.9rem;">${item.title}</strong>
+                        `;
+                        container.appendChild(card);
+                    });
+                } catch(e) {
+                    container.innerHTML = "<p style='color:var(--color-danger); grid-column:1/-1;'>Gagal memuat layout.</p>";
+                }
             },
 
             startPhotoboothSession() {
@@ -366,7 +475,7 @@
             }
         };
 
-        /* PHOTO ENGINE */
+        /* PHOTO ENGINE WITH LIVE FRAME OVERLAY */
         const CameraEngine = {
             stream: null,
             capturedBitmaps: [],
@@ -381,15 +490,37 @@
                 }
 
                 try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                    this.stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: "user" }, 
+                        audio: false 
+                    });
                     const video = document.getElementById('photo-camera-stream');
                     video.srcObject = this.stream;
                     video.style.display = 'block';
                     document.getElementById('photo-preview-result').style.display = 'none';
                     document.getElementById('photo-session-title').innerText = `Sesi Pemotretan (Foto ${this.currentPoseIndex} dari ${LayoutController.requiredPhotosCount})`;
-                } catch (e) {
-                    alert("Gagal mengaktifkan kamera: " + e.message);
-                }
+
+                    // SETUP LIVE OVERLAY FRAME ATAS KAMERA
+                    const liveFrame = document.getElementById('photo-live-frame');
+                    const viewportBox = document.getElementById('camera-viewport-box');
+
+                    if (LayoutController.selectedFrameUrl) {
+                        liveFrame.src = LayoutController.selectedFrameUrl;
+                        liveFrame.style.display = 'block';
+
+                        // Atur aspect ratio kamera menyesuaikan bingkai secara real-time
+                        const tempImg = new Image();
+                        tempImg.crossOrigin = "anonymous";
+                        tempImg.onload = () => {
+                            viewportBox.style.aspectRatio = `${tempImg.naturalWidth} / ${tempImg.naturalHeight}`;
+                        };
+                        tempImg.src = LayoutController.selectedFrameUrl;
+                    } else {
+                        liveFrame.style.display = 'none';
+                        viewportBox.style.aspectRatio = '16/9';
+                    }
+
+                } catch (e) { alert("Gagal mengaktifkan kamera: " + e.message); }
             },
 
             stopStream() {
@@ -433,55 +564,92 @@
                 } catch(err) { alert("Gagal mengambil foto: " + err.message); }
             },
 
-            renderLayoutGridCanvas() {
+            async renderLayoutGridCanvas() {
                 const canvas = document.getElementById('hidden-processing-canvas');
                 const ctx = canvas.getContext('2d');
                 const count = this.capturedBitmaps.length;
 
                 let cols = count === 4 ? 2 : (count > 1 ? count : 1);
                 let rows = count === 4 ? 2 : 1;
-                const singleW = 640;
-                const singleH = 480;
-                
-                canvas.width = singleW * cols;
-                canvas.height = singleH * rows;
+
+                let frameImg = null;
+
+                if (LayoutController.selectedFrameUrl) {
+                    frameImg = await new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                        img.src = LayoutController.selectedFrameUrl;
+                    });
+                }
+
+                if (frameImg) {
+                    canvas.width = frameImg.naturalWidth || frameImg.width;
+                    canvas.height = frameImg.naturalHeight || frameImg.height;
+                } else {
+                    canvas.width = 1280 * cols;
+                    canvas.height = 960 * rows;
+                }
 
                 ctx.fillStyle = "#ffffff";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+                const cellW = canvas.width / cols;
+                const cellH = canvas.height / rows;
+
                 this.capturedBitmaps.forEach((bmp, idx) => {
                     let c = idx % cols;
                     let r = Math.floor(idx / cols);
-                    let x = c * singleW;
-                    let y = r * singleH;
+                    let x = c * cellW;
+                    let y = r * cellH;
 
                     ctx.save();
-                    ctx.translate(x + singleW, y);
+                    ctx.translate(x + cellW, y);
                     ctx.scale(-1, 1);
-                    ctx.drawImage(bmp, 0, 0, singleW, singleH);
+
+                    const scale = Math.max(cellW / bmp.width, cellH / bmp.height);
+                    const drawW = bmp.width * scale;
+                    const drawH = bmp.height * scale;
+                    const offsetX = (cellW - drawW) / 2;
+                    const offsetY = (cellH - drawH) / 2;
+
+                    ctx.drawImage(bmp, offsetX, offsetY, drawW, drawH);
                     ctx.restore();
                 });
+
+                if (frameImg) {
+                    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+                }
 
                 canvas.toBlob((blob) => {
                     this.finalMergedBlob = blob;
                     const preview = document.getElementById('photo-preview-result');
                     const video = document.getElementById('photo-camera-stream');
+                    const liveFrame = document.getElementById('photo-live-frame');
 
-                    preview.src = URL.createObjectURL(blob);
+                    const previewUrl = URL.createObjectURL(blob);
+                    preview.src = previewUrl;
+                    
                     video.style.display = 'none';
+                    liveFrame.style.display = 'none'; // Sembunyikan live overlay setelah pemotretan selesai
                     preview.style.display = 'block';
+
+                    const viewportBox = document.getElementById('camera-viewport-box');
+                    viewportBox.style.aspectRatio = `${canvas.width} / ${canvas.height}`;
 
                     document.getElementById('btn-photo-snap').style.display = 'none';
                     document.getElementById('btn-photo-retake').style.display = 'inline-flex';
                     document.getElementById('btn-photo-accept').style.display = 'inline-flex';
-                    document.getElementById('photo-session-title').innerText = "Preview Hasil Photobooth";
-                }, 'image/jpeg', 0.85);
+                    document.getElementById('photo-session-title').innerText = `Preview Hasil Photobooth (${canvas.width}x${canvas.height}px)`;
+                }, 'image/jpeg', 1.0);
             },
 
             resetPhotoStage() {
                 this.capturedBitmaps = [];
                 this.currentPoseIndex = 1;
                 this.finalMergedBlob = null;
+
                 document.getElementById('btn-photo-snap').style.display = 'inline-flex';
                 document.getElementById('btn-photo-retake').style.display = 'none';
                 document.getElementById('btn-photo-accept').style.display = 'none';
@@ -489,13 +657,9 @@
             }
         };
 
-        /* VIDEO ENGINE (FIX REKAMAN TERHUBUNG BLOB) */
+        /* VIDEO ENGINE */
         const VideoEngine = {
-            stream: null,
-            mediaRecorder: null,
-            recordedChunks: [],
-            videoBlob: null,
-
+            stream: null, mediaRecorder: null, recordedChunks: [], videoBlob: null,
             async startCamera() {
                 this.stopStream();
                 try {
@@ -506,60 +670,34 @@
                     document.getElementById('video-playback-result').style.display = 'none';
                 } catch(e) { alert("Gagal mengaktifkan Kamera/Mic Video: " + e.message); }
             },
-
-            stopStream() {
-                if(this.stream) {
-                    this.stream.getTracks().forEach(t => t.stop());
-                    this.stream = null;
-                }
-            },
-
+            stopStream() { if(this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; } },
             startRecording() {
                 if(!this.stream) return alert("Kamera video belum aktif.");
                 this.recordedChunks = [];
-                
-                try {
-                    this.mediaRecorder = new MediaRecorder(this.stream);
-                } catch(e) {
-                    return alert("Browser tidak mendukung perekaman video.");
-                }
-
-                this.mediaRecorder.ondataavailable = (e) => { 
-                    if(e.data && e.data.size > 0) this.recordedChunks.push(e.data); 
-                };
-
+                try { this.mediaRecorder = new MediaRecorder(this.stream); } catch(e) { return alert("Browser tidak mendukung perekaman video."); }
+                this.mediaRecorder.ondataavailable = (e) => { if(e.data && e.data.size > 0) this.recordedChunks.push(e.data); };
                 this.mediaRecorder.onstop = () => {
                     const mime = this.mediaRecorder.mimeType || 'video/webm';
                     this.videoBlob = new Blob(this.recordedChunks, { type: mime });
-                    
                     const playback = document.getElementById('video-playback-result');
                     playback.src = URL.createObjectURL(this.videoBlob);
-                    
                     document.getElementById('video-camera-stream').style.display = 'none';
                     playback.style.display = 'block';
                 };
-
                 this.mediaRecorder.start(200);
                 document.getElementById('btn-video-rec-start').style.display = 'none';
                 document.getElementById('btn-video-rec-stop').style.display = 'inline-flex';
             },
-
             stopRecording() {
-                if(this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
-                    this.mediaRecorder.stop();
-                }
+                if(this.mediaRecorder && this.mediaRecorder.state !== "inactive") this.mediaRecorder.stop();
                 document.getElementById('btn-video-rec-start').style.display = 'inline-flex';
                 document.getElementById('btn-video-rec-stop').style.display = 'none';
             }
         };
 
-        /* AUDIO ENGINE (FIX REKAMAN TERHUBUNG BLOB) */
+        /* AUDIO ENGINE */
         const AudioEngine = {
-            stream: null,
-            mediaRecorder: null,
-            recordedChunks: [],
-            audioBlob: null,
-
+            stream: null, mediaRecorder: null, recordedChunks: [], audioBlob: null,
             async initMicrophone() {
                 this.stopStream();
                 try {
@@ -567,48 +705,27 @@
                     document.getElementById('audio-status-label').innerText = "🎙️ Mikrofon Aktif & Siap";
                 } catch(e) { alert("Akses Mikrofon Gagal: " + e.message); }
             },
-
-            stopStream() {
-                if(this.stream) {
-                    this.stream.getTracks().forEach(t => t.stop());
-                    this.stream = null;
-                }
-            },
-
+            stopStream() { if(this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; } },
             startRecording() {
                 if(!this.stream) return alert("Mikrofon belum diaktifkan.");
                 this.recordedChunks = [];
-
-                try {
-                    this.mediaRecorder = new MediaRecorder(this.stream);
-                } catch(e) {
-                    return alert("Browser tidak mendukung perekaman suara.");
-                }
-
-                this.mediaRecorder.ondataavailable = (e) => { 
-                    if(e.data && e.data.size > 0) this.recordedChunks.push(e.data); 
-                };
-
+                try { this.mediaRecorder = new MediaRecorder(this.stream); } catch(e) { return alert("Browser tidak mendukung perekaman suara."); }
+                this.mediaRecorder.ondataavailable = (e) => { if(e.data && e.data.size > 0) this.recordedChunks.push(e.data); };
                 this.mediaRecorder.onstop = () => {
                     const mime = this.mediaRecorder.mimeType || 'audio/webm';
                     this.audioBlob = new Blob(this.recordedChunks, { type: mime });
-                    
                     const player = document.getElementById('audio-playback-result');
                     player.src = URL.createObjectURL(this.audioBlob);
                     player.style.display = 'block';
                     document.getElementById('audio-status-label').innerText = "✅ Rekaman Suara Selesai!";
                 };
-
                 this.mediaRecorder.start(200);
                 document.getElementById('audio-status-label').innerText = "🔴 Sedang Merekam Suara...";
                 document.getElementById('btn-audio-rec-start').style.display = 'none';
                 document.getElementById('btn-audio-rec-stop').style.display = 'inline-flex';
             },
-
             stopRecording() {
-                if(this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
-                    this.mediaRecorder.stop();
-                }
+                if(this.mediaRecorder && this.mediaRecorder.state !== "inactive") this.mediaRecorder.stop();
                 document.getElementById('btn-audio-rec-start').style.display = 'inline-flex';
                 document.getElementById('btn-audio-rec-stop').style.display = 'none';
             }
@@ -630,12 +747,10 @@
                     const timestamp = Date.now();
                     const photoPath = `photos/photo_${timestamp}.jpg`;
 
-                    // 1. Upload Foto
                     const { data: photoData, error: photoErr } = await supabaseClient
                         .storage.from('wedding-photobooth').upload(photoPath, CameraEngine.finalMergedBlob, { contentType: 'image/jpeg' });
                     if (photoErr) throw photoErr;
 
-                    // 2. Upload Video (Jika ada)
                     let videoPath = null;
                     if (VideoEngine.videoBlob && VideoEngine.videoBlob.size > 0) {
                         const vPath = `videos/video_${timestamp}.webm`;
@@ -643,7 +758,6 @@
                         if (vData) videoPath = vData.path;
                     }
 
-                    // 3. Upload Audio (Jika ada)
                     let audioPath = null;
                     if (AudioEngine.audioBlob && AudioEngine.audioBlob.size > 0) {
                         const aPath = `audios/audio_${timestamp}.webm`;
@@ -651,7 +765,6 @@
                         if (aData) audioPath = aData.path;
                     }
 
-                    // 4. Insert Metadata Foto Utama ke Supabase PostgreSQL
                     const { error: dbErr } = await supabaseClient
                         .from('media')
                         .insert([{
@@ -669,7 +782,6 @@
 
                     if (dbErr) throw dbErr;
 
-                    // Simpan jejak lokal di localStorage browser ini
                     let localUploads = JSON.parse(localStorage.getItem('my_photos') || '[]');
                     localUploads.push(photoData.path);
                     if (videoPath) localUploads.push(videoPath);
@@ -681,48 +793,63 @@
                     document.getElementById('input-guest-message').value = '';
                     AppRouter.switchRoute('gallery');
 
-                } catch (err) {
-                    alert("Upload Gagal: " + err.message);
-                } finally {
+                } catch (err) { alert("Upload Gagal: " + err.message); }
+                finally {
                     btnSubmit.disabled = false;
                     btnSubmit.innerText = "🚀 Upload ke Digital Guestbook";
                 }
             }
         };
 
+        /* GALERI LOKAL */
         const GalleryEngine = {
             async loadDeviceGallery() {
                 const container = document.getElementById('gallery-grid-container');
-                const myPaths = JSON.parse(localStorage.getItem('my_photos') || '[]');
+                let myPaths = JSON.parse(localStorage.getItem('my_photos') || '[]');
 
-                container.innerHTML = "";
+                container.innerHTML = "<p style='grid-column: 1/-1;'>Memuat galeri Anda...</p>";
                 if (myPaths.length === 0) {
                     container.innerHTML = "<p style='grid-column: 1/-1;'>Belum ada media yang dibuat dari perangkat ini.</p>";
                     return;
                 }
 
-                myPaths.forEach(path => {
+                const validPaths = [];
+                container.innerHTML = "";
+
+                for (let path of myPaths) {
                     const { data: urlData } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(path);
-                    const card = document.createElement('div');
-                    card.className = 'gallery-item-card';
+                    
+                    try {
+                        const res = await fetch(urlData.publicUrl, { method: 'HEAD' });
+                        if (res.ok) {
+                            validPaths.push(path);
+                            const card = document.createElement('div');
+                            card.className = 'gallery-item-card';
 
-                    let mediaHtml = '';
-                    if (path.includes('videos/')) {
-                        mediaHtml = `<video src="${urlData.publicUrl}" controls class="gallery-item-media"></video>`;
-                    } else if (path.includes('audios/')) {
-                        mediaHtml = `<div class="gallery-item-media" style="display:flex; justify-content:center; align-items:center; background:#0f172a;"><audio src="${urlData.publicUrl}" controls style="width:90%;"></audio></div>`;
-                    } else {
-                        mediaHtml = `<img src="${urlData.publicUrl}" class="gallery-item-media" loading="lazy" />`;
-                    }
+                            let mediaHtml = '';
+                            if (path.includes('videos/')) {
+                                mediaHtml = `<video src="${urlData.publicUrl}" controls class="gallery-item-media"></video>`;
+                            } else if (path.includes('audios/')) {
+                                mediaHtml = `<div class="gallery-item-media" style="display:flex; justify-content:center; align-items:center; background:#1c1917; height: 180px;"><audio src="${urlData.publicUrl}" controls style="width:90%;"></audio></div>`;
+                            } else {
+                                mediaHtml = `<img src="${urlData.publicUrl}" class="gallery-item-media" loading="lazy" />`;
+                            }
 
-                    card.innerHTML = `
-                        ${mediaHtml}
-                        <div class="gallery-item-content">
-                            <a href="${urlData.publicUrl}" target="_blank" download class="btn btn-secondary btn-sm" style="margin-top:auto;">💾 Download File</a>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
+                            card.innerHTML = `
+                                ${mediaHtml}
+                                <div class="gallery-item-content">
+                                    <a href="${urlData.publicUrl}" target="_blank" download class="btn btn-secondary btn-sm" style="margin-top:auto;">💾 Download File High-Res</a>
+                                </div>
+                            `;
+                            container.appendChild(card);
+                        }
+                    } catch(e) {}
+                }
+
+                localStorage.setItem('my_photos', JSON.stringify(validPaths));
+                if (validPaths.length === 0) {
+                    container.innerHTML = "<p style='grid-column: 1/-1;'>Belum ada media yang dibuat dari perangkat ini.</p>";
+                }
             }
         };
 
@@ -750,9 +877,91 @@
             }
         };
 
-        /* ADMIN ENGINE (FIXED HAPUS DATABASE & STORAGE) */
+        /* ADMIN ENGINE */
         const AdminEngine = {
+            mediaItemsCache: [],
+
             async loadDashboard() {
+                this.loadAdminFrames();
+                this.loadAdminMedia();
+            },
+
+            async loadAdminFrames() {
+                const tbody = document.getElementById('admin-frames-table-body');
+                tbody.innerHTML = "<tr><td colspan='4'>Memuat data frame...</td></tr>";
+
+                try {
+                    const { data, error } = await supabaseClient.from('frames').select('*').order('created_at', { ascending: false });
+                    if (error) throw error;
+
+                    tbody.innerHTML = "";
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='4'>Belum ada frame custom.</td></tr>";
+                        return;
+                    }
+
+                    data.forEach(f => {
+                        const { data: u } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(f.storage_path);
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><img src="${u.publicUrl}" style="height:40px; border-radius:6px; background:#1c1917;" /></td>
+                            <td><strong>${f.title}</strong></td>
+                            <td>${f.pose_count} Pose</td>
+                            <td style="text-align: right;">
+                                <button class="btn btn-danger btn-sm" onclick="AdminEngine.deleteFrame('${f.id}', '${f.storage_path}')">🗑️ Hapus</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } catch(e) { tbody.innerHTML = `<tr><td colspan='4' style='color:var(--color-danger);'>Gagal: ${e.message}</td></tr>`; }
+            },
+
+            async uploadFrame() {
+                const title = document.getElementById('adm-frame-title').value.trim();
+                const poseCount = parseInt(document.getElementById('adm-frame-poses').value);
+                const fileInput = document.getElementById('adm-frame-file');
+
+                if (!title || fileInput.files.length === 0) {
+                    return alert("Harap isi nama layout dan pilih berkas PNG transparan.");
+                }
+
+                const file = fileInput.files[0];
+                if (file.type !== 'image/png') {
+                    return alert("Berkas frame harus berformat PNG transparan.");
+                }
+
+                try {
+                    const timestamp = Date.now();
+                    const path = `frames/frame_${timestamp}.png`;
+
+                    const { data: sData, error: sErr } = await supabaseClient.storage.from('wedding-photobooth').upload(path, file, { contentType: 'image/png' });
+                    if (sErr) throw sErr;
+
+                    const { error: dbErr } = await supabaseClient.from('frames').insert([{
+                        title: title,
+                        pose_count: poseCount,
+                        storage_path: sData.path
+                    }]);
+
+                    if (dbErr) throw dbErr;
+
+                    alert("✅ Desain Frame PNG High-Res Berhasil Diunggah!");
+                    document.getElementById('adm-frame-title').value = '';
+                    fileInput.value = '';
+                    this.loadAdminFrames();
+                } catch(e) { alert("Gagal unggah frame: " + e.message); }
+            },
+
+            async deleteFrame(id, storagePath) {
+                if (!confirm("Hapus desain frame ini?")) return;
+                try {
+                    await supabaseClient.from('frames').delete().eq('id', id);
+                    await supabaseClient.storage.from('wedding-photobooth').remove([storagePath]);
+                    this.loadAdminFrames();
+                } catch(e) { alert("Gagal hapus frame: " + e.message); }
+            },
+
+            async loadAdminMedia() {
                 const tbody = document.getElementById('admin-table-body');
                 tbody.innerHTML = "<tr><td colspan='5'>Memuat seluruh data media...</td></tr>";
 
@@ -760,7 +969,9 @@
                     const { data, error } = await supabaseClient.from('media').select('*').order('created_at', { ascending: false });
                     if (error) throw error;
 
+                    this.mediaItemsCache = data || [];
                     tbody.innerHTML = "";
+
                     if (!data || data.length === 0) {
                         tbody.innerHTML = "<tr><td colspan='5'>Belum ada data media.</td></tr>";
                         return;
@@ -786,13 +997,55 @@
                 } catch(err) { tbody.innerHTML = `<tr><td colspan='5' style='color:var(--color-danger);'>Gagal: ${err.message}</td></tr>`; }
             },
 
+            async downloadAllMediaZip() {
+                if (!this.mediaItemsCache || this.mediaItemsCache.length === 0) {
+                    return alert("Tidak ada berkas media untuk diunduh.");
+                }
+
+                const btnDownload = document.getElementById('btn-admin-download-all');
+                btnDownload.disabled = true;
+                
+                const zip = new JSZip();
+                const total = this.mediaItemsCache.length;
+                let downloadedCount = 0;
+
+                try {
+                    for (let item of this.mediaItemsCache) {
+                        downloadedCount++;
+                        btnDownload.innerText = `⏳ Unduh ${downloadedCount}/${total}...`;
+
+                        const { data: urlData } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(item.storage_path);
+                        const response = await fetch(urlData.publicUrl);
+                        const blob = await response.blob();
+
+                        const safeName = (item.guest_name || 'Tamu').replace(/[^a-zA-Z0-9]/g, '_');
+                        const ext = item.file_name.split('.').pop() || 'jpg';
+                        const fileNameInZip = `${safeName}_${item.media_type}_${item.id.substr(0,6)}.${ext}`;
+
+                        zip.file(fileNameInZip, blob);
+                    }
+
+                    btnDownload.innerText = "⚡ Mengompres ZIP...";
+                    const content = await zip.generateAsync({ type: "blob" });
+                    
+                    const timestamp = new Date().toISOString().slice(0, 10);
+                    saveAs(content, `Wedding_Photobooth_Media_${timestamp}.zip`);
+
+                    alert("✅ Seluruh berkas berhasil diunduh dalam file ZIP!");
+                } catch (e) {
+                    alert("Gagal mengunduh berkas ZIP: " + e.message);
+                } finally {
+                    btnDownload.disabled = false;
+                    btnDownload.innerText = "📦 Unduh Semua (.ZIP)";
+                }
+            },
+
             async deleteMedia(id, storagePath) {
                 if (!confirm("⚠️ Apakah Anda yakin ingin menghapus media ini secara permanen dari Storage & Database?")) {
                     return;
                 }
 
                 try {
-                    // 1. Hapus dari Database PostgreSQL dahulu
                     const { error: dbErr } = await supabaseClient
                         .from('media')
                         .delete()
@@ -800,7 +1053,6 @@
 
                     if (dbErr) throw dbErr;
 
-                    // 2. Hapus berkas fisik dari Supabase Storage
                     const { error: storageErr } = await supabaseClient
                         .storage
                         .from('wedding-photobooth')
