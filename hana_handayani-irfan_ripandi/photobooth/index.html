@@ -102,10 +102,10 @@
         .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border); transition: all 0.3s; }
         .dot.active { width: 20px; border-radius: 10px; background: var(--color-primary); }
 
-        /* VIEWPORT CAMERA & PREVIEW INSTAGRAM STORY RATIO (9:16) */
-        .viewport-container { position: relative; width: 100%; max-width: 420px; aspect-ratio: 9/16; max-height: 70vh; margin: 0 auto; background: #1c1917; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-        .viewport-element { width: 100%; height: 100%; object-fit: cover; }
-        .viewport-element.camera-mirror { transform: scaleX(-1); object-fit: cover; }
+        /* VIEWPORT CAMERA & PREVIEW INSTAGRAM STORY RATIO (9:16 - UNZOOMED / WIDE ANGLE FIX) */
+        .viewport-container { position: relative; width: 100%; max-width: 420px; aspect-ratio: 9/16; max-height: 70vh; margin: 0 auto; background: #000000; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .viewport-element { width: 100%; height: 100%; object-fit: contain; }
+        .viewport-element.camera-mirror { transform: scaleX(-1); object-fit: contain; }
         .live-frame-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; z-index: 2; display: none; }
 
         .badge-overlay { position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.65); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; z-index: 4; backdrop-filter: blur(4px); }
@@ -193,7 +193,7 @@
             <div class="card">
                 <div class="card-header">Pilih Layout Photobooth</div>
                 <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5;">
-                    Geser ke samping untuk memilih desain bingkai foto!
+                    Geser ke samping untuk memilih desain bingkai foto Instagram Story (9:16)!
                 </p>
 
                 <!-- SLIDER CAROUSEL DESAIN -->
@@ -208,7 +208,7 @@
             </div>
         </section>
 
-        <!-- 2. SECTION: CAPTURE PHOTOBOOTH (INSTAGRAM STORY 9:16 CAMERA VIEW) -->
+        <!-- 2. SECTION: CAPTURE PHOTOBOOTH (INSTAGRAM STORY 9:16 CAMERA VIEW - OPTIMIZED WIDE ANGLE) -->
         <section id="section-photo" class="component-section">
             <div class="card">
                 <div class="card-header" id="photo-session-title">Sesi Pemotretan (Foto 1 dari 1)</div>
@@ -218,7 +218,7 @@
                     <img id="photo-live-frame" class="live-frame-overlay" />
                     <img id="photo-preview-result" class="viewport-element" style="display: none;" />
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
-                    <div id="photo-badge" class="badge-overlay">📷 1080x1920 IG Story</div>
+                    <div id="photo-badge" class="badge-overlay">📷 Wide Angle Camera</div>
                 </div>
 
                 <div class="btn-group">
@@ -550,7 +550,7 @@
             }
         };
 
-        /* PHOTO ENGINE WITH 9:16 INSTAGRAM STORY NATIVE CAMERA VIEWPORT */
+        /* PHOTO ENGINE WITH OPTIMIZED WIDE ANGLE & PROPORTIONAL FIT */
         const CameraEngine = {
             stream: null,
             capturedBitmaps: [],
@@ -565,11 +565,11 @@
                 }
 
                 try {
+                    // MENGGUNAKAN IDEAL RESOLUSI TANPA MEMAKSA CROP BERLEBIHAN PADA BROWSER
                     this.stream = await navigator.mediaDevices.getUserMedia({ 
                         video: { 
-                            width: { ideal: 1080 }, 
-                            height: { ideal: 1920 }, 
-                            aspectRatio: { ideal: 9/16 },
+                            width: { ideal: 1920 }, 
+                            height: { ideal: 1080 },
                             facingMode: "user" 
                         }, 
                         audio: false 
@@ -687,7 +687,8 @@
                     ctx.translate(x + cellW, y);
                     ctx.scale(-1, 1);
 
-                    const scale = Math.max(cellW / bmp.width, cellH / bmp.height);
+                    // PROPORTIONAL CONTAIN DRAWING SUPAYA FOTO PAS & TIDAK TERPOTONG ZOOM
+                    const scale = Math.min(cellW / bmp.width, cellH / bmp.height);
                     const drawW = bmp.width * scale;
                     const drawH = bmp.height * scale;
                     const offsetX = (cellW - drawW) / 2;
@@ -742,7 +743,6 @@
                 try {
                     let fileToShare = null;
 
-                    // Mengambil berkas gambar hasil foto layout (Blob) atau URL Gambar Galeri
                     if (CameraEngine.finalMergedBlob && !imageUrl) {
                         fileToShare = new File([CameraEngine.finalMergedBlob], 'wedding_photobooth_layout.jpg', { type: 'image/jpeg' });
                     } else if (imageUrl) {
@@ -755,7 +755,6 @@
                         return alert("Tidak ada berkas foto hasil layout yang dapat dibagikan.");
                     }
 
-                    // Panggilan API Navigasi Native Share Perangkat Mobile
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
                         await navigator.share({
                             files: [fileToShare],
@@ -763,7 +762,6 @@
                             text: 'Bahagianya bisa hadir di Pernikahan Hana & Irfan! 💖 #HanaIrfanWedding'
                         });
                     } else {
-                        // Fallback jika browser desktop / tanpa API Share
                         saveAs(fileToShare, 'wedding_photobooth_layout.jpg');
                         alert("📲 Hasil foto berlayout telah otomatis diunduh! Buka aplikasi Instagram di HP Anda, buat Story baru, lalu pilih foto ini dari Galeri.");
                     }
@@ -955,7 +953,6 @@
                                 mediaHtml = `<img src="${urlData.publicUrl}" class="gallery-item-media" loading="lazy" />`;
                             }
 
-                            // Tombol IG Story khusus untuk tipe media foto berlayout
                             let shareBtn = isPhoto ? `<button class="btn btn-instagram btn-sm" style="flex:1;" onclick="SocialShareEngine.shareResultToInstagram('${urlData.publicUrl}')">📸 IG Story</button>` : '';
 
                             card.innerHTML = `
