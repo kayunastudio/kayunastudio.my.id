@@ -102,7 +102,7 @@
         .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border); transition: all 0.3s; }
         .dot.active { width: 20px; border-radius: 10px; background: var(--color-primary); }
 
-        /* VIEWPORT CAMERA & INTERACTIVE CANVAS */
+        /* VIEWPORT CAMERA & AUTO-TWIBBON CANVAS */
         .viewport-container { position: relative; width: 100%; max-width: 420px; aspect-ratio: 9/16; max-height: 70vh; margin: 0 auto; background: #000000; border-radius: var(--radius-card); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
         .viewport-element { width: 100%; height: 100%; object-fit: contain; }
         .viewport-element.camera-mirror { transform: scaleX(-1); object-fit: contain; }
@@ -110,11 +110,6 @@
         .badge-overlay { position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.65); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; z-index: 4; backdrop-filter: blur(4px); }
         .slot-indicator-badge { position: absolute; top: 14px; right: 14px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; z-index: 4; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .countdown-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; font-size: 4.5rem; font-weight: 900; color: white; z-index: 10; backdrop-filter: blur(2px); }
-
-        /* INTERACTIVE CONTROL PANEL */
-        .adjust-control-panel { background: var(--color-surface-card); border: 1.5px solid var(--color-border); border-radius: var(--radius-btn); padding: 14px; margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
-        .adjust-slider-group { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 700; color: var(--color-secondary); }
-        .adjust-slider-group input[type=range] { flex: 1; accent-color: var(--color-primary); }
 
         /* FORMS & CARDS */
         .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -198,7 +193,7 @@
             <div class="card">
                 <div class="card-header">Pilih Layout Photobooth</div>
                 <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5;">
-                    Geser ke samping untuk memilih desain bingkai foto!
+                    Geser ke samping untuk memilih desain bingkai foto Instagram Story (9:16)!
                 </p>
 
                 <div class="layout-slider-container">
@@ -210,34 +205,19 @@
             </div>
         </section>
 
-        <!-- 2. SECTION: CAPTURE & INTERACTIVE ADJUST PHOTOBOOTH -->
+        <!-- 2. SECTION: CAPTURE & AUTO-TWIBBON PHOTOBOOTH -->
         <section id="section-photo" class="component-section">
             <div class="card">
                 <div class="card-header" id="photo-session-title">Sesi Pemotretan (Foto 1 dari 1)</div>
                 
                 <div class="viewport-container" id="camera-viewport-box">
                     <video id="photo-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
-                    <canvas id="interactive-adjust-canvas" class="viewport-element" style="display: none; cursor: grab;"></canvas>
+                    <!-- KANVAS AUTO TWIBBONIZE (OTOMATIS FIT, POSITION & CROP) -->
+                    <canvas id="auto-twibbon-canvas" class="viewport-element" style="display: none;"></canvas>
                     
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
                     <div id="photo-badge" class="badge-overlay">📷 Wide Angle Camera</div>
                     <div id="photo-slot-badge" class="slot-indicator-badge" style="display: none;">📍 Slot Foto 1</div>
-                </div>
-
-                <!-- PANEL INTERAKTIF (GESER & ZOOM FOTO) -->
-                <div id="interactive-controls" class="adjust-control-panel" style="display: none;">
-                    <div style="font-size: 0.85rem; color: var(--color-text-main); line-height: 1.4;">
-                        👉 <strong>Geser/Drag foto</strong> di layar atas untuk pas-kan posisi pada layout.
-                    </div>
-                    <div class="adjust-slider-group">
-                        <span>Pilih Foto:</span>
-                        <select id="select-active-slot" class="form-select" style="padding: 6px 12px; font-size: 0.8rem;" onchange="InteractiveCanvasEngine.setActiveSlot(this.value)">
-                        </select>
-                    </div>
-                    <div class="adjust-slider-group">
-                        <span>🔍 Zoom:</span>
-                        <input type="range" id="zoom-slider" min="0.5" max="2.5" step="0.05" value="1" oninput="InteractiveCanvasEngine.updateZoom(this.value)">
-                    </div>
                 </div>
 
                 <div class="btn-group">
@@ -446,7 +426,7 @@
             },
 
             openGuestbookStep() {
-                InteractiveCanvasEngine.exportFinalImageBlob((blob) => {
+                AutoTwibbonEngine.exportFinalImageBlob((blob) => {
                     CameraEngine.finalMergedBlob = blob;
                     this.switchRoute('guestbook');
                 });
@@ -604,8 +584,7 @@
                     const video = document.getElementById('photo-camera-stream');
                     video.srcObject = this.stream;
                     video.style.display = 'block';
-                    document.getElementById('interactive-adjust-canvas').style.display = 'none';
-                    document.getElementById('interactive-controls').style.display = 'none';
+                    document.getElementById('auto-twibbon-canvas').style.display = 'none';
                     
                     this.updateSlotBadgeText();
 
@@ -667,7 +646,8 @@
                         this.updateSlotBadgeText();
                         alert(`Foto ke-${this.currentPoseIndex - 1} berhasil diambil! Bersiap untuk posisi berikutnya: ${this.slotPositionLabels[LayoutController.requiredPhotosCount][this.currentPoseIndex - 1] || 'Foto ' + this.currentPoseIndex}.`);
                     } else {
-                        InteractiveCanvasEngine.initializeAdjustStage(this.capturedBitmaps, LayoutController.selectedFrameUrl);
+                        // SETELAH SOKET PEMOTRETAN SELESAI, JALANKAN PROSES OTOMATIS GAYA TWIBBONIZE
+                        AutoTwibbonEngine.processTwibbonLayout(this.capturedBitmaps, LayoutController.selectedFrameUrl);
                     }
                 } catch(err) { alert("Gagal mengambil foto: " + err.message); }
             },
@@ -684,21 +664,16 @@
             }
         };
 
-        /* ENGINE CANVAS INTERAKTIF DENGAN ALGORITMA DETEKSI LUBANG HIGH-PRECISION & NOISE FILTER */
-        const InteractiveCanvasEngine = {
+        /* ENGINE AUTOMATIC TWIBBONIZE: AUTO-FIT, AUTO-CENTER & AUTO-CROP PER-LUBANG */
+        const AutoTwibbonEngine = {
             canvas: null,
             ctx: null,
             frameImg: null,
             bitmaps: [],
-            slotStates: [],
             detectedBoundingBoxes: [],
-            activeSlotIndex: 0,
-            isDragging: false,
-            dragStartX: 0,
-            dragStartY: 0,
 
-            async initializeAdjustStage(capturedBitmaps, frameUrl) {
-                this.canvas = document.getElementById('interactive-adjust-canvas');
+            async processTwibbonLayout(capturedBitmaps, frameUrl) {
+                this.canvas = document.getElementById('auto-twibbon-canvas');
                 this.ctx = this.canvas.getContext('2d');
                 this.bitmaps = capturedBitmaps;
 
@@ -722,36 +697,22 @@
                     this.canvas.height = 1920;
                 }
 
-                // MENJALANKAN DETEKSI PRESISI DENGAN THRESHOLD ALPHA & FILTER NOISE BARU
+                // ANALISIS DETEKSI PIKSEL LAYOUT UNTUK MENDAPATKAN AREA LUBANG TRANSPARAN
                 this.detectedBoundingBoxes = this.analyzeTransparentBoundingBoxes(this.frameImg, this.bitmaps.length);
 
-                this.slotStates = this.bitmaps.map(() => ({ offsetX: 0, offsetY: 0, scale: 1 }));
-                this.activeSlotIndex = 0;
-
-                const selectEl = document.getElementById('select-active-slot');
-                selectEl.innerHTML = '';
-                this.bitmaps.forEach((_, idx) => {
-                    const opt = document.createElement('option');
-                    opt.value = idx;
-                    opt.innerText = `Foto ${idx + 1}`;
-                    selectEl.appendChild(opt);
-                });
-
+                // SEMBUNYIKAN VIDEO STREAM & TAMPILKAN HASIL OTOMATIS TWIBBON
                 document.getElementById('photo-camera-stream').style.display = 'none';
                 this.canvas.style.display = 'block';
-                document.getElementById('interactive-controls').style.display = 'flex';
                 document.getElementById('photo-slot-badge').style.display = 'none';
                 
                 document.getElementById('btn-photo-snap').style.display = 'none';
                 document.getElementById('btn-photo-retake').style.display = 'inline-flex';
                 document.getElementById('btn-photo-accept').style.display = 'inline-flex';
-                document.getElementById('photo-session-title').innerText = `Atur & Pas-kan Foto Pada Layout`;
+                document.getElementById('photo-session-title').innerText = `Hasil Foto Berlayout`;
 
-                this.bindMouseAndTouchEvents();
                 this.render();
             },
 
-            // ALGORITMA BARU: PENINGKATAN PRESISI DETEKSI OPASITAS & FILTER NOISE BINGKAI
             analyzeTransparentBoundingBoxes(frameImg, poseCount) {
                 if (!frameImg) {
                     return this.getFallbackGridBoxes(poseCount, 1080, 1920);
@@ -788,11 +749,10 @@
                         let minX = endX, maxX = startX, minY = endY, maxY = startY;
                         let transparentPixelCount = 0;
 
-                        // PERBAIKAN: DETEKSI ALPHA HIGH SENSITIVITY (ALPHA < 240 MEMINIMALKAN SALAH DETEKSI ANTIALIASING)
                         for (let y = startY; y < endY; y += 2) {
                             for (let x = startX; x < endX; x += 2) {
                                 let alphaIndex = (y * w + x) * 4 + 3;
-                                if (data[alphaIndex] < 240) { // Anggap area transparan atau semitransparan
+                                if (data[alphaIndex] < 240) {
                                     if (x < minX) minX = x;
                                     if (x > maxX) maxX = x;
                                     if (y < minY) minY = y;
@@ -802,9 +762,7 @@
                             }
                         }
 
-                        // FILTER NOISE: HANYA TERIMA LUBANG JIKA TERDAPAT MINIMAL 100 PIKSEL TRANSPARAN TERDAPAT DI AREA TERSEBUT
                         if (transparentPixelCount > 100 && maxX > minX && maxY > minY) {
-                            // MEMBERIKAN TOKO PAD BORDER SEDIKIT AGAR SEGITIGA/LINGKARAN TIDAK TERPOTONG LEBIH AWAL
                             let boxW = maxX - minX;
                             let boxH = maxY - minY;
 
@@ -817,7 +775,6 @@
                                 centerY: minY + boxH / 2
                             });
                         } else {
-                            // FALLBACK BOUNDING GRID JIKA LAYOUT TIDAK MEMILIKI MASKING TRANSPARAN BERSIH
                             boxes.push({
                                 x: startX,
                                 y: startY,
@@ -909,103 +866,44 @@
                 return { x: clipX, y: clipY, width: clipW, height: clipH };
             },
 
-            setActiveSlot(index) {
-                this.activeSlotIndex = parseInt(index);
-                const currentScale = this.slotStates[this.activeSlotIndex].scale;
-                document.getElementById('zoom-slider').value = currentScale;
-            },
-
-            updateZoom(value) {
-                if (this.slotStates[this.activeSlotIndex]) {
-                    this.slotStates[this.activeSlotIndex].scale = parseFloat(value);
-                    this.render();
-                }
-            },
-
-            bindMouseAndTouchEvents() {
-                const getCoords = (e) => {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                    return {
-                        x: (clientX - rect.left) * (this.canvas.width / rect.width),
-                        y: (clientY - rect.top) * (this.canvas.height / rect.height)
-                    };
-                };
-
-                const startDrag = (e) => {
-                    this.isDragging = true;
-                    const c = getCoords(e);
-                    this.dragStartX = c.x;
-                    this.dragStartY = c.y;
-                    this.canvas.style.cursor = 'grabbing';
-                };
-
-                const moveDrag = (e) => {
-                    if (!this.isDragging) return;
-                    e.preventDefault();
-                    const c = getCoords(e);
-                    const dx = c.x - this.dragStartX;
-                    const dy = c.y - this.dragStartY;
-
-                    this.slotStates[this.activeSlotIndex].offsetX += dx;
-                    this.slotStates[this.activeSlotIndex].offsetY += dy;
-
-                    this.dragStartX = c.x;
-                    this.dragStartY = c.y;
-                    this.render();
-                };
-
-                const stopDrag = () => {
-                    this.isDragging = false;
-                    this.canvas.style.cursor = 'grab';
-                };
-
-                this.canvas.onmousedown = startDrag;
-                this.canvas.onmousemove = moveDrag;
-                window.onmouseup = stopDrag;
-
-                this.canvas.ontouchstart = startDrag;
-                this.canvas.ontouchmove = moveDrag;
-                window.ontouchend = stopDrag;
-            },
-
+            /* RENDERING OTOMATIS GAYA TWIBBONIZE */
             render() {
                 const totalCount = this.bitmaps.length;
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-                // 1. DOCKING FRAME DISAMPINGKAN TERLEBIH DAHULU KE LAPISAN ATAS KANVAS
+                // 1. GAMBAR BINGKAI LAYOUT FRAME PNG TRANSPARAN DI DEPAN
                 if (this.frameImg) {
                     this.ctx.drawImage(this.frameImg, 0, 0, this.canvas.width, this.canvas.height);
                     this.ctx.globalCompositeOperation = 'destination-over';
                 }
 
-                // 2. RENDERING FOTO SECARA RECURSIVE PADA SETIAP KOTAK LUBANG HASIL PROSES DETEKSI HIGH-SENSITIVITY
+                // 2. OTOMATISASI PENEMPATAN FOTO: AUTO-CENTER, AUTO-COVER & AUTO-CROP
                 this.bitmaps.forEach((bmp, idx) => {
                     const box = this.detectedBoundingBoxes[idx];
-                    const state = this.slotStates[idx];
                     const clipRect = this.calculateMidpointClipRect(idx, totalCount);
 
                     this.ctx.save();
                     
+                    // Batasi area potong foto sesuai midpoint spasi antar lubang
                     this.ctx.beginPath();
                     this.ctx.rect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
                     this.ctx.clip();
 
-                    this.ctx.translate(box.centerX + state.offsetX, box.centerY + state.offsetY);
-                    this.ctx.scale(-1, 1);
+                    // Posisikan foto tepat di titik tengah (Center) lubang
+                    this.ctx.translate(box.centerX, box.centerY);
+                    this.ctx.scale(-1, 1); // Mirroring kamera depan
 
-                    const baseScale = Math.max(box.width / bmp.width, box.height / bmp.height);
-                    const finalScale = baseScale * state.scale;
+                    // Hitung skala otomatis agar foto memenuhi area lubang secara presisi
+                    const scale = Math.max(box.width / bmp.width, box.height / bmp.height);
 
-                    const drawW = bmp.width * finalScale;
-                    const drawH = bmp.height * finalScale;
+                    const drawW = bmp.width * scale;
+                    const drawH = bmp.height * scale;
 
                     this.ctx.drawImage(bmp, -drawW / 2, -drawH / 2, drawW, drawH);
                     this.ctx.restore();
                 });
 
-                // 3. SET BACKGROUND WHITE UNDERNEATH
+                // 3. SELESAIKAN DENGAN LATAR BELAKANG PUTIH DI BELAKANG
                 this.ctx.globalCompositeOperation = 'destination-over';
                 this.ctx.fillStyle = "#ffffff";
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
