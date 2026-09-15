@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Photobooth Experience</title>
+    <title>Digital Photobooth</title>
 
     <!-- Supabase JS Client v2 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -145,9 +145,14 @@
         .modal-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-modal); max-width: 480px; width: 100%; padding: 28px; display: flex; flex-direction: column; gap: 18px; position: relative; }
         .modal-close-button { position: absolute; top: 16px; right: 16px; background: #f3ece1; border: none; color: var(--color-secondary); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; }
 
-        .color-picker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-        .color-picker-item { display: flex; align-items: center; justify-content: space-between; background: var(--color-surface-card); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); }
-        .color-picker-item input[type="color"] { border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; background: transparent; }
+        /* ADVANCED COLOR PICKER GRID & HEX INPUT STYLES */
+        .color-picker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+        .color-picker-item { display: flex; flex-direction: column; gap: 6px; background: var(--color-surface-card); padding: 12px; border-radius: 12px; border: 1px solid var(--color-border); }
+        .color-picker-label { font-size: 0.8rem; font-weight: 700; color: var(--color-text-main); }
+        .color-picker-controls { display: flex; align-items: center; gap: 8px; }
+        .color-picker-controls input[type="color"] { border: 1px solid var(--color-border); width: 40px; height: 40px; border-radius: 8px; cursor: pointer; background: transparent; padding: 2px; }
+        .color-picker-controls input[type="text"] { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--color-border); font-family: monospace; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; outline: none; transition: border-color var(--transition-speed); }
+        .color-picker-controls input[type="text"]:focus { border-color: var(--color-primary); background: var(--color-surface); }
 
         #error-screen { position: fixed; inset: 0; background: #fff; z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; }
     </style>
@@ -285,7 +290,7 @@
 
                 <div class="btn-group" style="margin-top: 6px;">
                     <button id="btn-submit-upload" class="btn btn-primary" style="padding: 16px; flex: 2;" onclick="UploadController.executeUploadProcess()">🚀 Kirim ke Digital Guestbook</button>
-                    <button id="btn-share-ig-guestbook" class="btn btn-instagram" style="padding: 16px; flex: 1.2;" onclick="SocialShareEngine.shareResultToInstagram()">📸 Bagikan ke IG Story</button>
+                    <button id="btn-share-ig-guestbook" class="btn btn-instagram" style="padding: 16px; flex: 1.2;" onclick="SocialShareEngine.shareResultToInstagram()">📸 Bagikan ke Social Media</button>
                 </div>
             </div>
         </section>
@@ -328,18 +333,28 @@
                         </div>
                     </div>
 
+                    <!-- ADVANCED COLOR PICKERS FOR COVER -->
                     <div class="color-picker-grid" style="margin-top: 14px;">
                         <div class="color-picker-item">
-                            <span style="font-size: 0.8rem; font-weight: 700;">Latar Cover</span>
-                            <input type="color" id="adm-color-bg-cover" value="#f7f2ea">
+                            <span class="color-picker-label">Latar Cover</span>
+                            <div class="color-picker-controls">
+                                <input type="color" id="adm-color-bg-cover" value="#f7f2ea" oninput="AdminEngine.syncColorInputs('adm-color-bg-cover', 'adm-color-bg-cover-hex')">
+                                <input type="text" id="adm-color-bg-cover-hex" value="#F7F2EA" maxlength="7" oninput="AdminEngine.syncHexInputs('adm-color-bg-cover-hex', 'adm-color-bg-cover')">
+                            </div>
                         </div>
                         <div class="color-picker-item">
-                            <span style="font-size: 0.8rem; font-weight: 700;">Warna Judul Cover</span>
-                            <input type="color" id="adm-color-title-cover" value="#e07a5f">
+                            <span class="color-picker-label">Warna Judul Cover</span>
+                            <div class="color-picker-controls">
+                                <input type="color" id="adm-color-title-cover" value="#e07a5f" oninput="AdminEngine.syncColorInputs('adm-color-title-cover', 'adm-color-title-cover-hex')">
+                                <input type="text" id="adm-color-title-cover-hex" value="#E07A5F" maxlength="7" oninput="AdminEngine.syncHexInputs('adm-color-title-cover-hex', 'adm-color-title-cover')">
+                            </div>
                         </div>
                         <div class="color-picker-item">
-                            <span style="font-size: 0.8rem; font-weight: 700;">Warna Subtitle Cover</span>
-                            <input type="color" id="adm-color-sub-cover" value="#8d7b68">
+                            <span class="color-picker-label">Warna Subtitle Cover</span>
+                            <div class="color-picker-controls">
+                                <input type="color" id="adm-color-sub-cover" value="#8d7b68" oninput="AdminEngine.syncColorInputs('adm-color-sub-cover', 'adm-color-sub-cover-hex')">
+                                <input type="text" id="adm-color-sub-cover-hex" value="#8D7B68" maxlength="7" oninput="AdminEngine.syncHexInputs('adm-color-sub-cover-hex', 'adm-color-sub-cover')">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -347,22 +362,35 @@
                 <!-- PENGATURAN TEMA APLIKASI -->
                 <div style="border: 1px solid var(--color-border); padding: 16px; border-radius: var(--radius-btn); background: var(--color-surface-card);">
                     <strong style="color: var(--color-primary); font-size: 0.95rem; display:block; margin-bottom: 12px;">🌈 Setting Tema Aplikasi Utama</strong>
+                    <!-- ADVANCED COLOR PICKERS FOR MAIN TEMA -->
                     <div class="color-picker-grid">
                         <div class="color-picker-item">
-                            <span style="font-size: 0.8rem; font-weight: 700;">Warna Akses Utama</span>
-                            <input type="color" id="adm-color-primary" value="#e07a5f">
+                            <span class="color-picker-label">Warna Aksen Utama</span>
+                            <div class="color-picker-controls">
+                                <input type="color" id="adm-color-primary" value="#e07a5f" oninput="AdminEngine.syncColorInputs('adm-color-primary', 'adm-color-primary-hex')">
+                                <input type="text" id="adm-color-primary-hex" value="#E07A5F" maxlength="7" oninput="AdminEngine.syncHexInputs('adm-color-primary-hex', 'adm-color-primary')">
+                            </div>
                         </div>
                         <div class="color-picker-item">
-                            <span style="font-size: 0.8rem; font-weight: 700;">Warna Sekunder</span>
-                            <input type="color" id="adm-color-secondary" value="#8d7b68">
+                            <span class="color-picker-label">Warna Sekunder</span>
+                            <div class="color-picker-controls">
+                                <input type="color" id="adm-color-secondary" value="#8d7b68" oninput="AdminEngine.syncColorInputs('adm-color-secondary', 'adm-color-secondary-hex')">
+                                <input type="text" id="adm-color-secondary-hex" value="#8D7B68" maxlength="7" oninput="AdminEngine.syncHexInputs('adm-color-secondary-hex', 'adm-color-secondary')">
+                            </div>
                         </div>
                         <div class="color-picker-item">
-                            <span style="font-size: 0.8rem; font-weight: 700;">Latar Belakang App</span>
-                            <input type="color" id="adm-color-bg-app" value="#faf7f2">
+                            <span class="color-picker-label">Latar Belakang App</span>
+                            <div class="color-picker-controls">
+                                <input type="color" id="adm-color-bg-app" value="#faf7f2" oninput="AdminEngine.syncColorInputs('adm-color-bg-app', 'adm-color-bg-app-hex')">
+                                <input type="text" id="adm-color-bg-app-hex" value="#FAF7F2" maxlength="7" oninput="AdminEngine.syncHexInputs('adm-color-bg-app-hex', 'adm-color-bg-app')">
+                            </div>
                         </div>
                         <div class="color-picker-item">
-                            <span style="font-size: 0.8rem; font-weight: 700;">Warna Kartu/Surface</span>
-                            <input type="color" id="adm-color-surface" value="#ffffff">
+                            <span class="color-picker-label">Warna Kartu/Surface</span>
+                            <div class="color-picker-controls">
+                                <input type="color" id="adm-color-surface" value="#ffffff" oninput="AdminEngine.syncColorInputs('adm-color-surface', 'adm-color-surface-hex')">
+                                <input type="text" id="adm-color-surface-hex" value="#FFFFFF" maxlength="7" oninput="AdminEngine.syncHexInputs('adm-color-surface-hex', 'adm-color-surface')">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -427,7 +455,7 @@
     </main>
 
     <footer>
-        Digital Photobooth Experience &copy; 2026.
+        Kayuna Digital Photobooth &copy; 2026.
     </footer>
 
     <!-- MODAL ADMIN LOGIN -->
@@ -1162,9 +1190,39 @@
             }
         };
 
-        /* ADMIN ENGINE (DATABASE STORED CONFIG) */
+        /* ADMIN ENGINE (DATABASE STORED CONFIG & COLOR SYNC) */
         const AdminEngine = {
             mediaItemsCache: [],
+
+            // Helper untuk mensinkronkan Color Picker ke Input HEX
+            syncColorInputs(colorInputId, hexInputId) {
+                const colorVal = document.getElementById(colorInputId).value;
+                document.getElementById(hexInputId).value = colorVal.toUpperCase();
+            },
+
+            // Helper untuk mensinkronkan Input HEX ke Color Picker
+            syncHexInputs(hexInputId, colorInputId) {
+                let hexVal = document.getElementById(hexInputId).value.trim();
+                if (!hexVal.startsWith('#')) {
+                    hexVal = '#' + hexVal;
+                }
+                const isValidHex = /^#([0-9A-F]{3}){1,2}$/i.test(hexVal);
+                if (isValidHex) {
+                    document.getElementById(colorInputId).value = hexVal;
+                }
+            },
+
+            // Setel nilai secara terpadu untuk Picker & HEX
+            setColorValue(colorInputId, hexInputId, val) {
+                if (!val) return;
+                let formattedHex = val.trim();
+                if (!formattedHex.startsWith('#')) formattedHex = '#' + formattedHex;
+                
+                const picker = document.getElementById(colorInputId);
+                const hexField = document.getElementById(hexInputId);
+                if (picker) picker.value = formattedHex;
+                if (hexField) hexField.value = formattedHex.toUpperCase();
+            },
 
             async loadDashboard() {
                 this.loadAdminFrames();
@@ -1192,31 +1250,31 @@
                         if (st.polaroid_url) document.getElementById('display-cover-image').src = st.polaroid_url;
 
                         if (st.color_bg_cover) {
-                            document.getElementById('adm-color-bg-cover').value = st.color_bg_cover;
+                            this.setColorValue('adm-color-bg-cover', 'adm-color-bg-cover-hex', st.color_bg_cover);
                             document.documentElement.style.setProperty('--color-bg-cover', st.color_bg_cover);
                         }
                         if (st.color_title_cover) {
-                            document.getElementById('adm-color-title-cover').value = st.color_title_cover;
+                            this.setColorValue('adm-color-title-cover', 'adm-color-title-cover-hex', st.color_title_cover);
                             document.documentElement.style.setProperty('--color-text-cover-title', st.color_title_cover);
                         }
                         if (st.color_sub_cover) {
-                            document.getElementById('adm-color-sub-cover').value = st.color_sub_cover;
+                            this.setColorValue('adm-color-sub-cover', 'adm-color-sub-cover-hex', st.color_sub_cover);
                             document.documentElement.style.setProperty('--color-text-cover-sub', st.color_sub_cover);
                         }
                         if (st.color_primary) {
-                            document.getElementById('adm-color-primary').value = st.color_primary;
+                            this.setColorValue('adm-color-primary', 'adm-color-primary-hex', st.color_primary);
                             document.documentElement.style.setProperty('--color-primary', st.color_primary);
                         }
                         if (st.color_secondary) {
-                            document.getElementById('adm-color-secondary').value = st.color_secondary;
+                            this.setColorValue('adm-color-secondary', 'adm-color-secondary-hex', st.color_secondary);
                             document.documentElement.style.setProperty('--color-secondary', st.color_secondary);
                         }
                         if (st.color_bg_app) {
-                            document.getElementById('adm-color-bg-app').value = st.color_bg_app;
+                            this.setColorValue('adm-color-bg-app', 'adm-color-bg-app-hex', st.color_bg_app);
                             document.documentElement.style.setProperty('--color-bg-app', st.color_bg_app);
                         }
                         if (st.color_surface) {
-                            document.getElementById('adm-color-surface').value = st.color_surface;
+                            this.setColorValue('adm-color-surface', 'adm-color-surface-hex', st.color_surface);
                             document.documentElement.style.setProperty('--color-surface', st.color_surface);
                         }
                     }
