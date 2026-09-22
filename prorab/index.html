@@ -553,12 +553,19 @@
                         </div>
                     </div>
 
-                    <div class="bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl space-y-2">
+                    <!-- TOGGLE BUTTON FITUR INFLASI HSD -->
+                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+                        <button type="button" onclick="toggleInflasiHsdPanel()" class="text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-1.5 focus:outline-none">
+                            <span>📈</span> <span id="lblToggleHsdInflasi">Tampilkan Fitur Penyesuaian Harga Inflasi</span>
+                        </button>
+                        <span id="lblHsdSelectedCountInfo" class="text-[9px] text-blue-600 font-medium">*0 item diceklis</span>
+                    </div>
+
+                    <div id="panelInflasiHsd" class="hidden bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl space-y-2">
                         <div class="flex justify-between items-center">
                             <label class="text-[10px] font-bold text-blue-900 uppercase flex items-center gap-1">
                                 <span>📈</span> Penyesuaian Harga Inflasi (%)
                             </label>
-                            <span class="text-[9px] text-blue-600 font-medium" id="lblHsdSelectedCountInfo">*0 item diceklis</span>
                         </div>
                         <div class="flex gap-2 items-center">
                             <div class="relative flex-1">
@@ -685,7 +692,14 @@
                         </div>
                     </div>
 
-                    <div class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-xl space-y-2">
+                    <!-- TOGGLE BUTTON FITUR OVERHEAD AHSP MASSAL -->
+                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+                        <button type="button" onclick="toggleOverheadAhspPanel()" class="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1.5 focus:outline-none">
+                            <span>🏷️</span> <span id="lblToggleAhspOverhead">Tampilkan Fitur Ubah Overhead AHSP Massal</span>
+                        </button>
+                    </div>
+
+                    <div id="panelOverheadAhsp" class="hidden bg-amber-50/80 border border-amber-200 p-2.5 rounded-xl space-y-2">
                         <div class="flex justify-between items-center">
                             <label class="text-[10px] font-bold text-amber-900 uppercase flex items-center gap-1">
                                 <span>🏷️</span> Ubah Overhead AHSP Massal (%)
@@ -1249,6 +1263,32 @@
         let pageHsdCurrent = 1; const pageHsdSize = 10;
         let pageAhspCurrent = 1; const pageAhspSize = 10;
         let activeBuilderInputTarget = null;
+
+        // FUNGSI TOGGLE PANEL INFLASI HSD
+        function toggleInflasiHsdPanel() {
+            const panel = document.getElementById('panelInflasiHsd');
+            const lbl = document.getElementById('lblToggleHsdInflasi');
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                lbl.innerText = "Sembunyikan Fitur Penyesuaian Harga Inflasi";
+            } else {
+                panel.classList.add('hidden');
+                lbl.innerText = "Tampilkan Fitur Penyesuaian Harga Inflasi";
+            }
+        }
+
+        // FUNGSI TOGGLE PANEL OVERHEAD AHSP
+        function toggleOverheadAhspPanel() {
+            const panel = document.getElementById('panelOverheadAhsp');
+            const lbl = document.getElementById('lblToggleAhspOverhead');
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                lbl.innerText = "Sembunyikan Fitur Ubah Overhead AHSP Massal";
+            } else {
+                panel.classList.add('hidden');
+                lbl.innerText = "Tampilkan Fitur Ubah Overhead AHSP Massal";
+            }
+        }
 
         // SAFE PARSE UTILITY FUNCTION
         function safeJSONParse(val, fallback) {
@@ -2677,7 +2717,6 @@
             }
         }
 
-        // PERBAIKAN KOLOM REFERENSI: MENAMPILKAN TEKS/ANGKA BIASA ATAU TAUTAN LINK JIKA BERUPA URL
         function renderTabelMonitorHSD(targetPage = pageHsdCurrent) {
             const keyword = (document.getElementById('searchHsdInput').value || "").toLowerCase().trim();
             let filtered = listHSDMaster.filter(item => 
