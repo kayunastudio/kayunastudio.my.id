@@ -26,6 +26,11 @@
             break-before: page !important;
         }
 
+        .page-break-inside-avoid {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
         .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
@@ -335,8 +340,8 @@
                                     <h2 class="text-xs font-black uppercase tracking-widest">REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)</h2>
                                 </div>
 
-                                <div class="overflow-x-auto custom-scroll">
-                                    <table class="w-full text-left border-collapse text-xs min-w-[450px]">
+                                <div>
+                                    <table class="w-full text-left border-collapse text-xs">
                                         <thead>
                                             <tr class="bg-slate-100 text-slate-700 font-bold border-y-2 border-slate-300 text-[10px] uppercase tracking-wider">
                                                 <th class="p-2.5 w-12 text-center">NO</th>
@@ -368,13 +373,13 @@
                                     </table>
                                 </div>
 
-                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs page-break-inside-avoid">
                                     <span class="font-bold text-slate-500 uppercase text-[10px] block">TERBILANG:</span>
                                     <p id="txtTerbilangTotal" class="font-bold italic text-slate-800 mt-0.5">Nol Rupiah</p>
                                 </div>
                             </div>
 
-                            <div class="pt-6 border-t border-slate-200 flex justify-end">
+                            <div class="pt-6 border-t border-slate-200 flex justify-end page-break-inside-avoid">
                                 <div class="text-center w-48 sm:w-64 space-y-12">
                                     <div>
                                         <p id="txtKotaTanggalTTD" class="text-xs text-slate-600 font-medium">Bandung, 10 Agustus 2026</p>
@@ -399,8 +404,8 @@
                                 <span class="lblFooterCompanyName text-[10px] font-mono text-slate-400">Kayuna Studio</span>
                             </div>
 
-                            <div class="overflow-x-auto custom-scroll">
-                                <table class="w-full text-left border-collapse text-xs min-w-[600px]">
+                            <div>
+                                <table class="w-full text-left border-collapse text-xs">
                                     <thead>
                                         <tr class="bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider">
                                             <th class="p-2 w-8 text-center">NO</th>
@@ -448,8 +453,8 @@
                                 </div>
                             </div>
 
-                            <div class="overflow-x-auto custom-scroll">
-                                <table class="w-full text-left border-collapse text-xs min-w-[650px]">
+                            <div>
+                                <table class="w-full text-left border-collapse text-xs">
                                     <thead>
                                         <tr class="bg-slate-800 text-white font-bold text-[10px] uppercase tracking-wider">
                                             <th class="p-2 w-8 text-center">NO</th>
@@ -577,7 +582,7 @@
                     </div>
 
                     <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
-                        <table class="w-full text-left border-collapse text-xs min-w-[550px]">
+                        <table class="w-full text-left border-collapse text-xs min-w-[650px]">
                             <thead class="sticky top-0 bg-slate-100 text-slate-700 font-bold text-[10px] uppercase shadow-sm">
                                 <tr>
                                     <th class="p-2 border-b bg-slate-100 text-center w-8">
@@ -588,11 +593,12 @@
                                     <th class="p-2 border-b bg-slate-100 text-center">SAT</th>
                                     <th class="p-2 border-b bg-slate-100 text-right">HARGA (RP)</th>
                                     <th class="p-2 border-b bg-slate-100 text-center">LOKASI</th>
+                                    <th class="p-2 border-b bg-slate-100 text-center">REFERENSI</th>
                                     <th class="p-2 border-b bg-slate-100 text-center w-28">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelMasterHSDMasterRows" class="divide-y divide-slate-200 font-medium text-slate-700">
-                                <tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
+                                <tr><td colspan="8" class="p-4 text-center text-slate-400 italic">Memuat database Supabase...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1244,7 +1250,7 @@
         let pageAhspCurrent = 1; const pageAhspSize = 10;
         let activeBuilderInputTarget = null;
 
-        // SAFE PARSE UTILITY FUNCTION (CEGAH CRASH PARSING JSON NULL)
+        // SAFE PARSE UTILITY FUNCTION
         function safeJSONParse(val, fallback) {
             if (!val) return fallback;
             if (typeof val === 'object') return val;
@@ -1592,6 +1598,7 @@
                         reKalkulasiBQProyekAktif();
                         renderBQDanRekapitulasi(proyekAktif.data_bq || []);
                         renderLampiranHSDProyek();
+                        renderLampiranAHSPProyek();
                         renderTabelLaporanHarian();
                     } else {
                         unselectProyek();
@@ -1975,6 +1982,7 @@
             reKalkulasiBQProyekAktif();
             renderBQDanRekapitulasi(proyekAktif.data_bq || []);
             renderLampiranHSDProyek();
+            renderLampiranAHSPProyek();
             renderTabelLaporanHarian();
             showToast(`Proyek "${proyekAktif.nama_proyek}" dipilih`);
         }
@@ -1998,6 +2006,7 @@
             ['btnSimpanItem', 'btnSimpanLsItem', 'btnSimpanDaily'].forEach(el => document.getElementById(el).disabled = true);
             renderDaftarProyekKartu(); renderBQDanRekapitulasi([]); renderTabelLaporanHarian();
             document.getElementById('tabelLampiranHSDDetailRows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek untuk melihat rincian HSD terpakai.</td></tr>`;
+            document.getElementById('containerLampiranAHSPDetail').innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Pilih proyek untuk melihat rincian koefisien AHSP.</p>`;
         }
 
         function hitungPreviewHargaItem() { document.getElementById('txtSubtotalPreview').innerText = "Rp " + ((parseFloat(document.getElementById('inpVolume').value)||0) * (parseFloat(document.getElementById('inpHargaSatuan').value)||0)).toLocaleString('id-ID'); }
@@ -2088,6 +2097,95 @@
             document.getElementById('txtTerbilangTotal').innerText = terbilangRupiah(grandTotalPlusPPN);
         }
 
+        // FUNGSI BARU: MENGHASILKAN RINCIAN LAMPIRAN AHSP PADA DASHBOARD KETIKA PROYEK DIPILIH
+        function renderLampiranAHSPProyek() {
+            const container = document.getElementById('containerLampiranAHSPDetail');
+            if(!container) return;
+            container.innerHTML = "";
+
+            if (!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Pilih proyek untuk melihat rincian koefisien AHSP.</p>`;
+                return;
+            }
+
+            let loc = (proyekAktif.lokasi || "").toLowerCase();
+            let html = "";
+            let count = 1;
+
+            proyekAktif.data_bq.forEach(bq => {
+                if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM') {
+                    let masterAhsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if (masterAhsp) {
+                        html += `
+                            <div class="bg-slate-50 border border-slate-300 rounded-xl p-3 space-y-2 mb-4 page-break-inside-avoid shadow-sm">
+                                <h4 class="font-bold text-xs text-slate-800 uppercase border-b border-slate-300 pb-1.5 mb-2 flex justify-between items-center">
+                                    <span>${count}. ${bq.sub}</span>
+                                    <span class="bg-slate-200 text-slate-700 px-2 rounded text-[10px]">${bq.kode_ahsp} | Sat: ${bq.sat}</span>
+                                </h4>
+                                <table class="w-full text-[10px] border-collapse bg-white">
+                                    <thead class="bg-slate-200 text-slate-700">
+                                        <tr>
+                                            <th class="border border-slate-300 p-1.5 w-12 text-center">TIPE</th>
+                                            <th class="border border-slate-300 p-1.5 w-16 text-center">KODE</th>
+                                            <th class="border border-slate-300 p-1.5 text-left">URAIAN KOMPONEN</th>
+                                            <th class="border border-slate-300 p-1.5 w-12 text-center">SAT</th>
+                                            <th class="border border-slate-300 p-1.5 w-16 text-center">KOEF</th>
+                                            <th class="border border-slate-300 p-1.5 w-24 text-right">HARGA (RP)</th>
+                                            <th class="border border-slate-300 p-1.5 w-28 text-right">JUMLAH (RP)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-slate-800 font-medium">`;
+                        
+                        let comp = safeJSONParse(masterAhsp.komponen_json, []);
+                        let totalDasar = 0;
+                        
+                        comp.forEach(c => {
+                            let hrg = cariHargaHSD(c, loc, true);
+                            let sub = parseFloat(c.koefisien) * hrg;
+                            totalDasar += sub;
+                            html += `
+                                <tr>
+                                    <td class="border border-slate-300 p-1.5 text-center font-bold">${c.tipe}</td>
+                                    <td class="border border-slate-300 p-1.5 text-center font-mono text-blue-600">${c.kode || '-'}</td>
+                                    <td class="border border-slate-300 p-1.5">${c.uraian}</td>
+                                    <td class="border border-slate-300 p-1.5 text-center font-mono">${c.satuan}</td>
+                                    <td class="border border-slate-300 p-1.5 text-center font-mono">${c.koefisien}</td>
+                                    <td class="border border-slate-300 p-1.5 text-right font-mono">Rp ${hrg.toLocaleString('id-ID')}</td>
+                                    <td class="border border-slate-300 p-1.5 text-right font-mono">Rp ${sub.toLocaleString('id-ID')}</td>
+                                </tr>`;
+                        });
+
+                        let oh = totalDasar * (parseFloat(masterAhsp.overhead_persen || 12) / 100);
+                        let final = totalDasar + oh;
+                        
+                        html += `
+                                    <tr class="bg-slate-100 font-bold">
+                                        <td colspan="6" class="border border-slate-300 p-1.5 text-right uppercase">JUMLAH BIAYA (TENAGA, BAHAN, ALAT)</td>
+                                        <td class="border border-slate-300 p-1.5 text-right font-mono">Rp ${Math.round(totalDasar).toLocaleString('id-ID')}</td>
+                                    </tr>
+                                    <tr class="bg-slate-100 font-bold">
+                                        <td colspan="6" class="border border-slate-300 p-1.5 text-right uppercase">OVERHEAD & PROFIT (${masterAhsp.overhead_persen || 12}%)</td>
+                                        <td class="border border-slate-300 p-1.5 text-right font-mono">Rp ${Math.round(oh).toLocaleString('id-ID')}</td>
+                                    </tr>
+                                    <tr class="bg-amber-100 font-bold">
+                                        <td colspan="6" class="border border-slate-300 p-1.5 text-right uppercase">HARGA SATUAN PEKERJAAN</td>
+                                        <td class="border border-slate-300 p-1.5 text-right font-mono text-amber-700">Rp ${Math.round(final).toLocaleString('id-ID')}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>`;
+                        count++;
+                    }
+                }
+            });
+
+            if (html === "") {
+                html = `<p class="text-xs text-slate-400 italic text-center py-4">Tidak ada AHSP standar pada BQ ini (Hanya Pekerjaan Lumpsum / Custom).</p>`;
+            }
+
+            container.innerHTML = html;
+        }
+
         function renderLampiranHSDProyek() {
             const tbody = document.getElementById('tabelLampiranHSDDetailRows');
             if(!tbody) return;
@@ -2134,7 +2232,7 @@
             listUsed.forEach((item, idx) => {
                 let currentVal = item.harga;
                 tbody.innerHTML += `
-                    <tr class="border-b hover:bg-slate-50 transition row-hsd-lampiran" data-originalkey="${item.keyOriginal}">
+                    <tr class="border-b hover:bg-slate-50 transition row-hsd-lampiran page-break-inside-avoid" data-originalkey="${item.keyOriginal}">
                         <td class="p-2 text-center">${idx + 1}</td>
                         <td class="p-2 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-700">${item.tipe}</span></td>
                         <td class="p-2 font-mono font-bold text-blue-600 cell-hsd-kode">${item.kode}</td>
@@ -2308,7 +2406,7 @@
                 if(startStr && startStr < minDateStr) minDateStr = startStr;
                 if(finishStr && finishStr > maxDateStr) maxDateStr = finishStr;
 
-                let sch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId);
+                let sch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && String(s.id_bq) === String(bqId));
                 let prog = sch ? parseFloat(sch.progress_persen || 0) : 0;
 
                 taskList.push({ name, startStr, finishStr, prog });
@@ -2369,7 +2467,7 @@
 
                 tasks.push({ bobot: bobot, start: new Date(startStr), finish: new Date(finishStr), durationDays: dur });
 
-                let sch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == r.dataset.bqid);
+                let sch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && String(s.id_bq) === String(r.dataset.bqid));
                 totalProgressRealAcc += ((sch ? parseFloat(sch.progress_persen || 0) : 0) / 100) * bobot;
             });
 
@@ -2450,7 +2548,7 @@
         function bukaModalTrackingReal(bqId) {
             const tr = document.querySelector(`.row-schedule-item[data-bqid="${bqId}"]`);
             if(!tr) return;
-            let sch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && s.id_bq == bqId) || {};
+            let sch = listScheduleMaster.find(s => s.id_proyek === proyekAktif.id && String(s.id_bq) === String(bqId)) || {};
             document.getElementById('trackBqId').value = bqId;
             document.getElementById('modalTrackingTaskName').innerText = tr.dataset.sub;
             document.getElementById('trackActualStart').value = sch.actual_start || tr.querySelector('.inp-sch-start').value;
@@ -2530,7 +2628,7 @@
                     tgl_mulai: r.querySelector('.inp-sch-start').value, 
                     tgl_selesai: r.querySelector('.inp-sch-finish').value,
                     predecessor: r.querySelector('.inp-sch-pred').value || '-', 
-                    progress_persen: parseFloat(existingSch.progress_persen) || 0,
+                    progress_persen: Number(existingSch.progress_persen) || 0,
                     status: existingSch.status || 'Not Started', 
                     actual_start: existingSch.actual_start || null, 
                     actual_finish: existingSch.actual_finish || null,
@@ -2597,7 +2695,7 @@
             tbody.innerHTML = "";
 
             if (displayList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Data HSD kosong atau tidak ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400 italic">Data HSD kosong atau tidak ditemukan.</td></tr>`;
             } else {
                 displayList.forEach(item => {
                     const isChecked = selectedHsdKodeSet.has(item.kode) ? 'checked' : '';
@@ -2609,6 +2707,9 @@
                             <td class="p-2 text-center font-mono">${item.satuan}</td>
                             <td class="p-2 text-right font-mono font-bold">Rp ${parseFloat(item.harga || 0).toLocaleString('id-ID')}</td>
                             <td class="p-2 text-center">${item.lokasi || '-'}</td>
+                            <td class="p-2 text-center truncate max-w-[100px]" title="${item.referensi || ''}">
+                                ${item.referensi ? `<a href="${item.referensi}" target="_blank" class="text-blue-500 hover:underline">Link</a>` : '-'}
+                            </td>
                             <td class="p-2 text-center">
                                 <button onclick="duplikatHSD('${item.kode}')" class="text-blue-500 hover:text-blue-600 px-1" title="Duplikat Item">📋</button>
                                 <button onclick="editHSD('${item.kode}')" class="text-amber-500 hover:text-amber-600 px-1" title="Edit Item">✏️</button>
@@ -2863,68 +2964,144 @@
 
         function exportToPDFSummary() {
             if(!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
+            
+            showToast("Menyiapkan dokumen PDF, harap tunggu...", "success", 4000);
             const element = document.getElementById('exportArea');
             element.classList.add('p-8');
+            
             const opt = {
                 margin: [10, 10, 10, 10],
                 filename: `RAB_${proyekAktif.nama_proyek.replace(/\s+/g, '_')}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas: { scale: 2, useCORS: true, windowWidth: 1200 }, 
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
             };
+            
             html2pdf().set(opt).from(element).save().then(() => element.classList.remove('p-8'));
         }
 
         function exportToExcelSummary() {
             if(!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
-            const bqData = proyekAktif.data_bq || [];
-            let excelData = [
-                ["RENCANA ANGGARAN BIAYA (RAB)"],
-                ["Nama Proyek:", proyekAktif.nama_proyek],
-                ["Klien:", proyekAktif.pemilik],
-                ["Lokasi:", proyekAktif.lokasi],
+            
+            const wb = XLSX.utils.book_new();
+
+            // SHEET 1: REKAPITULASI DPA
+            let rekapMap = {}; let totalKasar = 0;
+            (proyekAktif.data_bq || []).forEach(item => {
+                let sub = item.vol * item.hargaSatuan; totalKasar += sub;
+                rekapMap[item.kategori] = (rekapMap[item.kategori] || 0) + sub;
+            });
+            
+            let wsRekapData = [
+                ["REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)"],
+                ["Nama Proyek", ":", proyekAktif.nama_proyek],
+                ["Klien", ":", proyekAktif.pemilik],
+                ["Lokasi", ":", proyekAktif.lokasi],
                 [],
-                ["NO", "KATEGORI / URAIAN PEKERJAAN", "VOLUME", "SATUAN", "HARGA SATUAN (RP)", "TOTAL BIAYA (RP)"]
+                ["NO", "DIVISI PEKERJAAN UTAMA", "JUMLAH HARGA (RP)", "% BOBOT"]
             ];
             
-            let total = 0;
-            bqData.forEach((item, index) => {
-                const sub = item.vol * item.hargaSatuan;
-                total += sub;
-                excelData.push([index + 1, `[${item.kategori}] ${item.sub}`, item.vol, item.sat, item.hargaSatuan, sub]);
+            let idxRekap = 1;
+            for (const [kat, sumDiv] of Object.entries(rekapMap)) {
+                let bobot = totalKasar > 0 ? ((sumDiv / totalKasar) * 100).toFixed(2) : 0;
+                wsRekapData.push([idxRekap++, kat, sumDiv, `${bobot}%`]);
+            }
+            const ppn = totalKasar * 0.11;
+            wsRekapData.push([], ["", "JUMLAH (DPA):", totalKasar, "100%"]);
+            wsRekapData.push(["", "PPN 11%:", ppn, ""]);
+            wsRekapData.push(["", "TOTAL BIAYA + PPN:", totalKasar + ppn, ""]);
+            
+            let wsRekap = XLSX.utils.aoa_to_sheet(wsRekapData);
+            XLSX.utils.book_append_sheet(wb, wsRekap, "1. Rekapitulasi");
+
+            // SHEET 2: BQ
+            let wsBqData = [
+                ["LAMPIRAN 1: BILL OF QUANTITIES (BQ)"],
+                [],
+                ["NO", "DIVISI / URAIAN PEKERJAAN", "VOLUME", "SAT", "HARGA SAT. (RP)", "TOTAL BIAYA (RP)"]
+            ];
+            (proyekAktif.data_bq || []).forEach((item, index) => {
+                let sub = item.vol * item.hargaSatuan;
+                wsBqData.push([index + 1, `[${item.kategori}] ${item.sub}`, item.vol, item.sat, item.hargaSatuan, sub]);
+            });
+            let wsBq = XLSX.utils.aoa_to_sheet(wsBqData);
+            XLSX.utils.book_append_sheet(wb, wsBq, "2. BQ");
+
+            // SHEET 3: DETAIL AHSP
+            let wsAhspData = [
+                ["LAMPIRAN 2: DETAIL ANALISA AHSP"]
+            ];
+            let countAhsp = 1;
+            let loc = (proyekAktif.lokasi || "").toLowerCase();
+            
+            (proyekAktif.data_bq || []).forEach(bq => {
+                if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM') {
+                    let masterAhsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if(masterAhsp) {
+                        wsAhspData.push([]);
+                        wsAhspData.push([`${countAhsp}. ${bq.sub} (${bq.kode_ahsp})`]);
+                        wsAhspData.push(["TIPE", "KODE", "URAIAN KOMPONEN", "SAT", "KOEFISIEN", "HARGA (RP)", "JUMLAH (RP)"]);
+                        
+                        let comp = safeJSONParse(masterAhsp.komponen_json, []);
+                        let totalDasar = 0;
+                        comp.forEach(c => {
+                            let hrg = cariHargaHSD(c, loc, true);
+                            let sub = parseFloat(c.koefisien) * hrg;
+                            totalDasar += sub;
+                            wsAhspData.push([c.tipe, c.kode || '-', c.uraian, c.satuan, c.koefisien, hrg, sub]);
+                        });
+                        let oh = totalDasar * (parseFloat(masterAhsp.overhead_persen || 12) / 100);
+                        wsAhspData.push(["", "", "", "", "", "JUMLAH BIAYA", totalDasar]);
+                        wsAhspData.push(["", "", "", "", "", `OVERHEAD (${masterAhsp.overhead_persen || 12}%)`, oh]);
+                        wsAhspData.push(["", "", "", "", "", "HARGA SATUAN PEKERJAAN", totalDasar + oh]);
+                        countAhsp++;
+                    }
+                }
+            });
+            let wsAhsp = XLSX.utils.aoa_to_sheet(wsAhspData);
+            XLSX.utils.book_append_sheet(wb, wsAhsp, "3. Analisa AHSP");
+
+            // SHEET 4: HSD TERPAKAI
+            let wsHsdData = [
+                ["LAMPIRAN 3: DAFTAR HSD TERPAKAI"],
+                [],
+                ["NO", "TIPE", "KODE", "NAMA ITEM", "SATUAN", "HARGA SAT. PROYEK (RP)", "LOKASI"]
+            ];
+            
+            let mapHsd = {};
+            (proyekAktif.data_bq || []).forEach(bq => {
+                if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM') {
+                    let masterAhsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if (masterAhsp) {
+                        let comp = safeJSONParse(masterAhsp.komponen_json, []);
+                        comp.forEach(c => {
+                            let hsdObj = cariHsdObjectLengkap(c, loc, true);
+                            let key = (c.kode || c.uraian || "").trim().toLowerCase();
+                            if (hsdObj && !mapHsd[key]) {
+                                mapHsd[key] = {
+                                    kode: c.kode || hsdObj.kode || '-',
+                                    nama: c.uraian || hsdObj.nama_item || hsdObj.uraian,
+                                    satuan: c.satuan || hsdObj.satuan,
+                                    harga: cariHargaHSD(c, loc, true),
+                                    tipe: c.tipe || hsdObj.tipe || 'Bahan',
+                                    lokasi: hsdObj.lokasi || 'Nasional'
+                                };
+                            }
+                        });
+                    }
+                }
             });
             
-            excelData.push([]);
-            excelData.push(["", "", "", "", "TOTAL DPA:", total]);
-            excelData.push(["", "", "", "", "PPN 11%:", total * 0.11]);
-            excelData.push(["", "", "", "", "GRAND TOTAL:", total * 1.11]);
+            let hsdIdx = 1;
+            Object.values(mapHsd).forEach(hsd => {
+                wsHsdData.push([hsdIdx++, hsd.tipe, hsd.kode, hsd.nama, hsd.satuan, hsd.harga, hsd.lokasi]);
+            });
+            
+            let wsHsd = XLSX.utils.aoa_to_sheet(wsHsdData);
+            XLSX.utils.book_append_sheet(wb, wsHsd, "4. Daftar HSD");
 
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "RAB Proyek");
             XLSX.writeFile(wb, `RAB_${proyekAktif.nama_proyek.replace(/\s+/g, '_')}.xlsx`);
-        }
-
-        function exportMasterHSD() {
-            let data = [["KODE", "NAMA ITEM", "SATUAN", "HARGA (RP)", "LOKASI", "REFERENSI"]];
-            listHSDMaster.forEach(item => {
-                data.push([item.kode, item.nama_item || item.uraian, item.satuan, item.harga, item.lokasi, item.referensi]);
-            });
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Master HSD");
-            XLSX.writeFile(wb, "Master_Data_HSD.xlsx");
-        }
-
-        function exportMasterAHSP() {
-            let data = [["KODE", "NAMA PEKERJAAN", "KATEGORI", "SATUAN", "OVERHEAD (%)"]];
-            listAHSPMaster.forEach(item => {
-                data.push([item.kode_ahsp, item.nama_pekerjaan, item.kategori, item.satuan, item.overhead_persen]);
-            });
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Master AHSP");
-            XLSX.writeFile(wb, "Master_Data_AHSP.xlsx");
         }
 
         function bukaModalBuatProyek() {
