@@ -526,7 +526,7 @@
 
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">No. Halaman / Link Referensi <span class="text-[9px] text-slate-400 font-normal">(Opsional)</span></label>
-                            <input type="text" id="addHsdReferensi" placeholder="Contoh: https://katalog-harga.com/semen" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium text-slate-700">
+                            <input type="text" id="addHsdReferensi" placeholder="Contoh: https://katalog-harga.com/semen atau Hal 12" class="w-full border border-slate-200 p-2 text-xs rounded-lg bg-slate-50 font-medium text-slate-700">
                         </div>
 
                         <div class="flex gap-2">
@@ -2097,7 +2097,6 @@
             document.getElementById('txtTerbilangTotal').innerText = terbilangRupiah(grandTotalPlusPPN);
         }
 
-        // FUNGSI BARU: MENGHASILKAN RINCIAN LAMPIRAN AHSP PADA DASHBOARD KETIKA PROYEK DIPILIH
         function renderLampiranAHSPProyek() {
             const container = document.getElementById('containerLampiranAHSPDetail');
             if(!container) return;
@@ -2678,6 +2677,7 @@
             }
         }
 
+        // PERBAIKAN KOLOM REFERENSI: MENAMPILKAN TEKS/ANGKA BIASA ATAU TAUTAN LINK JIKA BERUPA URL
         function renderTabelMonitorHSD(targetPage = pageHsdCurrent) {
             const keyword = (document.getElementById('searchHsdInput').value || "").toLowerCase().trim();
             let filtered = listHSDMaster.filter(item => 
@@ -2699,6 +2699,16 @@
             } else {
                 displayList.forEach(item => {
                     const isChecked = selectedHsdKodeSet.has(item.kode) ? 'checked' : '';
+                    let refContent = '-';
+                    if (item.referensi && item.referensi.trim() !== '') {
+                        let refStr = item.referensi.trim();
+                        if (refStr.startsWith('http://') || refStr.startsWith('https://')) {
+                            refContent = `<a href="${refStr}" target="_blank" class="text-blue-500 font-bold hover:underline">Link Tautan</a>`;
+                        } else {
+                            refContent = `<span class="font-medium text-slate-700">${refStr}</span>`;
+                        }
+                    }
+
                     tbody.innerHTML += `
                         <tr class="border-b hover:bg-slate-50 transition">
                             <td class="p-2 text-center"><input type="checkbox" class="chk-hsd-item" value="${item.kode}" onchange="toggleSelectRowHSD(this)" ${isChecked}></td>
@@ -2707,8 +2717,8 @@
                             <td class="p-2 text-center font-mono">${item.satuan}</td>
                             <td class="p-2 text-right font-mono font-bold">Rp ${parseFloat(item.harga || 0).toLocaleString('id-ID')}</td>
                             <td class="p-2 text-center">${item.lokasi || '-'}</td>
-                            <td class="p-2 text-center truncate max-w-[100px]" title="${item.referensi || ''}">
-                                ${item.referensi ? `<a href="${item.referensi}" target="_blank" class="text-blue-500 hover:underline">Link</a>` : '-'}
+                            <td class="p-2 text-center truncate max-w-[120px]" title="${item.referensi || ''}">
+                                ${refContent}
                             </td>
                             <td class="p-2 text-center">
                                 <button onclick="duplikatHSD('${item.kode}')" class="text-blue-500 hover:text-blue-600 px-1" title="Duplikat Item">📋</button>
