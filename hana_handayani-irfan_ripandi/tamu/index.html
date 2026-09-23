@@ -116,6 +116,7 @@
             text-align: left;
         }
         th { background-color: #4A5D4E; color: white; }
+        
         .btn-send {
             background-color: #25D366;
             color: white;
@@ -126,19 +127,37 @@
             text-decoration: none;
             font-size: 0.8rem;
             font-weight: bold;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .btn-send:hover { background-color: #128C7E; }
+        
+        .btn-send.sent {
+            background-color: #6c757d;
+        }
+
         .btn-delete {
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 0.75rem;
             margin-left: 5px;
         }
+        .btn-delete:hover { background-color: #c0392b; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-sent { background-color: #d4edda; color: #155724; }
+        .status-pending { background-color: #fff3cd; color: #856404; }
 
         .studio-footer {
             margin-top: 40px;
@@ -220,11 +239,12 @@
                 <tr>
                     <th>Nama Tamu</th>
                     <th>No. HP</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody id="table-body">
-                <tr><td colspan="3" style="text-align:center; color:#888;">Memuat data tamu...</td></tr>
+                <tr><td colspan="4" style="text-align:center; color:#888;">Memuat data tamu...</td></tr>
             </tbody>
         </table>
     </div>
@@ -260,7 +280,7 @@
     let currentTab = "pria";
     let currentSlug = "";
 
-    // DETEKSI SLUG OTOMATIS DARI PATH URL
+    // DETEKSI SLUG OTOMATIS BERDASARKAN URL / PATH
     function deteksiSlugOtomatis() {
         const urlParams = new URLSearchParams(window.location.search);
         let slugParam = urlParams.get('slug');
@@ -269,7 +289,9 @@
             let path = window.location.pathname;
             path = path.replace(/\/index_[0-9]+\.html$/, '').replace(/\/index\.html$/, '');
             let segments = path.split('/').filter(Boolean);
-            slugParam = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
+            slugParam = (segments.length > 0 && !segments[segments.length - 1].includes('.')) 
+                ? segments[segments.length - 1] 
+                : "hana_handayani-irfan_ripandi";
         }
 
         return slugParam;
@@ -299,25 +321,27 @@
     async function muatDataSupabase() {
         if (!currentSlug) return;
 
-        const { data, error } = await supabase
-            .from('guests')
-            .select('*')
-            .eq('wedding_slug', currentSlug)
-            .order('id', { ascending: false });
+        try {
+            const { data, error } = await supabase
+                .from('guests')
+                .select('*')
+                .eq('wedding_slug', currentSlug)
+                .order('id', { ascending: false });
 
-        if (error) {
-            console.error("Gagal mengambil data:", error);
-            alert("Gagal memuat data dari Supabase: " + error.message);
-            return;
+            if (error) throw error;
+
+            dataTamu.pria = (data || []).filter(item => item.gender === 'pria');
+            dataTamu.wanita = (data || []).filter(item => item.gender === 'wanita');
+
+            document.getElementById('count-pria').innerText = dataTamu.pria.length;
+            document.getElementById('count-wanita').innerText = dataTamu.wanita.length;
+
+            tampilkanData();
+        } catch (err) {
+            console.error("Gagal memuat data dari Supabase:", err);
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Gagal memuat data: ${err.message || err}. Pastikan RLS / Policy di Supabase sudah dikonfigurasi.</td></tr>`;
         }
-
-        dataTamu.pria = (data || []).filter(item => item.gender === 'pria');
-        dataTamu.wanita = (data || []).filter(item => item.gender === 'wanita');
-
-        document.getElementById('count-pria').innerText = dataTamu.pria.length;
-        document.getElementById('count-wanita').innerText = dataTamu.wanita.length;
-
-        tampilkanData();
     }
 
     async function tambahTamuManual(e) {
@@ -328,9 +352,15 @@
 
         if (!currentSlug || !nama) return alert("Nama wajib diisi!");
 
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('guests')
-            .insert([{ wedding_slug: currentSlug, nama: nama, no_hp: hp, gender: gender }]);
+            .insert([{ 
+                wedding_slug: currentSlug, 
+                nama: nama, 
+                no_hp: hp, 
+                gender: gender,
+                is_sent: false
+            }]);
 
         if (error) {
             alert("Gagal menyimpan data: " + error.message);
@@ -371,7 +401,8 @@
                 wedding_slug: currentSlug,
                 nama: nama,
                 no_hp: noHp,
-                gender: gender
+                gender: gender,
+                is_sent: false
             };
         });
 
@@ -386,7 +417,7 @@
     }
 
     async function hapusTamu(id) {
-        if (!confirm("Yakin ingin menghapus tamu ini?")) return;
+        if (!confirm("Apakah Anda yakin ingin menghapus data tamu ini?")) return;
 
         const { error } = await supabase
             .from('guests')
@@ -400,6 +431,19 @@
         }
     }
 
+    async function tandaiTersampaikan(id) {
+        // Tandai status pesan terkirim di Supabase
+        await supabase
+            .from('guests')
+            .update({ is_sent: true })
+            .eq('id', id);
+
+        // Perbarui tampilan lokal
+        const item = [...dataTamu.pria, ...dataTamu.wanita].find(g => g.id === id);
+        if (item) item.is_sent = true;
+        tampilkanData();
+    }
+
     function tampilkanData() {
         const tbody = document.getElementById('table-body');
         tbody.innerHTML = "";
@@ -408,13 +452,14 @@
         const linkUndangan = `${DOMAIN_UTAMA}/${currentSlug}`;
 
         if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">Belum ada data tamu ${currentTab}.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Belum ada data tamu ${currentTab}.</td></tr>`;
             return;
         }
 
         list.forEach(item => {
             const namaTamu = item.nama;
             const noHp = item.no_hp || "";
+            const isSent = item.is_sent || false;
 
             const teksMentah = `Assalamualaikum Wr.Wb 
 *${namaTamu}*,
@@ -440,8 +485,19 @@ Terima kasih banyak atas perhatiannya.`;
                 <td><b>${namaTamu}</b></td>
                 <td>${noHp ? '+' + noHp : '-'}</td>
                 <td>
-                    ${noHp ? `<a href="${waLink}" target="_blank" class="btn-send">Kirim WA 💬</a>` : `<span style="color:#aaa; font-size:0.8rem;">Tanpa No HP</span>`}
-                    <button class="btn-delete" onclick="hapusTamu(${item.id})">Hapus</button>
+                    ${isSent 
+                        ? `<span class="status-badge status-sent">✓ Terkirim</span>` 
+                        : `<span class="status-badge status-pending">Belum</span>`
+                    }
+                </td>
+                <td>
+                    ${noHp 
+                        ? `<a href="${waLink}" target="_blank" onclick="tandaiTersampaikan(${item.id})" class="btn-send ${isSent ? 'sent' : ''}">
+                             ${isSent ? '✓ Kirim Ulang WA' : '💬 Kirim WA'}
+                           </a>` 
+                        : `<span style="color:#aaa; font-size:0.8rem;">Tanpa No HP</span>`
+                    }
+                    <button class="btn-delete" onclick="hapusTamu(${item.id})">🗑️ Hapus</button>
                 </td>
             `;
             tbody.appendChild(tr);
