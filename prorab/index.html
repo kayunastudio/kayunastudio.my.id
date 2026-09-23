@@ -578,14 +578,22 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-1.5 items-center">
-                        <div class="relative flex-1">
-                            <input type="text" id="searchHsdInput" onkeydown="handleSearchHsdKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                    <!-- FILTER & PENCARIAN HSD -->
+                    <div class="flex flex-col sm:flex-row gap-2 items-center">
+                        <div class="w-full sm:w-1/3">
+                            <select id="filterHsdLokasiSelect" onchange="renderTabelMonitorHSD(1)" class="w-full border border-slate-200 py-1.5 px-2 text-xs rounded-xl bg-slate-50 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">📍 Semua Lokasi</option>
+                            </select>
                         </div>
-                        <button onclick="renderTabelMonitorHSD(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
-                            🔍 Cari
-                        </button>
+                        <div class="flex gap-1.5 items-center w-full sm:w-2/3">
+                            <div class="relative flex-1">
+                                <input type="text" id="searchHsdInput" onkeydown="handleSearchHsdKeyDown(event)" placeholder="Ketik kata kunci lalu tekan Enter / Cari..." class="w-full border border-slate-200 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+                            </div>
+                            <button onclick="renderTabelMonitorHSD(1)" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow transition">
+                                🔍 Cari
+                            </button>
+                        </div>
                     </div>
 
                     <div class="max-h-96 overflow-y-auto custom-scroll border rounded-xl">
@@ -1232,8 +1240,8 @@
 
         const LIST_AKUN = [
             { pin: "2424", userId: "kayuna", nama: "Kayuna Studio" },
-            { pin: "123", userId: "tekmira", nama: "Tekmira" },
-            { pin: "246", userId: "admin", nama: "Administrator", isAdmin: true }
+            { pin: "ESDMB3rakhl@k", userId: "tekmira", nama: "Tekmira" },
+            { pin: "2510", userId: "admin", nama: "Administrator", isAdmin: true }
         ];
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1259,6 +1267,7 @@
         let kurvaSChartInstance = null;
         let debounceHsdTimer = null;
         let selectedHsdKodeSet = new Set();
+        let currentTabName = 'rab';
 
         let pageHsdCurrent = 1; const pageHsdSize = 10;
         let pageAhspCurrent = 1; const pageAhspSize = 10;
@@ -1506,6 +1515,7 @@
         });
 
         function switchTab(tabName) {
+            currentTabName = tabName;
             const pages = ['pageRAB', 'pageMaster', 'pageDaily', 'pageSchedule'];
             pages.forEach(p => document.getElementById(p).classList.add('hidden'));
 
@@ -1623,9 +1633,20 @@
                     return { ...item, status: item.status || 'active', data_bq: parsedBQ, custom_hsd: parsedCustomHSD };
                 });
 
-                listAHSPMaster = dataAHSP || []; listHSDMaster = dataHSD || [];
-                listScheduleMaster = dataSchedule || []; listDailyMaster = dataDaily || [];
+                listAHSPMaster = dataAHSP || []; 
+                listHSDMaster = dataHSD || [];
+                
+                // Urutkan Master HSD berdasarkan nama item (A-Z)
+                listHSDMaster.sort((a, b) => {
+                    let nameA = (a.nama_item || a.uraian || '').toLowerCase();
+                    let nameB = (b.nama_item || b.uraian || '').toLowerCase();
+                    return nameA.localeCompare(nameB);
+                });
 
+                listScheduleMaster = dataSchedule || []; 
+                listDailyMaster = dataDaily || [];
+
+                perbaruiOptionFilterLokasiHsd();
                 renderDaftarProyekKartu();
                 renderAhspCustomDropdownOptions();
                 renderTabelMonitorAHSP(1);
@@ -1644,10 +1665,35 @@
                         unselectProyek();
                     }
                 }
+
+                // Tetap di tab/halaman aktif yang sedang dibuka
+                switchTab(currentTabName);
+
             } catch (err) {
                 console.error("Gagal memuat database:", err);
                 showToast("Gagal terhubung ke Database Supabase", "error");
             }
+        }
+
+        function perbaruiOptionFilterLokasiHsd() {
+            const select = document.getElementById('filterHsdLokasiSelect');
+            if(!select) return;
+            const currentSelected = select.value;
+
+            let lokasiSet = new Set();
+            listHSDMaster.forEach(hsd => {
+                let lok = (hsd.lokasi || '').trim();
+                if(lok) lokasiSet.add(lok);
+            });
+
+            let sortedLokasi = Array.from(lokasiSet).sort((a, b) => a.localeCompare(b));
+
+            let html = '<option value="">📍 Semua Lokasi</option>';
+            sortedLokasi.forEach(lok => {
+                html += `<option value="${lok}">${lok}</option>`;
+            });
+            select.innerHTML = html;
+            select.value = currentSelected;
         }
 
         function handleSearchHsdKeyDown(e) { if (e.key === 'Enter') renderTabelMonitorHSD(1); }
@@ -2719,10 +2765,14 @@
 
         function renderTabelMonitorHSD(targetPage = pageHsdCurrent) {
             const keyword = (document.getElementById('searchHsdInput').value || "").toLowerCase().trim();
-            let filtered = listHSDMaster.filter(item => 
-                (item.kode || "").toLowerCase().includes(keyword) || 
-                (item.nama_item || item.uraian || "").toLowerCase().includes(keyword)
-            );
+            const lokasiFilter = (document.getElementById('filterHsdLokasiSelect')?.value || "").toLowerCase().trim();
+
+            let filtered = listHSDMaster.filter(item => {
+                let matchKeyword = (item.kode || "").toLowerCase().includes(keyword) || 
+                                   (item.nama_item || item.uraian || "").toLowerCase().includes(keyword);
+                let matchLokasi = !lokasiFilter || (item.lokasi || "").toLowerCase() === lokasiFilter;
+                return matchKeyword && matchLokasi;
+            });
 
             const totalPages = Math.ceil(filtered.length / pageHsdSize) || 1;
             pageHsdCurrent = Math.max(1, Math.min(targetPage, totalPages));
