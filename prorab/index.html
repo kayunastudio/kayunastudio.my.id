@@ -618,8 +618,15 @@
                         </table>
                     </div>
 
-                    <div class="flex items-center justify-between pt-2 text-xs text-slate-500 border-t">
-                        <span id="lblPageHsdInfo">Halaman 1 dari 1</span>
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-slate-500 border-t">
+                        <div class="flex items-center gap-1.5">
+                            <span id="lblPageHsdInfo">Halaman 1 dari 1</span>
+                            <div class="flex items-center gap-1 ml-1 bg-slate-50 p-1 border rounded-lg">
+                                <span class="text-[10px] font-bold text-slate-400">Ke Hal:</span>
+                                <input type="number" min="1" id="inpHsdJumpPage" class="w-12 border border-slate-200 rounded px-1 py-0.5 text-center font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="1" onkeydown="if(event.key==='Enter') lompatHalamanHsd()">
+                                <button onclick="lompatHalamanHsd()" class="px-1.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-[10px]">Go</button>
+                            </div>
+                        </div>
                         <div class="flex gap-1.5">
                             <button onclick="gantiHalamanHsd(-1)" id="btnHsdPrev" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">◄ Prev</button>
                             <button onclick="gantiHalamanHsd(1)" id="btnHsdNext" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">Next ►</button>
@@ -752,8 +759,15 @@
                         </table>
                     </div>
 
-                    <div class="flex items-center justify-between pt-2 text-xs text-slate-500 border-t">
-                        <span id="lblPageAhspInfo">Halaman 1 dari 1</span>
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-slate-500 border-t">
+                        <div class="flex items-center gap-1.5">
+                            <span id="lblPageAhspInfo">Halaman 1 dari 1</span>
+                            <div class="flex items-center gap-1 ml-1 bg-slate-50 p-1 border rounded-lg">
+                                <span class="text-[10px] font-bold text-slate-400">Ke Hal:</span>
+                                <input type="number" min="1" id="inpAhspJumpPage" class="w-12 border border-slate-200 rounded px-1 py-0.5 text-center font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-500" placeholder="1" onkeydown="if(event.key==='Enter') lompatHalamanAhsp()">
+                                <button onclick="lompatHalamanAhsp()" class="px-1.5 py-0.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded text-[10px]">Go</button>
+                            </div>
+                        </div>
                         <div class="flex gap-1.5">
                             <button onclick="gantiHalamanAhsp(-1)" id="btnAhspPrev" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">◄ Prev</button>
                             <button onclick="gantiHalamanAhsp(1)" id="btnAhspNext" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold disabled:opacity-40">Next ►</button>
@@ -1636,7 +1650,7 @@
                 listAHSPMaster = dataAHSP || []; 
                 listHSDMaster = dataHSD || [];
                 
-                // Urutkan Master HSD berdasarkan nama item (A-Z)
+                // Urutkan Master HSD berdasarkan nama item (A-Z) secara otomatis
                 listHSDMaster.sort((a, b) => {
                     let nameA = (a.nama_item || a.uraian || '').toLowerCase();
                     let nameB = (b.nama_item || b.uraian || '').toLowerCase();
@@ -1649,8 +1663,8 @@
                 perbaruiOptionFilterLokasiHsd();
                 renderDaftarProyekKartu();
                 renderAhspCustomDropdownOptions();
-                renderTabelMonitorAHSP(1);
-                renderTabelMonitorHSD(1);
+                renderTabelMonitorAHSP(pageAhspCurrent);
+                renderTabelMonitorHSD(pageHsdCurrent);
 
                 if (proyekAktif) {
                     const reRefreshed = listProyek.find(p => p.id === proyekAktif.id);
@@ -2821,6 +2835,7 @@
 
             document.getElementById('badgeCountHsd').innerText = `${filtered.length} Item`;
             document.getElementById('lblPageHsdInfo').innerText = `Halaman ${pageHsdCurrent} dari ${totalPages}`;
+            document.getElementById('inpHsdJumpPage').value = pageHsdCurrent;
             document.getElementById('btnHsdPrev').disabled = pageHsdCurrent === 1;
             document.getElementById('btnHsdNext').disabled = pageHsdCurrent === totalPages;
             
@@ -2829,6 +2844,12 @@
         }
 
         function gantiHalamanHsd(delta) { renderTabelMonitorHSD(pageHsdCurrent + delta); }
+        function lompatHalamanHsd() {
+            const pageInput = parseInt(document.getElementById('inpHsdJumpPage').value);
+            if (!isNaN(pageInput) && pageInput > 0) {
+                renderTabelMonitorHSD(pageInput);
+            }
+        }
 
         function duplikatAHSP(kode) {
             const item = listAHSPMaster.find(a => String(a.kode_ahsp) === String(kode));
@@ -2897,11 +2918,18 @@
 
             document.getElementById('badgeCountAhsp').innerText = `${filtered.length} Item`;
             document.getElementById('lblPageAhspInfo').innerText = `Halaman ${pageAhspCurrent} dari ${totalPages}`;
+            document.getElementById('inpAhspJumpPage').value = pageAhspCurrent;
             document.getElementById('btnAhspPrev').disabled = pageAhspCurrent === 1;
             document.getElementById('btnAhspNext').disabled = pageAhspCurrent === totalPages;
         }
 
         function gantiHalamanAhsp(delta) { renderTabelMonitorAHSP(pageAhspCurrent + delta); }
+        function lompatHalamanAhsp() {
+            const pageInput = parseInt(document.getElementById('inpAhspJumpPage').value);
+            if (!isNaN(pageInput) && pageInput > 0) {
+                renderTabelMonitorAHSP(pageInput);
+            }
+        }
 
         async function simpanHSDBaru() {
             const oldKode = document.getElementById('editHsdOldKode').value;
