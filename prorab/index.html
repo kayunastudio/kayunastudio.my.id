@@ -552,8 +552,10 @@
                             <p class="text-[10px] text-slate-400">Database Upah, Bahan, dan Peralatan</p>
                         </div>
                         <div class="flex items-center gap-1">
-                            <button onclick="exportMasterHSD('csv')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export CSV</button>
-                            <span id="badgeCountHsd" class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
+                            <input type="file" id="inpHsdImport" accept=".csv, .xlsx, .xls" class="hidden" onchange="prosesImportHSD(event)">
+                            <button onclick="document.getElementById('inpHsdImport').click()" class="text-[9px] bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold px-2 py-0.5 rounded transition shadow-sm">📥 Import CSV</button>
+                            <button onclick="exportMasterHSD('csv')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition shadow-sm">📊 Export CSV</button>
+                            <span id="badgeCountHsd" class="text-[10px] bg-blue-100 text-blue-800 font-mono px-2 py-0.5 rounded font-bold shadow-sm">0 Item</span>
                         </div>
                     </div>
 
@@ -719,8 +721,10 @@
                             <p class="text-[10px] text-slate-400">Database Standar Pekerjaan PUPR</p>
                         </div>
                         <div class="flex items-center gap-1">
-                            <button onclick="exportMasterAHSP('xlsx')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition">📊 Export Standar</button>
-                            <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold">0 Item</span>
+                            <input type="file" id="inpAhspImport" accept=".csv, .xlsx, .xls" class="hidden" onchange="prosesImportAHSP(event)">
+                            <button onclick="document.getElementById('inpAhspImport').click()" class="text-[9px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-0.5 rounded transition shadow-sm">📥 Import CSV</button>
+                            <button onclick="exportMasterAHSP('xlsx')" class="text-[9px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded transition shadow-sm">📊 Export Standar</button>
+                            <span id="badgeCountAhsp" class="text-[10px] bg-amber-100 text-amber-800 font-mono px-2 py-0.5 rounded font-bold shadow-sm">0 Item</span>
                         </div>
                     </div>
 
@@ -3540,6 +3544,110 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
+        }
+
+        // ==========================================
+        // FITUR IMPORT CSV/EXCEL UNTUK HSD & AHSP
+        // ==========================================
+
+        function prosesImportHSD(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    showToast("Membaca file HSD...", "success", 2000);
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    let payload = [];
+                    jsonData.forEach(row => {
+                        let kode = row['KODE'] || row['kode'];
+                        if(kode) {
+                            payload.push({
+                                kode: String(kode).trim(),
+                                nama_item: row['NAMA ITEM'] || row['nama_item'] || row['uraian'] || '-',
+                                satuan: row['SATUAN'] || row['satuan'] || '-',
+                                harga: parseFloat(row['HARGA'] || row['harga'] || 0),
+                                lokasi: row['LOKASI'] || row['lokasi'] || 'INDONESIA',
+                                tahun: parseInt(row['TAHUN'] || row['tahun'] || 2026),
+                                referensi: row['REFERENSI'] || row['referensi'] || null
+                            });
+                        }
+                    });
+
+                    if(payload.length === 0) return showToast("Gagal: Kolom 'KODE' tidak ditemukan di CSV/Excel.", "error");
+
+                    showToast(`Mengirim ${payload.length} data HSD ke Database...`, "success", 3000);
+                    // Gunakan upsert agar tidak error jika kode sudah ada (update otomatis)
+                    const { error } = await supabaseClient.from('02_hsd').upsert(payload, { onConflict: 'kode' });
+                    
+                    if(!error) {
+                        showToast(`Berhasil import ${payload.length} data HSD!`);
+                        muatDataProyekSemua(); // Refresh UI dan tabel
+                    } else {
+                        showToast("Gagal import ke DB: " + error.message, "error");
+                    }
+                } catch (err) {
+                    showToast("Gagal membaca file CSV/Excel.", "error");
+                    console.error(err);
+                }
+                event.target.value = ''; // Reset input file
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function prosesImportAHSP(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    showToast("Membaca file AHSP...", "success", 2000);
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    let payload = [];
+                    jsonData.forEach(row => {
+                        let kode = row['KODE'] || row['kode_ahsp'];
+                        if(kode) {
+                            let komponen = row['KOMPONEN'] || row['komponen_json'] || "[]";
+                            if(typeof komponen !== 'string') komponen = JSON.stringify(komponen);
+                            
+                            payload.push({
+                                kode_ahsp: String(kode).trim(),
+                                nama_pekerjaan: row['NAMA PEKERJAAN'] || row['nama_pekerjaan'] || '-',
+                                satuan: row['SATUAN'] || row['satuan'] || '-',
+                                kategori: row['KATEGORI'] || row['kategori'] || 'I. PEKERJAAN UMUM',
+                                overhead_persen: parseFloat(row['OVERHEAD'] || row['overhead_persen'] || 12),
+                                tahun: parseInt(row['TAHUN'] || row['tahun'] || 2026),
+                                komponen_json: komponen
+                            });
+                        }
+                    });
+
+                    if(payload.length === 0) return showToast("Gagal: Kolom 'KODE' / 'kode_ahsp' tidak ditemukan.", "error");
+
+                    showToast(`Mengirim ${payload.length} data AHSP ke Database...`, "success", 3000);
+                    const { error } = await supabaseClient.from('01_ahsp').upsert(payload, { onConflict: 'kode_ahsp' });
+                    
+                    if(!error) {
+                        showToast(`Berhasil import ${payload.length} data AHSP!`);
+                        muatDataProyekSemua(); // Refresh UI dan tabel
+                    } else {
+                        showToast("Gagal import ke DB: " + error.message, "error");
+                    }
+                } catch (err) {
+                    showToast("Gagal membaca file CSV/Excel.", "error");
+                    console.error(err);
+                }
+                event.target.value = ''; // Reset input file
+            };
+            reader.readAsArrayBuffer(file);
         }
     </script>
 </body>
