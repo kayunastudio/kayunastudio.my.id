@@ -3581,14 +3581,22 @@
                     if(payload.length === 0) return showToast("Gagal: Kolom 'KODE' tidak ditemukan di CSV/Excel.", "error");
 
                     showToast(`Mengirim ${payload.length} data HSD ke Database...`, "success", 3000);
-                    // Gunakan upsert agar tidak error jika kode sudah ada (update otomatis)
-                    const { error } = await supabaseClient.from('02_hsd').upsert(payload, { onConflict: 'kode' });
+                    
+                    // Coba bulk upsert dengan ignoreDuplicates agar jika conflict di-skip (tidak error)
+                    const { error } = await supabaseClient.from('02_hsd').upsert(payload, { onConflict: 'kode', ignoreDuplicates: true });
                     
                     if(!error) {
                         showToast(`Berhasil import ${payload.length} data HSD!`);
-                        muatDataProyekSemua(); // Refresh UI dan tabel
+                        muatDataProyekSemua();
                     } else {
-                        showToast("Gagal import ke DB: " + error.message, "error");
+                        showToast("Bulk import gagal, mencoba perbaikan otomatis (row-by-row)...", "success", 3000);
+                        let successCount = 0;
+                        for (let item of payload) {
+                            const res = await supabaseClient.from('02_hsd').upsert([item], { onConflict: 'kode', ignoreDuplicates: true });
+                            if (!res.error) successCount++;
+                        }
+                        showToast(`Berhasil import ${successCount} dari ${payload.length} data HSD!`);
+                        muatDataProyekSemua();
                     }
                 } catch (err) {
                     showToast("Gagal membaca file CSV/Excel.", "error");
@@ -3633,13 +3641,22 @@
                     if(payload.length === 0) return showToast("Gagal: Kolom 'KODE' / 'kode_ahsp' tidak ditemukan.", "error");
 
                     showToast(`Mengirim ${payload.length} data AHSP ke Database...`, "success", 3000);
-                    const { error } = await supabaseClient.from('01_ahsp').upsert(payload, { onConflict: 'kode_ahsp' });
+                    
+                    // Coba bulk upsert dengan ignoreDuplicates agar jika conflict di-skip
+                    const { error } = await supabaseClient.from('01_ahsp').upsert(payload, { onConflict: 'kode_ahsp', ignoreDuplicates: true });
                     
                     if(!error) {
                         showToast(`Berhasil import ${payload.length} data AHSP!`);
-                        muatDataProyekSemua(); // Refresh UI dan tabel
+                        muatDataProyekSemua();
                     } else {
-                        showToast("Gagal import ke DB: " + error.message, "error");
+                        showToast("Bulk import gagal, mencoba perbaikan otomatis (row-by-row)...", "success", 3000);
+                        let successCount = 0;
+                        for (let item of payload) {
+                            const res = await supabaseClient.from('01_ahsp').upsert([item], { onConflict: 'kode_ahsp', ignoreDuplicates: true });
+                            if (!res.error) successCount++;
+                        }
+                        showToast(`Berhasil import ${successCount} dari ${payload.length} data AHSP!`);
+                        muatDataProyekSemua();
                     }
                 } catch (err) {
                     showToast("Gagal membaca file CSV/Excel.", "error");
