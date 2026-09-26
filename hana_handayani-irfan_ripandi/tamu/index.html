@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Generator Undangan Digital - Kayuna Studio</title>
+    <title id="page-title">Admin Generator - Kirim Undangan Massal</title>
     <!-- Library SheetJS untuk membaca file Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Library Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -19,7 +17,7 @@
         }
         .admin-box {
             width: 100%;
-            max-width: 750px;
+            max-width: 600px;
             background: white;
             padding: 25px;
             border-radius: 12px;
@@ -28,86 +26,32 @@
         h2 { color: #4A5D4E; margin-bottom: 5px; }
         p { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
         
-        .config-box {
-            background: #f0f4f1;
-            padding: 15px;
+        .mempelai-badge {
+            background: #eef2ef;
+            padding: 10px 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #dcdfdc;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-bottom: 12px;
-        }
-        .form-group label {
+            margin-bottom: 15px;
+            border-left: 4px solid #4A5D4E;
             font-size: 0.85rem;
-            font-weight: bold;
             color: #4A5D4E;
         }
-        .form-control {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .form-row .form-group { flex: 1; min-width: 150px; }
-
-        .btn-primary {
-            background-color: #4A5D4E;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-        .btn-primary:hover { background-color: #38483b; }
 
         .upload-btn {
             border: 2px dashed #4A5D4E;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             border-radius: 8px;
             cursor: pointer;
             background: #f9fbf9;
-            margin-top: 10px;
+            transition: background 0.2s;
         }
         .upload-btn:hover { background: #eef2ef; }
         input[type="file"] { display: none; }
-
-        .tab-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-            border-bottom: 2px solid #ddd;
-        }
-        .tab-btn {
-            padding: 10px 20px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-weight: bold;
-            color: #666;
-            border-bottom: 3px solid transparent;
-        }
-        .tab-btn.active {
-            color: #4A5D4E;
-            border-bottom-color: #4A5D4E;
-        }
-
+        
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 25px;
             font-size: 0.9rem;
         }
         th, td {
@@ -118,7 +62,7 @@
         th { background-color: #4A5D4E; color: white; }
         
         .btn-send {
-            background-color: #25D366;
+            background-color: #25D366; /* Warna WhatsApp */
             color: white;
             border: none;
             padding: 6px 12px;
@@ -127,38 +71,13 @@
             text-decoration: none;
             font-size: 0.8rem;
             font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+            display: inline-block;
         }
         .btn-send:hover { background-color: #128C7E; }
-        
-        .btn-send.sent {
-            background-color: #6c757d;
-        }
 
-        .btn-delete {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            margin-left: 5px;
-        }
-        .btn-delete:hover { background-color: #c0392b; }
-
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-        .status-sent { background-color: #d4edda; color: #155724; }
-        .status-pending { background-color: #fff3cd; color: #856404; }
-
+        /* ==========================================================================
+           STYLE TAMBAHAN: BRANDING FOOTER KAYUNA STUDIO
+           ========================================================================== */
         .studio-footer {
             margin-top: 40px;
             padding-top: 20px;
@@ -167,7 +86,10 @@
             font-size: 0.82rem;
             color: #777;
         }
-        .studio-footer p { margin-bottom: 8px; color: #555; }
+        .studio-footer p {
+            margin-bottom: 8px;
+            color: #555;
+        }
         .studio-links {
             display: flex;
             justify-content: center;
@@ -181,75 +103,53 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            transition: color 0.2s;
         }
-        .studio-links a:hover { color: #C5A059; }
-        .studio-links svg { width: 14px; height: 14px; fill: currentColor; }
+        .studio-links a:hover {
+            color: #C5A059; /* Aksen Gold lembut */
+        }
+        .studio-links svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
     </style>
 </head>
 <body>
 
 <div class="admin-box">
-    <h2>Generator & Database Undangan</h2>
-    <p>Kelola data tamu undangan digital terpisah berdasarkan jenis kelamin.</p>
-
-    <!-- Form Input Manual -->
-    <div class="config-box">
-        <h4 style="margin-top:0; margin-bottom:10px; color:#4A5D4E;">Tambah Tamu Manual</h4>
-        <form id="form-tamu" onsubmit="tambahTamuManual(event)">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="input-nama">Nama Tamu</label>
-                    <input type="text" id="input-nama" class="form-control" placeholder="Nama Tamu" required>
-                </div>
-                <div class="form-group">
-                    <label for="input-hp">Nomor HP / WhatsApp</label>
-                    <input type="text" id="input-hp" class="form-control" placeholder="08123456789">
-                </div>
-                <div class="form-group">
-                    <label for="input-gender">Kategori Tamu</label>
-                    <select id="input-gender" class="form-control">
-                        <option value="pria">Tamu Pria</option>
-                        <option value="wanita">Tamu Wanita</option>
-                    </select>
-                </div>
-            </div>
-            <button type="submit" class="btn-primary">➕ Simpan Tamu</button>
-        </form>
-
-        <!-- Import Excel -->
-        <div style="margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
-            <label style="font-size: 0.85rem; font-weight: bold; color: #4A5D4E;">atau Import via Excel (.xlsx):</label>
-            <div class="upload-btn" onclick="document.getElementById('excel-file').click()">
-                <span>Klik di sini untuk upload Excel</span>
-                <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="handleFile(event)">
-            </div>
-        </div>
+    <h2>Generator Undangan via Excel</h2>
+    
+    <!-- Informasi Nama Pasangan Terdeteksi Otomatis -->
+    <div class="mempelai-badge">
+        <b>Mempelai:</b> <span id="lbl-nama-pasangan">Memuat...</span>
     </div>
 
-    <!-- Tab Filter Jenis Kelamin -->
-    <div class="tab-container">
-        <button class="tab-btn active" id="tab-pria" onclick="switchTab('pria')">👨 Tamu Pria (<span id="count-pria">0</span>)</button>
-        <button class="tab-btn" id="tab-wanita" onclick="switchTab('wanita')">👩 Tamu Wanita (<span id="count-wanita">0</span>)</button>
+    <p>Format Excel wajib memiliki dua kolom utama di baris pertama: <b>Nama</b> dan <b>No HP</b>.</p>
+    
+    <!-- Tombol Upload -->
+    <div class="upload-btn" onclick="document.getElementById('excel-file').click()">
+        <span>Click / Seret File Excel (.xlsx / .xls) Anda di Sini</span>
+        <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="handleFile(event)">
     </div>
 
     <!-- Tabel Tampilan Data -->
-    <div id="result-area">
+    <div id="result-area" style="display:none; overflow-x: auto;">
         <table>
             <thead>
                 <tr>
                     <th>Nama Tamu</th>
                     <th>No. HP</th>
-                    <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody id="table-body">
-                <tr><td colspan="4" style="text-align:center; color:#888;">Memuat data tamu...</td></tr>
+                <!-- Data Excel akan masuk ke sini otomatis -->
             </tbody>
         </table>
     </div>
 
-    <!-- FOOTER ATRIBUSI LAYANAN KAYUNA STUDIO -->
+    <!-- ELEMEN FOOTER ATRIBUSI LAYANAN KAYUNA STUDIO -->
     <footer class="studio-footer">
         <p>System Developed &amp; Maintained by</p>
         <div class="studio-links">
@@ -270,238 +170,128 @@
 </div>
 
 <script>
-    // 1. KONFIGURASI SUPABASE
-    const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // 1. FUNGSI DETEKSI NAMA PASANGAN DAN URL DARI LOKASI HTML
+    function dapatkanDeteksiMempelaiOtomatis() {
+        let fullUrl = window.location.href;
+        let pathname = window.location.pathname;
 
-    const DOMAIN_UTAMA = "https://kayunastudio.my.id";
-    let dataTamu = { pria: [], wanita: [] };
-    let currentTab = "pria";
-    let currentSlug = "";
+        // Dapatkan folder/slug tempat file HTML ini disimpan
+        pathname = pathname.replace(/\/index_[0-9]+\.html$/, '').replace(/\/index\.html$/, '').replace(/\/$/, '');
+        let segments = pathname.split('/').filter(Boolean);
+        
+        let rawSlug = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
 
-    // DETEKSI SLUG OTOMATIS BERDASARKAN URL / PATH
-    function deteksiSlugOtomatis() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let slugParam = urlParams.get('slug');
+        // Tentukan URL dasar lokasi undangan
+        let baseUrl = window.location.origin + pathname;
 
-        if (!slugParam) {
-            let path = window.location.pathname;
-            path = path.replace(/\/index_[0-9]+\.html$/, '').replace(/\/index\.html$/, '');
-            let segments = path.split('/').filter(Boolean);
-            slugParam = (segments.length > 0 && !segments[segments.length - 1].includes('.')) 
-                ? segments[segments.length - 1] 
-                : "hana_handayani-irfan_ripandi";
-        }
+        // Ubah format slug (contoh: hana_handayani-irfan_ripandi -> Hana Handayani & Irfan Ripandi)
+        let namaFormatted = rawSlug
+            .replace(/[-_]+/g, ' & ')
+            .split(' ')
+            .map(word => word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+            .join(' ');
 
-        return slugParam;
+        return {
+            namaPasangan: namaFormatted || "Arjun & Salma",
+            linkUndangan: baseUrl
+        };
     }
 
+    // Inisialisasi variabel global berdasarkan lokasi file
+    const dataLokasi = dapatkanDeteksiMempelaiOtomatis();
+    const NAMA_PASANGAN = dataLokasi.namaPasangan;
+    const LINK_UNDANGAN_UTAMA = dataLokasi.linkUndangan;
+
+    // Tampilkan nama pasangan di UI saat halaman dimuat
     window.onload = function() {
-        currentSlug = deteksiSlugOtomatis();
-        muatDataSupabase();
+        document.getElementById('lbl-nama-pasangan').innerText = NAMA_PASANGAN;
+        document.getElementById('page-title').innerText = "Admin Generator Undangan - " + NAMA_PASANGAN;
     };
-
-    function switchTab(tab) {
-        currentTab = tab;
-        document.getElementById('tab-pria').classList.toggle('active', tab === 'pria');
-        document.getElementById('tab-wanita').classList.toggle('active', tab === 'wanita');
-        tampilkanData();
-    }
-
-    function formatNoHp(noHp) {
-        if (!noHp) return "";
-        let cleaned = noHp.toString().trim().replace(/[^0-9]/g, '');
-        if (cleaned.startsWith("0")) {
-            cleaned = "62" + cleaned.slice(1);
-        }
-        return cleaned;
-    }
-
-    async function muatDataSupabase() {
-        if (!currentSlug) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('guests')
-                .select('*')
-                .eq('wedding_slug', currentSlug)
-                .order('id', { ascending: false });
-
-            if (error) throw error;
-
-            dataTamu.pria = (data || []).filter(item => item.gender === 'pria');
-            dataTamu.wanita = (data || []).filter(item => item.gender === 'wanita');
-
-            document.getElementById('count-pria').innerText = dataTamu.pria.length;
-            document.getElementById('count-wanita').innerText = dataTamu.wanita.length;
-
-            tampilkanData();
-        } catch (err) {
-            console.error("Gagal memuat data dari Supabase:", err);
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Gagal memuat data: ${err.message || err}. Pastikan RLS / Policy di Supabase sudah dikonfigurasi.</td></tr>`;
-        }
-    }
-
-    async function tambahTamuManual(e) {
-        e.preventDefault();
-        const nama = document.getElementById('input-nama').value.trim();
-        const hp = formatNoHp(document.getElementById('input-hp').value);
-        const gender = document.getElementById('input-gender').value;
-
-        if (!currentSlug || !nama) return alert("Nama wajib diisi!");
-
-        const { error } = await supabase
-            .from('guests')
-            .insert([{ 
-                wedding_slug: currentSlug, 
-                nama: nama, 
-                no_hp: hp, 
-                gender: gender,
-                is_sent: false
-            }]);
-
-        if (error) {
-            alert("Gagal menyimpan data: " + error.message);
-        } else {
-            document.getElementById('input-nama').value = "";
-            document.getElementById('input-hp').value = "";
-            await muatDataSupabase();
-        }
-    }
 
     function handleFile(event) {
         const file = event.target.files[0];
         if(!file) return;
 
         const reader = new FileReader();
-        reader.onload = async function(e) {
+
+        reader.onload = function(e) {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
-            const sheetName = workbook.SheetNames[0];
-            const jsonRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
             
-            await simpanBatchExcel(jsonRows);
+            // Ambil sheet pertama di file Excel
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // Mengubah baris Excel menjadi format JSON Array
+            const jsonRows = XLSX.utils.sheet_to_json(worksheet);
+            
+            tampilkanData(jsonRows);
         };
 
         reader.readAsArrayBuffer(file);
     }
 
-    async function simpanBatchExcel(rows) {
-        const defaultGender = document.getElementById('input-gender').value;
-
-        const payload = rows.map(row => {
-            const nama = row["Nama"] || row["nama"] || "Tamu";
-            const noHp = formatNoHp(row["No HP"] || row["No. HP"] || row["hp"] || "");
-            const genderInput = (row["Gender"] || row["gender"] || defaultGender).toString().toLowerCase();
-            const gender = (genderInput.includes("wanita") || genderInput.includes("p")) ? "wanita" : "pria";
-
-            return {
-                wedding_slug: currentSlug,
-                nama: nama,
-                no_hp: noHp,
-                gender: gender,
-                is_sent: false
-            };
-        });
-
-        const { error } = await supabase.from('guests').insert(payload);
-
-        if (error) {
-            alert("Gagal import data Excel: " + error.message);
-        } else {
-            alert("Berhasil mengimpor " + payload.length + " data tamu!");
-            await muatDataSupabase();
-        }
-    }
-
-    async function hapusTamu(id) {
-        if (!confirm("Apakah Anda yakin ingin menghapus data tamu ini?")) return;
-
-        const { error } = await supabase
-            .from('guests')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            alert("Gagal menghapus data: " + error.message);
-        } else {
-            await muatDataSupabase();
-        }
-    }
-
-    async function tandaiTersampaikan(id) {
-        // Tandai status pesan terkirim di Supabase
-        await supabase
-            .from('guests')
-            .update({ is_sent: true })
-            .eq('id', id);
-
-        // Perbarui tampilan lokal
-        const item = [...dataTamu.pria, ...dataTamu.wanita].find(g => g.id === id);
-        if (item) item.is_sent = true;
-        tampilkanData();
-    }
-
-    function tampilkanData() {
+    function tampilkanData(rows) {
         const tbody = document.getElementById('table-body');
-        tbody.innerHTML = "";
+        tbody.innerHTML = ""; // Reset tabel lama
+        
+        rows.forEach(row => {
+            // Membaca kolom Excel (Mendukung variasi penulisan "Nama" dan "No HP")
+            const namaTamu = row["Nama"] || row["NAMA"] || row["nama"] || row["Nama Tamu"] || "Tamu Undangan";
+            let noHp = row["No HP"] || row["NO HP"] || row["No. HP"] || row["no hp"] || row["hp"] || "";
 
-        const list = dataTamu[currentTab] || [];
-        const linkUndangan = `${DOMAIN_UTAMA}/${currentSlug}`;
+            if(noHp) {
+                // Standarisasi nomor HP Indonesia ke format internasional (62)
+                noHp = noHp.toString().trim().replace(/[^0-9]/g, '');
+                if (noHp.startsWith("0")) {
+                    noHp = "62" + noHp.slice(1);
+                }
+            }
 
-        if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Belum ada data tamu ${currentTab}.</td></tr>`;
-            return;
-        }
-
-        list.forEach(item => {
-            const namaTamu = item.nama;
-            const noHp = item.no_hp || "";
-            const isSent = item.is_sent || false;
-
+            // Teks pesan resmi WhatsApp
             const teksMentah = `Assalamualaikum Wr.Wb 
 *${namaTamu}*,
 
 Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami.
 
 Silakan buka tautan di bawah ini untuk melihat detail undangan resmi digital kami:
-${linkUndangan}?to=${encodeURIComponent(namaTamu)}
+${LINK_UNDANGAN_UTAMA}?to=${encodeURIComponent(namaTamu)}
 
 Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.
 
 *Mohon maaf perihal undangan hanya dibagikan melalui pesan ini karena keterbatasan jarak & waktu.* 
 
 Pesan ini adalah undangan resmi sebagai pengganti apabila undangan cetak *BELUM/TIDAK DITERIMA* oleh Bapak/Ibu/Saudara/I.
+Diharapkan melalui media ini sebagai pengganti undangan resmi agar maksud dan tujuan kami dapat tersampaikan.
 
-Terima kasih banyak atas perhatiannya.`;
+Terima kasih banyak atas perhatiannya.
 
+Kami yang berbahagia,
+*${NAMA_PASANGAN}*`;
+            
+            // Mengencode pesan untuk URL
             const pesanTeksEncoded = encodeURIComponent(teksMentah);
+            
+            // Buat URL API WhatsApp resmi
             const waLink = noHp ? `https://api.whatsapp.com/send?phone=${noHp}&text=${pesanTeksEncoded}` : '#';
 
+            // Masukkan data ke dalam baris tabel HTML
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><b>${namaTamu}</b></td>
                 <td>${noHp ? '+' + noHp : '-'}</td>
                 <td>
-                    ${isSent 
-                        ? `<span class="status-badge status-sent">✓ Terkirim</span>` 
-                        : `<span class="status-badge status-pending">Belum</span>`
-                    }
-                </td>
-                <td>
                     ${noHp 
-                        ? `<a href="${waLink}" target="_blank" onclick="tandaiTersampaikan(${item.id})" class="btn-send ${isSent ? 'sent' : ''}">
-                             ${isSent ? '✓ Kirim Ulang WA' : '💬 Kirim WA'}
-                           </a>` 
+                        ? `<a href="${waLink}" target="_blank" class="btn-send">Kirim WA 💬</a>` 
                         : `<span style="color:#aaa; font-size:0.8rem;">Tanpa No HP</span>`
                     }
-                    <button class="btn-delete" onclick="hapusTamu(${item.id})">🗑️ Hapus</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
+
+        // Tampilkan area tabel
+        document.getElementById('result-area').style.display = 'block';
     }
 </script>
 
