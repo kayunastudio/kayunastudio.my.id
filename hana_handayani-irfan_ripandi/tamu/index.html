@@ -75,9 +75,7 @@
         }
         .btn-send:hover { background-color: #128C7E; }
 
-        /* ==========================================================================
-           STYLE TAMBAHAN: BRANDING FOOTER KAYUNA STUDIO
-           ========================================================================== */
+        /* BRANDING FOOTER KAYUNA STUDIO */
         .studio-footer {
             margin-top: 40px;
             padding-top: 20px;
@@ -106,7 +104,7 @@
             transition: color 0.2s;
         }
         .studio-links a:hover {
-            color: #C5A059; /* Aksen Gold lembut */
+            color: #C5A059;
         }
         .studio-links svg {
             width: 14px;
@@ -125,7 +123,7 @@
         <b>Mempelai:</b> <span id="lbl-nama-pasangan">Memuat...</span>
     </div>
 
-    <p>Format Excel wajib memiliki dua kolom utama di baris pertama: <b>Nama</b> dan <b>No HP</b>.</p>
+    <p>Upload file Excel (.xlsx / .xls) berisi daftar nama tamu / kontak WhatsApp Anda.</p>
     
     <!-- Tombol Upload -->
     <div class="upload-btn" onclick="document.getElementById('excel-file').click()">
@@ -138,7 +136,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Nama Tamu</th>
+                    <th>Nama Tamu / Kontak</th>
                     <th>No. HP</th>
                     <th>Aksi</th>
                 </tr>
@@ -149,7 +147,7 @@
         </table>
     </div>
 
-    <!-- ELEMEN FOOTER ATRIBUSI LAYANAN KAYUNA STUDIO -->
+    <!-- FOOTER ATRIBUSI LAYANAN KAYUNA STUDIO -->
     <footer class="studio-footer">
         <p>System Developed &amp; Maintained by</p>
         <div class="studio-links">
@@ -170,21 +168,21 @@
 </div>
 
 <script>
-    // 1. FUNGSI DETEKSI NAMA PASANGAN DAN URL DARI LOKASI HTML
+    // 1. DETEKSI OTOMATIS DOMAIN & NAMA PASANGAN DARI PATH HTML
     function dapatkanDeteksiMempelaiOtomatis() {
-        let fullUrl = window.location.href;
+        let origin = window.location.origin;
         let pathname = window.location.pathname;
 
-        // Dapatkan folder/slug tempat file HTML ini disimpan
+        // Bersihkan nama file html dari path
         pathname = pathname.replace(/\/index_[0-9]+\.html$/, '').replace(/\/index\.html$/, '').replace(/\/$/, '');
         let segments = pathname.split('/').filter(Boolean);
         
         let rawSlug = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
 
-        // Tentukan URL dasar lokasi undangan
-        let baseUrl = window.location.origin + pathname;
+        // Murni link dasar tanpa '/tamu'
+        let baseUrl = origin + pathname;
 
-        // Ubah format slug (contoh: hana_handayani-irfan_ripandi -> Hana Handayani & Irfan Ripandi)
+        // Tampilkan format nama pasangan
         let namaFormatted = rawSlug
             .replace(/[-_]+/g, ' & ')
             .split(' ')
@@ -192,17 +190,15 @@
             .join(' ');
 
         return {
-            namaPasangan: namaFormatted || "Arjun & Salma",
+            namaPasangan: namaFormatted || "Hana & Irfan",
             linkUndangan: baseUrl
         };
     }
 
-    // Inisialisasi variabel global berdasarkan lokasi file
     const dataLokasi = dapatkanDeteksiMempelaiOtomatis();
     const NAMA_PASANGAN = dataLokasi.namaPasangan;
     const LINK_UNDANGAN_UTAMA = dataLokasi.linkUndangan;
 
-    // Tampilkan nama pasangan di UI saat halaman dimuat
     window.onload = function() {
         document.getElementById('lbl-nama-pasangan').innerText = NAMA_PASANGAN;
         document.getElementById('page-title').innerText = "Admin Generator Undangan - " + NAMA_PASANGAN;
@@ -218,11 +214,8 @@
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
             
-            // Ambil sheet pertama di file Excel
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
-            
-            // Mengubah baris Excel menjadi format JSON Array
             const jsonRows = XLSX.utils.sheet_to_json(worksheet);
             
             tampilkanData(jsonRows);
@@ -233,22 +226,21 @@
 
     function tampilkanData(rows) {
         const tbody = document.getElementById('table-body');
-        tbody.innerHTML = ""; // Reset tabel lama
+        tbody.innerHTML = "";
         
         rows.forEach(row => {
-            // Membaca kolom Excel (Mendukung variasi penulisan "Nama" dan "No HP")
-            const namaTamu = row["Nama"] || row["NAMA"] || row["nama"] || row["Nama Tamu"] || "Tamu Undangan";
-            let noHp = row["No HP"] || row["NO HP"] || row["No. HP"] || row["no hp"] || row["hp"] || "";
+            // Fleksibel membaca nama tamu / kontak dari berbagai variasi header Excel
+            const namaTamu = row["Nama"] || row["Nama Tamu"] || row["Kontak"] || row["Name"] || row["NAMA"] || row["nama"] || row["WhatsApp"] || "Tamu Undangan";
+            let noHp = row["No HP"] || row["NO HP"] || row["No. HP"] || row["no hp"] || row["hp"] || row["No WhatsApp"] || "";
 
             if(noHp) {
-                // Standarisasi nomor HP Indonesia ke format internasional (62)
                 noHp = noHp.toString().trim().replace(/[^0-9]/g, '');
                 if (noHp.startsWith("0")) {
                     noHp = "62" + noHp.slice(1);
                 }
             }
 
-            // Teks pesan resmi WhatsApp
+            // Pesan WhatsApp dengan link murni dan parameter nama
             const teksMentah = `Assalamualaikum Wr.Wb 
 *${namaTamu}*,
 
@@ -269,13 +261,9 @@ Terima kasih banyak atas perhatiannya.
 Kami yang berbahagia,
 *${NAMA_PASANGAN}*`;
             
-            // Mengencode pesan untuk URL
             const pesanTeksEncoded = encodeURIComponent(teksMentah);
-            
-            // Buat URL API WhatsApp resmi
             const waLink = noHp ? `https://api.whatsapp.com/send?phone=${noHp}&text=${pesanTeksEncoded}` : '#';
 
-            // Masukkan data ke dalam baris tabel HTML
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><b>${namaTamu}</b></td>
@@ -290,7 +278,6 @@ Kami yang berbahagia,
             tbody.appendChild(tr);
         });
 
-        // Tampilkan area tabel
         document.getElementById('result-area').style.display = 'block';
     }
 </script>
