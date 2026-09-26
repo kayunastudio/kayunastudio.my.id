@@ -179,7 +179,7 @@
         
         let rawSlug = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
 
-        // Murni link dasar tanpa '/tamu'
+        // Murni link dasar tanpa '/tamu' dan tanpa parameter nama tamu di URL nantinya
         let baseUrl = origin + pathname;
 
         // Format nama pasangan (Contoh: hana_handayani-irfan_ripandi -> Hana Handayani & Irfan Ripandi)
@@ -240,14 +240,14 @@
                 }
             }
 
-            // Pesan WhatsApp dengan penutup otomatis menggunakan nama pasangan (atau "Kedua Mempelai")
+            // Pesan WhatsApp dengan link undangan murni (tanpa embel-embel slug nama tamu)
             const teksMentah = `Assalamualaikum Wr.Wb 
 *${namaTamu}*,
 
 Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami.
 
 Silakan buka tautan di bawah ini untuk melihat detail undangan resmi digital kami:
-${LINK_UNDANGAN_UTAMA}?to=${encodeURIComponent(namaTamu)}
+${LINK_UNDANGAN_UTAMA}
 
 Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.
 
@@ -259,7 +259,7 @@ Diharapkan melalui media ini sebagai pengganti undangan resmi agar maksud dan tu
 Terima kasih banyak atas perhatiannya.
 
 Kami yang berbahagia,
-*Kedua Mempelai*`;
+*${NAMA_PASANGAN}*`;
             
             const pesanTeksEncoded = encodeURIComponent(teksMentah);
             const waLink = noHp ? `https://api.whatsapp.com/send?phone=${noHp}&text=${pesanTeksEncoded}` : '#';
