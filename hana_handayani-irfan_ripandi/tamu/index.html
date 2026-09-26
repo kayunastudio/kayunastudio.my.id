@@ -182,7 +182,7 @@
         // Murni link dasar tanpa '/tamu'
         let baseUrl = origin + pathname;
 
-        // Tampilkan format nama pasangan
+        // Format nama pasangan (Contoh: hana_handayani-irfan_ripandi -> Hana Handayani & Irfan Ripandi)
         let namaFormatted = rawSlug
             .replace(/[-_]+/g, ' & ')
             .split(' ')
@@ -190,7 +190,7 @@
             .join(' ');
 
         return {
-            namaPasangan: namaFormatted || "Hana & Irfan",
+            namaPasangan: namaFormatted || "Kedua Mempelai",
             linkUndangan: baseUrl
         };
     }
@@ -240,7 +240,7 @@
                 }
             }
 
-            // Pesan WhatsApp dengan link murni dan parameter nama
+            // Pesan WhatsApp dengan penutup otomatis menggunakan nama pasangan (atau "Kedua Mempelai")
             const teksMentah = `Assalamualaikum Wr.Wb 
 *${namaTamu}*,
 
