@@ -62,7 +62,7 @@
         th { background-color: #4A5D4E; color: white; }
         
         .btn-send {
-            background-color: #25D366; /* Warna WhatsApp */
+            background-color: #25D366;
             color: white;
             border: none;
             padding: 6px 12px;
@@ -168,19 +168,25 @@
 </div>
 
 <script>
-    // 1. DETEKSI OTOMATIS DOMAIN & NAMA PASANGAN DARI PATH HTML
+    // DETEKSI OTOMATIS DOMAIN & NAMA PASANGAN
     function dapatkanDeteksiMempelaiOtomatis() {
         let origin = window.location.origin;
         let pathname = window.location.pathname;
 
         // Bersihkan nama file html dari path
-        pathname = pathname.replace(/\/index_[0-9]+\.html$/, '').replace(/\/index\.html$/, '').replace(/\/$/, '');
+        pathname = pathname.replace(/\/index_[0-9a-zA-Z]*\.html$/, '')
+                           .replace(/\/index\.html$/, '')
+                           .replace(/\/$/, '');
+        
+        // Hapus subfolder /tamu dari path agar link murni hanya ke folder nama pasangan
+        pathname = pathname.replace(/\/tamu$/, '');
+
         let segments = pathname.split('/').filter(Boolean);
         
         let rawSlug = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
 
-        // Murni link dasar tanpa '/tamu' dan tanpa parameter nama tamu di URL nantinya
-        let baseUrl = origin + pathname;
+        // Murni link dasar sampai folder nama mempelai
+        let baseUrl = origin + (pathname.startsWith('/') ? pathname : '/' + pathname);
 
         // Format nama pasangan (Contoh: hana_handayani-irfan_ripandi -> Hana Handayani & Irfan Ripandi)
         let namaFormatted = rawSlug
@@ -229,7 +235,6 @@
         tbody.innerHTML = "";
         
         rows.forEach(row => {
-            // Fleksibel membaca nama tamu / kontak dari berbagai variasi header Excel
             const namaTamu = row["Nama"] || row["Nama Tamu"] || row["Kontak"] || row["Name"] || row["NAMA"] || row["nama"] || row["WhatsApp"] || "Tamu Undangan";
             let noHp = row["No HP"] || row["NO HP"] || row["No. HP"] || row["no hp"] || row["hp"] || row["No WhatsApp"] || "";
 
@@ -240,14 +245,14 @@
                 }
             }
 
-            // Pesan WhatsApp dengan link undangan murni (tanpa embel-embel slug nama tamu)
+            // Pesan WA dengan link yang bersih dari folder /tamu dan parameter penulisan tamu otomatis
             const teksMentah = `Assalamualaikum Wr.Wb 
 *${namaTamu}*,
 
 Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami.
 
 Silakan buka tautan di bawah ini untuk melihat detail undangan resmi digital kami:
-${LINK_UNDANGAN_UTAMA}
+${LINK_UNDANGAN_UTAMA}?to=${encodeURIComponent(namaTamu)}
 
 Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.
 
