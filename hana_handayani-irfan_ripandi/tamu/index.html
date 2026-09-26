@@ -182,15 +182,17 @@
         pathname = pathname.replace(/\/tamu$/, '');
 
         let segments = pathname.split('/').filter(Boolean);
-        
         let rawSlug = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
 
         // Murni link dasar sampai folder nama mempelai
         let baseUrl = origin + (pathname.startsWith('/') ? pathname : '/' + pathname);
 
-        // Format nama pasangan (Contoh: hana_handayani-irfan_ripandi -> Hana Handayani & Irfan Ripandi)
+        // Format nama pasangan: 
+        // 1. '-' diubah menjadi ' & ' (pemisah mempelai)
+        // 2. '_' diubah menjadi ' ' (spasi untuk nama panjang)
         let namaFormatted = rawSlug
-            .replace(/[-_]+/g, ' & ')
+            .replace(/-/g, ' & ')
+            .replace(/_/g, ' ')
             .split(' ')
             .map(word => word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : '')
             .join(' ');
@@ -245,7 +247,7 @@
                 }
             }
 
-            // Pesan WA dengan link yang bersih dari folder /tamu dan parameter penulisan tamu otomatis
+            // Pesan WA dengan link murni dan penyematan parameter ?to=Nama+Tamu otomatis
             const teksMentah = `Assalamualaikum Wr.Wb 
 *${namaTamu}*,
 
