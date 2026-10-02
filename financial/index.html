@@ -250,7 +250,7 @@
                                     <option value="Kesehatan & Medis">🏥 Kesehatan & Medis</option>
                                     <option value="Perawatan Diri">🧴 Perawatan Diri</option>
                                     <option value="Keperluan Anak">🍼 Keperluan Anak</option>
-                                    <option value="Hiburan & Rekreasi">🏕️️ Hiburan & Rekreasi</option>
+                                    <option value="Hiburan & Rekreasi">🏕 Hiburan & Rekreasi</option>
                                     <option value="Investasi & Tabungan">📈 Investasi & Tabungan</option>
                                     <option value="Pajak & Asuransi">📄 Pajak & Asuransi</option>
                                     <option value="Cicilan & Utang">💸 Cicilan & Utang</option>
@@ -265,10 +265,13 @@
                                 <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Nominal Rupiah (Rp)</label>
                                 <input type="number" id="txNominal" required placeholder="0" min="1" class="w-full border border-slate-200 p-2 text-xs font-bold rounded-xl bg-slate-50 focus:outline-none">
                             </div>
-                            <div>
+
+                            <!-- INPUT FILE LAMPIRAN - HANYA MUNCUL JIKA DIBERI IZIN / HANAIIRFAN -->
+                            <div id="containerUploadBukti" class="hidden">
                                 <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Upload Bukti Lampiran (Gambar / PDF)</label>
                                 <input type="file" id="txFileBukti" accept="image/*,application/pdf" class="w-full text-[10px] text-slate-500 bg-slate-50 border border-slate-200 p-1 rounded-xl file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:bg-slate-200 file:text-slate-700 cursor-pointer">
                             </div>
+
                             <div class="flex gap-1.5 pt-1.5">
                                 <button type="submit" id="btnSubmitForm" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-xl shadow text-xs transition">💾 Simpan Kas</button>
                                 <button type="button" id="btnBatalEdit" onclick="resetFormMutasi()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 rounded-xl text-xs transition">Batal</button>
@@ -317,7 +320,7 @@
                                             <th class="p-2 text-right w-20 text-emerald-600">Debit (+)</th>
                                             <th class="p-2 text-right w-20 text-rose-600">Kredit (-)</th>
                                             <th class="p-2 text-right w-24 bg-slate-50/50 border-x">Saldo Buku</th>
-                                            <th class="p-2 text-center w-20 no-print">Aksi & Lampiran</th>
+                                            <th class="p-2 text-center w-20 no-print">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="jurnal-rows" class="divide-y text-slate-600 bg-white font-medium">
@@ -399,7 +402,7 @@
 
     <!-- MODAL POPUP SUPERADMIN KELOLA AKUN -->
     <div id="superadminModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl relative flex flex-col max-h-[90vh]">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-5 shadow-2xl relative flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="font-bold text-base text-slate-800 flex items-center gap-2"><span>👑</span> Dashboard Superadmin — Kelola Penyewa SaaS</h3>
                 <button onclick="tutupModalSuperAdmin()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
@@ -407,11 +410,15 @@
             
             <form onsubmit="event.preventDefault(); simpanAkunSewaBaru();" class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 mb-4 space-y-2">
                 <div class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tambah / Registrasi Penyewa Baru</div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
                     <input type="text" id="saUsername" placeholder="Username (Unique)" required class="border border-slate-200 p-2 text-xs rounded-lg bg-white">
                     <input type="text" id="saPin" placeholder="PIN (ex: 1234)" required class="border border-slate-200 p-2 text-xs rounded-lg bg-white">
                     <input type="text" id="saNamaAkun" placeholder="Nama Akun/Penyewa" required class="border border-slate-200 p-2 text-xs rounded-lg bg-white">
                     <input type="date" id="saExpired" required class="border border-slate-200 p-2 text-xs rounded-lg bg-white">
+                    <div class="flex items-center gap-1 pl-1">
+                        <input type="checkbox" id="saCanUpload" class="w-4 h-4 text-purple-600 rounded">
+                        <label for="saCanUpload" class="text-[10px] font-bold text-slate-600">Izin Upload</label>
+                    </div>
                 </div>
                 <div class="flex justify-end pt-1">
                     <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition">+ Buat Akun Penyewa</button>
@@ -425,6 +432,7 @@
                             <th class="p-2">Username</th>
                             <th class="p-2">Nama Akun</th>
                             <th class="p-2">PIN</th>
+                            <th class="p-2">Fitur Lampiran</th>
                             <th class="p-2">Kadaluarsa</th>
                             <th class="p-2 text-center">Aksi</th>
                         </tr>
@@ -483,6 +491,12 @@
             }
         });
 
+        // HELPER UNTUK CEK APAKAH AKUN MEMILIKI IZIN ATTACHMENT
+        function isCanUploadAttachment() {
+            if (!currentAccount) return false;
+            return currentAccount.username === 'hanairfan' || currentAccount.can_upload_attachment === true;
+        }
+
         /* --- LOGIKA VERIFIKASI AKUN & PIN (MULTI-TENANT) --- */
         async function verifikasiKodePass() {
             const usernameInput = document.getElementById('inputUsername').value.trim().toLowerCase();
@@ -535,9 +549,19 @@
 
             if (currentAccount.role === 'admin') {
                 document.getElementById('btnSuperAdminNav').classList.remove('hidden');
-                bukaModalSuperAdmin(); // Langsung tampilkan modal admin jika login sebagai superadmin
+                bukaModalSuperAdmin();
             } else {
                 document.getElementById('btnSuperAdminNav').classList.add('hidden');
+            }
+
+            // Tampilkan / Sembunyikan Input File Upload Bukti
+            const uploadBox = document.getElementById('containerUploadBukti');
+            if (uploadBox) {
+                if (isCanUploadAttachment()) {
+                    uploadBox.classList.remove('hidden');
+                } else {
+                    uploadBox.classList.add('hidden');
+                }
             }
 
             // Atur PIC Bawaan per jenis akun
@@ -1004,8 +1028,7 @@
                 tr.className = "hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-500 text-[11px] sm:text-xs";
                 tr.innerHTML = `
                     <td class="p-2 font-bold text-slate-800">
-                        ${target.nama}
-                        ${isCukup ? '<span class="ml-1 text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-md">✓ Cukup</span>' : ''}
+                        ${target.nama}${isCukup ? '<span class="ml-1 text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-md">✓ Cukup</span>' : ''}
                     </td>
                     <td class="p-2 text-center">
                         <span class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-md text-slate-700">${picTarget}</span>
@@ -1049,7 +1072,7 @@
             sortedBulan.forEach(bKey => {
                 const [tahun, bulan] = bKey.split('-');
                 const namaBulanList = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                const namaBulan = `${namaBulanList[parseInt(bulan) - 1]} ${tahun}`;
+                const namaBulan = `${namaBulanList[parseInt(bulan) - 1]}${tahun}`;
 
                 const opt = document.createElement('option');
                 opt.value = bKey;
@@ -1079,7 +1102,7 @@
                     const picTx = tx.pic === "Bersama" ? "Tabungan" : tx.pic;
                     
                     const matchBulan = (filterBulan === "ALL" || bulanTx === filterBulan);
-                    const matchPic = (filterPic === "ALL" || picTx === filterPic);
+                    const matchPic = (filterPic === "ALL" || picPic === filterPic);
 
                     if (matchBulan && matchPic) {
                         totalOutflow += tx.nominal;
@@ -1295,27 +1318,53 @@
         }
 
         function renderTabelJurnal(targetArrayData) {
-            const tbody = document.getElementById('jurnal-rows'); tbody.innerHTML = "";
+            const tbody = document.getElementById('jurnal-rows'); 
+            tbody.innerHTML = "";
+            
             if (targetArrayData.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic text-[11px]">Buku kas kosong. Belum ada mutasi tersimpan.</td></tr>`;
-                if(chartInstances.MutasiLine) chartInstances.MutasiLine.destroy(); return;
+                if(chartInstances.MutasiLine) chartInstances.MutasiLine.destroy(); 
+                return;
             }
 
-            let runningBalance = 0; let rowsHtmlBuffer = [];
-            let labelGrafik = []; let dataSaldoGrafik = [];
+            let runningBalance = 0; 
+            let rowsHtmlBuffer = [];
+            let labelGrafik = []; 
+            let dataSaldoGrafik = [];
+            
+            // Cek izin akun aktif
+            const allowAttachment = isCanUploadAttachment();
 
             targetArrayData.forEach(tx => {
-                const adalahInflow = tx.jenis === "Pemasukan"; let debitText = "-"; let kreditText = "-";
-                if (adalahInflow) { runningBalance += tx.nominal; debitText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; } 
-                else { runningBalance -= tx.nominal; kreditText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; }
-
-                labelGrafik.push(formatTanggalPendek(tx.tanggal)); dataSaldoGrafik.push(runningBalance);
+                const adalahInflow = tx.jenis === "Pemasukan"; 
+                let debitText = "-"; 
+                let kreditText = "-";
                 
-                let buktiHtml = tx.buktiUrl ? `
-                    <button onclick="bukaJendelaPratinjauBukti('${tx.buktiUrl}')" title="Preview Bukti Lampiran" class="text-slate-600 hover:text-blue-600 p-1 bg-slate-100 hover:bg-blue-50 rounded-lg transition">
-                        🔍
-                    </button>
-                ` : `<span class="text-slate-300 italic">-</span>`;
+                if (adalahInflow) { 
+                    runningBalance += tx.nominal; 
+                    debitText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; 
+                } else { 
+                    runningBalance -= tx.nominal; 
+                    kreditText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; 
+                }
+
+                labelGrafik.push(formatTanggalPendek(tx.tanggal)); 
+                dataSaldoGrafik.push(runningBalance);
+                
+                // LOGIKA TOMBOL BUKTI:
+                // Tampilkan tombol 🔍 hanya jika akun memiliki izin DAN terdapat data buktiUrl
+                let buktiHtml = "";
+                if (allowAttachment) {
+                    if (tx.buktiUrl && tx.buktiUrl.trim() !== "") {
+                        buktiHtml = `
+                            <button onclick="bukaJendelaPratinjauBukti('${tx.buktiUrl}')" title="Preview Bukti Lampiran" class="text-slate-600 hover:text-blue-600 p-1 bg-slate-100 hover:bg-blue-50 rounded-lg transition">
+                                🔍
+                            </button>
+                        `;
+                    } else {
+                        buktiHtml = `<span class="text-slate-300 text-[10px] italic">-</span>`;
+                    }
+                }
 
                 const trHtml = `
                     <tr class="hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-600 text-[11px] sm:text-xs">
@@ -1329,7 +1378,7 @@
                             <div class="flex items-center justify-center gap-1.5 font-bold text-[10px] sm:text-[11px]">
                                 ${buktiHtml}
                                 <button onclick="bukaModeEditTransaksi('${tx.id}')" title="Edit Transaksi" class="text-blue-600 hover:text-blue-800 p-1 hover:bg-blue-50 rounded-lg">✏️</button>
-                                <button onclick="hapusTransaksiDariCloud('${tx.id}')" title="Hapus Transaksi" class="text-rose-500 hover:text-rose-700 p-1 hover:bg-rose-50 rounded-lg">🗑️</button>
+                                <button onclick="hapusTransaksiDariCloud('${tx.id}')" title="Hapus Transaksi" class="text-rose-500 hover:text-rose-700 p-1 hover:bg-rose-50 rounded-lg">🗑️️</button>
                             </div>
                         </td>
                     </tr>
@@ -1379,7 +1428,7 @@
 
         async function muatDaftarAkunSuperAdmin() {
             const tbody = document.getElementById('saAccountsTableRows');
-            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center italic text-slate-400">Memuat daftar akun...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center italic text-slate-400">Memuat daftar akun...</td></tr>`;
 
             const { data, error } = await supabaseClient
                 .from('accounts')
@@ -1387,7 +1436,7 @@
                 .order('created_at', { ascending: false });
 
             if (error || !data) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-rose-500 italic">Gagal memuat akun.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-500 italic">Gagal memuat akun.</td></tr>`;
                 return;
             }
 
@@ -1396,12 +1445,19 @@
 
             data.forEach(acc => {
                 const isExp = acc.role !== 'admin' && acc.expired_date < todayStr;
+                const canUpload = acc.username === 'hanairfan' || acc.can_upload_attachment === true;
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 border-b border-slate-100";
                 tr.innerHTML = `
                     <td class="p-2 font-bold text-slate-900">${acc.username} ${acc.role === 'admin' ? '<span class="text-[8px] bg-purple-100 text-purple-700 font-extrabold px-1.5 py-0.5 rounded">SUPERADMIN</span>' : ''}</td>
                     <td class="p-2">${acc.account_name}</td>
                     <td class="p-2 font-mono">${acc.pin_code}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="toggleIzinUpload('${acc.id}', ${canUpload})" class="text-[10px] font-bold px-2 py-0.5 rounded ${canUpload ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}">
+                            ${canUpload ? '✓ Aktif' : '✗ Nonaktif'}
+                        </button>
+                    </td>
                     <td class="p-2 font-mono ${isExp ? 'text-rose-600 font-bold' : 'text-emerald-600'}">
                         ${acc.role === 'admin' ? 'Permanen' : acc.expired_date} ${isExp ? '(EXPIRED)' : ''}
                     </td>
@@ -1414,22 +1470,38 @@
             });
         }
 
+        async function toggleIzinUpload(id, statusSekarang) {
+            const statusBaru = !statusSekarang;
+            const { error } = await supabaseClient
+                .from('accounts')
+                .update({ can_upload_attachment: statusBaru })
+                .eq('id', id);
+
+            if (!error) {
+                muatDaftarAkunSuperAdmin();
+            } else {
+                alert("Gagal mengubah izin upload: " + error.message);
+            }
+        }
+
         async function simpanAkunSewaBaru() {
             const username = document.getElementById('saUsername').value.trim().toLowerCase();
             const pin_code = document.getElementById('saPin').value.trim();
             const account_name = document.getElementById('saNamaAkun').value.trim();
             const expired_date = document.getElementById('saExpired').value;
+            const can_upload_attachment = document.getElementById('saCanUpload').checked;
 
             const { error } = await supabaseClient
                 .from('accounts')
                 .insert([{
-                    username, pin_code, account_name, expired_date, role: 'client', is_active: true
+                    username, pin_code, account_name, expired_date, role: 'client', is_active: true, can_upload_attachment
                 }]);
 
             if (!error) {
                 document.getElementById('saUsername').value = "";
                 document.getElementById('saPin').value = "";
                 document.getElementById('saNamaAkun').value = "";
+                document.getElementById('saCanUpload').checked = false;
                 muatDaftarAkunSuperAdmin();
                 alert("Akun penyewa baru berhasil ditambahkan!");
             } else {
