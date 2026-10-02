@@ -9,6 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Library Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         /* ==========================================================================
            COLOR PALETTE & CORE STYLES (Tema: Fairy Tale Oil Painting / Storybook)
@@ -1155,7 +1158,7 @@
                             <textarea id="input-pesan" class="form-control" rows="3" placeholder="Tulis ucapan selamat &amp; doa restu Anda di sini..." required></textarea>
                         </div>
 
-                        <button type="submit" class="btn-rsvp-submit-custom">Kirim</button>
+                        <button type="submit" id="btn-submit-rsvp" class="btn-rsvp-submit-custom">Kirim</button>
                     </form>
                 </div>
 
@@ -1216,6 +1219,11 @@
     </audio>
 
     <script>
+        // KONFIGURASI SUPABASE
+        const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const urlParams = new URLSearchParams(window.location.search);
         const namaTamuParam = urlParams.get('to');
         if (namaTamuParam) {
@@ -1277,6 +1285,9 @@
             music.play().then(() => { 
                 musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; 
             });
+
+            // Muat ucapan setelah undangan dibuka
+            muatUcapan();
         }
 
         function initScrollReveal() {
@@ -1336,18 +1347,93 @@
             document.getElementById("seconds").innerText = Math.floor((distance % (1000 * 60)) / 1000);
         }, 1000);
 
-        function kirimUcapan(event) {
-            event.preventDefault();
-            const nama = document.getElementById('input-nama').value;
-            const jumlah = document.getElementById('input-jumlah').value;
-            const pesan = document.getElementById('input-pesan').value;
-            
+
+        // ==========================================
+        // FUNGSI RSVP SUPABASE
+        // ==========================================
+        
+        async function muatUcapan() {
+            const boxUcapan = document.getElementById('box-ucapan');
+            try {
+                const { data, error } = await supabase
+                    .from('rsvp_messages')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                boxUcapan.innerHTML = ""; // Bersihkan list awal
+
+                if (data.length === 0) {
+                    boxUcapan.innerHTML = `<div class="ucapan-card-item"><p class="ucapan-card-body" style="text-align:center;">Belum ada ucapan.</p></div>`;
+                    return;
+                }
+
+                data.forEach(item => {
+                    tampilkanItemUcapan(item.nama, item.jumlah_hadir, item.pesan);
+                });
+
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+            }
+        }
+
+        function tampilkanItemUcapan(nama, jumlah, pesan) {
             const item = document.createElement('div');
             item.classList.add('ucapan-card-item');
-            item.innerHTML = `<span class="ucapan-card-title">${nama}</span><span class="ucapan-card-count">${jumlah}</span><p class="ucapan-card-body">${pesan}</p>`;
             
-            document.getElementById('box-ucapan').insertBefore(item, document.getElementById('box-ucapan').firstChild);
-            document.getElementById('input-pesan').value = "";
+            // Mengatasi HTML Injection
+            const safeNama = document.createElement('div'); safeNama.innerText = nama;
+            const safeJumlah = document.createElement('div'); safeJumlah.innerText = jumlah;
+            const safePesan = document.createElement('div'); safePesan.innerText = pesan;
+
+            item.innerHTML = `<span class="ucapan-card-title">${safeNama.innerHTML}</span><span class="ucapan-card-count">${safeJumlah.innerHTML}</span><p class="ucapan-card-body">${safePesan.innerHTML}</p>`;
+            
+            document.getElementById('box-ucapan').appendChild(item);
+        }
+
+        async function kirimUcapan(event) {
+            event.preventDefault();
+            const btnSubmit = document.getElementById('btn-submit-rsvp');
+            
+            const nama = document.getElementById('input-nama').value;
+            const jumlah = document.getElementById('input-jumlah').value;
+            const kehadiran = document.getElementById('input-kehadiran').value;
+            const pesan = document.getElementById('input-pesan').value;
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Mengirim...";
+            
+            try {
+                const { error } = await supabase
+                    .from('rsvp_messages')
+                    .insert([
+                        { nama: nama, jumlah_hadir: jumlah, kehadiran: kehadiran, pesan: pesan }
+                    ]);
+
+                if (error) throw error;
+
+                // Tambahkan langsung ke atas daftar secara lokal agar user merasa cepat
+                const item = document.createElement('div');
+                item.classList.add('ucapan-card-item');
+                const safeNama = document.createElement('div'); safeNama.innerText = nama;
+                const safeJumlah = document.createElement('div'); safeJumlah.innerText = jumlah;
+                const safePesan = document.createElement('div'); safePesan.innerText = pesan;
+                item.innerHTML = `<span class="ucapan-card-title">${safeNama.innerHTML}</span><span class="ucapan-card-count">${safeJumlah.innerHTML}</span><p class="ucapan-card-body">${safePesan.innerHTML}</p>`;
+                
+                const boxUcapan = document.getElementById('box-ucapan');
+                boxUcapan.insertBefore(item, boxUcapan.firstChild);
+
+                document.getElementById('input-pesan').value = "";
+                alert("Terima kasih atas doa dan ucapannya!");
+
+            } catch (error) {
+                alert("Gagal mengirim pesan: " + error.message);
+                console.error(error);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Kirim";
+            }
         }
     </script>
 </body>
