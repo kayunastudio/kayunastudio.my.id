@@ -225,7 +225,7 @@
                                 <div>
                                     <div class="flex justify-between items-center mb-0.5">
                                         <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Anggota (PIC)</label>
-                                        <button type="button" onclick="tambahPicCustomBaru()" class="text-[8px] font-bold text-blue-600 hover:underline">+ Custom</button>
+                                        <button type="button" onclick="bukaModalKelolaPic()" class="text-[8px] font-bold text-blue-600 hover:underline">+ Custom / Kelola</button>
                                     </div>
                                     <select id="txPic" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-medium">
                                         <!-- Dynamically populated -->
@@ -400,6 +400,31 @@
         </main>
     </div>
 
+    <!-- MODAL KELOLA ANGGOTA PIC CUSTOM -->
+    <div id="picModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl relative flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center border-b pb-3 mb-3">
+                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2"><span>👤</span> Kelola Anggota (PIC)</h3>
+                <button onclick="tutupModalKelolaPic()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); prosesTambahPicBaruModal();" class="flex gap-2 border-b pb-3 mb-3">
+                <input type="text" id="inputNamaPicModal" placeholder="Nama PIC baru..." required class="flex-1 border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition">+ Tambah</button>
+            </form>
+
+            <div class="overflow-y-auto max-h-56 custom-scroll">
+                <ul id="listPicCustomContainer" class="space-y-2 text-xs divide-y divide-slate-100">
+                    <li class="text-slate-400 italic text-center py-4">Memuat data PIC...</li>
+                </ul>
+            </div>
+
+            <div class="mt-4 text-right border-t pt-3">
+                <button onclick="tutupModalKelolaPic()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-xl transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL POPUP SUPERADMIN KELOLA AKUN -->
     <div id="superadminModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
         <div class="bg-white rounded-2xl max-w-3xl w-full p-5 shadow-2xl relative flex flex-col max-h-[90vh]">
@@ -480,6 +505,7 @@
         let chartInstances = {};
 
         let daftarPicLengkap = [];
+        let picBawaanDefault = ["Tabungan", "Irfan", "Hana", "Anak"];
 
         document.addEventListener("DOMContentLoaded", () => {
             const savedAcc = sessionStorage.getItem("fincheck_account");
@@ -637,12 +663,26 @@
         }
 
         async function syncPicCustomList() {
+            // Reset ke pic bawaan dasar
+            if (currentAccount.username === 'hanairfan') {
+                daftarPicLengkap = [
+                    { id: "Tabungan", label: "🏦 Tabungan" },
+                    { id: "Irfan", label: "👨 Irfan" },
+                    { id: "Hana", label: "👩 Hana" },
+                    { id: "Anak", label: "👦 Anak" }
+                ];
+            } else {
+                daftarPicLengkap = [
+                    { id: "Tabungan", label: "🏦 Tabungan" }
+                ];
+            }
+
             try {
                 const data = await fetchAllRows('custom_pics');
                 if (data && data.length > 0) {
                     data.forEach(item => {
                         if (!daftarPicLengkap.some(p => p.id === item.name)) {
-                            daftarPicLengkap.push({ id: item.name, label: `👤 ${item.name}` });
+                            daftarPicLengkap.push({ id: item.name, label: `👤 ${item.name}`, dbId: item.id });
                         }
                     });
                 }
@@ -694,25 +734,88 @@
             if (prevFilter) filterPicSelect.value = prevFilter;
         }
 
-        async function tambahPicCustomBaru() {
-            const namaBaru = prompt("Masukkan nama Anggota (PIC) baru:");
-            if (!namaBaru || !namaBaru.trim()) return;
+        /* --- FUNGSI MODAL KELOLA PIC CUSTOM & HAPUS PIC --- */
+        function bukaModalKelolaPic() {
+            document.getElementById('picModal').classList.remove('hidden');
+            renderListPicModal();
+        }
 
-            const cleanName = namaBaru.trim();
-            if (daftarPicLengkap.some(p => p.id.toLowerCase() === cleanName.toLowerCase())) {
+        function tutupModalKelolaPic() {
+            document.getElementById('picModal').classList.add('hidden');
+        }
+
+        function renderListPicModal() {
+            const container = document.getElementById('listPicCustomContainer');
+            container.innerHTML = "";
+
+            daftarPicLengkap.forEach(p => {
+                const isBawaan = picBawaanDefault.includes(p.id);
+                const li = document.createElement('li');
+                li.className = "py-2 px-1 flex justify-between items-center";
+                li.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-800">${p.label}</span>
+                        ${isBawaan ? '<span class="text-[8px] bg-slate-100 font-extrabold text-slate-400 px-1.5 py-0.5 rounded">DEFAULT</span>' : ''}
+                    </div>
+                    ${!isBawaan ? `<button onclick="hapusPicCustom('${p.id}', '${p.dbId || ''}')" class="text-rose-500 hover:text-rose-700 font-bold hover:underline">Hapus</button>` : ''}
+                `;
+                container.appendChild(li);
+            });
+        }
+
+        async function prosesTambahPicBaruModal() {
+            const input = document.getElementById('inputNamaPicModal');
+            const namaBaru = input.value.trim();
+            if (!namaBaru) return;
+
+            if (daftarPicLengkap.some(p => p.id.toLowerCase() === namaBaru.toLowerCase())) {
                 alert("Nama PIC tersebut sudah ada.");
                 return;
             }
 
-            daftarPicLengkap.push({ id: cleanName, label: `👤 ${cleanName}` });
-            populasiDropdownPic();
-
             try {
-                await supabaseClient.from('custom_pics').insert([{ name: cleanName, account_id: currentAccount.username }]);
-            } catch(e) {}
+                const { data, error } = await supabaseClient
+                    .from('custom_pics')
+                    .insert([{ name: namaBaru, account_id: currentAccount.username }])
+                    .select();
 
-            document.getElementById('txPic').value = cleanName;
-            updateSegalaCharts();
+                if (!error) {
+                    input.value = "";
+                    await syncPicCustomList();
+                    renderListPicModal();
+                    updateSegalaCharts();
+                } else {
+                    alert("Gagal menyimpan PIC: " + error.message);
+                }
+            } catch(e) {
+                alert("Gagal menambahkan PIC.");
+            }
+        }
+
+        async function hapusPicCustom(namaPic, dbId) {
+            if (confirm(`Apakah Anda yakin ingin menghapus PIC "${namaPic}"?`)) {
+                try {
+                    let err;
+                    if (dbId) {
+                        const res = await supabaseClient.from('custom_pics').delete().eq('id', dbId);
+                        err = res.error;
+                    } else {
+                        const res = await supabaseClient.from('custom_pics').delete().eq('name', namaPic).eq('account_id', currentAccount.username);
+                        err = res.error;
+                    }
+
+                    if (!err) {
+                        await syncPicCustomList();
+                        renderListPicModal();
+                        updateSegalaCharts();
+                        renderLaporanBulanan();
+                    } else {
+                        alert("Gagal menghapus PIC: " + err.message);
+                    }
+                } catch(e) {
+                    alert("Gagal menghapus PIC.");
+                }
+            }
         }
 
         async function muatDataKeuangan() {
@@ -1102,7 +1205,7 @@
                     const picTx = tx.pic === "Bersama" ? "Tabungan" : tx.pic;
                     
                     const matchBulan = (filterBulan === "ALL" || bulanTx === filterBulan);
-                    const matchPic = (filterPic === "ALL" || picPic === filterPic);
+                    const matchPic = (filterPic === "ALL" || picTx === filterPic);
 
                     if (matchBulan && matchPic) {
                         totalOutflow += tx.nominal;
@@ -1378,7 +1481,7 @@
                             <div class="flex items-center justify-center gap-1.5 font-bold text-[10px] sm:text-[11px]">
                                 ${buktiHtml}
                                 <button onclick="bukaModeEditTransaksi('${tx.id}')" title="Edit Transaksi" class="text-blue-600 hover:text-blue-800 p-1 hover:bg-blue-50 rounded-lg">✏️</button>
-                                <button onclick="hapusTransaksiDariCloud('${tx.id}')" title="Hapus Transaksi" class="text-rose-500 hover:text-rose-700 p-1 hover:bg-rose-50 rounded-lg">🗑️️</button>
+                                <button onclick="hapusTransaksiDariCloud('${tx.id}')" title="Hapus Transaksi" class="text-rose-500 hover:text-rose-700 p-1 hover:bg-rose-50 rounded-lg">🗑</button>
                             </div>
                         </td>
                     </tr>
