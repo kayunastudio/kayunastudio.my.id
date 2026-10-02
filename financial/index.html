@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Finance Tracker — Single Page Dashboard (Supabase)</title>
+    <title>Family Finance Tracker — Single Page Dashboard (SaaS Multi-Tenant)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -17,7 +17,6 @@
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .fin-shadow { box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.08), 0 8px 10px -6px rgba(148, 163, 184, 0.08); }
         
-        /* OVERLAY PIN ACCESS LAYAR PENUH */
         #pin-overlay { 
             position: fixed; 
             inset: 0; 
@@ -29,7 +28,6 @@
             padding: 1rem;
         }
 
-        /* CSS KHUSUS ATURAN CETAK (PRINT) */
         @media print { 
             .no-print, .print-hide-macro, #pin-overlay { display: none !important; } 
             .print-area { width: 100% !important; margin: 0 !important; padding: 0 !important; } 
@@ -40,26 +38,31 @@
 </head>
 <body class="bg-[#ECEFF5] text-slate-800 min-h-screen font-sans antialiased flex flex-col">
 
-    <!-- OVERLAY MASUKKAN KODE PASSCODE PIN -->
+    <!-- OVERLAY LOGIN MASUKKAN ID AKUN & PIN -->
     <div id="pin-overlay" class="no-print">
         <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-slate-100 text-center relative overflow-hidden">
             <div class="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-black mx-auto mb-4 text-2xl shadow-lg shadow-blue-500/30">
                 F
             </div>
             <h2 class="text-xl font-black text-slate-900 tracking-tight">Akses Keuangan Keluarga</h2>
-            <p class="text-xs text-slate-400 font-medium mt-1 mb-6">Masukkan Kode PIN</p>
+            <p class="text-xs text-slate-400 font-medium mt-1 mb-6">Masukkan Username ID & PIN Akun</p>
 
             <form onsubmit="event.preventDefault(); verifikasiKodePass();" class="space-y-3">
                 <div>
-                    <input type="password" id="inputPinCode" maxlength="8" autofocus placeholder="Kode PIN" class="w-full border border-slate-200 p-3.5 text-center text-lg tracking-widest font-black rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                    <input type="text" id="inputUsername" placeholder="Username" required class="w-full border border-slate-200 p-3 text-center text-sm font-bold rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition mb-2">
+                    <input type="password" id="inputPinCode" maxlength="8" autofocus placeholder="Kode PIN" required class="w-full border border-slate-200 p-3.5 text-center text-lg tracking-widest font-black rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
                 </div>
 
                 <div id="pinErrorMsg" class="hidden text-[11px] text-rose-500 font-bold bg-rose-50 p-2.5 rounded-xl border border-rose-100">
-                    ⚠️ Kode PIN salah!
+                    ⚠️ Username atau Kode PIN salah!
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                    <span>🔓</span> Verifikasi PIN
+                <div id="expiredErrorMsg" class="hidden text-[11px] text-amber-700 font-bold bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                    🚫 Masa sewa akun ini telah berakhir. Silakan hubungi Superadmin.
+                </div>
+
+                <button type="submit" id="btnLoginSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    <span>🔓</span> Verifikasi Login
                 </button>
             </form>
         </div>
@@ -74,19 +77,22 @@
                     <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 text-base">F</div>
                     <div>
                         <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight block leading-tight">Family Finance Tracker</span>
-                        <span class="text-[10px] text-slate-400 font-medium hidden sm:block">Unified Dashboard Financial Management (Supabase Cloud)</span>
+                        <span id="lblAccountInfo" class="text-[10px] text-blue-600 font-bold block">Account: Loading...</span>
                     </div>
                 </div>
                 
                 <div class="flex items-center gap-2">
+                    <button id="btnSuperAdminNav" onclick="bukaModalSuperAdmin()" class="hidden bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-3 rounded-xl shadow text-xs transition flex items-center gap-1">
+                        <span>⚙️</span> <span class="hidden sm:inline">Kelola Penyewa</span>
+                    </button>
                     <button onclick="muatDataKeuangan();" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3.5 rounded-xl shadow text-xs transition flex items-center gap-1.5 font-mono">
-                        <span>🔄</span> <span class="hidden sm:inline">Sync Supabase</span>
+                        <span>🔄</span> <span class="hidden sm:inline">Sync</span>
                     </button>
                     <button onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3.5 rounded-xl text-xs transition flex items-center gap-1.5">
                         <span>🖨️</span> <span class="hidden sm:inline">Cetak</span>
                     </button>
-                    <button onclick="kunciUlangDashboard();" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center gap-1 ml-1" title="Kunci Dashboard">
-                        <span>🔒</span> <span class="hidden sm:inline">Kunci</span>
+                    <button onclick="kunciUlangDashboard();" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center gap-1 ml-1" title="Keluar / Keluar Akun">
+                        <span>🚪</span> <span class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
             </div>
@@ -97,10 +103,13 @@
             
             <div class="mb-5 no-print flex justify-between items-end">
                 <div>
-                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Hi Family Team,</h1>
+                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Hi <span id="txtDisplayAccountName">Family</span>,</h1>
                     <p class="text-xs text-slate-400 font-medium">Berikut laporan terpadu dan rekapitulasi mutasi keuangan keluarga Anda.</p>
                 </div>
-                <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-200 hidden sm:inline-block">● Authorized Access</span>
+                <div class="text-right">
+                    <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full border border-emerald-200 block sm:inline-block">● Authorized Access</span>
+                    <span id="lblMasaBerlakuSewa" class="text-[9px] font-mono text-slate-400 block mt-1">Masa Sewa s.d: -</span>
+                </div>
             </div>
 
             <!-- METRIK UTAMA STATISTIK -->
@@ -146,7 +155,6 @@
                                 <p class="text-[9px] text-slate-400 font-medium">Breakdown pengeluaran per bulan & PIC</p>
                             </div>
                         </div>
-                        <!-- DROPDOWN FILTER BULAN DAN PIC -->
                         <div class="flex gap-2 mt-1">
                             <select id="filterBulanLaporan" onchange="renderLaporanBulanan()" class="flex-1 text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
                                 <option value="ALL">Semua Bulan</option>
@@ -220,10 +228,7 @@
                                         <button type="button" onclick="tambahPicCustomBaru()" class="text-[8px] font-bold text-blue-600 hover:underline">+ Custom</button>
                                     </div>
                                     <select id="txPic" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-medium">
-                                        <option value="Tabungan">🏦 Tabungan</option>
-                                        <option value="Irfan">👨 Irfan</option>
-                                        <option value="Hana">👩 Hana</option>
-                                        <option value="Anak">👦 Anak</option>
+                                        <!-- Dynamically populated -->
                                     </select>
                                 </div>
                                 <div>
@@ -245,7 +250,7 @@
                                     <option value="Kesehatan & Medis">🏥 Kesehatan & Medis</option>
                                     <option value="Perawatan Diri">🧴 Perawatan Diri</option>
                                     <option value="Keperluan Anak">🍼 Keperluan Anak</option>
-                                    <option value="Hiburan & Rekreasi">🏕️ Hiburan & Rekreasi</option>
+                                    <option value="Hiburan & Rekreasi">🏕️️ Hiburan & Rekreasi</option>
                                     <option value="Investasi & Tabungan">📈 Investasi & Tabungan</option>
                                     <option value="Pajak & Asuransi">📄 Pajak & Asuransi</option>
                                     <option value="Cicilan & Utang">💸 Cicilan & Utang</option>
@@ -271,12 +276,12 @@
                         </form>
                     </div>
                     
-                    <!-- NET ARUS KAS DIPINDAHKAN KELUAR / KANAN BAWAH LAPORAN BULANAN ATAU DI SAMPING FORM -->
+                    <!-- NET ARUS KAS PIC GRID -->
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/60 shadow-sm space-y-2.5">
                         <div class="flex justify-between items-center">
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Arus Kas Anggota Keluarga (PIC)</span>
                         </div>
-                        <div id="netArusKasPicGrid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2 text-center text-[9px]">
+                        <div id="netArusKasPicGrid" class="grid grid-cols-2 gap-2 text-center text-[9px]">
                             <!-- Container Pie Chart per PIC diisi secara dinamis -->
                         </div>
                     </div>
@@ -296,7 +301,6 @@
                                 <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm no-print">
                             </div>
 
-                            <!-- CONTAINER GRAFIK INTERAKTIF -->
                             <div class="w-full overflow-x-auto overflow-y-auto max-h-64 sm:max-h-80 mb-3 bg-slate-50/50 rounded-xl p-2 border border-slate-100 custom-scroll print-scroll-auto">
                                 <div id="chartWrapper" class="h-48 sm:h-64 relative min-w-[600px]">
                                     <canvas id="chartMutasiLine"></canvas>
@@ -393,6 +397,50 @@
         </main>
     </div>
 
+    <!-- MODAL POPUP SUPERADMIN KELOLA AKUN -->
+    <div id="superadminModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl relative flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-bold text-base text-slate-800 flex items-center gap-2"><span>👑</span> Dashboard Superadmin — Kelola Penyewa SaaS</h3>
+                <button onclick="tutupModalSuperAdmin()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); simpanAkunSewaBaru();" class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 mb-4 space-y-2">
+                <div class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tambah / Registrasi Penyewa Baru</div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <input type="text" id="saUsername" placeholder="Username (Unique)" required class="border border-slate-200 p-2 text-xs rounded-lg bg-white">
+                    <input type="text" id="saPin" placeholder="PIN (ex: 1234)" required class="border border-slate-200 p-2 text-xs rounded-lg bg-white">
+                    <input type="text" id="saNamaAkun" placeholder="Nama Akun/Penyewa" required class="border border-slate-200 p-2 text-xs rounded-lg bg-white">
+                    <input type="date" id="saExpired" required class="border border-slate-200 p-2 text-xs rounded-lg bg-white">
+                </div>
+                <div class="flex justify-end pt-1">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-1.5 rounded-lg text-xs transition">+ Buat Akun Penyewa</button>
+                </div>
+            </form>
+
+            <div class="overflow-y-auto max-h-64 border rounded-xl border-slate-150 custom-scroll">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead class="bg-slate-100 text-slate-500 font-bold border-b border-slate-200 uppercase text-[9px] tracking-wider">
+                        <tr>
+                            <th class="p-2">Username</th>
+                            <th class="p-2">Nama Akun</th>
+                            <th class="p-2">PIN</th>
+                            <th class="p-2">Kadaluarsa</th>
+                            <th class="p-2 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="saAccountsTableRows" class="divide-y text-slate-700">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 text-right">
+                <button onclick="tutupModalSuperAdmin()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-xl transition">Tutup Panel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL POPUP PRATINJAU DOKUMEN / BUKTI MUTASI -->
     <div id="previewModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-4 shadow-2xl relative flex flex-col max-h-[90vh]">
@@ -409,16 +457,12 @@
     </div>
 
     <script>
-        // KODE PIN AKSES
-        const ACCESS_PIN_CODE = "2510";
-
-        // MENGGUNAKAN KEY API SUPABASE ANDA
         const SUPABASE_URL = "https://spetgpwpkjfifgvclwyl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwZXRncHdwa2pmaWZndmNsd3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MjkwNzYsImV4cCI6MjEwMTIwNTA3Nn0.oQzAtPKKpdejAY1y5cjBRoNZIK2Yp-oZMDxmXDESOUk";
 
-        // Inisialisasi Supabase Client
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let currentAccount = null;
         let logArusKeuanganKeluarga = [];
         let logTargetWishlistCloud = [];
         let logMemoBelanja = [];
@@ -427,40 +471,89 @@
         let totalSaldoAktifGlobal = 0;
         let chartInstances = {};
 
-        // DAFTAR PIC DEFAULT BISA DITAMBAH CUSTOM
-        let daftarPicLengkap = [
-            { id: "Tabungan", label: "🏦 Tabungan" },
-            { id: "Irfan", label: "👨 Irfan" },
-            { id: "Hana", label: "👩 Hana" },
-            { id: "Anak", label: "👦 Anak" }
-        ];
+        let daftarPicLengkap = [];
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (sessionStorage.getItem("fincheck_unlocked") === "true") {
+            const savedAcc = sessionStorage.getItem("fincheck_account");
+            if (savedAcc) {
+                currentAccount = JSON.parse(savedAcc);
                 bukaDashboardAplikasi();
             } else {
                 tampilkanLayarPin();
             }
         });
 
-        /* --- LOGIKA VERIFIKASI PIN --- */
-        function verifikasiKodePass() {
-            const inputPin = document.getElementById('inputPinCode').value.trim();
-            const errBox = document.getElementById('pinErrorMsg');
+        /* --- LOGIKA VERIFIKASI AKUN & PIN (MULTI-TENANT) --- */
+        async function verifikasiKodePass() {
+            const usernameInput = document.getElementById('inputUsername').value.trim().toLowerCase();
+            const pinInput = document.getElementById('inputPinCode').value.trim();
 
-            if (inputPin === ACCESS_PIN_CODE) {
-                errBox.classList.add('hidden');
-                bukaDashboardAplikasi();
-            } else {
+            const errBox = document.getElementById('pinErrorMsg');
+            const expBox = document.getElementById('expiredErrorMsg');
+            errBox.classList.add('hidden');
+            expBox.classList.add('hidden');
+
+            const btn = document.getElementById('btnLoginSubmit');
+            btn.innerText = "Memeriksa Akun...";
+            btn.disabled = true;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('accounts')
+                    .select('*')
+                    .eq('username', usernameInput)
+                    .eq('pin_code', pinInput)
+                    .single();
+
+                if (error || !data) {
+                    errBox.classList.remove('hidden');
+                } else {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    if (!data.is_active || (data.role !== 'admin' && data.expired_date < todayStr)) {
+                        expBox.classList.remove('hidden');
+                    } else {
+                        currentAccount = data;
+                        sessionStorage.setItem("fincheck_account", JSON.stringify(data));
+                        bukaDashboardAplikasi();
+                    }
+                }
+            } catch(err) {
                 errBox.classList.remove('hidden');
-                document.getElementById('inputPinCode').value = "";
+            } finally {
+                btn.innerText = "🔓 Verifikasi Login";
+                btn.disabled = false;
             }
         }
 
         function bukaDashboardAplikasi() {
-            sessionStorage.setItem("fincheck_unlocked", "true");
             document.getElementById('pin-overlay').style.display = 'none';
             document.getElementById('mainDashboardWrapper').classList.remove('hidden');
+
+            document.getElementById('lblAccountInfo').innerText = `Account: @${currentAccount.username} (${currentAccount.account_name})`;
+            document.getElementById('txtDisplayAccountName').innerText = currentAccount.account_name;
+            document.getElementById('lblMasaBerlakuSewa').innerText = currentAccount.role === 'admin' ? 'Role: Super Admin Master' : `Masa Sewa s.d: ${formatTanggalPendek(currentAccount.expired_date)}`;
+
+            if (currentAccount.role === 'admin') {
+                document.getElementById('btnSuperAdminNav').classList.remove('hidden');
+                bukaModalSuperAdmin(); // Langsung tampilkan modal admin jika login sebagai superadmin
+            } else {
+                document.getElementById('btnSuperAdminNav').classList.add('hidden');
+            }
+
+            // Atur PIC Bawaan per jenis akun
+            if (currentAccount.username === 'hanairfan') {
+                daftarPicLengkap = [
+                    { id: "Tabungan", label: "🏦 Tabungan" },
+                    { id: "Irfan", label: "👨 Irfan" },
+                    { id: "Hana", label: "👩 Hana" },
+                    { id: "Anak", label: "👦 Anak" }
+                ];
+            } else {
+                daftarPicLengkap = [
+                    { id: "Tabungan", label: "🏦 Tabungan" }
+                ];
+            }
+
             resetFormMutasi();
             document.getElementById('txFileBukti').addEventListener('change', konversiFileKeBase64);
             muatDataKeuangan();
@@ -472,7 +565,7 @@
         }
 
         function kunciUlangDashboard() {
-            sessionStorage.removeItem("fincheck_unlocked");
+            sessionStorage.removeItem("fincheck_account");
             window.location.reload();
         }
 
@@ -484,7 +577,6 @@
             reader.readAsDataURL(file);
         }
 
-        // HELPER UNTUK MENGAMBIL SELURUH DATA SUPABASE
         async function fetchAllRows(tableName) {
             let allRows = [];
             let page = 0;
@@ -498,6 +590,7 @@
                 const { data, error } = await supabaseClient
                     .from(tableName)
                     .select('*')
+                    .eq('account_id', currentAccount.username)
                     .range(from, to);
 
                 if (error) {
@@ -519,10 +612,9 @@
             return allRows;
         }
 
-        /* --- FUNGSI TANGANI PIC CUSTOM --- */
         async function syncPicCustomList() {
             try {
-                const { data } = await supabaseClient.from('custom_pics').select('*');
+                const data = await fetchAllRows('custom_pics');
                 if (data && data.length > 0) {
                     data.forEach(item => {
                         if (!daftarPicLengkap.some(p => p.id === item.name)) {
@@ -534,7 +626,6 @@
                 console.warn("Tabel custom_pics opsional belum ada.");
             }
 
-            // Pindai juga dari financial_records jika ada PIC custom unik
             logArusKeuanganKeluarga.forEach(tx => {
                 if (tx.pic && !daftarPicLengkap.some(p => p.id === tx.pic)) {
                     daftarPicLengkap.push({ id: tx.pic, label: `👤 ${tx.pic}` });
@@ -592,9 +683,8 @@
             daftarPicLengkap.push({ id: cleanName, label: `👤 ${cleanName}` });
             populasiDropdownPic();
 
-            // Simpan ke Supabase jika tabelnya tersedia
             try {
-                await supabaseClient.from('custom_pics').insert([{ name: cleanName }]);
+                await supabaseClient.from('custom_pics').insert([{ name: cleanName, account_id: currentAccount.username }]);
             } catch(e) {}
 
             document.getElementById('txPic').value = cleanName;
@@ -602,7 +692,6 @@
         }
 
         async function muatDataKeuangan() {
-            // 1. Financial Records
             try {
                 const dataKas = await fetchAllRows('financial_records');
                 logArusKeuanganKeluarga = (dataKas || []).map(row => {
@@ -629,10 +718,9 @@
                 renderTabelJurnal(logArusKeuanganKeluarga);
             } catch (err) {
                 console.error("Gagal membaca financial_records:", err);
-                document.getElementById('jurnal-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-600 italic text-[11px]">Tabel 'financial_records' belum ada di Supabase atau RLS belum dibuka. (${err.message || err})</td></tr>`;
+                document.getElementById('jurnal-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-600 italic text-[11px]">Gagal memuat data mutasi. (${err.message || err})</td></tr>`;
             }
 
-            // 2. Wishlist
             try {
                 const dataWishlist = await fetchAllRows('wishlist');
                 logTargetWishlistCloud = (dataWishlist || []).map(row => ({
@@ -651,7 +739,6 @@
             muatNeedsWants();
         }
 
-        /* --- SHOPPING MEMO --- */
         async function muatMemoBelanja() {
             try {
                 const data = await fetchAllRows('shopping_memo');
@@ -724,7 +811,7 @@
 
             const { error } = await supabaseClient
                 .from('shopping_memo')
-                .insert([{ title, qty, estimated_price: totalCalculatedPrice, is_bought: false }]);
+                .insert([{ title, qty, estimated_price: totalCalculatedPrice, is_bought: false, account_id: currentAccount.username }]);
 
             if (!error) {
                 document.getElementById('memoInputTitle').value = "";
@@ -744,11 +831,10 @@
         }
 
         async function hapusMemo(id) {
-            await supabaseClient.from('shopping_memo').delete().eq('id', id);
+            await supabaseClient.from('shopping_memo').delete().eq('id', id).eq('account_id', currentAccount.username);
             muatMemoBelanja();
         }
 
-        /* --- KEBUTUHAN VS KEINGINAN --- */
         async function muatNeedsWants() {
             try {
                 const data = await fetchAllRows('needs_wants');
@@ -794,7 +880,7 @@
 
             const { error } = await supabaseClient
                 .from('needs_wants')
-                .insert([{ title, type, estimated_price: price }]);
+                .insert([{ title, type, estimated_price: price, account_id: currentAccount.username }]);
 
             if (!error) {
                 document.getElementById('nwTitle').value = "";
@@ -806,11 +892,10 @@
         }
 
         async function hapusNeedsWants(id) {
-            await supabaseClient.from('needs_wants').delete().eq('id', id);
+            await supabaseClient.from('needs_wants').delete().eq('id', id).eq('account_id', currentAccount.username);
             muatNeedsWants();
         }
 
-        /* --- FUNGSI LOGIK KAS KEUANGAN --- */
         function kalkulasiDasborStatistik() {
             let totalInflow = 0; let totalOutflow = 0;
             logArusKeuanganKeluarga.forEach(tx => {
@@ -863,7 +948,8 @@
                 total: parseFloat(document.getElementById('targetNominal').value) || 0,
                 status: "Target Wishlist",
                 deskripsi: document.getElementById('targetNama').value.trim(),
-                kategori: "Investasi & Tabungan"
+                kategori: "Investasi & Tabungan",
+                account_id: currentAccount.username
             };
 
             const { error } = await supabaseClient
@@ -881,7 +967,6 @@
             }
         }
 
-        // KONSOLIDASI SALDO PER PIC DARI MUTASI CASHFLOW
         function hitungSaldoPerPic() {
             let saldos = {};
             daftarPicLengkap.forEach(p => saldos[p.id] = 0);
@@ -944,7 +1029,6 @@
             });
         }
 
-        /* --- FUNGSI DINAMIS POPULASI OPTION BULAN & RENDER LAPORAN RINCIAN BULANAN --- */
         function isiDropdownFilterBulan() {
             const selectFilter = document.getElementById('filterBulanLaporan');
             if (!selectFilter) return;
@@ -1031,7 +1115,6 @@
             });
         }
 
-        /* --- UPDATE PIE CHART DINAMIS SESUAI SEMUA PIC --- */
         function updateSegalaCharts() {
             let rekap = {};
             daftarPicLengkap.forEach(p => {
@@ -1054,7 +1137,6 @@
                 const dataObj = rekap[p.id] || { masuk: 0, keluar: 0 };
                 const netValue = dataObj.masuk - dataObj.keluar;
 
-                const cardId = `cardPic_${p.id.replace(/\s+/g, '_')}`;
                 const canvasId = `chartPic_${p.id.replace(/\s+/g, '_')}`;
                 const textId = `txtPic_${p.id.replace(/\s+/g, '_')}`;
 
@@ -1132,7 +1214,8 @@
                 kategori: document.getElementById('txKategori').value, 
                 deskripsi: document.getElementById('txDeskripsi').value, 
                 total: parseFloat(document.getElementById('txNominal').value) || 0, 
-                buktiurl: stringFileBase64 
+                buktiurl: stringFileBase64,
+                account_id: currentAccount.username
             };
 
             let result;
@@ -1140,7 +1223,8 @@
                 result = await supabaseClient
                     .from('financial_records')
                     .update(payload)
-                    .eq('noinvoice', uniqueId);
+                    .eq('noinvoice', uniqueId)
+                    .eq('account_id', currentAccount.username);
             } else {
                 result = await supabaseClient
                     .from('financial_records')
@@ -1161,7 +1245,8 @@
                 const { error } = await supabaseClient
                     .from('financial_records')
                     .delete()
-                    .eq('noinvoice', idTx);
+                    .eq('noinvoice', idTx)
+                    .eq('account_id', currentAccount.username);
 
                 if (!error) {
                     muatDataKeuangan();
@@ -1176,7 +1261,8 @@
                 const { error } = await supabaseClient
                     .from('wishlist')
                     .delete()
-                    .eq('noinvoice', idWishlist);
+                    .eq('noinvoice', idWishlist)
+                    .eq('account_id', currentAccount.username);
 
                 if (!error) {
                     muatDataKeuangan();
@@ -1188,10 +1274,9 @@
 
         function formatTanggalPendek(stringTanggal) {
             if (!stringTanggal) return "-"; const parts = stringTanggal.split('-');
-            if (parts.length !== 3) return stringTanggal; return `${parts[2]}/${parts[1]}`;
+            if (parts.length !== 3) return stringTanggal; return `${parts[2]}/${parts[1]}/${parts[0].substring(2)}`;
         }
 
-        /* POPUP PRATINJAU BUKTI BERKAS LAMPIRAN */
         function bukaJendelaPratinjauBukti(stringBase64) {
             const container = document.getElementById('previewContainer');
             const modal = document.getElementById('previewModal');
@@ -1254,7 +1339,6 @@
 
             tbody.innerHTML = rowsHtmlBuffer.reverse().join("");
 
-            // LEBAR WRAPPER GRAFIK DINAMIS
             const wrapper = document.getElementById('chartWrapper');
             const calculatedWidth = Math.max(600, targetArrayData.length * 45);
             wrapper.style.width = calculatedWidth + "px";
@@ -1278,6 +1362,111 @@
                     }
                 }
             });
+        }
+
+        /* --- FUNGSI PANEL SUPERADMIN --- */
+        function bukaModalSuperAdmin() {
+            document.getElementById('superadminModal').classList.remove('hidden');
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            document.getElementById('saExpired').value = nextMonth.toISOString().split('T')[0];
+            muatDaftarAkunSuperAdmin();
+        }
+
+        function tutupModalSuperAdmin() {
+            document.getElementById('superadminModal').classList.add('hidden');
+        }
+
+        async function muatDaftarAkunSuperAdmin() {
+            const tbody = document.getElementById('saAccountsTableRows');
+            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center italic text-slate-400">Memuat daftar akun...</td></tr>`;
+
+            const { data, error } = await supabaseClient
+                .from('accounts')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error || !data) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-rose-500 italic">Gagal memuat akun.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            data.forEach(acc => {
+                const isExp = acc.role !== 'admin' && acc.expired_date < todayStr;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-2 font-bold text-slate-900">${acc.username} ${acc.role === 'admin' ? '<span class="text-[8px] bg-purple-100 text-purple-700 font-extrabold px-1.5 py-0.5 rounded">SUPERADMIN</span>' : ''}</td>
+                    <td class="p-2">${acc.account_name}</td>
+                    <td class="p-2 font-mono">${acc.pin_code}</td>
+                    <td class="p-2 font-mono ${isExp ? 'text-rose-600 font-bold' : 'text-emerald-600'}">
+                        ${acc.role === 'admin' ? 'Permanen' : acc.expired_date} ${isExp ? '(EXPIRED)' : ''}
+                    </td>
+                    <td class="p-2 text-center">
+                        ${acc.role !== 'admin' ? `<button onclick="perpanjangDurasiAkun('${acc.id}', '${acc.expired_date}')" class="text-blue-600 hover:underline font-bold mr-2">+ Masa Sewa</button>` : ''}
+                        ${acc.role !== 'admin' ? `<button onclick="hapusAkunSewa('${acc.id}')" class="text-rose-600 hover:underline font-bold">Hapus</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function simpanAkunSewaBaru() {
+            const username = document.getElementById('saUsername').value.trim().toLowerCase();
+            const pin_code = document.getElementById('saPin').value.trim();
+            const account_name = document.getElementById('saNamaAkun').value.trim();
+            const expired_date = document.getElementById('saExpired').value;
+
+            const { error } = await supabaseClient
+                .from('accounts')
+                .insert([{
+                    username, pin_code, account_name, expired_date, role: 'client', is_active: true
+                }]);
+
+            if (!error) {
+                document.getElementById('saUsername').value = "";
+                document.getElementById('saPin').value = "";
+                document.getElementById('saNamaAkun').value = "";
+                muatDaftarAkunSuperAdmin();
+                alert("Akun penyewa baru berhasil ditambahkan!");
+            } else {
+                alert("Gagal membuat akun: " + error.message);
+            }
+        }
+
+        async function perpanjangDurasiAkun(id, expiredLama) {
+            const tanggalBaru = prompt("Masukkan tanggal expired sewa baru (YYYY-MM-DD):", expiredLama);
+            if (!tanggalBaru) return;
+
+            const { error } = await supabaseClient
+                .from('accounts')
+                .update({ expired_date: tanggalBaru, is_active: true })
+                .eq('id', id);
+
+            if (!error) {
+                muatDaftarAkunSuperAdmin();
+                alert("Masa sewa berhasil diperpanjang!");
+            } else {
+                alert("Gagal memperbarui masa sewa: " + error.message);
+            }
+        }
+
+        async function hapusAkunSewa(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus akun penyewa ini?")) {
+                const { error } = await supabaseClient
+                    .from('accounts')
+                    .delete()
+                    .eq('id', id);
+
+                if (!error) {
+                    muatDaftarAkunSuperAdmin();
+                } else {
+                    alert("Gagal menghapus akun: " + error.message);
+                }
+            }
         }
     </script>
 </body>
