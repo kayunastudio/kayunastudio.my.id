@@ -139,15 +139,22 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
                 <!-- LAPORAN BULANAN RINCIAN KATEGORI -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-start gap-2 min-h-[220px]">
-                    <div class="w-full flex justify-between items-center border-b border-slate-100 pb-2">
-                        <div>
-                            <h3 class="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">📊 Laporan Rincian Bulanan</h3>
-                            <p class="text-[9px] text-slate-400 font-medium">Breakdown kategori pengeluaran per bulan</p>
+                    <div class="w-full border-b border-slate-100 pb-2">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <div>
+                                <h3 class="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">📊 Laporan Rincian Bulanan</h3>
+                                <p class="text-[9px] text-slate-400 font-medium">Breakdown pengeluaran per bulan & PIC</p>
+                            </div>
                         </div>
-                        <!-- DROPDOWN FILTER BULAN DINAMIS -->
-                        <select id="filterBulanLaporan" onchange="renderLaporanBulanan()" class="text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
-                            <option value="ALL">Semua Bulan</option>
-                        </select>
+                        <!-- DROPDOWN FILTER BULAN DAN PIC -->
+                        <div class="flex gap-2 mt-1">
+                            <select id="filterBulanLaporan" onchange="renderLaporanBulanan()" class="flex-1 text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
+                                <option value="ALL">Semua Bulan</option>
+                            </select>
+                            <select id="filterPicLaporan" onchange="renderLaporanBulanan()" class="flex-1 text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
+                                <option value="ALL">Semua PIC</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="overflow-y-auto max-h-56 custom-scroll pr-1">
@@ -208,7 +215,10 @@
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Anggota (PIC)</label>
+                                    <div class="flex justify-between items-center mb-0.5">
+                                        <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider">Anggota (PIC)</label>
+                                        <button type="button" onclick="tambahPicCustomBaru()" class="text-[8px] font-bold text-blue-600 hover:underline">+ Custom</button>
+                                    </div>
                                     <select id="txPic" required class="w-full border border-slate-200 p-2 text-xs rounded-xl bg-slate-50 focus:outline-none font-medium">
                                         <option value="Tabungan">🏦 Tabungan</option>
                                         <option value="Irfan">👨 Irfan</option>
@@ -263,11 +273,11 @@
                     
                     <!-- NET ARUS KAS DIPINDAHKAN KELUAR / KANAN BAWAH LAPORAN BULANAN ATAU DI SAMPING FORM -->
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200/60 shadow-sm space-y-2.5">
-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Arus Kas Anggota Keluarga</span>
-                        <div class="grid grid-cols-3 gap-1.5 text-center text-[9px]">
-                            <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Tabungan</div><div id="txtTotalTabungan" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartTabungan"></canvas></div></div>
-                            <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Irfan</div><div id="txtTotalIrfan" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartIrfan"></canvas></div></div>
-                            <div class="bg-slate-50 p-1.5 rounded-xl"><div class="font-bold text-slate-700 truncate">Hana</div><div id="txtTotalHana" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate">Rp 0</div><div class="w-full h-8 relative mt-0.5"><canvas id="chartHana"></canvas></div></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Net Arus Kas Anggota Keluarga (PIC)</span>
+                        </div>
+                        <div id="netArusKasPicGrid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2 text-center text-[9px]">
+                            <!-- Container Pie Chart per PIC diisi secara dinamis -->
                         </div>
                     </div>
                 </div>
@@ -324,6 +334,9 @@
                             
                             <form id="targetForm" onsubmit="event.preventDefault(); eksekusiSimpanTargetCloud();" class="flex flex-wrap items-center gap-1.5 no-print w-full sm:w-auto justify-end">
                                 <input type="text" id="targetNama" required placeholder="Nama Impian..." class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none w-24 sm:w-28">
+                                <select id="targetPic" required class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none font-bold">
+                                    <!-- Populated dynamically -->
+                                </select>
                                 <input type="number" id="targetNominal" required placeholder="Target Rp" class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 focus:outline-none w-20 sm:w-24">
                                 <input type="date" id="targetDeadline" required class="border border-slate-200 p-1.5 text-[11px] rounded-lg bg-slate-50 text-slate-400 focus:outline-none w-24 sm:w-28">
                                 <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-[10px] sm:text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow transition">➕ Add</button>
@@ -331,10 +344,11 @@
                         </div>
 
                         <div class="overflow-x-auto border rounded-xl border-slate-150 custom-scroll">
-                            <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[500px]">
+                            <table class="w-full text-left border-collapse text-[11px] sm:text-xs min-w-[550px]">
                                 <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[9px] sm:text-[10px] uppercase tracking-wider">
                                     <tr>
                                         <th class="p-2">Nama Rencana Impian</th>
+                                        <th class="p-2 w-20 text-center">PIC Tabungan</th>
                                         <th class="p-2 w-20 text-right">Target Rupiah</th>
                                         <th class="p-2 w-16 text-center">Deadline</th>
                                         <th class="p-2 w-28 text-center">Progress Terpenuhi</th>
@@ -342,7 +356,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="wishlist-table-rows" class="divide-y text-slate-600 bg-white font-medium">
-                                    <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Memuat wishlist cloud...</td></tr>
+                                    <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Memuat wishlist cloud...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -411,7 +425,15 @@
         let logNeedsWants = [];
         let stringFileBase64 = "";
         let totalSaldoAktifGlobal = 0;
-        let chartInstances = { Tabungan: null, Irfan: null, Hana: null, MutasiLine: null };
+        let chartInstances = {};
+
+        // DAFTAR PIC DEFAULT BISA DITAMBAH CUSTOM
+        let daftarPicLengkap = [
+            { id: "Tabungan", label: "🏦 Tabungan" },
+            { id: "Irfan", label: "👨 Irfan" },
+            { id: "Hana", label: "👩 Hana" },
+            { id: "Anak", label: "👦 Anak" }
+        ];
 
         document.addEventListener("DOMContentLoaded", () => {
             if (sessionStorage.getItem("fincheck_unlocked") === "true") {
@@ -497,6 +519,88 @@
             return allRows;
         }
 
+        /* --- FUNGSI TANGANI PIC CUSTOM --- */
+        async function syncPicCustomList() {
+            try {
+                const { data } = await supabaseClient.from('custom_pics').select('*');
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        if (!daftarPicLengkap.some(p => p.id === item.name)) {
+                            daftarPicLengkap.push({ id: item.name, label: `👤 ${item.name}` });
+                        }
+                    });
+                }
+            } catch(e) {
+                console.warn("Tabel custom_pics opsional belum ada.");
+            }
+
+            // Pindai juga dari financial_records jika ada PIC custom unik
+            logArusKeuanganKeluarga.forEach(tx => {
+                if (tx.pic && !daftarPicLengkap.some(p => p.id === tx.pic)) {
+                    daftarPicLengkap.push({ id: tx.pic, label: `👤 ${tx.pic}` });
+                }
+            });
+
+            populasiDropdownPic();
+        }
+
+        function populasiDropdownPic() {
+            const txPicSelect = document.getElementById('txPic');
+            const targetPicSelect = document.getElementById('targetPic');
+            const filterPicSelect = document.getElementById('filterPicLaporan');
+
+            const prevTx = txPicSelect.value;
+            const prevTarget = targetPicSelect.value;
+            const prevFilter = filterPicSelect.value;
+
+            txPicSelect.innerHTML = "";
+            targetPicSelect.innerHTML = "";
+            filterPicSelect.innerHTML = '<option value="ALL">Semua PIC</option>';
+
+            daftarPicLengkap.forEach(p => {
+                const opt1 = document.createElement('option');
+                opt1.value = p.id;
+                opt1.innerText = p.label;
+                txPicSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = p.id;
+                opt2.innerText = p.label;
+                targetPicSelect.appendChild(opt2);
+
+                const opt3 = document.createElement('option');
+                opt3.value = p.id;
+                opt3.innerText = p.label;
+                filterPicSelect.appendChild(opt3);
+            });
+
+            if (prevTx) txPicSelect.value = prevTx;
+            if (prevTarget) targetPicSelect.value = prevTarget;
+            if (prevFilter) filterPicSelect.value = prevFilter;
+        }
+
+        async function tambahPicCustomBaru() {
+            const namaBaru = prompt("Masukkan nama Anggota (PIC) baru:");
+            if (!namaBaru || !namaBaru.trim()) return;
+
+            const cleanName = namaBaru.trim();
+            if (daftarPicLengkap.some(p => p.id.toLowerCase() === cleanName.toLowerCase())) {
+                alert("Nama PIC tersebut sudah ada.");
+                return;
+            }
+
+            daftarPicLengkap.push({ id: cleanName, label: `👤 ${cleanName}` });
+            populasiDropdownPic();
+
+            // Simpan ke Supabase jika tabelnya tersedia
+            try {
+                await supabaseClient.from('custom_pics').insert([{ name: cleanName }]);
+            } catch(e) {}
+
+            document.getElementById('txPic').value = cleanName;
+            updateSegalaCharts();
+        }
+
         async function muatDataKeuangan() {
             // 1. Financial Records
             try {
@@ -517,6 +621,7 @@
                     };
                 }).sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
 
+                await syncPicCustomList();
                 kalkulasiDasborStatistik();
                 updateSegalaCharts(); 
                 renderLaporanBulanan();
@@ -533,6 +638,7 @@
                 logTargetWishlistCloud = (dataWishlist || []).map(row => ({
                     id: row.noinvoice || row.id || "GOAL-UNKNOWN",
                     nama: row.deskripsi || row.nama || row.target_name || "Rencana Impian",
+                    pic: row.pic || row.pelanggan || "Tabungan",
                     nominal: parseFloat(row.total !== undefined ? row.total : (row.nominal || row.target_amount || 0)),
                     deadline: row.tanggal || row.deadline || new Date().toISOString().split('T')[0]
                 }));
@@ -751,7 +857,8 @@
             const uniqueId = "GOAL-" + Date.now();
             const payloadTarget = {
                 noinvoice: uniqueId,
-                pelanggan: "Tabungan",
+                pelanggan: document.getElementById('targetPic').value,
+                pic: document.getElementById('targetPic').value,
                 tanggal: document.getElementById('targetDeadline').value,
                 total: parseFloat(document.getElementById('targetNominal').value) || 0,
                 status: "Target Wishlist",
@@ -774,24 +881,60 @@
             }
         }
 
+        // KONSOLIDASI SALDO PER PIC DARI MUTASI CASHFLOW
+        function hitungSaldoPerPic() {
+            let saldos = {};
+            daftarPicLengkap.forEach(p => saldos[p.id] = 0);
+
+            logArusKeuanganKeluarga.forEach(tx => {
+                const picKey = tx.pic === "Bersama" ? "Tabungan" : tx.pic;
+                if (saldos[picKey] === undefined) saldos[picKey] = 0;
+
+                if (tx.jenis === "Pemasukan") saldos[picKey] += tx.nominal;
+                else saldos[picKey] -= tx.nominal;
+            });
+            return saldos;
+        }
+
         function renderTabelWishlist(targetArrayData) {
-            const tbody = document.getElementById('wishlist-table-rows'); tbody.innerHTML = "";
+            const tbody = document.getElementById('wishlist-table-rows'); 
+            tbody.innerHTML = "";
+
             if(targetArrayData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-400 italic text-[11px]">Wishlist cloud kosong.</td></tr>`; return;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-slate-400 italic text-[11px]">Wishlist cloud kosong.</td></tr>`; 
+                return;
             }
+
+            const saldoPic = hitungSaldoPerPic();
+
             targetArrayData.forEach(target => {
-                let persen = totalSaldoAktifGlobal > 0 ? Math.min(Math.round((totalSaldoAktifGlobal / target.nominal) * 100), 100) : 0;
+                const picTarget = target.pic || "Tabungan";
+                const saldoTersedia = saldoPic[picTarget] || 0;
+                let persen = target.nominal > 0 ? Math.min(Math.round((saldoTersedia / target.nominal) * 100), 100) : 0;
+                if (persen < 0) persen = 0;
+
+                const isCukup = saldoTersedia >= target.nominal;
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-500 text-[11px] sm:text-xs";
                 tr.innerHTML = `
-                    <td class="p-2 font-bold text-slate-800">${target.nama}</td>
+                    <td class="p-2 font-bold text-slate-800">
+                        ${target.nama}
+                        ${isCukup ? '<span class="ml-1 text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-md">✓ Cukup</span>' : ''}
+                    </td>
+                    <td class="p-2 text-center">
+                        <span class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-md text-slate-700">${picTarget}</span>
+                    </td>
                     <td class="p-2 text-right font-mono font-bold text-slate-900">Rp ${target.nominal.toLocaleString('id-ID')}</td>
                     <td class="p-2 text-center text-slate-400 font-mono">${formatTanggalPendek(target.deadline)}</td>
                     <td class="p-2">
                         <div class="flex items-center gap-1.5">
-                            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden"><div class="bg-blue-500 h-1.5 rounded-full" style="width: ${persen}%"></div></div>
-                            <span class="font-bold font-mono text-blue-600 text-[9px]">${persen}%</span>
+                            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                <div class="${isCukup ? 'bg-emerald-500' : 'bg-blue-500'} h-1.5 rounded-full" style="width: ${persen}%"></div>
+                            </div>
+                            <span class="font-bold font-mono ${isCukup ? 'text-emerald-600' : 'text-blue-600'} text-[9px]">${persen}%</span>
                         </div>
+                        <div class="text-[8px] text-slate-400 font-mono text-right mt-0.5">Saldo: Rp ${saldoTersedia.toLocaleString('id-ID')}</div>
                     </td>
                     <td class="p-2 text-center no-print">
                         <button onclick="hapusWishlistDariCloud('${target.id}')" class="text-rose-500 hover:text-rose-700 font-bold hover:underline">Hapus</button>
@@ -840,6 +983,7 @@
 
             const container = document.getElementById('laporanBulananContainer');
             const filterBulan = document.getElementById('filterBulanLaporan').value;
+            const filterPic = document.getElementById('filterPicLaporan').value;
             container.innerHTML = "";
 
             let totalOutflow = 0;
@@ -848,8 +992,12 @@
             logArusKeuanganKeluarga.forEach(tx => {
                 if (tx.jenis === "Pengeluaran") {
                     const bulanTx = tx.tanggal ? tx.tanggal.substring(0, 7) : "";
+                    const picTx = tx.pic === "Bersama" ? "Tabungan" : tx.pic;
                     
-                    if (filterBulan === "ALL" || bulanTx === filterBulan) {
+                    const matchBulan = (filterBulan === "ALL" || bulanTx === filterBulan);
+                    const matchPic = (filterPic === "ALL" || picTx === filterPic);
+
+                    if (matchBulan && matchPic) {
                         totalOutflow += tx.nominal;
                         ringkasanKategori[tx.kategori] = (ringkasanKategori[tx.kategori] || 0) + tx.nominal;
                     }
@@ -859,7 +1007,7 @@
             const sortedCategories = Object.entries(ringkasanKategori).sort((a, b) => b[1] - a[1]);
 
             if (sortedCategories.length === 0) {
-                container.innerHTML = `<div class="text-slate-400 italic text-center py-6">Belum ada catatan pengeluaran untuk periode ini.</div>`;
+                container.innerHTML = `<div class="text-slate-400 italic text-center py-6">Belum ada catatan pengeluaran untuk kriteria ini.</div>`;
                 return;
             }
 
@@ -883,27 +1031,57 @@
             });
         }
 
+        /* --- UPDATE PIE CHART DINAMIS SESUAI SEMUA PIC --- */
         function updateSegalaCharts() {
-            let rekap = { Tabungan: { masuk: 0, keluar: 0 }, Irfan: { masuk: 0, keluar: 0 }, Hana: { masuk: 0, keluar: 0 } };
+            let rekap = {};
+            daftarPicLengkap.forEach(p => {
+                rekap[p.id] = { masuk: 0, keluar: 0 };
+            });
 
             logArusKeuanganKeluarga.forEach(tx => {
                 const picKey = tx.pic === "Bersama" ? "Tabungan" : tx.pic;
-                if (rekap[picKey]) {
-                    if (tx.jenis === "Pemasukan") rekap[picKey].masuk += tx.nominal;
-                    else rekap[picKey].keluar += tx.nominal;
+                if (!rekap[picKey]) {
+                    rekap[picKey] = { masuk: 0, keluar: 0 };
                 }
+                if (tx.jenis === "Pemasukan") rekap[picKey].masuk += tx.nominal;
+                else rekap[picKey].keluar += tx.nominal;
             });
 
-            bikinSinglePieChart('chartTabungan', 'txtTotalTabungan', rekap.Tabungan, 'Tabungan');
-            bikinSinglePieChart('chartIrfan', 'txtTotalIrfan', rekap.Irfan, 'Irfan');
-            bikinSinglePieChart('chartHana', 'txtTotalHana', rekap.Hana, 'Hana');
+            const gridContainer = document.getElementById('netArusKasPicGrid');
+            gridContainer.innerHTML = "";
+
+            daftarPicLengkap.forEach(p => {
+                const dataObj = rekap[p.id] || { masuk: 0, keluar: 0 };
+                const netValue = dataObj.masuk - dataObj.keluar;
+
+                const cardId = `cardPic_${p.id.replace(/\s+/g, '_')}`;
+                const canvasId = `chartPic_${p.id.replace(/\s+/g, '_')}`;
+                const textId = `txtPic_${p.id.replace(/\s+/g, '_')}`;
+
+                const divCard = document.createElement('div');
+                divCard.className = "bg-slate-50 p-1.5 rounded-xl border border-slate-100 flex flex-col items-center justify-between";
+                divCard.innerHTML = `
+                    <div class="font-bold text-slate-700 truncate w-full">${p.label}</div>
+                    <div id="${textId}" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate w-full">Rp ${netValue.toLocaleString('id-ID')}</div>
+                    <div class="w-full h-12 relative mt-1"><canvas id="${canvasId}"></canvas></div>
+                `;
+                gridContainer.appendChild(divCard);
+
+                bikinSinglePieChart(canvasId, textId, dataObj, p.id);
+            });
         }
 
         function bikinSinglePieChart(canvasId, textId, dataObj, key) {
             const netValue = dataObj.masuk - dataObj.keluar;
-            document.getElementById(textId).innerText = `Rp ${netValue.toLocaleString('id-ID')}`;
+            const txtElem = document.getElementById(textId);
+            if (txtElem) txtElem.innerText = `Rp ${netValue.toLocaleString('id-ID')}`;
+
             if (chartInstances[key]) { chartInstances[key].destroy(); }
-            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            const canvasElem = document.getElementById(canvasId);
+            if (!canvasElem) return;
+
+            const ctx = canvasElem.getContext('2d');
             chartInstances[key] = new Chart(ctx, {
                 type: 'pie',
                 data: { datasets: [{ data: [dataObj.masuk || 1, dataObj.keluar || 0], backgroundColor: ['#34d399', '#f43f5e'], borderWidth: 0 }] },
@@ -948,7 +1126,8 @@
             const payload = { 
                 noinvoice: uniqueId, 
                 tanggal: document.getElementById('txTanggal').value, 
-                pelanggan: document.getElementById('txPic').value, 
+                pelanggan: document.getElementById('txPic').value,
+                pic: document.getElementById('txPic').value,
                 status: document.getElementById('txJenis').value, 
                 kategori: document.getElementById('txKategori').value, 
                 deskripsi: document.getElementById('txDeskripsi').value, 
