@@ -9,23 +9,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Library Supabase JS -->
+    <!-- SDK Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         /* ==========================================================================
            COLOR PALETTE & CORE STYLES (Tema: Fairy Tale Oil Painting / Storybook)
-           Hijau Sage, Biru Soft Dongeng, Pink Muted Rose, White-Cream Parchment
            ========================================================================= */
         :root {
-            --bg-cream-accent: #F9F6F0;     /* Cream Kertas Lukisan / Parchment */
+            --bg-cream-accent: #F9F6F0;     
             --bg-pure-white: #FFFFFF;
-            --primary-emerald: #527853;     /* Hijau Sage / Soft Forest Green */
-            --primary-maroon: #D07A80;      /* Pink Storybook / Muted Rose */
-            --primary-blue: #2C5282;        /* Biru Soft Fairy Tale */
-            --dark-emerald-bg: #1A3038;     /* Dark Fairy Teal / Night Sky */
-            --accent-warm-gold: #D4A373;    /* Emas Dongeng Soft */
-            --text-dark: #2B3A36;           /* Charcoal Green Tint */
+            --primary-emerald: #527853;     
+            --primary-maroon: #D07A80;      
+            --primary-blue: #2C5282;        
+            --dark-emerald-bg: #1A3038;     
+            --accent-warm-gold: #D4A373;    
+            --text-dark: #2B3A36;           
             --text-muted: #62726D;
             --white: #FFFFFF;
             --pink-soft: #F4C7C3;
@@ -69,7 +68,7 @@
         }
 
         /* ==========================================================================
-           SISTEM ANIMASI SCROLL REVEAL (FAIRY TALE SMOOTH REVEAL + BLUR)
+           ANIMASI SCROLL REVEAL
            ========================================================================== */
         .scroll-reveal {
             opacity: 0;
@@ -227,7 +226,7 @@
         }
 
         /* ==========================================================================
-           COVER AWAL DENGAN VIDEO BACKGROUND & TOMBOL PENGAKTIF SUARA
+           COVER AWAL DENGAN VIDEO BACKGROUND
            ========================================================================== */
         #invitation-cover {
             position: fixed;
@@ -746,7 +745,29 @@
         .btn-rsvp-submit-custom { background-color: var(--primary-maroon); color: var(--white); border: none; padding: 10px 28px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; cursor: pointer; font-family: 'Montserrat', sans-serif; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-top: 8px; transition: background-color 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-rsvp-submit-custom:hover { opacity: 0.9; }
         
-        .ucapan-feed-area { margin-top: 30px; max-height: 230px; overflow-y: auto; text-align: left; }
+        /* AREA UCAPAN TER-SCROLL DENGAN TAMPILAN KEREN */
+        .ucapan-feed-area { 
+            margin-top: 28px; 
+            max-height: 280px; 
+            overflow-y: auto; 
+            text-align: left; 
+            padding-right: 6px;
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar Halus kustom */
+        .ucapan-feed-area::-webkit-scrollbar {
+            width: 5px;
+        }
+        .ucapan-feed-area::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        .ucapan-feed-area::-webkit-scrollbar-thumb {
+            background: var(--accent-warm-gold);
+            border-radius: 4px;
+        }
+
         .ucapan-card-item { background: rgba(255, 255, 255, 0.08); padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(249, 246, 240, 0.12); }
         .ucapan-card-title { font-size: 0.8rem; font-weight: 600; color: var(--accent-warm-gold); }
         .ucapan-card-count { font-size: 0.65rem; background: rgba(249, 246, 240, 0.2); color: var(--white); padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 500; }
@@ -854,8 +875,8 @@
            1. COVER DEPAN BERBASIS VIDEO BACKGROUND
            ========================================================================== -->
         <div id="invitation-cover">
-            <!-- VIDEO BACKGROUND COVER -->
-            <video id="coverVideo" class="cover-bg-video" autoplay muted playsinline preload="auto">
+            <!-- VIDEO BACKGROUND COVER (Set loop terus menerus di latar belakang) -->
+            <video id="coverVideo" class="cover-bg-video" autoplay muted loop playsinline preload="auto">
                 <source src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/hana_handayani-irfan_ripandi/video_cover.mp4" type="video/mp4">
             </video>
 
@@ -889,7 +910,7 @@
                 <div></div>
             </div>
 
-            <!-- BUNGA YANG BARU MUNCUL BERSAMAAN DENGAN COVER OVERLAY -->
+            <!-- BUNGA YANG MUNCUL BERSAMAAN DENGAN COVER OVERLAY -->
             <div class="swaying-leaves leaves-top-left"></div>
             <div class="swaying-leaves leaves-top-right"></div>
             <div class="swaying-leaves leaves-bottom-left"></div>
@@ -1162,12 +1183,9 @@
                     </form>
                 </div>
 
+                <!-- FEED UCAPAN TER-SCROLL -->
                 <div class="ucapan-feed-area scroll-reveal delay-2" id="box-ucapan">
-                    <div class="ucapan-card-item">
-                        <span class="ucapan-card-title">Kayuna Studio</span>
-                        <span class="ucapan-card-count">1 orang</span>
-                        <p class="ucapan-card-body">Selamat menempuh hidup baru untuk kedua mempelai! Semoga bahagia dunia dan akhirat.</p>
-                    </div>
+                    <!-- Feed ucapan dimuat dinamis dari Supabase -->
                 </div>
             </div>
 
@@ -1219,16 +1237,13 @@
     </audio>
 
     <script>
-        // KONFIGURASI SUPABASE
-        const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        // AMBIL PARAMETER URL 'to'
         const urlParams = new URLSearchParams(window.location.search);
         const namaTamuParam = urlParams.get('to');
         if (namaTamuParam) {
             document.getElementById('nama-tamu').innerText = namaTamuParam;
-            document.getElementById('input-nama').value = namaTamuParam;
+            const inputNamaElem = document.getElementById('input-nama');
+            if (inputNamaElem) inputNamaElem.value = namaTamuParam;
         }
 
         const cover = document.getElementById('invitation-cover');
@@ -1254,24 +1269,22 @@
         }
 
         function showCoverOverlay() {
-            if (!coverContent.classList.contains('show-content')) {
+            if (coverContent && !coverContent.classList.contains('show-content')) {
                 coverContent.classList.add('show-content');
-                coverVideo.loop = true; 
-                coverVideo.play().catch(err => console.log(err));
             }
         }
 
-        let loopCount = 0;
-        coverVideo.addEventListener('ended', function() {
-            loopCount++;
-            if (loopCount >= 1) {
-                showCoverOverlay();
-            } else {
-                coverVideo.play().catch(err => console.log(err));
-            }
-        });
+        // Jalankan video otomatis saat halaman siap
+        var playPromise = coverVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(function(err) {
+                console.log("Autoplay video diblokir browser:", err);
+                showCoverOverlay(); 
+            });
+        }
 
-        coverVideo.play().catch(err => console.log(err));
+        // COVER & TOMBOL OPEN MUNCUL PRESISI SETELAH 27.5 DETIK (27500 MILIDETIK)
+        setTimeout(showCoverOverlay, 27500);
 
         function openInvitation() {
             cover.classList.add('opened');
@@ -1284,9 +1297,9 @@
 
             music.play().then(() => { 
                 musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; 
-            });
+            }).catch(e => console.log("Audio autoplay diblokir:", e));
 
-            // Muat ucapan setelah undangan dibuka
+            // Muat ucapan dari Supabase saat undangan dibuka
             muatUcapan();
         }
 
@@ -1347,24 +1360,39 @@
             document.getElementById("seconds").innerText = Math.floor((distance % (1000 * 60)) / 1000);
         }, 1000);
 
-
         // ==========================================
-        // FUNGSI RSVP SUPABASE
+        // FUNGSI SUPABASE & RSVP SAFE LOAD
         // ==========================================
+        const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
         
+        function getSupabaseClient() {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            return null;
+        }
+
         async function muatUcapan() {
             const boxUcapan = document.getElementById('box-ucapan');
+            const client = getSupabaseClient();
+            
+            if (!client) {
+                console.warn('SDK Supabase belum terisi sepenuhnya.');
+                return;
+            }
+
             try {
-                const { data, error } = await supabase
+                const { data, error } = await client
                     .from('rsvp_messages')
                     .select('*')
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
-                boxUcapan.innerHTML = ""; // Bersihkan list awal
+                boxUcapan.innerHTML = ""; 
 
-                if (data.length === 0) {
+                if (!data || data.length === 0) {
                     boxUcapan.innerHTML = `<div class="ucapan-card-item"><p class="ucapan-card-body" style="text-align:center;">Belum ada ucapan.</p></div>`;
                     return;
                 }
@@ -1374,7 +1402,7 @@
                 });
 
             } catch (error) {
-                console.error('Error fetching messages:', error);
+                console.error('Gagal memuat ucapan:', error);
             }
         }
 
@@ -1382,10 +1410,9 @@
             const item = document.createElement('div');
             item.classList.add('ucapan-card-item');
             
-            // Mengatasi HTML Injection
-            const safeNama = document.createElement('div'); safeNama.innerText = nama;
-            const safeJumlah = document.createElement('div'); safeJumlah.innerText = jumlah;
-            const safePesan = document.createElement('div'); safePesan.innerText = pesan;
+            const safeNama = document.createElement('div'); safeNama.innerText = nama || '';
+            const safeJumlah = document.createElement('div'); safeJumlah.innerText = jumlah || '';
+            const safePesan = document.createElement('div'); safePesan.innerText = pesan || '';
 
             item.innerHTML = `<span class="ucapan-card-title">${safeNama.innerHTML}</span><span class="ucapan-card-count">${safeJumlah.innerHTML}</span><p class="ucapan-card-body">${safePesan.innerHTML}</p>`;
             
@@ -1395,6 +1422,12 @@
         async function kirimUcapan(event) {
             event.preventDefault();
             const btnSubmit = document.getElementById('btn-submit-rsvp');
+            const client = getSupabaseClient();
+
+            if (!client) {
+                alert("Koneksi layanan RSVP sedang terkendala, silakan coba beberapa saat lagi.");
+                return;
+            }
             
             const nama = document.getElementById('input-nama').value;
             const jumlah = document.getElementById('input-jumlah').value;
@@ -1405,7 +1438,7 @@
             btnSubmit.innerText = "Mengirim...";
             
             try {
-                const { error } = await supabase
+                const { error } = await client
                     .from('rsvp_messages')
                     .insert([
                         { nama: nama, jumlah_hadir: jumlah, kehadiran: kehadiran, pesan: pesan }
@@ -1413,7 +1446,6 @@
 
                 if (error) throw error;
 
-                // Tambahkan langsung ke atas daftar secara lokal agar user merasa cepat
                 const item = document.createElement('div');
                 item.classList.add('ucapan-card-item');
                 const safeNama = document.createElement('div'); safeNama.innerText = nama;
@@ -1422,6 +1454,11 @@
                 item.innerHTML = `<span class="ucapan-card-title">${safeNama.innerHTML}</span><span class="ucapan-card-count">${safeJumlah.innerHTML}</span><p class="ucapan-card-body">${safePesan.innerHTML}</p>`;
                 
                 const boxUcapan = document.getElementById('box-ucapan');
+                
+                if (boxUcapan.children.length === 1 && boxUcapan.innerText.includes('Belum ada ucapan.')) {
+                    boxUcapan.innerHTML = "";
+                }
+
                 boxUcapan.insertBefore(item, boxUcapan.firstChild);
 
                 document.getElementById('input-pesan').value = "";
@@ -1429,7 +1466,7 @@
 
             } catch (error) {
                 alert("Gagal mengirim pesan: " + error.message);
-                console.error(error);
+                console.error('Gagal mengirim ucapan:', error);
             } finally {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = "Kirim";
