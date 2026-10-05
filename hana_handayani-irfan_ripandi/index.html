@@ -727,6 +727,36 @@
         .qris-image-frame img { width: 100%; height: 100%; object-fit: contain; }
         .qris-payment-block p { font-size: 0.75rem; color: #444444; line-height: 1.4; font-family: 'Montserrat', sans-serif; font-weight: 400; }
 
+        /* Style Tombol Toggle Gift */
+        .btn-toggle-gift {
+            background-color: var(--primary-maroon);
+            color: var(--white);
+            border: 1px solid var(--accent-warm-gold);
+            padding: 10px 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+
+        .gift-details-wrapper {
+            display: none;
+            transition: all 0.5s ease-in-out;
+        }
+
+        .gift-details-wrapper.show {
+            display: block;
+        }
+
         .rsvp-section-bg {
             background-color: var(--dark-emerald-bg);
             color: var(--white);
@@ -1104,39 +1134,48 @@
                     Kehadiran Anda merupakan sebuah do'a serta rasa syukur bagi kami, namun jika memberi adalah bentuk Do'a &amp; cinta kasih bagi Anda, Anda dapat memberi kado secara cashless dan kami akan senang hati menerimanya dan tentu semakin melengkapi kebahagiaan kami.
                 </p>
 
-                <div class="white-address-card scroll-reveal delay-2">
-                    <h4>Penerima Kado: Hana Handayani</h4>
-                    <p>Jl. Bonceret Kp. Ciminyak Rt 03/ Rw 09 Desa. Rancapanggung, Kec. Cililin, Kab. Bandung Barat</p>
+                <div class="scroll-reveal delay-2">
+                    <button class="btn-toggle-gift" id="btnToggleGift" onclick="toggleGiftDetails()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83l1.42 1.42L12 8.41l3.58 3.84L17 10.83 14.92 8H20v6z"/></svg>
+                        <span id="textToggleGift">Kirim Hadiah / Transfer</span>
+                    </button>
                 </div>
 
-                <div class="bank-cards-container">
-                    <div class="bank-inline-card scroll-reveal">
-                        <div class="bank-name">BANK MANDIRI</div>
-                        <div class="account-number">1300026871866</div>
-                        <div class="account-holder">a.n. Hana Handayani</div>
-                        <button class="btn-copy-instant" onclick="copyAccountText('1300026871866')">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                            Salin Rekening
-                        </button>
+                <div class="gift-details-wrapper" id="giftDetailsWrapper">
+                    <div class="white-address-card">
+                        <h4>Penerima Kado: Hana Handayani</h4>
+                        <p>Jl. Bonceret Kp. Ciminyak Rt 03/ Rw 09 Desa. Rancapanggung, Kec. Cililin, Kab. Bandung Barat</p>
                     </div>
 
-                    <div class="bank-inline-card scroll-reveal">
-                        <div class="bank-name">BANK BSI</div>
-                        <div class="account-number">7212898362</div>
-                        <div class="account-holder">a.n. Irfan Ripandi</div>
-                        <button class="btn-copy-instant" onclick="copyAccountText('7212898362')">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                            Salin Rekening
-                        </button>
-                    </div>
-                </div>
+                    <div class="bank-cards-container">
+                        <div class="bank-inline-card">
+                            <div class="bank-name">BANK MANDIRI</div>
+                            <div class="account-number">1300026871866</div>
+                            <div class="account-holder">a.n. Hana Handayani</div>
+                            <button class="btn-copy-instant" onclick="copyAccountText('1300026871866')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                Salin Rekening
+                            </button>
+                        </div>
 
-                <div class="qris-payment-block scroll-reveal">
-                    <img src="https://raw.githubusercontent.com/kayunastudio/QRIS/main/gpn.svg" class="qris-logo-header" alt="Logo GPN QRIS">
-                    <div class="qris-image-frame">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/QRIS/main/qris.JPG" alt="Barcode QRIS">
+                        <div class="bank-inline-card">
+                            <div class="bank-name">BANK BSI</div>
+                            <div class="account-number">7212898362</div>
+                            <div class="account-holder">a.n. Irfan Ripandi</div>
+                            <button class="btn-copy-instant" onclick="copyAccountText('7212898362')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                Salin Rekening
+                            </button>
+                        </div>
                     </div>
-                    <p>Silakan pindai atau simpan kode QRIS di atas untuk melakukan transfer amplop digital melalui e-wallet maupun mobile banking Anda.</p>
+
+                    <div class="qris-payment-block">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/QRIS/main/gpn.svg" class="qris-logo-header" alt="Logo GPN QRIS">
+                        <div class="qris-image-frame">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/QRIS/main/qris.JPG" alt="Barcode QRIS">
+                        </div>
+                        <p>Silakan pindai atau simpan kode QRIS di atas untuk melakukan transfer amplop digital melalui e-wallet maupun mobile banking Anda.</p>
+                    </div>
                 </div>
             </div>
 
@@ -1332,6 +1371,18 @@
             } else { 
                 music.pause(); 
                 musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+            }
+        }
+
+        function toggleGiftDetails() {
+            const wrapper = document.getElementById('giftDetailsWrapper');
+            const btnText = document.getElementById('textToggleGift');
+            if (wrapper.classList.contains('show')) {
+                wrapper.classList.remove('show');
+                btnText.innerText = "Kirim Hadiah / Transfer";
+            } else {
+                wrapper.classList.add('show');
+                btnText.innerText = "Tutup Info Hadiah";
             }
         }
 
