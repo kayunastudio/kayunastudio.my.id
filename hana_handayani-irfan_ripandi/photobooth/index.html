@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Photobooth SaaS</title>
+    <title>Digital Photobooth</title>
 
     <!-- Supabase JS Client v2 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -167,10 +167,10 @@
 </head>
 <body>
 
-    <!-- SCREEN INVALID EVENT URL -->
+    <!-- SCREEN INVALID EVENT / EXPIRED RENTAL URL -->
     <div id="error-screen">
-        <h2 style="color: var(--color-danger); margin-bottom: 8px;">⚠️ Event Tidak Ditemukan</h2>
-        <p style="color: var(--color-text-muted); max-width: 400px;">URL acara tidak terdaftar di database. Harap periksa kembali tautan Anda.</p>
+        <h2 id="error-screen-title" style="color: var(--color-danger); margin-bottom: 8px;">⚠️ Event Tidak Ditemukan</h2>
+        <p id="error-screen-msg" style="color: var(--color-text-muted); max-width: 400px;">URL acara tidak terdaftar di database. Harap periksa kembali tautan Anda.</p>
     </div>
 
     <!-- 0. COVER PAGE LANDING -->
@@ -278,7 +278,7 @@
 
                 <div id="opt-audio-container" style="display: none; flex-direction: column; gap: 10px;">
                     <div style="background: #1c1917; padding: 24px; border-radius: var(--radius-btn); text-align: center;">
-                        <div id="audio-status-label" style="font-size: 0.9rem; color: #d6d3d1; margin-bottom: 12px;">🎙️️ Mikrofon Siap Digunakan</div>
+                        <div id="audio-status-label" style="font-size: 0.9rem; color: #d6d3d1; margin-bottom: 12px;">🎙 Mikrofon Siap Digunakan</div>
                         <audio id="audio-playback-result" controls style="display: none; width: 100%;"></audio>
                     </div>
                     <div class="btn-group">
@@ -466,14 +466,21 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <div class="card-header" style="color: var(--color-purple);">👑 Master Dashboard Superadmin SaaS</div>
-                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Atur batasan fitur & modul aktif sesuai paket sewa photobooth penyewa.</p>
+                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Atur batasan fitur, durasi sewa & modul aktif penyewa photobooth.</p>
                     </div>
                     <button class="btn btn-danger btn-sm" onclick="AuthEngine.logoutAdmin()">Sign Out Superadmin</button>
                 </div>
 
                 <!-- MANAGEMENT CONTROL PAKET SEWA -->
                 <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
-                    <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Penyesuaian Paket Sewa (Feature Flags)</strong>
+                    <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Penyesuaian Masa Sewa & Feature Flags</strong>
+
+                    <!-- DURATION RENTAL CONTROL -->
+                    <div class="form-group" style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
+                        <label class="form-label" style="color: var(--color-purple);">⏱️ Masa Aktif Sewa (Rental Expiry Date)</label>
+                        <input type="datetime-local" id="sa-rental-expiry" class="form-input" style="margin-top: 4px;">
+                        <span style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px;">Jika waktu saat ini melebihi tanggal di atas, halaman client photobooth akan otomatis dikunci.</span>
+                    </div>
 
                     <div class="switch-control">
                         <div>
@@ -493,15 +500,23 @@
 
                     <div class="switch-control">
                         <div>
-                            <div class="switch-label">3. Fitur Video & Audio Guestbook</div>
-                            <div class="switch-sub">Sediakan tombol rekam video ucapan & rekaman suara mikrofon</div>
+                            <div class="switch-label">3. Fitur Video Guestbook (Rekam Video)</div>
+                            <div class="switch-sub">Sediakan tombol rekam video ucapan dari kamera</div>
                         </div>
-                        <input type="checkbox" id="sa-feat-guestbook-media" class="switch-checkbox" checked>
+                        <input type="checkbox" id="sa-feat-video-guestbook" class="switch-checkbox" checked>
                     </div>
 
                     <div class="switch-control">
                         <div>
-                            <div class="switch-label">4. Fitur Bagikan ke Instagram Story</div>
+                            <div class="switch-label">4. Fitur Audio Guestbook (Rekam Suara)</div>
+                            <div class="switch-sub">Sediakan tombol rekam pesan suara dari mikrofon</div>
+                        </div>
+                        <input type="checkbox" id="sa-feat-audio-guestbook" class="switch-checkbox" checked>
+                    </div>
+
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">5. Fitur Bagikan ke Instagram Story</div>
                             <div class="switch-sub">Sediakan tombol ekspor langsung Web Share API / Instagram Story</div>
                         </div>
                         <input type="checkbox" id="sa-feat-ig-share" class="switch-checkbox" checked>
@@ -509,15 +524,15 @@
 
                     <div class="switch-control">
                         <div>
-                            <div class="switch-label">5. Unduh Unduhan ZIP Hasil Sesi Pemotretan</div>
-                            <div class="switch-sub">Izinkan admin event mengunduh seluruh file hasil sesi dalam bentuk ZIP</div>
+                            <div class="switch-label">6. Unduh Unduhan ZIP Hasil Sesi Pemotretan & Pesan</div>
+                            <div class="switch-sub">Izinkan admin event mengunduh seluruh file hasil sesi (foto, video, audio, ucapan teks) dalam ZIP</div>
                         </div>
                         <input type="checkbox" id="sa-feat-zip-download" class="switch-checkbox" checked>
                     </div>
 
                     <div class="switch-control">
                         <div>
-                            <div class="switch-label">6. Tampilkan Watermark Studio</div>
+                            <div class="switch-label">7. Tampilkan Watermark Studio</div>
                             <div class="switch-sub">Sertakan teks/branding Kayuna Photobooth di kaki kanvas</div>
                         </div>
                         <input type="checkbox" id="sa-feat-watermark" class="switch-checkbox" checked>
@@ -571,10 +586,12 @@
 
         let CURRENT_EVENT_SLUG = resolveEventSlugFromURL();
         let CURRENT_EVENT_DATA = null;
+        let RENTAL_EXPIRES_AT = null;
         let FEATURE_FLAGS = {
             allow_layouts: true,
             allow_multiframe: true,
-            allow_guestbook_media: true,
+            allow_video_guestbook: true,
+            allow_audio_guestbook: true,
             allow_ig_share: true,
             allow_zip_download: true,
             show_watermark: true
@@ -618,7 +635,16 @@
 
             applyFeatureFlagsToUI() {
                 const recBox = document.getElementById('box-rec-options');
-                if (recBox) recBox.style.display = FEATURE_FLAGS.allow_guestbook_media ? 'flex' : 'none';
+                const btnVideo = document.getElementById('btn-opt-video');
+                const btnAudio = document.getElementById('btn-opt-audio');
+
+                if (btnVideo) btnVideo.style.display = FEATURE_FLAGS.allow_video_guestbook ? 'inline-flex' : 'none';
+                if (btnAudio) btnAudio.style.display = FEATURE_FLAGS.allow_audio_guestbook ? 'inline-flex' : 'none';
+
+                if (recBox) {
+                    const hasAnyMedia = FEATURE_FLAGS.allow_video_guestbook || FEATURE_FLAGS.allow_audio_guestbook;
+                    recBox.style.display = hasAnyMedia ? 'flex' : 'none';
+                }
 
                 const shareIgBtn = document.getElementById('btn-share-ig-guestbook');
                 if (shareIgBtn) shareIgBtn.style.display = FEATURE_FLAGS.allow_ig_share ? 'inline-flex' : 'none';
@@ -631,7 +657,7 @@
             },
 
             toggleVideoRecorder() {
-                if (!FEATURE_FLAGS.allow_guestbook_media) return;
+                if (!FEATURE_FLAGS.allow_video_guestbook) return;
                 const container = document.getElementById('opt-video-container');
                 if (container.style.display === 'none') {
                     container.style.display = 'flex';
@@ -643,7 +669,7 @@
             },
 
             toggleAudioRecorder() {
-                if (!FEATURE_FLAGS.allow_guestbook_media) return;
+                if (!FEATURE_FLAGS.allow_audio_guestbook) return;
                 const container = document.getElementById('opt-audio-container');
                 if (container.style.display === 'none') {
                     container.style.display = 'flex';
@@ -1177,20 +1203,7 @@
                         .storage.from('wedding-photobooth').upload(photoPath, CameraEngine.finalMergedBlob, { contentType: 'image/jpeg' });
                     if (photoErr) throw photoErr;
 
-                    let videoPath = null;
-                    if (FEATURE_FLAGS.allow_guestbook_media && VideoEngine.videoBlob && VideoEngine.videoBlob.size > 0) {
-                        const vPath = `${CURRENT_EVENT_SLUG}/videos/video_${timestamp}.webm`;
-                        const { data: vData } = await supabaseClient.storage.from('wedding-photobooth').upload(vPath, VideoEngine.videoBlob, { contentType: VideoEngine.videoBlob.type });
-                        if (vData) videoPath = vData.path;
-                    }
-
-                    let audioPath = null;
-                    if (FEATURE_FLAGS.allow_guestbook_media && AudioEngine.audioBlob && AudioEngine.audioBlob.size > 0) {
-                        const aPath = `${CURRENT_EVENT_SLUG}/audios/audio_${timestamp}.webm`;
-                        const { data: aData } = await supabaseClient.storage.from('wedding-photobooth').upload(aPath, AudioEngine.audioBlob, { contentType: AudioEngine.audioBlob.type });
-                        if (aData) audioPath = aData.path;
-                    }
-
+                    // Upload Photo Record
                     const { error: dbErr } = await supabaseClient
                         .from('media')
                         .insert([{
@@ -1209,8 +1222,45 @@
                     let localKey = `my_photos_${CURRENT_EVENT_SLUG}`;
                     let localUploads = JSON.parse(localStorage.getItem(localKey) || '[]');
                     localUploads.push(photoData.path);
-                    if (videoPath) localUploads.push(videoPath);
-                    if (audioPath) localUploads.push(audioPath);
+
+                    // Optional Video Upload
+                    if (FEATURE_FLAGS.allow_video_guestbook && VideoEngine.videoBlob && VideoEngine.videoBlob.size > 0) {
+                        const vPath = `${CURRENT_EVENT_SLUG}/videos/video_${timestamp}.webm`;
+                        const { data: vData } = await supabaseClient.storage.from('wedding-photobooth').upload(vPath, VideoEngine.videoBlob, { contentType: VideoEngine.videoBlob.type });
+                        if (vData) {
+                            await supabaseClient.from('media').insert([{
+                                event_slug: CURRENT_EVENT_SLUG,
+                                media_type: 'video',
+                                storage_path: vData.path,
+                                file_name: `video_${timestamp}.webm`,
+                                mime_type: VideoEngine.videoBlob.type || 'video/webm',
+                                guest_name: guestName,
+                                guest_message: guestMsg,
+                                status: 'approved'
+                            }]);
+                            localUploads.push(vData.path);
+                        }
+                    }
+
+                    // Optional Audio Upload
+                    if (FEATURE_FLAGS.allow_audio_guestbook && AudioEngine.audioBlob && AudioEngine.audioBlob.size > 0) {
+                        const aPath = `${CURRENT_EVENT_SLUG}/audios/audio_${timestamp}.webm`;
+                        const { data: aData } = await supabaseClient.storage.from('wedding-photobooth').upload(aPath, AudioEngine.audioBlob, { contentType: AudioEngine.audioBlob.type });
+                        if (aData) {
+                            await supabaseClient.from('media').insert([{
+                                event_slug: CURRENT_EVENT_SLUG,
+                                media_type: 'audio',
+                                storage_path: aData.path,
+                                file_name: `audio_${timestamp}.webm`,
+                                mime_type: AudioEngine.audioBlob.type || 'audio/webm',
+                                guest_name: guestName,
+                                guest_message: guestMsg,
+                                status: 'approved'
+                            }]);
+                            localUploads.push(aData.path);
+                        }
+                    }
+
                     localStorage.setItem(localKey, JSON.stringify(localUploads));
 
                     alert("🎉 Terima kasih! Foto & ucapan Anda berhasil tersimpan dalam Digital Guestbook.");
@@ -1313,39 +1363,52 @@
             }
         };
 
-        /* SUPERADMIN ENGINE (PAKET SEWA SAAS & FEATURE FLAGS DALAM SUPABASE) */
+        /* SUPERADMIN ENGINE (PAKET SEWA SAAS, EXpiry DATE & FEATURE FLAGS DALAM SUPABASE) */
         const SuperAdminEngine = {
             async loadDashboard() {
                 document.getElementById('sa-feat-layouts').checked = FEATURE_FLAGS.allow_layouts;
                 document.getElementById('sa-feat-multiframe').checked = FEATURE_FLAGS.allow_multiframe;
-                document.getElementById('sa-feat-guestbook-media').checked = FEATURE_FLAGS.allow_guestbook_media;
+                document.getElementById('sa-feat-video-guestbook').checked = FEATURE_FLAGS.allow_video_guestbook;
+                document.getElementById('sa-feat-audio-guestbook').checked = FEATURE_FLAGS.allow_audio_guestbook;
                 document.getElementById('sa-feat-ig-share').checked = FEATURE_FLAGS.allow_ig_share;
                 document.getElementById('sa-feat-zip-download').checked = FEATURE_FLAGS.allow_zip_download;
                 document.getElementById('sa-feat-watermark').checked = FEATURE_FLAGS.show_watermark;
+
+                if (RENTAL_EXPIRES_AT) {
+                    const expDate = new Date(RENTAL_EXPIRES_AT);
+                    const formattedLocal = new Date(expDate.getTime() - expDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                    document.getElementById('sa-rental-expiry').value = formattedLocal;
+                }
             },
 
             async savePackageSettings() {
                 FEATURE_FLAGS = {
                     allow_layouts: document.getElementById('sa-feat-layouts').checked,
                     allow_multiframe: document.getElementById('sa-feat-multiframe').checked,
-                    allow_guestbook_media: document.getElementById('sa-feat-guestbook-media').checked,
+                    allow_video_guestbook: document.getElementById('sa-feat-video-guestbook').checked,
+                    allow_audio_guestbook: document.getElementById('sa-feat-audio-guestbook').checked,
                     allow_ig_share: document.getElementById('sa-feat-ig-share').checked,
                     allow_zip_download: document.getElementById('sa-feat-zip-download').checked,
                     show_watermark: document.getElementById('sa-feat-watermark').checked
                 };
+
+                const expiryVal = document.getElementById('sa-rental-expiry').value;
+                const rentalExpiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
 
                 try {
                     const { error } = await supabaseClient
                         .from('event_settings')
                         .upsert({
                             event_slug: CURRENT_EVENT_SLUG,
-                            feature_flags: FEATURE_FLAGS
+                            feature_flags: FEATURE_FLAGS,
+                            rental_expires_at: rentalExpiresAt
                         }, { onConflict: 'event_slug' });
 
                     if (error) throw error;
 
+                    RENTAL_EXPIRES_AT = rentalExpiresAt;
                     AppRouter.applyFeatureFlagsToUI();
-                    alert("✅ Konfigurasi Paket Sewa Superadmin Berhasil Disimpan di Supabase!");
+                    alert("✅ Konfigurasi Paket Sewa & Masa Aktif Superadmin Berhasil Disimpan di Supabase!");
                 } catch (e) {
                     alert("Gagal menyimpan konfigurasi Superadmin: " + e.message);
                 }
@@ -1400,6 +1463,19 @@
                     const defaultTitle = CURRENT_EVENT_DATA?.event_name || CURRENT_EVENT_DATA?.title || 'Wedding Photobooth';
 
                     if (st) {
+                        RENTAL_EXPIRES_AT = st.rental_expires_at || null;
+
+                        if (RENTAL_EXPIRES_AT) {
+                            const expiryTime = new Date(RENTAL_EXPIRES_AT).getTime();
+                            const currentTime = Date.now();
+                            if (currentTime > expiryTime) {
+                                document.getElementById('error-screen-title').innerText = "⏳ Masa Sewa Telah Berakhir";
+                                document.getElementById('error-screen-msg').innerText = "Masa aktif sewa photobooth untuk acara ini telah selesai. Silakan hubungi penyedia layanan.";
+                                document.getElementById('error-screen').style.display = 'flex';
+                                return false;
+                            }
+                        }
+
                         if (st.feature_flags) {
                             FEATURE_FLAGS = { ...FEATURE_FLAGS, ...st.feature_flags };
                             AppRouter.applyFeatureFlagsToUI();
@@ -1443,7 +1519,8 @@
                             document.documentElement.style.setProperty('--color-surface', st.color_surface);
                         }
                     }
-                } catch(e) {}
+                    return true;
+                } catch(e) { return true; }
             },
 
             async saveStyleSettings() {
@@ -1593,7 +1670,7 @@
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td><strong>${item.media_type.toUpperCase()}</strong></td>
-                            <td>${item.guest_name}</td>
+                            <td>${item.guest_name || 'Tamu'}</td>
                             <td>${item.guest_message || '-'}</td>
                             <td>${new Date(item.created_at).toLocaleDateString()}</td>
                             <td style="text-align: right;">
@@ -1620,6 +1697,15 @@
                 const total = this.mediaItemsCache.length;
                 let downloadedCount = 0;
 
+                let txtContent = `=================================================\n`;
+                txtContent += ` DIGITAL GUESTBOOK - PESAN & UCAPAN TAMU\n`;
+                txtContent += ` Event: ${CURRENT_EVENT_SLUG}\n`;
+                txtContent += ` Tanggal Ekspor: ${new Date().toLocaleString('id-ID')}\n`;
+                txtContent += ` Total Entri: ${total}\n`;
+                txtContent += `=================================================\n\n`;
+
+                const exportedJson = [];
+
                 try {
                     for (let item of this.mediaItemsCache) {
                         downloadedCount++;
@@ -1630,14 +1716,35 @@
                         const blob = await response.blob();
 
                         const safeName = (item.guest_name || 'Tamu').replace(/[^a-zA-Z0-9]/g, '_');
-                        const ext = item.file_name.split('.').pop() || 'jpg';
-                        zip.file(`${safeName}_${item.media_type}_${item.id.substr(0,6)}.${ext}`, blob);
+                        const ext = item.file_name ? item.file_name.split('.').pop() : (item.media_type === 'photo' ? 'jpg' : 'webm');
+                        const fileNameInZip = `${item.media_type.toUpperCase()}_${safeName}_${item.id.substr(0,6)}.${ext}`;
+
+                        zip.file(fileNameInZip, blob);
+
+                        txtContent += `[${new Date(item.created_at).toLocaleString('id-ID')}]\n`;
+                        txtContent += `Nama Tamu : ${item.guest_name || 'Tamu'}\n`;
+                        txtContent += `Tipe Media: ${item.media_type.toUpperCase()}\n`;
+                        txtContent += `Berkas    : ${fileNameInZip}\n`;
+                        txtContent += `Pesan     : ${item.guest_message || '(Tidak ada pesan teks)'}\n`;
+                        txtContent += `-------------------------------------------------\n\n`;
+
+                        exportedJson.push({
+                            id: item.id,
+                            nama_tamu: item.guest_name || 'Tamu',
+                            tipe_media: item.media_type,
+                            pesan_ucapan: item.guest_message || '',
+                            file_path: fileNameInZip,
+                            waktu_kirim: item.created_at
+                        });
                     }
+
+                    zip.file("pesan_ucapan.txt", txtContent);
+                    zip.file("semua_pesan_tamu.json", JSON.stringify(exportedJson, null, 2));
 
                     btnDownload.innerText = "⚡ Mengompres ZIP...";
                     const content = await zip.generateAsync({ type: "blob" });
-                    saveAs(content, `Photobooth_${CURRENT_EVENT_SLUG}_Media.zip`);
-                    alert("✅ Seluruh berkas berhasil diunduh dalam file ZIP!");
+                    saveAs(content, `Photobooth_${CURRENT_EVENT_SLUG}_Lengkap.zip`);
+                    alert("✅ Seluruh berkas (Foto, Video, Audio & Ucapan Teks) berhasil diunduh dalam file ZIP!");
                 } catch (e) {
                     alert("Gagal mengunduh berkas ZIP: " + e.message);
                 } finally {
