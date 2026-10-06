@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Photobooth</title>
+    <title>Digital Photobooth SaaS</title>
 
     <!-- Supabase JS Client v2 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -157,7 +157,7 @@
         .color-picker-controls input[type="text"]:focus { border-color: var(--color-primary); background: var(--color-surface); }
 
         /* SWITCH TOGGLE MULTI FEATURE */
-        .switch-control { display: flex; items-center: center; justify-content: space-between; background: var(--color-surface-card); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--color-border); }
+        .switch-control { display: flex; align-items: center; justify-content: space-between; background: var(--color-surface-card); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--color-border); }
         .switch-label { font-size: 0.85rem; font-weight: 700; color: var(--color-text-main); }
         .switch-sub { font-size: 0.75rem; color: var(--color-text-muted); }
         .switch-checkbox { width: 20px; height: 20px; accent-color: var(--color-purple); cursor: pointer; }
@@ -278,7 +278,7 @@
 
                 <div id="opt-audio-container" style="display: none; flex-direction: column; gap: 10px;">
                     <div style="background: #1c1917; padding: 24px; border-radius: var(--radius-btn); text-align: center;">
-                        <div id="audio-status-label" style="font-size: 0.9rem; color: #d6d3d1; margin-bottom: 12px;">🎙️ Mikrofon Siap Digunakan</div>
+                        <div id="audio-status-label" style="font-size: 0.9rem; color: #d6d3d1; margin-bottom: 12px;">🎙️️ Mikrofon Siap Digunakan</div>
                         <audio id="audio-playback-result" controls style="display: none; width: 100%;"></audio>
                     </div>
                     <div class="btn-group">
@@ -523,7 +523,7 @@
                         <input type="checkbox" id="sa-feat-watermark" class="switch-checkbox" checked>
                     </div>
 
-                    <button class="btn btn-purple" style="margin-top: 10px; padding: 14px;" onclick="SuperAdminEngine.savePackageSettings()">💾 Simpan Konfigurasi Paket Sewa</button>
+                    <button class="btn btn-purple" style="margin-top: 10px; padding: 14px;" onclick="SuperAdminEngine.savePackageSettings()">💾 Simpan Konfigurasi Paket Sewa ke Supabase</button>
                 </div>
             </div>
         </section>
@@ -555,7 +555,7 @@
 
         const SUPERADMIN_PIN = "246998";
 
-        // ADVANCED URL SLUG RESOLVER (Mendukung Path URL & Query ?event=)
+        // ADVANCED URL SLUG RESOLVER
         function resolveEventSlugFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
             const querySlug = urlParams.get('event');
@@ -1313,7 +1313,7 @@
             }
         };
 
-        /* SUPERADMIN ENGINE (PAKET SEWA SAAS & FEATURE FLAGS) */
+        /* SUPERADMIN ENGINE (PAKET SEWA SAAS & FEATURE FLAGS DALAM SUPABASE) */
         const SuperAdminEngine = {
             async loadDashboard() {
                 document.getElementById('sa-feat-layouts').checked = FEATURE_FLAGS.allow_layouts;
@@ -1345,7 +1345,7 @@
                     if (error) throw error;
 
                     AppRouter.applyFeatureFlagsToUI();
-                    alert("✅ Konfigurasi Paket Sewa Superadmin Berhasil Disimpan!");
+                    alert("✅ Konfigurasi Paket Sewa Superadmin Berhasil Disimpan di Supabase!");
                 } catch (e) {
                     alert("Gagal menyimpan konfigurasi Superadmin: " + e.message);
                 }
