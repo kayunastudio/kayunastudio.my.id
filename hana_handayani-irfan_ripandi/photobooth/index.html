@@ -24,6 +24,7 @@
             --color-warning: #e9c46a;
             --color-danger: #e63946;
             --color-instagram: #e1306c;
+            --color-purple: #7c3aed;
 
             --color-bg-app: #faf7f2;
             --color-surface: #ffffff;
@@ -65,6 +66,7 @@
         .btn-danger { background: var(--color-danger); color: white; }
         .btn-success { background: var(--color-success); color: white; }
         .btn-instagram { background: var(--color-instagram); color: white; }
+        .btn-purple { background: var(--color-purple); color: white; }
         .btn-sm { padding: 8px 14px; font-size: 0.75rem; border-radius: 8px; }
 
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -153,6 +155,12 @@
         .color-picker-controls input[type="color"] { border: 1px solid var(--color-border); width: 40px; height: 40px; border-radius: 8px; cursor: pointer; background: transparent; padding: 2px; }
         .color-picker-controls input[type="text"] { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--color-border); font-family: monospace; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; outline: none; transition: border-color var(--transition-speed); }
         .color-picker-controls input[type="text"]:focus { border-color: var(--color-primary); background: var(--color-surface); }
+
+        /* SWITCH TOGGLE MULTI FEATURE */
+        .switch-control { display: flex; items-center: center; justify-content: space-between; background: var(--color-surface-card); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--color-border); }
+        .switch-label { font-size: 0.85rem; font-weight: 700; color: var(--color-text-main); }
+        .switch-sub { font-size: 0.75rem; color: var(--color-text-muted); }
+        .switch-checkbox { width: 20px; height: 20px; accent-color: var(--color-purple); cursor: pointer; }
 
         #error-screen { position: fixed; inset: 0; background: #fff; z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; }
     </style>
@@ -249,7 +257,7 @@
             <div class="card">
                 <div class="card-header">📝 Pesan Ucapan & Publikasi Media</div>
                 
-                <div style="background: var(--color-surface-card); border: 1px solid var(--color-border); padding: 16px; border-radius: var(--radius-btn); display: flex; flex-direction: column; gap: 12px;">
+                <div id="box-rec-options" style="background: var(--color-surface-card); border: 1px solid var(--color-border); padding: 16px; border-radius: var(--radius-btn); display: flex; flex-direction: column; gap: 12px;">
                     <div><strong>🎥 / 🎙️ Tambahkan Rekaman Pesan Spesial (Opsional):</strong></div>
                     <div class="btn-group">
                         <button id="btn-opt-video" class="btn btn-secondary btn-sm" onclick="AppRouter.toggleVideoRecorder()">🎥 Rekam Video Ucapan</button>
@@ -306,7 +314,7 @@
             </div>
         </section>
 
-        <!-- 5. SECTION: ADMIN PANEL LENGKAP -->
+        <!-- 5. SECTION: ADMIN PANEL EVENT -->
         <section id="section-admin" class="component-section">
             <div class="card">
                 <div class="card-header">⚙️ Customization & Branding Control</div>
@@ -362,7 +370,6 @@
                 <!-- PENGATURAN TEMA APLIKASI -->
                 <div style="border: 1px solid var(--color-border); padding: 16px; border-radius: var(--radius-btn); background: var(--color-surface-card);">
                     <strong style="color: var(--color-primary); font-size: 0.95rem; display:block; margin-bottom: 12px;">🌈 Setting Tema Aplikasi Utama</strong>
-                    <!-- ADVANCED COLOR PICKERS FOR MAIN TEMA -->
                     <div class="color-picker-grid">
                         <div class="color-picker-item">
                             <span class="color-picker-label">Warna Aksen Utama</span>
@@ -395,10 +402,10 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary btn-sm" style="align-self: flex-start;" onclick="AdminEngine.saveStyleSettings()">💾 Simpan Pengaturan Tampilan ke Database</button>
+                <button class="btn btn-primary btn-sm" style="align-self: flex-start;" onclick="AdminEngine.saveStyleSettings()">💾 Simpan Pengaturan Tampilan</button>
             </div>
 
-            <div class="card">
+            <div class="card" id="admin-frame-card">
                 <div class="card-header">🖼️ Manajemen Background / Frame (Multi-Background)</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
                     <div class="form-group">
@@ -452,6 +459,74 @@
                 </div>
             </div>
         </section>
+
+        <!-- 6. SECTION: DASHBOARD SUPERADMIN SAAS -->
+        <section id="section-superadmin" class="component-section">
+            <div class="card" style="border: 2px solid var(--color-purple);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <div class="card-header" style="color: var(--color-purple);">👑 Master Dashboard Superadmin SaaS</div>
+                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Atur batasan fitur & modul aktif sesuai paket sewa photobooth penyewa.</p>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="AuthEngine.logoutAdmin()">Sign Out Superadmin</button>
+                </div>
+
+                <!-- MANAGEMENT CONTROL PAKET SEWA -->
+                <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
+                    <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Penyesuaian Paket Sewa (Feature Flags)</strong>
+
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">1. Fitur Pilihan Layout Grid</div>
+                            <div class="switch-sub">Izinkan pengguna memilih variasi komposisi grid foto (Single, Strip 2-3, Quad 4, 6)</div>
+                        </div>
+                        <input type="checkbox" id="sa-feat-layouts" class="switch-checkbox" checked>
+                    </div>
+
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">2. Fitur Multi-Background / Multi-Frame</div>
+                            <div class="switch-sub">Izinkan upload lebih dari 1 variasi frame background</div>
+                        </div>
+                        <input type="checkbox" id="sa-feat-multiframe" class="switch-checkbox" checked>
+                    </div>
+
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">3. Fitur Video & Audio Guestbook</div>
+                            <div class="switch-sub">Sediakan tombol rekam video ucapan & rekaman suara mikrofon</div>
+                        </div>
+                        <input type="checkbox" id="sa-feat-guestbook-media" class="switch-checkbox" checked>
+                    </div>
+
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">4. Fitur Bagikan ke Instagram Story</div>
+                            <div class="switch-sub">Sediakan tombol ekspor langsung Web Share API / Instagram Story</div>
+                        </div>
+                        <input type="checkbox" id="sa-feat-ig-share" class="switch-checkbox" checked>
+                    </div>
+
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">5. Unduh Unduhan ZIP Hasil Sesi Pemotretan</div>
+                            <div class="switch-sub">Izinkan admin event mengunduh seluruh file hasil sesi dalam bentuk ZIP</div>
+                        </div>
+                        <input type="checkbox" id="sa-feat-zip-download" class="switch-checkbox" checked>
+                    </div>
+
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">6. Tampilkan Watermark Studio</div>
+                            <div class="switch-sub">Sertakan teks/branding Kayuna Photobooth di kaki kanvas</div>
+                        </div>
+                        <input type="checkbox" id="sa-feat-watermark" class="switch-checkbox" checked>
+                    </div>
+
+                    <button class="btn btn-purple" style="margin-top: 10px; padding: 14px;" onclick="SuperAdminEngine.savePackageSettings()">💾 Simpan Konfigurasi Paket Sewa</button>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer>
@@ -465,7 +540,7 @@
             <div class="card-header">Sign In Admin</div>
             <p style="font-size: 0.8rem; color: var(--color-text-muted);" id="modal-adm-event-label"></p>
             <div class="form-group">
-                <label class="form-label">Password Admin Event</label>
+                <label class="form-label">PIN Admin / Superadmin</label>
                 <input type="password" id="modal-adm-pass" class="form-input" placeholder="••••••••">
             </div>
             <button class="btn btn-primary" style="padding: 14px;" onclick="AuthEngine.loginAdmin()">Sign In</button>
@@ -478,16 +553,17 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const SUPERADMIN_PIN = "246998";
+
         // ADVANCED URL SLUG RESOLVER (Mendukung Path URL & Query ?event=)
         function resolveEventSlugFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
             const querySlug = urlParams.get('event');
             if (querySlug) return querySlug;
 
-            // Ekstrak segmen dari Path URL (misal: /hana_handayani-irfan_ripandi/photobooth)
             const pathSegments = window.location.pathname.split('/').filter(s => s && s !== 'index.html' && s !== 'photobooth');
             if (pathSegments.length > 0) {
-                return pathSegments[0]; // Ambil nama folder utama (contoh: hana_handayani-irfan_ripandi)
+                return pathSegments[0];
             }
 
             return null;
@@ -495,6 +571,14 @@
 
         let CURRENT_EVENT_SLUG = resolveEventSlugFromURL();
         let CURRENT_EVENT_DATA = null;
+        let FEATURE_FLAGS = {
+            allow_layouts: true,
+            allow_multiframe: true,
+            allow_guestbook_media: true,
+            allow_ig_share: true,
+            allow_zip_download: true,
+            show_watermark: true
+        };
 
         const AppRouter = {
             enterAppFromCover() {
@@ -521,16 +605,33 @@
                 if (routeName === 'photo') setTimeout(() => CameraEngine.startCamera(), 100);
                 if (routeName === 'gallery') GalleryEngine.loadDeviceGallery();
                 if (routeName === 'admin') AdminEngine.loadDashboard();
+                if (routeName === 'superadmin') SuperAdminEngine.loadDashboard();
             },
 
             openGuestbookStep() {
                 OverlayCanvasEngine.exportFinalImageBlob((blob) => {
                     CameraEngine.finalMergedBlob = blob;
                     this.switchRoute('guestbook');
+                    this.applyFeatureFlagsToUI();
                 });
             },
 
+            applyFeatureFlagsToUI() {
+                const recBox = document.getElementById('box-rec-options');
+                if (recBox) recBox.style.display = FEATURE_FLAGS.allow_guestbook_media ? 'flex' : 'none';
+
+                const shareIgBtn = document.getElementById('btn-share-ig-guestbook');
+                if (shareIgBtn) shareIgBtn.style.display = FEATURE_FLAGS.allow_ig_share ? 'inline-flex' : 'none';
+
+                const frameCard = document.getElementById('admin-frame-card');
+                if (frameCard) frameCard.style.display = FEATURE_FLAGS.allow_multiframe ? 'flex' : 'none';
+
+                const zipBtn = document.getElementById('btn-admin-download-all');
+                if (zipBtn) zipBtn.style.display = FEATURE_FLAGS.allow_zip_download ? 'inline-flex' : 'none';
+            },
+
             toggleVideoRecorder() {
+                if (!FEATURE_FLAGS.allow_guestbook_media) return;
                 const container = document.getElementById('opt-video-container');
                 if (container.style.display === 'none') {
                     container.style.display = 'flex';
@@ -542,6 +643,7 @@
             },
 
             toggleAudioRecorder() {
+                if (!FEATURE_FLAGS.allow_guestbook_media) return;
                 const container = document.getElementById('opt-audio-container');
                 if (container.style.display === 'none') {
                     container.style.display = 'flex';
@@ -582,18 +684,25 @@
                         .order('created_at', { ascending: false });
                     
                     let availableBackgrounds = [];
-                    if (customFrames && customFrames.length > 0) {
+                    if (customFrames && customFrames.length > 0 && FEATURE_FLAGS.allow_multiframe) {
                         availableBackgrounds = customFrames.map(f => {
                             const { data: u } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(f.storage_path);
                             return { title: f.title, url: u.publicUrl };
                         });
+                    } else if (customFrames && customFrames.length > 0) {
+                        const { data: u } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(customFrames[0].storage_path);
+                        availableBackgrounds = [{ title: customFrames[0].title, url: u.publicUrl }];
                     } else {
                         availableBackgrounds = [{ title: 'Standard Background', url: null }];
                     }
 
+                    const activeTemplates = FEATURE_FLAGS.allow_layouts 
+                        ? this.baseGridTemplates 
+                        : [this.baseGridTemplates[0]];
+
                     const generatedLayoutList = [];
                     availableBackgrounds.forEach((bg, bgIdx) => {
-                        this.baseGridTemplates.forEach((gt) => {
+                        activeTemplates.forEach((gt) => {
                             generatedLayoutList.push({
                                 uniqueId: `${gt.id}_bg_${bgIdx}`,
                                 layoutId: gt.id,
@@ -936,6 +1045,13 @@
                     this.ctx.font = "32px system-ui, sans-serif";
                     this.ctx.fillText("Photobooth Memories", W / 2, marginBottomY + 180);
                 }
+
+                if (FEATURE_FLAGS.show_watermark) {
+                    this.ctx.textAlign = "right";
+                    this.ctx.fillStyle = "rgba(0,0,0,0.4)";
+                    this.ctx.font = "bold 20px system-ui, sans-serif";
+                    this.ctx.fillText("Powered by Kayuna Photobooth Studio", W - 40, H - 40);
+                }
             },
 
             exportFinalImageBlob(callback) {
@@ -946,6 +1062,7 @@
         /* SOCIAL SHARE ENGINE */
         const SocialShareEngine = {
             async shareResultToInstagram(imageUrl = null) {
+                if (!FEATURE_FLAGS.allow_ig_share) return alert("Fitur bagikan ke Instagram disembunyikan berdasarkan paket sewa.");
                 try {
                     let fileToShare = null;
                     if (CameraEngine.finalMergedBlob && !imageUrl) {
@@ -1061,14 +1178,14 @@
                     if (photoErr) throw photoErr;
 
                     let videoPath = null;
-                    if (VideoEngine.videoBlob && VideoEngine.videoBlob.size > 0) {
+                    if (FEATURE_FLAGS.allow_guestbook_media && VideoEngine.videoBlob && VideoEngine.videoBlob.size > 0) {
                         const vPath = `${CURRENT_EVENT_SLUG}/videos/video_${timestamp}.webm`;
                         const { data: vData } = await supabaseClient.storage.from('wedding-photobooth').upload(vPath, VideoEngine.videoBlob, { contentType: VideoEngine.videoBlob.type });
                         if (vData) videoPath = vData.path;
                     }
 
                     let audioPath = null;
-                    if (AudioEngine.audioBlob && AudioEngine.audioBlob.size > 0) {
+                    if (FEATURE_FLAGS.allow_guestbook_media && AudioEngine.audioBlob && AudioEngine.audioBlob.size > 0) {
                         const aPath = `${CURRENT_EVENT_SLUG}/audios/audio_${timestamp}.webm`;
                         const { data: aData } = await supabaseClient.storage.from('wedding-photobooth').upload(aPath, AudioEngine.audioBlob, { contentType: AudioEngine.audioBlob.type });
                         if (aData) audioPath = aData.path;
@@ -1144,7 +1261,7 @@
                                 mediaHtml = `<img src="${urlData.publicUrl}" class="gallery-item-media" loading="lazy" />`;
                             }
 
-                            let shareBtn = isPhoto ? `<button class="btn btn-instagram btn-sm" style="flex:1;" onclick="SocialShareEngine.shareResultToInstagram('${urlData.publicUrl}')">📸 IG Story</button>` : '';
+                            let shareBtn = (isPhoto && FEATURE_FLAGS.allow_ig_share) ? `<button class="btn btn-instagram btn-sm" style="flex:1;" onclick="SocialShareEngine.shareResultToInstagram('${urlData.publicUrl}')">📸 IG Story</button>` : '';
 
                             card.innerHTML = `
                                 ${mediaHtml}
@@ -1164,7 +1281,7 @@
             }
         };
 
-        /* AUTHENTICATION ENGINE BERBASIS ACARA */
+        /* AUTHENTICATION ENGINE BERBASIS ACARA & SUPERADMIN */
         const AuthEngine = {
             toggleAdminModal() {
                 const modal = document.getElementById('admin-login-modal');
@@ -1177,11 +1294,17 @@
                 const pass = document.getElementById('modal-adm-pass').value.trim();
                 const expectedPass = CURRENT_EVENT_DATA?.admin_password || CURRENT_EVENT_DATA?.passcode;
 
+                if (pass === SUPERADMIN_PIN) {
+                    this.toggleAdminModal();
+                    AppRouter.switchRoute('superadmin');
+                    return;
+                }
+
                 if (CURRENT_EVENT_DATA && pass === expectedPass) {
                     this.toggleAdminModal();
                     AppRouter.switchRoute('admin');
                 } else {
-                    alert("Password Admin Salah untuk acara ini!");
+                    alert("Password / PIN Admin Salah!");
                 }
             },
 
@@ -1190,17 +1313,54 @@
             }
         };
 
+        /* SUPERADMIN ENGINE (PAKET SEWA SAAS & FEATURE FLAGS) */
+        const SuperAdminEngine = {
+            async loadDashboard() {
+                document.getElementById('sa-feat-layouts').checked = FEATURE_FLAGS.allow_layouts;
+                document.getElementById('sa-feat-multiframe').checked = FEATURE_FLAGS.allow_multiframe;
+                document.getElementById('sa-feat-guestbook-media').checked = FEATURE_FLAGS.allow_guestbook_media;
+                document.getElementById('sa-feat-ig-share').checked = FEATURE_FLAGS.allow_ig_share;
+                document.getElementById('sa-feat-zip-download').checked = FEATURE_FLAGS.allow_zip_download;
+                document.getElementById('sa-feat-watermark').checked = FEATURE_FLAGS.show_watermark;
+            },
+
+            async savePackageSettings() {
+                FEATURE_FLAGS = {
+                    allow_layouts: document.getElementById('sa-feat-layouts').checked,
+                    allow_multiframe: document.getElementById('sa-feat-multiframe').checked,
+                    allow_guestbook_media: document.getElementById('sa-feat-guestbook-media').checked,
+                    allow_ig_share: document.getElementById('sa-feat-ig-share').checked,
+                    allow_zip_download: document.getElementById('sa-feat-zip-download').checked,
+                    show_watermark: document.getElementById('sa-feat-watermark').checked
+                };
+
+                try {
+                    const { error } = await supabaseClient
+                        .from('event_settings')
+                        .upsert({
+                            event_slug: CURRENT_EVENT_SLUG,
+                            feature_flags: FEATURE_FLAGS
+                        }, { onConflict: 'event_slug' });
+
+                    if (error) throw error;
+
+                    AppRouter.applyFeatureFlagsToUI();
+                    alert("✅ Konfigurasi Paket Sewa Superadmin Berhasil Disimpan!");
+                } catch (e) {
+                    alert("Gagal menyimpan konfigurasi Superadmin: " + e.message);
+                }
+            }
+        };
+
         /* ADMIN ENGINE (DATABASE STORED CONFIG & COLOR SYNC) */
         const AdminEngine = {
             mediaItemsCache: [],
 
-            // Helper untuk mensinkronkan Color Picker ke Input HEX
             syncColorInputs(colorInputId, hexInputId) {
                 const colorVal = document.getElementById(colorInputId).value;
                 document.getElementById(hexInputId).value = colorVal.toUpperCase();
             },
 
-            // Helper untuk mensinkronkan Input HEX ke Color Picker
             syncHexInputs(hexInputId, colorInputId) {
                 let hexVal = document.getElementById(hexInputId).value.trim();
                 if (!hexVal.startsWith('#')) {
@@ -1212,7 +1372,6 @@
                 }
             },
 
-            // Setel nilai secara terpadu untuk Picker & HEX
             setColorValue(colorInputId, hexInputId, val) {
                 if (!val) return;
                 let formattedHex = val.trim();
@@ -1225,6 +1384,7 @@
             },
 
             async loadDashboard() {
+                AppRouter.applyFeatureFlagsToUI();
                 this.loadAdminFrames();
                 this.loadAdminMedia();
             },
@@ -1240,6 +1400,11 @@
                     const defaultTitle = CURRENT_EVENT_DATA?.event_name || CURRENT_EVENT_DATA?.title || 'Wedding Photobooth';
 
                     if (st) {
+                        if (st.feature_flags) {
+                            FEATURE_FLAGS = { ...FEATURE_FLAGS, ...st.feature_flags };
+                            AppRouter.applyFeatureFlagsToUI();
+                        }
+
                         document.getElementById('adm-cover-title').value = st.cover_title || defaultTitle;
                         document.getElementById('display-cover-title').innerText = st.cover_title || defaultTitle;
                         
@@ -1313,7 +1478,8 @@
                     color_primary: document.getElementById('adm-color-primary').value,
                     color_secondary: document.getElementById('adm-color-secondary').value,
                     color_bg_app: document.getElementById('adm-color-bg-app').value,
-                    color_surface: document.getElementById('adm-color-surface').value
+                    color_surface: document.getElementById('adm-color-surface').value,
+                    feature_flags: FEATURE_FLAGS
                 };
 
                 const { error } = await supabaseClient
@@ -1443,6 +1609,7 @@
             },
 
             async downloadAllMediaZip() {
+                if (!FEATURE_FLAGS.allow_zip_download) return alert("Fitur unduh ZIP disembunyikan berdasarkan paket sewa.");
                 if (!this.mediaItemsCache || this.mediaItemsCache.length === 0) {
                     return alert("Tidak ada berkas media untuk diunduh.");
                 }
@@ -1498,14 +1665,12 @@
             }
 
             try {
-                // VERIFIKASI DENGAN SUPABASE TERLEBIH DAHULU (COCOKKAN SLUG URL DENGAN DATABASE)
                 let { data: ev, error } = await supabaseClient
                     .from('events')
                     .select('*')
                     .eq('slug', CURRENT_EVENT_SLUG)
                     .maybeSingle();
 
-                // JIKA SLUG DIRUBAH MENJADI FOLDER URL (misal /hana_handayani-irfan_ripandi/), COCOKKAN KE HANAAIRFAN
                 if (!ev && (CURRENT_EVENT_SLUG.includes('hana_handayani') || CURRENT_EVENT_SLUG.includes('hana'))) {
                     CURRENT_EVENT_SLUG = 'hanairfan';
                     const { data: evFallback } = await supabaseClient
