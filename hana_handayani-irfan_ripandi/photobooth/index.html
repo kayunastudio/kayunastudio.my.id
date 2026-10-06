@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Photobooth</title>
+    <title>Digital Photobooth SaaS</title>
 
     <!-- Supabase JS Client v2 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -559,6 +559,23 @@
                 <input type="password" id="modal-adm-pass" class="form-input" placeholder="••••••••">
             </div>
             <button class="btn btn-primary" style="padding: 14px;" onclick="AuthEngine.loginAdmin()">Sign In</button>
+        </div>
+    </div>
+
+    <!-- MODAL MEDIA PREVIEW ADMIN -->
+    <div id="admin-preview-modal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 520px;">
+            <button class="modal-close-button" onclick="AdminEngine.closePreviewModal()">✕</button>
+            <div class="card-header" id="preview-modal-title">👁️ Detail Media & Pesan</div>
+            
+            <div id="preview-modal-body" style="display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
+                <!-- Konten dinamis akan disuntikkan dari JS -->
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 6px;">
+                <a id="preview-modal-download-btn" href="#" target="_blank" download class="btn btn-secondary btn-sm" style="flex: 1;">💾 Unduh Berkas Media</a>
+                <button class="btn btn-primary btn-sm" onclick="AdminEngine.closePreviewModal()" style="flex: 1;">Tutup</button>
+            </div>
         </div>
     </div>
 
@@ -1415,7 +1432,7 @@
             }
         };
 
-        /* ADMIN ENGINE (DATABASE STORED CONFIG & COLOR SYNC) */
+        /* ADMIN ENGINE (DATABASE STORED CONFIG, COLOR SYNC & PREVIEW MODAL) */
         const AdminEngine = {
             mediaItemsCache: [],
 
@@ -1671,18 +1688,71 @@
                         tr.innerHTML = `
                             <td><strong>${item.media_type.toUpperCase()}</strong></td>
                             <td>${item.guest_name || 'Tamu'}</td>
-                            <td>${item.guest_message || '-'}</td>
+                            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.guest_message || '-'}</td>
                             <td>${new Date(item.created_at).toLocaleDateString()}</td>
                             <td style="text-align: right;">
                                 <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                                    <button class="btn btn-purple btn-sm" onclick="AdminEngine.openPreviewModal('${item.id}')">👁️ Preview</button>
                                     <a href="${urlData.publicUrl}" target="_blank" download class="btn btn-secondary btn-sm">💾</a>
-                                    <button class="btn btn-danger btn-sm" onclick="AdminEngine.deleteMedia('${item.id}', '${item.storage_path}')">🗑️ Hapus</button>
+                                    <button class="btn btn-danger btn-sm" onclick="AdminEngine.deleteMedia('${item.id}', '${item.storage_path}')">🗑️</button>
                                 </div>
                             </td>
                         `;
                         tbody.appendChild(tr);
                     });
                 } catch(err) { tbody.innerHTML = `<tr><td colspan='5' style='color:var(--color-danger);'>Gagal: ${err.message}</td></tr>`; }
+            },
+
+            openPreviewModal(id) {
+                const item = this.mediaItemsCache.find(m => m.id === id);
+                if (!item) return alert("Data media tidak ditemukan.");
+
+                const modal = document.getElementById('admin-preview-modal');
+                const bodyContainer = document.getElementById('preview-modal-body');
+                const downloadBtn = document.getElementById('preview-modal-download-btn');
+                const { data: urlData } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(item.storage_path);
+
+                downloadBtn.href = urlData.publicUrl;
+
+                let mediaElement = '';
+                if (item.media_type === 'video') {
+                    mediaElement = `
+                        <div class="viewport-container" style="max-height: 280px; width: 100%;">
+                            <video src="${urlData.publicUrl}" controls class="viewport-element" autoplay></video>
+                        </div>`;
+                } else if (item.media_type === 'audio') {
+                    mediaElement = `
+                        <div style="background: #1c1917; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="color: #d6d3d1; font-size: 0.85rem; margin-bottom: 10px;">🎙️ Rekaman Suara Ucapan</div>
+                            <audio src="${urlData.publicUrl}" controls style="width: 100%;"></audio>
+                        </div>`;
+                } else {
+                    mediaElement = `
+                        <div class="viewport-container" style="max-height: 320px; width: 100%;">
+                            <img src="${urlData.publicUrl}" class="viewport-element" style="object-fit: contain;" />
+                        </div>`;
+                }
+
+                bodyContainer.innerHTML = `
+                    ${mediaElement}
+                    <div style="background: var(--color-surface-card); border: 1px solid var(--color-border); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px;">
+                        <div><strong style="color: var(--color-secondary); font-size: 0.75rem; text-transform: uppercase;">Pengirim:</strong></div>
+                        <div style="font-weight: 800; font-size: 1rem; color: var(--color-primary);">${item.guest_name || 'Tamu Kehormatan'}</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted);">Waktu: ${new Date(item.created_at).toLocaleString('id-ID')}</div>
+                        <hr style="border: 0; border-top: 1px solid var(--color-border); margin: 4px 0;">
+                        <div><strong style="color: var(--color-secondary); font-size: 0.75rem; text-transform: uppercase;">Pesan & Ucapan Teks:</strong></div>
+                        <div style="font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; color: var(--color-text-main);">${item.guest_message || '<em>(Tidak melampirkan ucapan teks)</em>'}</div>
+                    </div>
+                `;
+
+                modal.style.display = 'flex';
+            },
+
+            closePreviewModal() {
+                const modal = document.getElementById('admin-preview-modal');
+                const bodyContainer = document.getElementById('preview-modal-body');
+                bodyContainer.innerHTML = "";
+                modal.style.display = 'none';
             },
 
             async downloadAllMediaZip() {
