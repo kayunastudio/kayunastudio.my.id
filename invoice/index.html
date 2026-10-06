@@ -363,9 +363,16 @@
             tambahItemBaris("", "", "", 0);
             muatDataDariSpreadsheet();
 
+            // SINKRONISASI & PERHITUNGAN OTOMATIS DUA ARAH (BIDIRECTIONAL)
             document.getElementById('wrapper-item-transaksi').addEventListener('input', (e) => {
-                if(e.target.classList.contains('row-harga') || e.target.classList.contains('row-vol')) {
-                    hitungSubtotalBaris(e.target.closest('.item-row'));
+                const target = e.target;
+                const row = target.closest('.item-row');
+                if (!row) return;
+
+                if (target.classList.contains('row-harga') || target.classList.contains('row-vol')) {
+                    hitungSubtotalBaris(row);
+                } else if (target.classList.contains('row-sub')) {
+                    hitungHargaDariSubtotalBaris(row);
                 }
             });
         }
@@ -618,7 +625,7 @@
                 <div class="grid grid-cols-3 gap-1">
                     <input type="text" placeholder="Vol" value="${vol}" class="row-vol w-full border p-1.5 text-xs rounded border-gray-200 focus:outline-none focus:border-[#78350F]">
                     <input type="number" placeholder="Harga" value="${harga}" class="row-harga w-full border p-1.5 text-xs rounded border-gray-200 focus:outline-none focus:border-[#78350F]">
-                    <input type="number" placeholder="Subtotal" value="${sub}" class="row-sub w-full border p-1.5 text-xs rounded bg-gray-50 font-semibold border-gray-200" readonly>
+                    <input type="number" placeholder="Subtotal" value="${sub}" class="row-sub w-full border p-1.5 text-xs rounded bg-white font-semibold border-gray-200 focus:outline-none focus:border-[#78350F]">
                 </div>
             `;
             wrapper.appendChild(newRow);
@@ -633,12 +640,28 @@
             rekapTotalSeketika();
         }
 
+        // HITUNG SUBTOTAL DARI VOLUME & HARGA
         function hitungSubtotalBaris(rowElement) {
             const volStr = rowElement.querySelector('.row-vol').value;
             const harga = parseFloat(rowElement.querySelector('.row-harga').value) || 0;
             const subInput = rowElement.querySelector('.row-sub');
             const volAngka = parseFloat(volStr.replace(/[^0-9,.]/g, '').replace(',', '.')) || 0;
             subInput.value = volAngka > 0 ? Math.round(volAngka * harga) : 0;
+            rekapTotalSeketika();
+        }
+
+        // HITUNG HARGA SATUAN DARI SUBTOTAL & VOLUME (OTOMATIS DUA ARAH)
+        function hitungHargaDariSubtotalBaris(rowElement) {
+            const volStr = rowElement.querySelector('.row-vol').value;
+            const subtotal = parseFloat(rowElement.querySelector('.row-sub').value) || 0;
+            const hargaInput = rowElement.querySelector('.row-harga');
+            const volAngka = parseFloat(volStr.replace(/[^0-9,.]/g, '').replace(',', '.')) || 0;
+
+            if (volAngka > 0) {
+                hargaInput.value = Math.round(subtotal / volAngka);
+            } else {
+                hargaInput.value = 0;
+            }
             rekapTotalSeketika();
         }
 
