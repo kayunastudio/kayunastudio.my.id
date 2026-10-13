@@ -97,7 +97,7 @@
         }
         .btn-submit:hover { background: #38473c; }
 
-        /* AREA EXCEL & UPLOAD */
+        /* AKSI EXCEL & UPLOAD */
         .excel-actions {
             display: flex;
             gap: 10px;
@@ -122,18 +122,6 @@
             background: #4A5D4E;
             color: white;
         }
-        .upload-btn {
-            border: 2px dashed #4A5D4E;
-            padding: 15px;
-            text-align: center;
-            border-radius: 10px;
-            cursor: pointer;
-            background: #f9fbf9;
-            transition: background 0.2s;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
-        }
-        .upload-btn:hover { background: #eef2ef; }
         input[type="file"] { display: none; }
         
         /* TABEL DATABASE */
@@ -235,7 +223,7 @@
         </form>
     </div>
 
-    <!-- AKSI EXCEL & IMPORT -->
+    <!-- AKSI EXCEL & UPLOAD -->
     <div class="excel-actions">
         <button class="btn-action" onclick="document.getElementById('excel-file').click()">
             📁 Upload Excel Massal
@@ -280,19 +268,18 @@
 </div>
 
 <script>
-    // NAMAPUTRI & CALON MENANTU
+    // NAMA PASANGAN
     const NAMA_PUTRI = "Hana Handayani";
     const NAMA_MENANTU = "Irfan Ripandi";
-    const NAMA_PASANGAN = `${NAMA_PUTRI} & ${NAMA_MENANTU}`;
+    const NAMA_PASANGAN = `${NAMA_PUTRI} &${NAMA_MENANTU}`;
 
     // BASE URL UNDANGAN DIGITAL
-    let baseUrlUndangan = window.location.origin + window.location.pathname.replace(/\/tamu.*\$/, '').replace(/\/index_.*\.html$/, '').replace(/\/$/, '');
+    let baseUrlUndangan = window.location.origin + window.location.pathname.replace(/\/tamu.*$/, '').replace(/\/index_.*\.html$/, '').replace(/\/$/, '');
 
     // KONFIGURASI SUPABASE DATABASE
     const SUPABASE_URL = 'https://xyzcompany.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
     
-    // Inisialisasi Supabase (fallback ke LocalStorage jika kunci Supabase default)
     let supabaseClient = null;
     if (SUPABASE_URL.includes('supabase.co')) {
         try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
@@ -305,10 +292,11 @@
         muatDataTamu();
     };
 
-    // FORMULASI NOMOR HP (Agar selalu ada angka 0 di depan dan terbaca sebagai teks)
+    // FORMULASI NOMOR HP BERSIH (Murni hanya digit angka, awalan 0)
     function rapikanNomorHp(noHpRaw) {
         if (!noHpRaw) return "";
-        let str = noHpRaw.toString().trim().replace(/[^0-9]/g, '');
+        // Hapus tanda petik, spasi, plus, dan karakter non-angka lainnya
+        let str = noHpRaw.toString().replace(/['"`\s+]/g, '').replace(/[^0-9]/g, '');
         if (str.startsWith("62")) {
             str = "0" + str.slice(2);
         } else if (!str.startsWith("0") && str.length > 0) {
@@ -317,7 +305,7 @@
         return str;
     }
 
-    // KONVERSI UNTUK LINK WHATSAPP (Awal 62)
+    // KONVERSI NOMOR KHUSUS UNTUK LINK WHATSAPP (Awalan 62 tanpa karakter tambahan)
     function formatHpUntukWa(noHpClean) {
         let str = rapikanNomorHp(noHpClean);
         if (str.startsWith("0")) {
@@ -432,13 +420,14 @@ Kami yang berbahagia,
             const hpClean = rapikanNomorHp(tamu.no_hp || tamu.hp || tamu["No HP"] || "");
             const hpWa = formatHpUntukWa(hpClean);
             
-            const waLink = hpWa ? `https://api.whatsapp.com/send?phone=${hpWa}&text=${encodeURIComponent(buatTeksPesanWA(nama))}` : '#';
+            // Menggunakan API wa.me yang bersih dari karakter tanda petik (')
+            const waLink = hpWa ? `https://wa.me/${hpWa}?text=${encodeURIComponent(buatTeksPesanWA(nama))}` : '#';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${idx + 1}</td>
                 <td><b>${nama}</b></td>
-                <td style="font-family: monospace;">${hpClean ? "'" + hpClean : '-'}</td>
+                <td style="font-family: monospace;">${hpClean || '-'}</td>
                 <td>
                     ${hpClean 
                         ? `<a href="\${waLink}" target="_blank" class="btn-send">💬 Kirim WA</a>` 
@@ -460,12 +449,11 @@ Kami yang berbahagia,
             return;
         }
 
-        // Format data dengan petik tunggal ' atau formula tebal agar MS Excel membaca sel sebagai Text
         const excelRows = daftarTamuLocal.map(tamu => {
             const hpClean = rapikanNomorHp(tamu.no_hp || tamu.hp || "");
             return {
                 "Nama Tamu": tamu.nama,
-                "No HP": hpClean ? `'${hpClean}` : "", // Tanda petik tunggal memaksa sel Excel menjadi TEXT
+                "No HP": hpClean ? `'${hpClean}` : "", // Tanda petik tunggal ' HANYA digunakan saat ekspor file ke Excel
                 "Link Undangan": `${baseUrlUndangan}?to=${encodeURIComponent(tamu.nama)}`
             };
         });
@@ -487,7 +475,7 @@ Kami yang berbahagia,
             const data = new Uint8Array(evt.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(worksheet, { raw: false }); // raw: false memastikan text dengan angka 0 terbaca sebagai String
+            const rows = XLSX.utils.sheet_to_json(worksheet, { raw: false });
 
             rows.forEach(r => {
                 const nama = r["Nama Tamu"] || r["Nama"] || r["NAMA"] || r["Name"] || "";
