@@ -170,7 +170,7 @@
                             <div class="grid grid-cols-3 gap-2 mb-4">
                                 <div class="col-span-2">
                                     <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">No. Invoice</label>
-                                    <input type="text" id="invNo" required placeholder="Contoh: 26153-001" class="w-full border border-[#a7f3d0] p-2 text-sm rounded focus:outline-none focus:border-[#059669] bg-white">
+                                    <input type="text" id="invNo" required placeholder="Contoh: 2615Okt - 001" class="w-full border border-[#a7f3d0] p-2 text-sm rounded focus:outline-none focus:border-[#059669] bg-white font-bold text-[#064e3b]">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Status</label>
@@ -184,8 +184,8 @@
                             <!-- TANGGAL INVOICE & TANGGAL JATUH TEMPO -->
                             <div class="grid grid-cols-2 gap-2 mb-3">
                                 <div>
-                                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Tanggal Cetak</label>
-                                    <input type="date" id="invTgl" required onchange="hitungOtomatisJatuhTempo(this.value)" class="w-full border border-[#a7f3d0] p-2 rounded text-xs focus:outline-none focus:border-[#059669] bg-white text-gray-700">
+                                    <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Tanggal Invoice</label>
+                                    <input type="date" id="invTgl" required onchange="penangananPerubahanTanggalCetak(this.value)" class="w-full border border-[#a7f3d0] p-2 rounded text-xs focus:outline-none focus:border-[#059669] bg-white text-gray-700">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#047857] mb-1">Jatuh Tempo</label>
@@ -449,6 +449,51 @@
             renderDatabaseTable(dataHasilFilter);
         }
 
+        /* GENERATOR PENAIKAN NOMOR INVOICE OTOMATIS: YYDDMMM - 001 (3 huruf bulan, 3 digit urutan) */
+        function generateAutoInvoiceNumber(stringTanggal) {
+            if (!stringTanggal) return "";
+            const parts = stringTanggal.split('-');
+            if (parts.length !== 3) return "";
+
+            const tahunFull = parts[0];
+            const tahun2Digit = tahunFull.slice(-2);
+            const bulanIndex = parseInt(parts[1], 10) - 1;
+            const tanggalStr = parts[2];
+
+            const daftarBulan3Huruf = [
+                "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+                "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+            ];
+
+            const namaBulan3Huruf = daftarBulan3Huruf[bulanIndex];
+
+            // Filter transaksi pada bulan dan tahun yang sama
+            const targetBulanThn = `${tahunFull}-${parts[1]}`;
+            const transaksiBulanIni = listDatabaseInvoice.filter(inv => {
+                return inv.tanggal && inv.tanggal.startsWith(targetBulanThn);
+            });
+
+            // Urutan Klien = Jumlah transaksi bulan ini + 1 (Format 3 Digit / 001)
+            const urutanNomor = transaksiBulanIni.length + 1;
+            const urutanStr = String(urutanNomor).padStart(3, '0');
+
+            return `${tahun2Digit}${tanggalStr}${namaBulan3Huruf} - ${urutanStr}`;
+        }
+
+        function penangananPerubahanTanggalCetak(stringTanggalInvoice) {
+            if (!stringTanggalInvoice) return;
+            
+            // Hitung Otomatis Jatuh Tempo (+2 Hari)
+            hitungOtomatisJatuhTempo(stringTanggalInvoice);
+
+            // Generate Otomatis Nomor Invoice jika pengguna belum membuka invoice dari DB
+            const autoNo = generateAutoInvoiceNumber(stringTanggalInvoice);
+            document.getElementById('invNo').value = autoNo;
+            if (currentInvoiceData) {
+                document.getElementById('pdf-inv-no').innerText = autoNo;
+            }
+        }
+
         function hitungOtomatisJatuhTempo(stringTanggalInvoice) {
             if (!stringTanggalInvoice) return;
             const dateObj = new Date(stringTanggalInvoice);
@@ -533,11 +578,17 @@
         }
 
         function bersihkanFormulirInput() {
-            document.getElementById('invNo').value = "";
-            document.getElementById('invTgl').value = "";
-            document.getElementById('invTempo').value = "";
-            document.getElementById('invTglMulai').value = "";
-            document.getElementById('invTglSelesai').value = "";
+            const hariIni = new Date().toISOString().split('T')[0];
+            document.getElementById('invTgl').value = hariIni;
+            
+            // Auto generate nomor invoice default untuk hari ini
+            const autoNo = generateAutoInvoiceNumber(hariIni);
+            document.getElementById('invNo').value = autoNo;
+
+            hitungOtomatisJatuhTempo(hariIni);
+
+            document.getElementById('invTglMulai').value = hariIni;
+            document.getElementById('invTglSelesai').value = hariIni;
             document.getElementById('invDpNominal').value = "";
             document.getElementById('invDpTgl').value = "";
             document.getElementById('custNama').value = "";
@@ -545,7 +596,7 @@
             document.getElementById('custAlamat').value = "";
             document.getElementById('wrapper-item-transaksi').innerHTML = "";
             document.getElementById('overdueBanner').classList.add('hidden');
-            document.getElementById('calendarContainer').classList.add('hidden');
+            perbaruiTombolKalender();
         }
 
         function pemicuCetakPdfDinamis() {
@@ -628,6 +679,8 @@
                 
                 if(listDatabaseInvoice.length > 0 && currentInvoiceData === null) {
                     pilihDataUntukCetak(listDatabaseInvoice[listDatabaseInvoice.length - 1].noInvoice);
+                } else if(currentInvoiceData === null) {
+                    bersihkanFormulirInput();
                 }
             })
             .catch(err => {
