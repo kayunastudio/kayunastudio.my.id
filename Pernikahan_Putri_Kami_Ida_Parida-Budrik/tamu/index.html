@@ -276,12 +276,11 @@
     // BASE URL UNDANGAN DIGITAL
     let baseUrlUndangan = window.location.origin + window.location.pathname.replace(/\/tamu.*$/, '').replace(/\/index_.*\.html$/, '').replace(/\/$/, '');
 
-    // KONFIGURASI SUPABASE DATABASE (Kosongkan/Ganti jika ada kredensial asli)
+    // KONFIGURASI SUPABASE DATABASE
     const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT.supabase.co'; 
     const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; 
     
     let supabaseClient = null;
-    // Cek apakah URL Supabase valid & bukan URL placeholder
     if (SUPABASE_URL.includes('supabase.co') && !SUPABASE_URL.includes('YOUR_SUPABASE_PROJECT') && !SUPABASE_URL.includes('xyzcompany')) {
         try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
     }
@@ -366,7 +365,7 @@ Kami yang berbahagia,
             }
         }
         
-        // Fallback LocalStorage (Mencegah error 'Failed to fetch')
+        // Fallback LocalStorage
         const localData = localStorage.getItem('sayogi_guest_db');
         daftarTamuLocal = localData ? JSON.parse(localData) : [];
         renderTabel(daftarTamuLocal);
@@ -429,20 +428,21 @@ Kami yang berbahagia,
             const hpClean = rapikanNomorHp(tamu.no_hp || tamu.hp || tamu["No HP"] || "");
             const hpWa = formatHpUntukWa(hpClean);
             
-            // Format URL WhatsApp resmi dan bersih (tanpa karakter non-numeric)
-            const waLink = hpWa ? `https://api.whatsapp.com/send?phone=${hpWa}&text=${encodeURIComponent(buatTeksPesanWA(nama))}` : '#';
+            // Menggunakan URL wa.me langsung dengan evaluasi string Javascript yang benar
+            const waUrl = hpWa ? `https://api.whatsapp.com/send?phone=${hpWa}&text=${encodeURIComponent(buatTeksPesanWA(nama))}` : '#';
 
             const tr = document.createElement('tr');
+            
+            // Kolom elemen tabel
+            let btnWaHtml = hpClean 
+                ? `<a href="${waUrl}" target="_blank" class="btn-send">💬 Kirim WA</a>` 
+                : `<span style="color:#aaa; font-size:0.8rem;">Tanpa No HP</span>`;
+
             tr.innerHTML = `
                 <td>${idx + 1}</td>
                 <td><b>${nama}</b></td>
                 <td style="font-family: monospace;">${hpClean || '-'}</td>
-                <td>
-                    ${hpClean 
-                        ? `<a href="\${waLink}" target="_blank" class="btn-send">💬 Kirim WA</a>` 
-                        : `<span style="color:#aaa; font-size:0.8rem;">Tanpa No HP</span>`
-                    }
-                </td>
+                <td>${btnWaHtml}</td>
                 <td>
                     <button class="btn-delete" onclick="hapusTamu(${idx}, ${tamu.id || 'null'})">🗑️ Hapus</button>
                 </td>
