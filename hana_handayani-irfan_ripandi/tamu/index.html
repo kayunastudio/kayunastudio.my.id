@@ -17,7 +17,7 @@
         }
         .admin-box {
             width: 100%;
-            max-width: 600px;
+            max-width: 680px;
             background: white;
             padding: 25px;
             border-radius: 12px;
@@ -36,6 +36,65 @@
             color: #4A5D4E;
         }
 
+        /* FORM INPUT MANUAL TAMU */
+        .manual-form-card {
+            background: #f9fbf9;
+            border: 1px solid #e1e8e2;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .manual-form-card h3 {
+            margin-top: 0;
+            font-size: 0.95rem;
+            color: #4A5D4E;
+            margin-bottom: 12px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+        }
+        @media (max-width: 500px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #555;
+        }
+        .form-group input {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #4A5D4E;
+        }
+        .btn-add-manual {
+            background-color: #4A5D4E;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            align-self: flex-end;
+            height: 35px;
+            transition: background 0.2s;
+        }
+        .btn-add-manual:hover {
+            background-color: #38473c;
+        }
+
         .upload-btn {
             border: 2px dashed #4A5D4E;
             padding: 20px;
@@ -52,28 +111,74 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 25px;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
         }
         th, td {
             padding: 10px;
             border-bottom: 1px solid #ddd;
             text-align: left;
+            vertical-align: middle;
         }
         th { background-color: #4A5D4E; color: white; }
         
+        .action-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
         .btn-send {
             background-color: #25D366;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 20px;
             cursor: pointer;
             text-decoration: none;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: bold;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .btn-send:hover { background-color: #128C7E; }
+
+        .btn-status {
+            background-color: #e0e0e0;
+            color: #555;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-status.sent {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border-color: #badbcc;
+        }
+
+        .btn-delete {
+            background: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+            padding: 5px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-delete:hover {
+            background: #f1aeb5;
+        }
+
+        tr.row-sent {
+            background-color: #f8fff9;
+        }
 
         /* BRANDING FOOTER KAYUNA STUDIO */
         .studio-footer {
@@ -123,7 +228,25 @@
         <b>Mempelai:</b> <span id="lbl-nama-pasangan">Memuat...</span>
     </div>
 
-    <p>Upload file Excel (.xlsx / .xls) berisi daftar nama tamu / kontak WhatsApp Anda.</p>
+    <!-- FORM INPUT MANUAL TAMU UNDANGAN -->
+    <div class="manual-form-card">
+        <h3>➕ Tambah Tamu Undangan Manual</h3>
+        <form onsubmit="tambahTamuManual(event)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="manualNama">Nama Tamu</label>
+                    <input type="text" id="manualNama" required placeholder="Contoh: Budi Santoso">
+                </div>
+                <div class="form-group">
+                    <label for="manualHp">No. HP / WhatsApp</label>
+                    <input type="tel" id="manualHp" required placeholder="081234567890">
+                </div>
+                <button type="submit" class="btn-add-manual">Tambah</button>
+            </div>
+        </form>
+    </div>
+
+    <p>Atau upload file Excel (.xlsx / .xls) berisi daftar nama tamu / kontak WhatsApp Anda.</p>
     
     <!-- Tombol Upload -->
     <div class="upload-btn" onclick="document.getElementById('excel-file').click()">
@@ -136,9 +259,9 @@
         <table>
             <thead>
                 <tr>
-                    <th>Nama Tamu / Kontak</th>
-                    <th>No. HP</th>
-                    <th>Aksi</th>
+                    <th style="width: 30%;">Nama Tamu / Kontak</th>
+                    <th style="width: 25%;">No. HP</th>
+                    <th style="width: 45%;">Aksi</th>
                 </tr>
             </thead>
             <tbody id="table-body">
@@ -168,86 +291,128 @@
 </div>
 
 <script>
-    // DETEKSI OTOMATIS DOMAIN & NAMA PASANGAN
+    // DETEKSI OTOMATIS DOMAIN & NAMA PASANGAN[cite: 12]
     function dapatkanDeteksiMempelaiOtomatis() {
-        let origin = window.location.origin;
-        let pathname = window.location.pathname;
+        let origin = window.location.origin;[cite: 12]
+        let pathname = window.location.pathname;[cite: 12]
 
-        // Bersihkan nama file html dari path
-        pathname = pathname.replace(/\/index_[0-9a-zA-Z]*\.html$/, '')
-                           .replace(/\/index\.html$/, '')
-                           .replace(/\/$/, '');
+        // Bersihkan nama file html dari path[cite: 12]
+        pathname = pathname.replace(/\/index_[0-9a-zA-Z]*\.html\$/, '')[cite: 12]
+                           .replace(/\/index\.html$/, '')[cite: 12] .replace(/\/$/, '');[cite: 12]
         
-        // Hapus subfolder /tamu dari path agar link murni hanya ke folder nama pasangan
-        pathname = pathname.replace(/\/tamu$/, '');
+        // Hapus subfolder /tamu dari path agar link murni hanya ke folder nama pasangan[cite: 12]
+        pathname = pathname.replace(/\/tamu\$/, '');[cite: 12]
 
-        let segments = pathname.split('/').filter(Boolean);
-        let rawSlug = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
+        let segments = pathname.split('/').filter(Boolean);[cite: 12]
+        let rawSlug = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";[cite: 12]
 
-        // Murni link dasar sampai folder nama mempelai
-        let baseUrl = origin + (pathname.startsWith('/') ? pathname : '/' + pathname);
+        // Murni link dasar sampai folder nama mempelai[cite: 12]
+        let baseUrl = origin + (pathname.startsWith('/') ? pathname : '/' + pathname);[cite: 12]
 
-        // Format nama pasangan: 
-        // 1. '-' diubah menjadi ' & ' (pemisah mempelai)
-        // 2. '_' diubah menjadi ' ' (spasi untuk nama panjang)
+        // Format nama pasangan[cite: 12]
         let namaFormatted = rawSlug
-            .replace(/-/g, ' & ')
-            .replace(/_/g, ' ')
-            .split(' ')
-            .map(word => word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : '')
-            .join(' ');
+            .replace(/-/g, ' & ')[cite: 12]
+            .replace(/_/g, ' ')[cite: 12]
+            .split(' ')[cite: 12]
+            .map(word => word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : '')[cite: 12]
+            .join(' ');[cite: 12]
 
         return {
-            namaPasangan: namaFormatted || "Kedua Mempelai",
-            linkUndangan: baseUrl
+            namaPasangan: namaFormatted || "Kedua Mempelai",[cite: 12]
+            linkUndangan: baseUrl[cite: 12]
         };
     }
 
-    const dataLokasi = dapatkanDeteksiMempelaiOtomatis();
-    const NAMA_PASANGAN = dataLokasi.namaPasangan;
-    const LINK_UNDANGAN_UTAMA = dataLokasi.linkUndangan;
+    const dataLokasi = dapatkanDeteksiMempelaiOtomatis();[cite: 12]
+    const NAMA_PASANGAN = dataLokasi.namaPasangan;[cite: 12]
+    const LINK_UNDANGAN_UTAMA = dataLokasi.linkUndangan;[cite: 12]
+
+    let daftarTamuList = [];[cite: 12]
 
     window.onload = function() {
-        document.getElementById('lbl-nama-pasangan').innerText = NAMA_PASANGAN;
-        document.getElementById('page-title').innerText = "Admin Generator Undangan - " + NAMA_PASANGAN;
+        document.getElementById('lbl-nama-pasangan').innerText = NAMA_PASANGAN;[cite: 12]
+        document.getElementById('page-title').innerText = "Admin Generator Undangan - " + NAMA_PASANGAN;[cite: 12]
     };
 
-    function handleFile(event) {
-        const file = event.target.files[0];
-        if(!file) return;
+    function tambahTamuManual(e) {
+        e.preventDefault();[cite: 12]
+        const namaInput = document.getElementById('manualNama').value.trim();[cite: 12]
+        const hpInput = document.getElementById('manualHp').value.trim();[cite: 12]
 
-        const reader = new FileReader();
+        if (!namaInput) return;[cite: 12]
+
+        daftarTamuList.push({
+            "Nama": namaInput,[cite: 12]
+            "No HP": hpInput,[cite: 12]
+            "terkirim": false
+        });
+
+        document.getElementById('manualNama').value = "";[cite: 12]
+        document.getElementById('manualHp').value = "";[cite: 12]
+
+        tampilkanData(daftarTamuList);[cite: 12]
+    }
+
+    function toggleStatusTerkirim(index) {
+        if(daftarTamuList[index]) {
+            daftarTamuList[index].terkirim = !daftarTamuList[index].terkirim;
+            tampilkanData(daftarTamuList);
+        }
+    }
+
+    function hapusTamu(index) {
+        if(confirm("Apakah Anda yakin ingin menghapus nama tamu ini?")) {
+            daftarTamuList.splice(index, 1);
+            tampilkanData(daftarTamuList);
+        }
+    }
+
+    function handleFile(event) {
+        const file = event.target.files[0];[cite: 12]
+        if(!file) return;[cite: 12]
+
+        const reader = new FileReader();[cite: 12]
 
         reader.onload = function(e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
+            const data = new Uint8Array(e.target.result);[cite: 12]
+            const workbook = XLSX.read(data, { type: 'array' });[cite: 12]
             
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const jsonRows = XLSX.utils.sheet_to_json(worksheet);
+            const sheetName = workbook.SheetNames[0];[cite: 12]
+            const worksheet = workbook.Sheets[sheetName];[cite: 12]
+            const jsonRows = XLSX.utils.sheet_to_json(worksheet);[cite: 12]
             
-            tampilkanData(jsonRows);
+            daftarTamuList = jsonRows.map(row => ({
+                ...row,
+                terkirim: row.terkirim || false
+            }));
+            tampilkanData(daftarTamuList);[cite: 12]
         };
 
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(file);[cite: 12]
     }
 
     function tampilkanData(rows) {
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = "";
+        const tbody = document.getElementById('table-body');[cite: 12]
+        tbody.innerHTML = "";[cite: 12]
         
-        rows.forEach(row => {
-            const namaTamu = row["Nama"] || row["Nama Tamu"] || row["Kontak"] || row["Name"] || row["NAMA"] || row["nama"] || row["WhatsApp"] || "Tamu Undangan";
-            let noHp = row["No HP"] || row["NO HP"] || row["No. HP"] || row["no hp"] || row["hp"] || row["No WhatsApp"] || "";
+        if (rows.length === 0) {
+            document.getElementById('result-area').style.display = 'none';
+            return;
+        }
+
+        rows.forEach((row, idx) => {
+            const namaTamu = row["Nama"] || row["Nama Tamu"] || row["Kontak"] || row["Name"] || row["NAMA"] || row["nama"] || row["WhatsApp"] || "Tamu Undangan";[cite: 12]
+            let noHp = row["No HP"] || row["NO HP"] || row["No. HP"] || row["no hp"] || row["hp"] || row["No WhatsApp"] || "";[cite: 12]
+            const isTerkirim = row.terkirim || false;
 
             if(noHp) {
-                noHp = noHp.toString().trim().replace(/[^0-9]/g, '');
-                if (noHp.startsWith("0")) {
-                    noHp = "62" + noHp.slice(1);
+                noHp = noHp.toString().trim().replace(/[^0-9]/g, '');[cite: 12]
+                if (noHp.startsWith("0")) {[cite: 12]
+                    noHp = "62" + noHp.slice(1);[cite: 12]
                 }
             }
 
-            // Pesan WA dengan link murni dan penyematan parameter ?to=Nama+Tamu otomatis
+            // Pesan WA dengan link murni dan penyematan parameter ?to=Nama+Tamu otomatis[cite: 12]
             const teksMentah = `Assalamualaikum Wr.Wb 
 *${namaTamu}*,
 
@@ -280,26 +445,36 @@ Diharapkan melalui media ini sebagai pengganti undangan resmi agar maksud dan tu
 Terima kasih banyak atas perhatiannya.
 
 Kami yang berbahagia,
-*${NAMA_PASANGAN}*`;
+*${NAMA_PASANGAN}*`;[cite: 12]
             
-            const pesanTeksEncoded = encodeURIComponent(teksMentah);
-            const waLink = noHp ? `https://api.whatsapp.com/send?phone=${noHp}&text=${pesanTeksEncoded}` : '#';
+            const pesanTeksEncoded = encodeURIComponent(teksMentah);[cite: 12]
+            const waLink = noHp ? `https://api.whatsapp.com/send?phone=${noHp}&text=${pesanTeksEncoded}` : '#';[cite: 12]
 
             const tr = document.createElement('tr');
+            if (isTerkirim) tr.className = "row-sent";
+
             tr.innerHTML = `
                 <td><b>${namaTamu}</b></td>
                 <td>${noHp ? '+' + noHp : '-'}</td>
                 <td>
-                    ${noHp 
-                        ? `<a href="${waLink}" target="_blank" class="btn-send">Kirim WA 💬</a>` 
-                        : `<span style="color:#aaa; font-size:0.8rem;">Tanpa No HP</span>`
-                    }
+                    <div class="action-group">
+                        ${noHp 
+                            ? `<a href="${waLink}" target="_blank" onclick="daftarTamuList[${idx}].terkirim = true; tampilkanData(daftarTamuList);" class="btn-send">Kirim WA 💬</a>` 
+                            : `<span style="color:#aaa; font-size:0.8rem;">Tanpa No HP</span>`
+                        }
+                        <button type="button" onclick="toggleStatusTerkirim(${idx})" class="btn-status ${isTerkirim ? 'sent' : ''}">
+                            ${isTerkirim ? '✅ Selesai' : '⏳ Belum'}
+                        </button>
+                        <button type="button" onclick="hapusTamu(${idx})" class="btn-delete" title="Hapus Tamu">
+                            🗑️ Hapus
+                        </button>
+                    </div>
                 </td>
             `;
-            tbody.appendChild(tr);
+            tbody.appendChild(tr);[cite: 12]
         });
 
-        document.getElementById('result-area').style.display = 'block';
+        document.getElementById('result-area').style.display = 'block';[cite: 12]
     }
 </script>
 
