@@ -12,6 +12,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
+    <!-- GOOGLE FONTS (Termasuk Great Vibes & Font Estetik Lainnya) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;800&family=Great+Vibes&family=Montserrat:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+
     <style>
         :root {
             /* Warna Tema Aplikasi Utama */
@@ -35,6 +40,9 @@
             --color-bg-cover: #f7f2ea;
             --color-text-cover-title: #e07a5f;
             --color-text-cover-sub: #8d7b68;
+
+            /* Font Family Khusus Title Cover Polaroid */
+            --font-cover-title: 'Great Vibes', cursive;
 
             --color-text-main: #2b2d42;
             --color-text-muted: #8d8d99;
@@ -76,7 +84,16 @@
         #cover-screen { position: fixed; inset: 0; background: var(--color-bg-cover); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; transition: opacity 0.5s ease, visibility 0.5s ease; }
         #cover-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        .cover-title { font-size: 1.75rem; font-weight: 900; color: var(--color-text-cover-title); margin-bottom: 24px; letter-spacing: -0.5px; }
+        /* MENGGUNAKAN FONT COVER TITLE (DEFAULT: GREAT VIBES) */
+        .cover-title { 
+            font-family: var(--font-cover-title); 
+            font-size: 2.8rem; 
+            font-weight: 400; 
+            color: var(--color-text-cover-title); 
+            margin-bottom: 24px; 
+            letter-spacing: 0px; 
+            line-height: 1.2;
+        }
         .cover-subtitle { font-size: 0.95rem; color: var(--color-text-cover-sub); line-height: 1.5; }
 
         .polaroid-camera-housing { position: relative; width: 270px; display: flex; flex-direction: column; align-items: center; }
@@ -327,6 +344,21 @@
                             <label class="form-label">Judul Utama</label>
                             <input type="text" id="adm-cover-title" class="form-input" value="Wedding Photobooth">
                         </div>
+                        
+                        <!-- DROP DOWN PILIHAN FONT TITLE COVER POLAROID -->
+                        <div class="form-group">
+                            <label class="form-label">Jenis Font Judul Cover</label>
+                            <select id="adm-font-title" class="form-select" onchange="AdminEngine.updateFontPreview(this.value)">
+                                <option value="'Great Vibes', cursive">Great Vibes (Estetik Script)</option>
+                                <option value="'Alex Brush', cursive">Alex Brush (Calligraphy)</option>
+                                <option value="'Playfair Display', serif">Playfair Display (Serif Elegants)</option>
+                                <option value="'Cinzel', serif">Cinzel (Classic Royal)</option>
+                                <option value="'Montserrat', sans-serif">Montserrat (Modern Clean)</option>
+                                <option value="'Courier New', monospace">Courier New (Vintage Typewriter)</option>
+                                <option value="system-ui, sans-serif">System Default</option>
+                            </select>
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label">Sub-Judul / Ucapan</label>
                             <input type="text" id="adm-cover-sub" class="form-input" value="Abadikan momen berkesan Anda di Perayaan Pernikahan Kami">
@@ -1079,9 +1111,11 @@
 
                 if (!this.templateImg) {
                     const titleCover = document.getElementById('display-cover-title').innerText;
+                    const fontTitleStyle = getComputedStyle(document.documentElement).getPropertyValue('--font-cover-title').trim() || "'Great Vibes', cursive";
+                    
                     this.ctx.textAlign = "center";
                     this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-text-main').trim() || "#2b2d42";
-                    this.ctx.font = "bold 42px 'Courier New', Courier, monospace";
+                    this.ctx.font = `60px ${fontTitleStyle}`;
                     this.ctx.fillText(titleCover, W / 2, marginBottomY + 120);
 
                     this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-secondary').trim() || "#8d7b68";
@@ -1432,9 +1466,13 @@
             }
         };
 
-        /* ADMIN ENGINE (DATABASE STORED CONFIG, COLOR SYNC & PREVIEW MODAL) */
+        /* ADMIN ENGINE (DATABASE STORED CONFIG, COLOR SYNC, FONT SYNC & PREVIEW MODAL) */
         const AdminEngine = {
             mediaItemsCache: [],
+
+            updateFontPreview(fontFamilyValue) {
+                document.documentElement.style.setProperty('--font-cover-title', fontFamilyValue);
+            },
 
             syncColorInputs(colorInputId, hexInputId) {
                 const colorVal = document.getElementById(colorInputId).value;
@@ -1446,7 +1484,7 @@
                 if (!hexVal.startsWith('#')) {
                     hexVal = '#' + hexVal;
                 }
-                const isValidHex = /^#([0-9A-F]{3}){1,2}$/i.test(hexVal);
+                const isValidHex = /^#([0-9A-F]{3}){1,2}\$/i.test(hexVal);
                 if (isValidHex) {
                     document.getElementById(colorInputId).value = hexVal;
                 }
@@ -1507,6 +1545,11 @@
                         document.getElementById('adm-cover-img').value = st.polaroid_url || '';
                         if (st.polaroid_url) document.getElementById('display-cover-image').src = st.polaroid_url;
 
+                        /* SYNC FONT COVER POLAROID */
+                        const fontVal = st.font_cover_title || "'Great Vibes', cursive";
+                        document.getElementById('adm-font-title').value = fontVal;
+                        document.documentElement.style.setProperty('--font-cover-title', fontVal);
+
                         if (st.color_bg_cover) {
                             this.setColorValue('adm-color-bg-cover', 'adm-color-bg-cover-hex', st.color_bg_cover);
                             document.documentElement.style.setProperty('--color-bg-cover', st.color_bg_cover);
@@ -1561,11 +1604,14 @@
                     }
                 }
 
+                const fontTitleVal = document.getElementById('adm-font-title').value;
+
                 const payload = {
                     event_slug: CURRENT_EVENT_SLUG,
                     cover_title: document.getElementById('adm-cover-title').value.trim(),
                     cover_subtitle: document.getElementById('adm-cover-sub').value.trim(),
                     polaroid_url: coverImgUrl,
+                    font_cover_title: fontTitleVal,
                     color_bg_cover: document.getElementById('adm-color-bg-cover').value,
                     color_title_cover: document.getElementById('adm-color-title-cover').value,
                     color_sub_cover: document.getElementById('adm-color-sub-cover').value,
@@ -1584,7 +1630,7 @@
 
                 coverFileInput.value = '';
                 await this.loadStyleSettingsFromDB();
-                alert("✅ Pengaturan Tampilan Berhasil Disimpan di Database!");
+                alert("✅ Pengaturan Tampilan & Font Berhasil Disimpan di Database!");
             },
 
             async loadAdminFrames() {
