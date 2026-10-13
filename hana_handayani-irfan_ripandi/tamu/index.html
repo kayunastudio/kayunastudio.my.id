@@ -291,23 +291,30 @@
 </div>
 
 <script>
-    // DETEKSI OTOMATIS DOMAIN & NAMA PASANGAN
+    // DETEKSI OTOMATIS DIREKTORI SEBELUM /tamu UNTUK NAMA PASANGAN
     function dapatkanDeteksiMempelaiOtomatis() {
         let origin = window.location.origin;
         let pathname = window.location.pathname;
 
+        // Bersihkan nama file html dari path
         pathname = pathname.replace(/\/index_[0-9a-zA-Z]*\.html\$/, '')
                            .replace(/\/index\.html\$/, '')
                            .replace(/\/\$/, '');
-        
-        pathname = pathname.replace(/\/tamu\$/, '');
+
+        // Ambil path direktori persis sebelum subfolder /tamu
+        if (pathname.endsWith('/tamu')) {
+            pathname = pathname.substring(0, pathname.lastIndexOf('/tamu'));
+        }
 
         let segments = pathname.split('/').filter(Boolean);
-        let rawSlug = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
+        let rawFolder = segments.length > 0 ? segments[segments.length - 1] : "hana_handayani-irfan_ripandi";
 
         let baseUrl = origin + (pathname.startsWith('/') ? pathname : '/' + pathname);
 
-        let namaFormatted = rawSlug
+        // Format nama pasangan:
+        // 1. Ubah tanda hubung (-) menjadi ' & '
+        // 2. Ubah garis bawah (_) menjadi ' ' (spasi)
+        let namaFormatted = rawFolder
             .replace(/-/g, ' & ')
             .replace(/_/g, ' ')
             .split(' ')
