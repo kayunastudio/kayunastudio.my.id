@@ -12,7 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-    <!-- GOOGLE FONTS (Termasuk Great Vibes & Font Estetik Lainnya) -->
+    <!-- GOOGLE FONTS (Memuat Great Vibes & Font Estetik Utama) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;800&family=Great+Vibes&family=Montserrat:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@
             --color-text-cover-title: #e07a5f;
             --color-text-cover-sub: #8d7b68;
 
-            /* Font Family Khusus Title Cover Polaroid */
+            /* VARIABEL FONT TITLE COVER POLAROID (DEFAULT: GREAT VIBES) */
             --font-cover-title: 'Great Vibes', cursive;
 
             --color-text-main: #2b2d42;
@@ -84,13 +84,13 @@
         #cover-screen { position: fixed; inset: 0; background: var(--color-bg-cover); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; transition: opacity 0.5s ease, visibility 0.5s ease; }
         #cover-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        /* MENGGUNAKAN FONT COVER TITLE (DEFAULT: GREAT VIBES) */
+        /* PENERAPAN FONT COVER TITLE YANG DITEGASKAN */
         .cover-title { 
-            font-family: var(--font-cover-title); 
-            font-size: 2.8rem; 
+            font-family: var(--font-cover-title, 'Great Vibes', cursive) !important; 
+            font-size: 3.2rem; 
             font-weight: 400; 
             color: var(--color-text-cover-title); 
-            margin-bottom: 24px; 
+            margin-bottom: 20px; 
             letter-spacing: 0px; 
             line-height: 1.2;
         }
@@ -1578,6 +1578,9 @@
                             this.setColorValue('adm-color-surface', 'adm-color-surface-hex', st.color_surface);
                             document.documentElement.style.setProperty('--color-surface', st.color_surface);
                         }
+                    } else {
+                        // JIKA BELUM ADA SETTING DI DATABASE, TETAPKAN DEFAULT FONT GREAT VIBES
+                        document.documentElement.style.setProperty('--font-cover-title', "'Great Vibes', cursive");
                     }
                     return true;
                 } catch(e) { return true; }
