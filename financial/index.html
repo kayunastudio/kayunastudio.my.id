@@ -146,22 +146,38 @@
 
             <!-- KATEGORI RASIO & MEMO BELANJA -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-5 sm:mb-6">
-                <!-- LAPORAN BULANAN RINCIAN KATEGORI -->
-                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-start gap-2 min-h-[220px]">
+                <!-- LAPORAN BULANAN RINCIAN KATEGORI (PEMASUKAN & PENGELUARAN + RENTANG TANGGAL) -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-start gap-2 min-h-[260px]">
                     <div class="w-full border-b border-slate-100 pb-2">
                         <div class="flex justify-between items-center mb-1.5">
                             <div>
                                 <h3 class="text-[11px] sm:text-xs font-bold text-slate-800 uppercase tracking-wider">📊 Laporan Rincian Bulanan</h3>
-                                <p class="text-[9px] text-slate-400 font-medium">Breakdown pengeluaran per bulan & PIC</p>
+                                <p class="text-[9px] text-slate-400 font-medium">Breakdown mutasi per kategori & PIC</p>
                             </div>
                         </div>
-                        <div class="flex gap-2 mt-1">
-                            <select id="filterBulanLaporan" onchange="renderLaporanBulanan()" class="flex-1 text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
-                                <option value="ALL">Semua Bulan</option>
-                            </select>
-                            <select id="filterPicLaporan" onchange="renderLaporanBulanan()" class="flex-1 text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
-                                <option value="ALL">Semua PIC</option>
-                            </select>
+
+                        <!-- TOGGLE TAB PEMASUKAN / PENGELUARAN -->
+                        <div class="flex bg-slate-100 p-1 rounded-xl mb-2 text-[10px] font-bold">
+                            <button id="btnTabLaporanPengeluaran" onclick="setJenisLaporan('Pengeluaran')" class="flex-1 py-1 rounded-lg bg-white text-rose-600 shadow-sm transition">💸 Pengeluaran</button>
+                            <button id="btnTabLaporanPemasukan" onclick="setJenisLaporan('Pemasukan')" class="flex-1 py-1 rounded-lg text-slate-500 hover:text-emerald-600 transition">💰 Pemasukan</button>
+                        </div>
+
+                        <div class="flex flex-col gap-1.5 mt-1">
+                            <div class="flex gap-2">
+                                <select id="filterBulanLaporan" onchange="renderLaporanBulanan()" class="flex-1 text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
+                                    <option value="ALL">Semua Bulan</option>
+                                </select>
+                                <select id="filterPicLaporan" onchange="renderLaporanBulanan()" class="flex-1 text-[9px] sm:text-[10px] bg-slate-100 font-bold px-2 py-1 rounded-md text-slate-700 border border-slate-200 focus:outline-none cursor-pointer">
+                                    <option value="ALL">Semua PIC</option>
+                                </select>
+                            </div>
+                            <!-- RENTANG TANGGAL FILTER LAPORAN -->
+                            <div class="flex gap-1 items-center text-[9px]">
+                                <input type="date" id="filterLaporanStartDate" onchange="renderLaporanBulanan()" class="flex-1 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 focus:outline-none">
+                                <span class="text-slate-400 font-bold">s.d</span>
+                                <input type="date" id="filterLaporanEndDate" onchange="renderLaporanBulanan()" class="flex-1 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600 focus:outline-none">
+                                <button onclick="resetFilterTanggalLaporan()" class="text-slate-400 hover:text-rose-500 font-bold px-1" title="Reset Rentang Tanggal">✕</button>
+                            </div>
                         </div>
                     </div>
                     
@@ -266,7 +282,7 @@
                                 <input type="number" id="txNominal" required placeholder="0" min="1" class="w-full border border-slate-200 p-2 text-xs font-bold rounded-xl bg-slate-50 focus:outline-none">
                             </div>
 
-                            <!-- INPUT FILE LAMPIRAN - HANYA MUNCUL JIKA DIBERI IZIN / HANAIIRFAN -->
+                            <!-- INPUT FILE LAMPIRAN -->
                             <div id="containerUploadBukti" class="hidden">
                                 <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Upload Bukti Lampiran (Gambar / PDF)</label>
                                 <input type="file" id="txFileBukti" accept="image/*,application/pdf" class="w-full text-[10px] text-slate-500 bg-slate-50 border border-slate-200 p-1 rounded-xl file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:bg-slate-200 file:text-slate-700 cursor-pointer">
@@ -293,15 +309,25 @@
                 <!-- KOLOM KANAN: REKENING KORAN & WISHLIST & DAFTAR KEBUTUHAN -->
                 <div class="lg:col-span-2 space-y-4 sm:space-y-6 w-full">
                     
-                    <!-- REKENING KORAN & GRAFIK DENGAN SCROLL/SLIDE -->
+                    <!-- REKENING KORAN & GRAFIK DENGAN SCROLL/SLIDE & FILTER BULAN SEKARANG / RENTANG TANGGAL -->
                     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between">
                         <div class="w-full flex flex-col">
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 border-b pb-2">
                                 <div>
                                     <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">📝 Rekening Koran Kas Domestik</h2>
-                                    <p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Tren balance berjalan terintegrasi log form mutasi</p>
+                                    <p id="lblSubRekeningKoran" class="text-[9px] sm:text-[10px] text-slate-400 font-medium">Menampilkan mutasi bulan ini</p>
                                 </div>
-                                <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm no-print">
+
+                                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                    <!-- SORT RENTANG TANGGAL REKENING KORAN -->
+                                    <div class="flex items-center gap-1 text-[9px] bg-slate-50 border border-slate-200 p-1 rounded-xl">
+                                        <input type="date" id="rkStartDate" onchange="filterRekeningKoranRentang()" class="bg-transparent text-slate-600 focus:outline-none">
+                                        <span class="text-slate-400 font-bold">s.d</span>
+                                        <input type="date" id="rkEndDate" onchange="filterRekeningKoranRentang()" class="bg-transparent text-slate-600 focus:outline-none">
+                                        <button onclick="resetFilterRekeningKoran()" class="text-xs font-bold text-slate-400 hover:text-blue-600 px-1" title="Reset ke Bulan Sekarang">🔄</button>
+                                    </div>
+                                    <input type="text" id="financeSearchInput" oninput="saringJurnalKeuangan(this.value)" placeholder="🔍 Cari deskripsi..." class="border border-slate-200 px-3 py-1 rounded-xl text-xs bg-slate-50 w-full sm:w-36 focus:outline-none shadow-sm no-print">
+                                </div>
                             </div>
 
                             <div class="w-full overflow-x-auto overflow-y-auto max-h-64 sm:max-h-80 mb-3 bg-slate-50/50 rounded-xl p-2 border border-slate-100 custom-scroll print-scroll-auto">
@@ -331,7 +357,7 @@
                         </div>
                     </div>
 
-                    <!-- WISHLIST -->
+                    <!-- WISHLIST & RENCANA TARGET FINANSIAL (DENGAN FITUR SELESAI) -->
                     <div id="section-wishlist" class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-sm space-y-3">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-2 gap-2">
                             <div>
@@ -359,7 +385,7 @@
                                         <th class="p-2 w-20 text-right">Target Rupiah</th>
                                         <th class="p-2 w-16 text-center">Deadline</th>
                                         <th class="p-2 w-28 text-center">Progress Terpenuhi</th>
-                                        <th class="p-2 w-14 text-center no-print">Aksi</th>
+                                        <th class="p-2 w-20 text-center no-print">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="wishlist-table-rows" class="divide-y text-slate-600 bg-white font-medium">
@@ -400,11 +426,11 @@
         </main>
     </div>
 
-    <!-- MODAL KELOLA ANGGOTA PIC CUSTOM -->
+    <!-- MODAL KELOLA ANGGOTA PIC CUSTOM (DENGAN RENAME/EDIT PIC DEFAULT & CUSTOM) -->
     <div id="picModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl relative flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center border-b pb-3 mb-3">
-                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2"><span>👤</span> Kelola Anggota (PIC)</h3>
+                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2"><span>👤</span> Kelola & Rename Anggota (PIC)</h3>
                 <button onclick="tutupModalKelolaPic()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
             </div>
 
@@ -504,8 +530,11 @@
         let totalSaldoAktifGlobal = 0;
         let chartInstances = {};
 
+        let jenisLaporanAktif = 'Pengeluaran';
+
         let daftarPicLengkap = [];
         let picBawaanDefault = ["Tabungan", "Irfan", "Hana", "Anak"];
+        let picRenamedMap = {}; // Penyimpanan lokal nama pic yang di-rename
 
         document.addEventListener("DOMContentLoaded", () => {
             const savedAcc = sessionStorage.getItem("fincheck_account");
@@ -517,13 +546,12 @@
             }
         });
 
-        // HELPER UNTUK CEK APAKAH AKUN MEMILIKI IZIN ATTACHMENT
         function isCanUploadAttachment() {
             if (!currentAccount) return false;
             return currentAccount.username === 'hanairfan' || currentAccount.can_upload_attachment === true;
         }
 
-        /* --- LOGIKA VERIFIKASI AKUN & PIN (MULTI-TENANT) --- */
+        /* --- LOGIKA VERIFIKASI AKUN & PIN --- */
         async function verifikasiKodePass() {
             const usernameInput = document.getElementById('inputUsername').value.trim().toLowerCase();
             const pinInput = document.getElementById('inputPinCode').value.trim();
@@ -580,7 +608,6 @@
                 document.getElementById('btnSuperAdminNav').classList.add('hidden');
             }
 
-            // Tampilkan / Sembunyikan Input File Upload Bukti
             const uploadBox = document.getElementById('containerUploadBukti');
             if (uploadBox) {
                 if (isCanUploadAttachment()) {
@@ -590,23 +617,33 @@
                 }
             }
 
-            // Atur PIC Bawaan per jenis akun
+            // Load renamed PIC memory from localStorage if exists
+            const savedRenamed = localStorage.getItem(`fin_renamed_pics_${currentAccount.username}`);
+            if (savedRenamed) {
+                try { picRenamedMap = JSON.parse(savedRenamed); } catch(e){}
+            }
+
+            // Default PIC Initialization
             if (currentAccount.username === 'hanairfan') {
                 daftarPicLengkap = [
-                    { id: "Tabungan", label: "🏦 Tabungan" },
-                    { id: "Irfan", label: "👨 Irfan" },
-                    { id: "Hana", label: "👩 Hana" },
-                    { id: "Anak", label: "👦 Anak" }
+                    { id: "Tabungan", label: getPicLabel("Tabungan", "🏦 Tabungan") },
+                    { id: "Irfan", label: getPicLabel("Irfan", "👨 Irfan") },
+                    { id: "Hana", label: getPicLabel("Hana", "👩 Hana") },
+                    { id: "Anak", label: getPicLabel("Anak", "👦 Anak") }
                 ];
             } else {
                 daftarPicLengkap = [
-                    { id: "Tabungan", label: "🏦 Tabungan" }
+                    { id: "Tabungan", label: getPicLabel("Tabungan", "🏦 Tabungan") }
                 ];
             }
 
             resetFormMutasi();
             document.getElementById('txFileBukti').addEventListener('change', konversiFileKeBase64);
             muatDataKeuangan();
+        }
+
+        function getPicLabel(id, defaultLabel) {
+            return picRenamedMap[id] ? picRenamedMap[id] : defaultLabel;
         }
 
         function tampilkanLayarPin() {
@@ -663,17 +700,16 @@
         }
 
         async function syncPicCustomList() {
-            // Reset ke pic bawaan dasar
             if (currentAccount.username === 'hanairfan') {
                 daftarPicLengkap = [
-                    { id: "Tabungan", label: "🏦 Tabungan" },
-                    { id: "Irfan", label: "👨 Irfan" },
-                    { id: "Hana", label: "👩 Hana" },
-                    { id: "Anak", label: "👦 Anak" }
+                    { id: "Tabungan", label: getPicLabel("Tabungan", "🏦 Tabungan") },
+                    { id: "Irfan", label: getPicLabel("Irfan", "👨 Irfan") },
+                    { id: "Hana", label: getPicLabel("Hana", "👩 Hana") },
+                    { id: "Anak", label: getPicLabel("Anak", "👦 Anak") }
                 ];
             } else {
                 daftarPicLengkap = [
-                    { id: "Tabungan", label: "🏦 Tabungan" }
+                    { id: "Tabungan", label: getPicLabel("Tabungan", "🏦 Tabungan") }
                 ];
             }
 
@@ -682,7 +718,7 @@
                 if (data && data.length > 0) {
                     data.forEach(item => {
                         if (!daftarPicLengkap.some(p => p.id === item.name)) {
-                            daftarPicLengkap.push({ id: item.name, label: `👤 ${item.name}`, dbId: item.id });
+                            daftarPicLengkap.push({ id: item.name, label: getPicLabel(item.name, `👤 ${item.name}`), dbId: item.id });
                         }
                     });
                 }
@@ -692,7 +728,7 @@
 
             logArusKeuanganKeluarga.forEach(tx => {
                 if (tx.pic && !daftarPicLengkap.some(p => p.id === tx.pic)) {
-                    daftarPicLengkap.push({ id: tx.pic, label: `👤 ${tx.pic}` });
+                    daftarPicLengkap.push({ id: tx.pic, label: getPicLabel(tx.pic, `👤 ${tx.pic}`) });
                 }
             });
 
@@ -734,7 +770,7 @@
             if (prevFilter) filterPicSelect.value = prevFilter;
         }
 
-        /* --- FUNGSI MODAL KELOLA PIC CUSTOM & HAPUS PIC --- */
+        /* --- FUNGSI MODAL KELOLA PIC & RENAME PIC --- */
         function bukaModalKelolaPic() {
             document.getElementById('picModal').classList.remove('hidden');
             renderListPicModal();
@@ -757,10 +793,28 @@
                         <span class="font-bold text-slate-800">${p.label}</span>
                         ${isBawaan ? '<span class="text-[8px] bg-slate-100 font-extrabold text-slate-400 px-1.5 py-0.5 rounded">DEFAULT</span>' : ''}
                     </div>
-                    ${!isBawaan ? `<button onclick="hapusPicCustom('${p.id}', '${p.dbId || ''}')" class="text-rose-500 hover:text-rose-700 font-bold hover:underline">Hapus</button>` : ''}
+                    <div class="flex items-center gap-2">
+                        <button onclick="renameNamaPic('${p.id}')" class="text-blue-600 hover:text-blue-800 font-bold hover:underline text-xs">✏️ Rename</button>
+                        ${!isBawaan ? `<button onclick="hapusPicCustom('${p.id}', '${p.dbId || ''}')" class="text-rose-500 hover:text-rose-700 font-bold hover:underline text-xs">Hapus</button>` : ''}
+                    </div>
                 `;
                 container.appendChild(li);
             });
+        }
+
+        function renameNamaPic(idPic) {
+            const currentLabel = picRenamedMap[idPic] || idPic;
+            const newLabel = prompt(`Masukkan nama tampilan baru untuk PIC (${idPic}):`, currentLabel);
+            if (newLabel && newLabel.trim() !== "") {
+                picRenamedMap[idPic] = newLabel.trim();
+                localStorage.setItem(`fin_renamed_pics_${currentAccount.username}`, JSON.stringify(picRenamedMap));
+                
+                syncPicCustomList();
+                renderListPicModal();
+                updateSegalaCharts();
+                renderLaporanBulanan();
+                renderTabelJurnal(filterDataRekeningKoranCurrent());
+            }
         }
 
         async function prosesTambahPicBaruModal() {
@@ -842,7 +896,9 @@
                 updateSegalaCharts(); 
                 renderLaporanBulanan();
                 buatKesimpulanPengeluaranOtomatis();
-                renderTabelJurnal(logArusKeuanganKeluarga);
+
+                // Muat Rekening Koran Bulan Sekarang (Default)
+                resetFilterRekeningKoran();
             } catch (err) {
                 console.error("Gagal membaca financial_records:", err);
                 document.getElementById('jurnal-rows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-600 italic text-[11px]">Gagal memuat data mutasi. (${err.message || err})</td></tr>`;
@@ -855,7 +911,8 @@
                     nama: row.deskripsi || row.nama || row.target_name || "Rencana Impian",
                     pic: row.pic || row.pelanggan || "Tabungan",
                     nominal: parseFloat(row.total !== undefined ? row.total : (row.nominal || row.target_amount || 0)),
-                    deadline: row.tanggal || row.deadline || new Date().toISOString().split('T')[0]
+                    deadline: row.tanggal || row.deadline || new Date().toISOString().split('T')[0],
+                    is_completed: row.is_completed || false
                 }));
                 renderTabelWishlist(logTargetWishlistCloud);
             } catch (err) {
@@ -1076,7 +1133,8 @@
                 status: "Target Wishlist",
                 deskripsi: document.getElementById('targetNama').value.trim(),
                 kategori: "Investasi & Tabungan",
-                account_id: currentAccount.username
+                account_id: currentAccount.username,
+                is_completed: false
             };
 
             const { error } = await supabaseClient
@@ -1125,16 +1183,17 @@
                 let persen = target.nominal > 0 ? Math.min(Math.round((saldoTersedia / target.nominal) * 100), 100) : 0;
                 if (persen < 0) persen = 0;
 
-                const isCukup = saldoTersedia >= target.nominal;
+                const isCukup = saldoTersedia >= target.nominal || target.is_completed;
+                if (target.is_completed) persen = 100;
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-500 text-[11px] sm:text-xs";
+                tr.className = `hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-500 text-[11px] sm:text-xs ${target.is_completed ? 'bg-emerald-50/40' : ''}`;
                 tr.innerHTML = `
                     <td class="p-2 font-bold text-slate-800">
-                        ${target.nama}${isCukup ? '<span class="ml-1 text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-md">✓ Cukup</span>' : ''}
+                        ${target.nama}${target.is_completed ? '<span class="ml-1 text-[8px] bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded-md">✓ Selesai</span>' : (isCukup ? '<span class="ml-1 text-[8px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-md">✓ Cukup</span>' : '')}
                     </td>
                     <td class="p-2 text-center">
-                        <span class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-md text-slate-700">${picTarget}</span>
+                        <span class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-md text-slate-700">${picRenamedMap[picTarget] || picTarget}</span>
                     </td>
                     <td class="p-2 text-right font-mono font-bold text-slate-900">Rp ${target.nominal.toLocaleString('id-ID')}</td>
                     <td class="p-2 text-center text-slate-400 font-mono">${formatTanggalPendek(target.deadline)}</td>
@@ -1148,11 +1207,53 @@
                         <div class="text-[8px] text-slate-400 font-mono text-right mt-0.5">Saldo: Rp ${saldoTersedia.toLocaleString('id-ID')}</div>
                     </td>
                     <td class="p-2 text-center no-print">
-                        <button onclick="hapusWishlistDariCloud('${target.id}')" class="text-rose-500 hover:text-rose-700 font-bold hover:underline">Hapus</button>
+                        <div class="flex items-center justify-center gap-1">
+                            ${!target.is_completed ? `<button onclick="tandaiWishlistSelesai('${target.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-[10px] bg-emerald-50 hover:bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200 transition" title="Tandai Selesai">✅ Selesai</button>` : ''}
+                            <button onclick="hapusWishlistDariCloud('${target.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs p-1" title="Hapus Wishlist">🗑️</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        async function tandaiWishlistSelesai(idWishlist) {
+            try {
+                const { error } = await supabaseClient
+                    .from('wishlist')
+                    .update({ is_completed: true })
+                    .eq('noinvoice', idWishlist)
+                    .eq('account_id', currentAccount.username);
+
+                if (!error) {
+                    muatDataKeuangan();
+                } else {
+                    alert("Gagal memperbarui status wishlist: " + error.message);
+                }
+            } catch(e) {
+                alert("Gagal memperbarui status wishlist.");
+            }
+        }
+
+        function setJenisLaporan(jenis) {
+            jenisLaporanAktif = jenis;
+            const btnPengeluaran = document.getElementById('btnTabLaporanPengeluaran');
+            const btnPemasukan = document.getElementById('btnTabLaporanPemasukan');
+
+            if (jenis === 'Pengeluaran') {
+                btnPengeluaran.className = "flex-1 py-1 rounded-lg bg-white text-rose-600 shadow-sm transition";
+                btnPemasukan.className = "flex-1 py-1 rounded-lg text-slate-500 hover:text-emerald-600 transition";
+            } else {
+                btnPemasukan.className = "flex-1 py-1 rounded-lg bg-white text-emerald-600 shadow-sm transition";
+                btnPengeluaran.className = "flex-1 py-1 rounded-lg text-slate-500 hover:text-rose-600 transition";
+            }
+            renderLaporanBulanan();
+        }
+
+        function resetFilterTanggalLaporan() {
+            document.getElementById('filterLaporanStartDate').value = "";
+            document.getElementById('filterLaporanEndDate').value = "";
+            renderLaporanBulanan();
         }
 
         function isiDropdownFilterBulan() {
@@ -1175,7 +1276,7 @@
             sortedBulan.forEach(bKey => {
                 const [tahun, bulan] = bKey.split('-');
                 const namaBulanList = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                const namaBulan = `${namaBulanList[parseInt(bulan) - 1]}${tahun}`;
+                const namaBulan = `${namaBulanList[parseInt(bulan) - 1]} ${tahun}`;
 
                 const opt = document.createElement('option');
                 opt.value = bKey;
@@ -1194,21 +1295,28 @@
             const container = document.getElementById('laporanBulananContainer');
             const filterBulan = document.getElementById('filterBulanLaporan').value;
             const filterPic = document.getElementById('filterPicLaporan').value;
+            const startDate = document.getElementById('filterLaporanStartDate').value;
+            const endDate = document.getElementById('filterLaporanEndDate').value;
+
             container.innerHTML = "";
 
-            let totalOutflow = 0;
+            let totalNominal = 0;
             let ringkasanKategori = {};
 
             logArusKeuanganKeluarga.forEach(tx => {
-                if (tx.jenis === "Pengeluaran") {
+                if (tx.jenis === jenisLaporanAktif) {
                     const bulanTx = tx.tanggal ? tx.tanggal.substring(0, 7) : "";
                     const picTx = tx.pic === "Bersama" ? "Tabungan" : tx.pic;
                     
                     const matchBulan = (filterBulan === "ALL" || bulanTx === filterBulan);
                     const matchPic = (filterPic === "ALL" || picTx === filterPic);
+                    
+                    let matchTanggal = true;
+                    if (startDate && tx.tanggal < startDate) matchTanggal = false;
+                    if (endDate && tx.tanggal > endDate) matchTanggal = false;
 
-                    if (matchBulan && matchPic) {
-                        totalOutflow += tx.nominal;
+                    if (matchBulan && matchPic && matchTanggal) {
+                        totalNominal += tx.nominal;
                         ringkasanKategori[tx.kategori] = (ringkasanKategori[tx.kategori] || 0) + tx.nominal;
                     }
                 }
@@ -1217,12 +1325,14 @@
             const sortedCategories = Object.entries(ringkasanKategori).sort((a, b) => b[1] - a[1]);
 
             if (sortedCategories.length === 0) {
-                container.innerHTML = `<div class="text-slate-400 italic text-center py-6">Belum ada catatan pengeluaran untuk kriteria ini.</div>`;
+                container.innerHTML = `<div class="text-slate-400 italic text-center py-6">Belum ada catatan ${jenisLaporanAktif.toLowerCase()} untuk kriteria ini.</div>`;
                 return;
             }
 
+            const barColor = jenisLaporanAktif === 'Pengeluaran' ? 'bg-rose-500' : 'bg-emerald-500';
+
             sortedCategories.forEach(([kat, total]) => {
-                const persen = totalOutflow > 0 ? ((total / totalOutflow) * 100).toFixed(1) : 0;
+                const persen = totalNominal > 0 ? ((total / totalNominal) * 100).toFixed(1) : 0;
                 const itemDiv = document.createElement('div');
                 itemDiv.className = "p-2 bg-slate-50/80 rounded-xl border border-slate-100 flex flex-col gap-1";
                 itemDiv.innerHTML = `
@@ -1232,12 +1342,63 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-rose-500 h-1.5 rounded-full" style="width: ${persen}%"></div>
+                            <div class="${barColor} h-1.5 rounded-full" style="width: ${persen}%"></div>
                         </div>
                         <span class="text-[9px] font-mono text-slate-400 font-bold w-10 text-right">${persen}%</span>
                     </div>
                 `;
                 container.appendChild(itemDiv);
+            });
+        }
+
+        /* --- FUNGSI REKENING KORAN (BULAN SEKARANG & SORT RENTANG TANGGAL) --- */
+        function resetFilterRekeningKoran() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            
+            const firstDay = `${year}-${month}-01`;
+            const lastDay = new Date(year, now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+            document.getElementById('rkStartDate').value = firstDay;
+            document.getElementById('rkEndDate').value = lastDay;
+
+            document.getElementById('lblSubRekeningKoran').innerText = `Menampilkan mutasi bulan ini (${formatTanggalPendek(firstDay)} - ${formatTanggalPendek(lastDay)})`;
+
+            renderTabelJurnal(filterDataRekeningKoranCurrent());
+        }
+
+        function filterRekeningKoranRentang() {
+            const startDate = document.getElementById('rkStartDate').value;
+            const endDate = document.getElementById('rkEndDate').value;
+
+            if (startDate && endDate) {
+                document.getElementById('lblSubRekeningKoran').innerText = `Menampilkan mutasi rentang (${formatTanggalPendek(startDate)} - ${formatTanggalPendek(endDate)})`;
+            } else {
+                document.getElementById('lblSubRekeningKoran').innerText = "Menampilkan seluruh data mutasi";
+            }
+
+            renderTabelJurnal(filterDataRekeningKoranCurrent());
+        }
+
+        function filterDataRekeningKoranCurrent() {
+            const startDate = document.getElementById('rkStartDate').value;
+            const endDate = document.getElementById('rkEndDate').value;
+            const querySearch = document.getElementById('financeSearchInput').value.toLowerCase().trim();
+
+            return logArusKeuanganKeluarga.filter(tx => {
+                let matchTanggal = true;
+                if (startDate && tx.tanggal < startDate) matchTanggal = false;
+                if (endDate && tx.tanggal > endDate) matchTanggal = false;
+
+                let matchQuery = true;
+                if (querySearch !== "") {
+                    matchQuery = (tx.deskripsi || "").toLowerCase().includes(querySearch) ||
+                                 (tx.pic || "").toLowerCase().includes(querySearch) ||
+                                 (tx.kategori || "").toLowerCase().includes(querySearch);
+                }
+
+                return matchTanggal && matchQuery;
             });
         }
 
@@ -1269,7 +1430,7 @@
                 const divCard = document.createElement('div');
                 divCard.className = "bg-slate-50 p-1.5 rounded-xl border border-slate-100 flex flex-col items-center justify-between";
                 divCard.innerHTML = `
-                    <div class="font-bold text-slate-700 truncate w-full">${p.label}</div>
+                    <div class="font-bold text-slate-700 truncate w-full">${picRenamedMap[p.id] || p.label}</div>
                     <div id="${textId}" class="text-blue-600 font-mono font-bold mt-0.5 text-[8px] sm:text-[9px] truncate w-full">Rp ${netValue.toLocaleString('id-ID')}</div>
                     <div class="w-full h-12 relative mt-1"><canvas id="${canvasId}"></canvas></div>
                 `;
@@ -1318,12 +1479,7 @@
         }
 
         function saringJurnalKeuangan(kataKunci) {
-            const query = kataKunci.toLowerCase().trim();
-            if (query === "") { renderTabelJurnal(logArusKeuanganKeluarga); return; }
-            const dataTerfilter = logArusKeuanganKeluarga.filter(tx => {
-                return (tx.deskripsi || "").toLowerCase().includes(query) || (tx.pic || "").toLowerCase().includes(query) || (tx.kategori || "").toLowerCase().includes(query);
-            });
-            renderTabelJurnal(dataTerfilter);
+            renderTabelJurnal(filterDataRekeningKoranCurrent());
         }
 
         async function eksekusiSimpanTransaksi() {
@@ -1425,7 +1581,7 @@
             tbody.innerHTML = "";
             
             if (targetArrayData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic text-[11px]">Buku kas kosong. Belum ada mutasi tersimpan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic text-[11px]">Buku kas kosong / tidak ada mutasi pada rentang tanggal ini.</td></tr>`;
                 if(chartInstances.MutasiLine) chartInstances.MutasiLine.destroy(); 
                 return;
             }
@@ -1435,7 +1591,6 @@
             let labelGrafik = []; 
             let dataSaldoGrafik = [];
             
-            // Cek izin akun aktif
             const allowAttachment = isCanUploadAttachment();
 
             targetArrayData.forEach(tx => {
@@ -1454,8 +1609,6 @@
                 labelGrafik.push(formatTanggalPendek(tx.tanggal)); 
                 dataSaldoGrafik.push(runningBalance);
                 
-                // LOGIKA TOMBOL BUKTI:
-                // Tampilkan tombol 🔍 hanya jika akun memiliki izin DAN terdapat data buktiUrl
                 let buktiHtml = "";
                 if (allowAttachment) {
                     if (tx.buktiUrl && tx.buktiUrl.trim() !== "") {
@@ -1469,10 +1622,12 @@
                     }
                 }
 
+                const displayNamePic = picRenamedMap[tx.pic] || tx.pic;
+
                 const trHtml = `
                     <tr class="hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-600 text-[11px] sm:text-xs">
                         <td class="p-2 font-mono text-slate-400">${formatTanggalPendek(tx.tanggal)}</td>
-                        <td class="p-2 text-slate-900 font-bold">${tx.pic}</td>
+                        <td class="p-2 text-slate-900 font-bold">${displayNamePic}</td>
                         <td class="p-2"><div class="text-slate-800 font-semibold leading-tight">${tx.deskripsi}</div><div class="text-[9px] text-slate-400 font-mono">${tx.kategori}</div></td>
                         <td class="p-2 text-right font-semibold text-emerald-600 font-mono">${debitText}</td>
                         <td class="p-2 text-right font-semibold text-rose-500 font-mono">${kreditText}</td>
