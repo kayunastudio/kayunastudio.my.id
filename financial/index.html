@@ -201,6 +201,9 @@
                     <div class="glass-card p-5 rounded-3xl space-y-3">
                         <div class="flex justify-between items-center border-b border-slate-200/60 pb-2">
                             <span class="text-xs font-bold text-slate-800 uppercase tracking-wider block">👥 Saldo per Anggota (PIC)</span>
+                            <button onclick="bukaModalTransferPic()" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-xl border border-indigo-200 transition flex items-center gap-1">
+                                <span>🔄</span> Pindah Tabungan
+                            </button>
                         </div>
                         <div id="netArusKasPicGrid" class="grid grid-cols-2 gap-2 text-center text-[9px]">
                             <!-- Container Pie Chart per PIC -->
@@ -299,7 +302,7 @@
                 </div>
             </div>
 
-            <!-- TAB 3: CATAT TRANSAKSI KEUANGAN (KHUSUS SEPERTI MENU QRIS DI KANAN DAN TENGAH MENU BAR) -->
+            <!-- TAB 3: CATAT TRANSAKSI KEUANGAN -->
             <div id="tab-transaksi" class="tab-page hidden space-y-6 max-w-2xl mx-auto">
                 <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-xl no-print relative border border-white/80">
                     <div class="flex items-center gap-3 mb-4 border-b border-slate-200/60 pb-3">
@@ -343,6 +346,7 @@
                             <select id="txKategori" required class="w-full border border-slate-200/80 p-3 text-xs font-bold rounded-2xl bg-white/70 focus:outline-none text-slate-800">
                                 <option value="Gaji & Bisnis">💼 Gaji & Bisnis</option>
                                 <option value="Makanan & Bahan Dapur">🍳 Makanan & Bahan Dapur</option>
+                                <option value="Pakaian & Baju">👕 Pakaian & Baju</option>
                                 <option value="Edukasi & Sekolah">📚 Edukasi & Sekolah</option>
                                 <option value="Utilitas & Tagihan Bulanan">⚡ Utilitas & Tagihan Bulanan</option>
                                 <option value="Akomodasi & Transportasi">🚗 Akomodasi & Transportasi</option>
@@ -364,7 +368,7 @@
 
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nominal Rupiah (Rp)</label>
-                            <input type="number" id="txNominal" required placeholder="0" min="1" class="w-full border border-slate-200/80 p-3 text.sm font-black rounded-2xl bg-white/70 focus:outline-none font-mono">
+                            <input type="number" id="txNominal" required placeholder="0" min="1" class="w-full border border-slate-200/80 p-3 text-sm font-black rounded-2xl bg-white/70 focus:outline-none font-mono">
                         </div>
 
                         <!-- INPUT FILE LAMPIRAN -->
@@ -499,7 +503,7 @@
                     <span>Laporan</span>
                 </button>
 
-                <!-- CENTER FLOATING BUTTON (SCAN/MUTASI QRIS STYLE) -->
+                <!-- CENTER FLOATING BUTTON -->
                 <div class="relative -top-5 flex flex-col items-center justify-center">
                     <button onclick="switchTab('transaksi')" id="nav-transaksi" class="w-14 h-14 bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white rounded-full shadow-lg shadow-indigo-500/40 flex items-center justify-center text-xl transition hover:scale-105 active:scale-95 border-4 border-slate-100">
                         ➕
@@ -517,6 +521,55 @@
                 </button>
             </div>
         </nav>
+    </div>
+
+    <!-- MODAL PINDAH TABUNGAN / TRANSFER PIC -->
+    <div id="transferPicModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl relative flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-200/60 pb-3 mb-4">
+                <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2"><span>🔄</span> Pindah Tabungan / Transfer PIC</h3>
+                <button onclick="tutupModalTransferPic()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); eksekusiTransferPic();" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Tanggal Transfer</label>
+                    <input type="date" id="trfTanggal" required class="w-full border border-slate-200/80 p-2.5 font-bold rounded-2xl bg-white/70 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-rose-600 uppercase tracking-wider mb-1">Dari PIC (Sumber)</label>
+                        <select id="trfFromPic" required class="w-full border border-slate-200/80 p-2.5 font-bold rounded-2xl bg-white/70 focus:outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-emerald-600 uppercase tracking-wider mb-1">Ke PIC (Tujuan)</label>
+                        <select id="trfToPic" required class="w-full border border-slate-200/80 p-2.5 font-bold rounded-2xl bg-white/70 focus:outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Nominal Transfer (Rp)</label>
+                    <input type="number" id="trfNominal" min="1" required placeholder="0" class="w-full border border-slate-200/80 p-3 font-black text-sm rounded-2xl bg-white/70 focus:outline-none font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Keterangan / Catatan</label>
+                    <input type="text" id="trfCatatan" placeholder="Contoh: Pindah alokasi dana tabungan" class="w-full border border-slate-200/80 p-2.5 font-medium rounded-2xl bg-white/70 focus:outline-none">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" id="btnSubmitTransfer" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black p-3 rounded-2xl shadow-lg shadow-indigo-500/25 transition">
+                        🔄 Eksekusi Transfer
+                    </button>
+                    <button type="button" onclick="tutupModalTransferPic()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 rounded-2xl transition">Batal</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- MODAL KELOLA ANGGOTA PIC CUSTOM -->
@@ -538,7 +591,8 @@
                 </ul>
             </div>
 
-            <div class="mt-4 text-right border-t border-slate-200/60 pt-3">
+            <div class="mt-4 text-right border-t border-slate-200/60 pt-3 flex justify-between items-center">
+                <button onclick="bukaModalTransferPic(); tutupModalKelolaPic();" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs flex items-center gap-1">🔄 Pindah Tabungan</button>
                 <button onclick="tutupModalKelolaPic()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition">Tutup</button>
             </div>
         </div>
@@ -711,7 +765,7 @@
             }
         }
 
-        function bukaDashboardAplikasi() {
+        async function bukaDashboardAplikasi() {
             document.getElementById('pin-overlay').style.display = 'none';
             document.getElementById('mainDashboardWrapper').classList.remove('hidden');
 
@@ -735,10 +789,14 @@
                 }
             }
 
+            // Sync Local Storage lebih dahulu
             const savedRenamed = localStorage.getItem(`fin_renamed_pics_${currentAccount.username}`);
             if (savedRenamed) {
                 try { picRenamedMap = JSON.parse(savedRenamed); } catch(e){}
             }
+
+            // Sync Rename Alias PIC dari Cloud Supabase (Aman jika kolom belum ada)
+            await muatAliasPicCloud();
 
             if (currentAccount.username === 'hanairfan') {
                 daftarPicLengkap = [
@@ -756,6 +814,25 @@
             resetFormMutasi();
             document.getElementById('txFileBukti').addEventListener('change', konversiFileKeBase64);
             muatDataKeuangan();
+        }
+
+        async function muatAliasPicCloud() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('custom_pics')
+                    .select('*')
+                    .eq('account_id', currentAccount.username);
+
+                if (!error && data && data.length > 0) {
+                    data.forEach(item => {
+                        if (item.alias_label) {
+                            picRenamedMap[item.name] = item.alias_label;
+                        }
+                    });
+                }
+            } catch(e) {
+                console.warn("Notice: tabel custom_pics / alias_label belum tersedia.", e);
+            }
         }
 
         function getPicLabel(id, defaultLabel) {
@@ -833,6 +910,9 @@
                 const data = await fetchAllRows('custom_pics');
                 if (data && data.length > 0) {
                     data.forEach(item => {
+                        if (item.alias_label) {
+                            picRenamedMap[item.name] = item.alias_label;
+                        }
                         if (!daftarPicLengkap.some(p => p.id === item.name)) {
                             daftarPicLengkap.push({ id: item.name, label: getPicLabel(item.name, `👤 ${item.name}`), dbId: item.id });
                         }
@@ -855,6 +935,8 @@
             const txPicSelect = document.getElementById('txPic');
             const targetPicSelect = document.getElementById('targetPic');
             const filterPicSelect = document.getElementById('filterPicLaporan');
+            const trfFromPic = document.getElementById('trfFromPic');
+            const trfToPic = document.getElementById('trfToPic');
 
             const prevTx = txPicSelect.value;
             const prevTarget = targetPicSelect.value;
@@ -863,6 +945,8 @@
             txPicSelect.innerHTML = "";
             targetPicSelect.innerHTML = "";
             filterPicSelect.innerHTML = '<option value="ALL">Semua PIC</option>';
+            if (trfFromPic) trfFromPic.innerHTML = "";
+            if (trfToPic) trfToPic.innerHTML = "";
 
             daftarPicLengkap.forEach(p => {
                 const opt1 = document.createElement('option');
@@ -879,6 +963,19 @@
                 opt3.value = p.id;
                 opt3.innerText = p.label;
                 filterPicSelect.appendChild(opt3);
+
+                if (trfFromPic) {
+                    const opt4 = document.createElement('option');
+                    opt4.value = p.id;
+                    opt4.innerText = p.label;
+                    trfFromPic.appendChild(opt4);
+                }
+                if (trfToPic) {
+                    const opt5 = document.createElement('option');
+                    opt5.value = p.id;
+                    opt5.innerText = p.label;
+                    trfToPic.appendChild(opt5);
+                }
             });
 
             if (prevTx) txPicSelect.value = prevTx;
@@ -886,7 +983,91 @@
             if (prevFilter) filterPicSelect.value = prevFilter;
         }
 
-        /* --- FUNGSI MODAL KELOLA PIC & RENAME PIC --- */
+        /* --- FUNGSI PINDAH TABUNGAN / TRANSFER PIC --- */
+        function bukaModalTransferPic() {
+            document.getElementById('trfTanggal').value = new Date().toISOString().split('T')[0];
+            document.getElementById('trfNominal').value = "";
+            document.getElementById('trfCatatan').value = "";
+            populasiDropdownPic();
+            document.getElementById('transferPicModal').classList.remove('hidden');
+        }
+
+        function tutupModalTransferPic() {
+            document.getElementById('transferPicModal').classList.add('hidden');
+        }
+
+        async function eksekusiTransferPic() {
+            const tanggal = document.getElementById('trfTanggal').value;
+            const fromPic = document.getElementById('trfFromPic').value;
+            const toPic = document.getElementById('trfToPic').value;
+            const nominal = parseFloat(document.getElementById('trfNominal').value) || 0;
+            const catatan = document.getElementById('trfCatatan').value.trim();
+
+            if (fromPic === toPic) {
+                alert("PIC Pengirim dan Penerima tidak boleh sama!");
+                return;
+            }
+
+            if (nominal <= 0) {
+                alert("Nominal transfer harus lebih dari 0!");
+                return;
+            }
+
+            const btnSubmit = document.getElementById('btnSubmitTransfer');
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Processing...";
+
+            const fromLabel = picRenamedMap[fromPic] || fromPic;
+            const toLabel = picRenamedMap[toPic] || toPic;
+
+            const timeStamp = Date.now();
+            const descPengeluaran = `Pindah Tabungan ke ${toLabel}${catatan ? ' (' + catatan + ')' : ''}`;
+            const descPemasukan = `Pindah Tabungan dari ${fromLabel}${catatan ? ' (' + catatan + ')' : ''}`;
+
+            const payloadOut = {
+                noinvoice: `TRF-OUT-${timeStamp}`,
+                tanggal: tanggal,
+                pelanggan: fromPic,
+                pic: fromPic,
+                status: "Pengeluaran",
+                kategori: "Investasi & Tabungan",
+                deskripsi: descPengeluaran,
+                total: nominal,
+                account_id: currentAccount.username
+            };
+
+            const payloadIn = {
+                noinvoice: `TRF-IN-${timeStamp}`,
+                tanggal: tanggal,
+                pelanggan: toPic,
+                pic: toPic,
+                status: "Pemasukan",
+                kategori: "Investasi & Tabungan",
+                deskripsi: descPemasukan,
+                total: nominal,
+                account_id: currentAccount.username
+            };
+
+            try {
+                const { error: errOut } = await supabaseClient.from('financial_records').insert([payloadOut]);
+                const { error: errIn } = await supabaseClient.from('financial_records').insert([payloadIn]);
+
+                if (!errOut && !errIn) {
+                    tutupModalTransferPic();
+                    muatDataKeuangan();
+                    alert(`Berhasil memindahkan saldo Rp ${nominal.toLocaleString('id-ID')} dari ${fromLabel} ke ${toLabel}!`);
+                } else {
+                    alert("Gagal melakukan transfer: " + ((errOut && errOut.message) || (errIn && errIn.message)));
+                }
+            } catch(e) {
+                alert("Terjadi kesalahan teknis transfer PIC.");
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "🔄 Eksekusi Transfer";
+            }
+        }
+
+        /* --- FUNGSI MODAL KELOLA PIC & RENAME PIC PERMANEN CLOUD --- */
         function bukaModalKelolaPic() {
             document.getElementById('picModal').classList.remove('hidden');
             renderListPicModal();
@@ -918,13 +1099,38 @@
             });
         }
 
-        function renameNamaPic(idPic) {
+        async function renameNamaPic(idPic) {
             const currentLabel = picRenamedMap[idPic] || idPic;
-            const newLabel = prompt(`Masukkan nama tampilan baru untuk PIC (${idPic}):`, currentLabel);
+            const newLabel = prompt(`Masukkan nama baru untuk PIC (${idPic}):`, currentLabel);
             if (newLabel && newLabel.trim() !== "") {
-                picRenamedMap[idPic] = newLabel.trim();
+                const labelTrimmed = newLabel.trim();
+                picRenamedMap[idPic] = labelTrimmed;
+
+                // Simpan cadangan ke localStorage
                 localStorage.setItem(`fin_renamed_pics_${currentAccount.username}`, JSON.stringify(picRenamedMap));
-                
+
+                try {
+                    // Coba simpan ke Cloud Supabase
+                    const { data: existing, error: errSel } = await supabaseClient
+                        .from('custom_pics')
+                        .select('id')
+                        .eq('name', idPic)
+                        .eq('account_id', currentAccount.username);
+
+                    if (!errSel && existing && existing.length > 0) {
+                        await supabaseClient
+                            .from('custom_pics')
+                            .update({ alias_label: labelTrimmed })
+                            .eq('id', existing[0].id);
+                    } else if (!errSel) {
+                        await supabaseClient
+                            .from('custom_pics')
+                            .insert([{ name: idPic, alias_label: labelTrimmed, account_id: currentAccount.username }]);
+                    }
+                } catch(e) {
+                    console.warn("Gagal simpan alias PIC ke cloud:", e);
+                }
+
                 syncPicCustomList();
                 renderListPicModal();
                 updateSegalaCharts();
@@ -946,7 +1152,7 @@
             try {
                 const { data, error } = await supabaseClient
                     .from('custom_pics')
-                    .insert([{ name: namaBaru, account_id: currentAccount.username }])
+                    .insert([{ name: namaBaru, alias_label: namaBaru, account_id: currentAccount.username }])
                     .select();
 
                 if (!error) {
@@ -975,6 +1181,8 @@
                     }
 
                     if (!err) {
+                        delete picRenamedMap[namaPic];
+                        localStorage.setItem(`fin_renamed_pics_${currentAccount.username}`, JSON.stringify(picRenamedMap));
                         await syncPicCustomList();
                         renderListPicModal();
                         updateSegalaCharts();
