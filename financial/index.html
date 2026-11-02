@@ -789,13 +789,13 @@
                 }
             }
 
-            // Sync Local Storage lebih dahulu
+            // Sync Local Storage lebih dahulu sebagai cadangan awal
             const savedRenamed = localStorage.getItem(`fin_renamed_pics_${currentAccount.username}`);
             if (savedRenamed) {
                 try { picRenamedMap = JSON.parse(savedRenamed); } catch(e){}
             }
 
-            // Sync Rename Alias PIC dari Cloud Supabase (Aman jika kolom belum ada)
+            // PERBAIKAN UTAMA: WAJIB AWAIT SINKRONISASI CLOUD DULU SEBELUM INISIALISASI ANGGOTA PIC
             await muatAliasPicCloud();
 
             if (currentAccount.username === 'hanairfan') {
@@ -829,6 +829,8 @@
                             picRenamedMap[item.name] = item.alias_label;
                         }
                     });
+                    // Simpan hasil ter-sync cloud ke local storage
+                    localStorage.setItem(`fin_renamed_pics_${currentAccount.username}`, JSON.stringify(picRenamedMap));
                 }
             } catch(e) {
                 console.warn("Notice: tabel custom_pics / alias_label belum tersedia.", e);
@@ -893,6 +895,17 @@
         }
 
         async function syncPicCustomList() {
+            try {
+                const dataCloud = await fetchAllRows('custom_pics');
+                if (dataCloud && dataCloud.length > 0) {
+                    dataCloud.forEach(item => {
+                        if (item.alias_label) {
+                            picRenamedMap[item.name] = item.alias_label;
+                        }
+                    });
+                }
+            } catch(e) {}
+
             if (currentAccount.username === 'hanairfan') {
                 daftarPicLengkap = [
                     { id: "Tabungan", label: getPicLabel("Tabungan", "🏦 Tabungan") },
@@ -910,17 +923,12 @@
                 const data = await fetchAllRows('custom_pics');
                 if (data && data.length > 0) {
                     data.forEach(item => {
-                        if (item.alias_label) {
-                            picRenamedMap[item.name] = item.alias_label;
-                        }
                         if (!daftarPicLengkap.some(p => p.id === item.name)) {
                             daftarPicLengkap.push({ id: item.name, label: getPicLabel(item.name, `👤 ${item.name}`), dbId: item.id });
                         }
                     });
                 }
-            } catch(e) {
-                console.warn("Tabel custom_pics opsional belum ada.");
-            }
+            } catch(e) {}
 
             logArusKeuanganKeluarga.forEach(tx => {
                 if (tx.pic && !daftarPicLengkap.some(p => p.id === tx.pic)) {
@@ -1131,7 +1139,7 @@
                     console.warn("Gagal simpan alias PIC ke cloud:", e);
                 }
 
-                syncPicCustomList();
+                await syncPicCustomList();
                 renderListPicModal();
                 updateSegalaCharts();
                 renderLaporanBulanan();
