@@ -247,7 +247,7 @@
                                             <th class="p-2.5">Keterangan / Pos</th>
                                             <th class="p-2.5 text-right w-24 text-emerald-600">Debit (+)</th>
                                             <th class="p-2.5 text-right w-24 text-rose-600">Kredit (-)</th>
-                                            <th class="p-2.5 text-right w-28 bg-slate-100/40">Saldo Buku</th>
+                                            <th class="p-2.5 text-right w-28 bg-slate-100/40" title="Saldo kumulatif khusus untuk PIC bersangkutan saat transaksi terjadi">Saldo PIC</th>
                                             <th class="p-2.5 text-center w-20 no-print">Aksi</th>
                                         </tr>
                                     </thead>
@@ -387,7 +387,73 @@
                 </div>
             </div>
 
-            <!-- TAB 4: IMPIAN & KEBUTUHAN (WISHLIST & NEEDS/WANTS) -->
+            <!-- TAB 4: ASET & PORTFOLIO (BARU: FITUR PERCATATAN ASET) -->
+            <div id="tab-aset" class="tab-page hidden space-y-6">
+                <!-- RINGKASAN VALUASI ASET -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="glass-card p-4 rounded-3xl">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Nilai Pasar Aset</span>
+                        <span id="lblTotalAssetVal" class="text-xl font-black text-amber-600 block mt-1 font-mono">Rp 0</span>
+                        <span class="text-[9px] text-slate-400">Nilai estimasi saat ini</span>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-3xl">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Modal Beli</span>
+                        <span id="lblTotalAssetCost" class="text-xl font-black text-slate-800 block mt-1 font-mono">Rp 0</span>
+                        <span class="text-[9px] text-slate-400">Total uang pembelian</span>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-3xl">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Estimasi Capital Gain / Loss</span>
+                        <span id="lblTotalAssetGain" class="text-xl font-black text-emerald-600 block mt-1 font-mono">Rp 0</span>
+                        <span id="lblAssetGainPercent" class="text-[9px] font-bold text-emerald-600">0% Profit</span>
+                    </div>
+                </div>
+
+                <!-- FORM & TABEL ASET -->
+                <div class="glass-card p-5 sm:p-6 rounded-3xl space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200/60 pb-3 gap-2">
+                        <div>
+                            <h2 class="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5"><span>🏛️</span> Portofolio Aset & Kekayaan</h2>
+                            <p class="text-[10px] text-slate-400">Catat aset fisik (Emas, Bangunan, Kendaraan) dan aset finansial Anda</p>
+                        </div>
+                        <button onclick="bukaModalFormAset()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow transition flex items-center gap-1">
+                            <span>➕</span> Tambah Aset Baru
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <!-- CHART KOMPOSISI ASET -->
+                        <div class="bg-white/60 p-4 rounded-2xl border border-slate-200/60 flex flex-col items-center">
+                            <span class="text-xs font-bold text-slate-700 mb-2">Komposisi Kategori Aset</span>
+                            <div class="w-full h-48 relative">
+                                <canvas id="chartAsetPie"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- TABEL DAFTAR ASET -->
+                        <div class="lg:col-span-2 overflow-x-auto border border-slate-200/60 rounded-2xl bg-white/50 custom-scroll">
+                            <table class="w-full text-left border-collapse text-xs min-w-[550px]">
+                                <thead class="bg-slate-100/80 text-slate-500 font-bold border-b border-slate-200 text-[10px] uppercase tracking-wider">
+                                    <tr>
+                                        <th class="p-2.5">Nama Aset</th>
+                                        <th class="p-2.5">Kategori</th>
+                                        <th class="p-2.5 text-center">PIC</th>
+                                        <th class="p-2.5 text-right">Harga Beli</th>
+                                        <th class="p-2.5 text-right">Nilai Saat Ini</th>
+                                        <th class="p-2.5 text-center no-print">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="asset-table-rows" class="divide-y divide-slate-100 text-slate-600 font-medium">
+                                    <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Memuat data portofolio aset...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: IMPIAN & KEBUTUHAN (WISHLIST & NEEDS/WANTS) -->
             <div id="tab-impian" class="tab-page hidden space-y-6">
                 <!-- WISHLIST -->
                 <div id="section-wishlist" class="glass-card p-4 sm:p-5 rounded-3xl space-y-3">
@@ -454,13 +520,13 @@
                 </div>
             </div>
 
-            <!-- TAB 5: BELANJA (MEMO & DAFTAR BELANJAAN) -->
+            <!-- TAB 6: BELANJA (MEMO & DAFTAR BELANJAAN + INTEGRASI CALENDAR) -->
             <div id="tab-belanja" class="tab-page hidden space-y-6">
                 <div class="glass-card p-5 sm:p-6 rounded-3xl flex flex-col gap-3 print-hide-macro relative overflow-hidden">
                     <div class="w-full flex justify-between items-center border-b border-slate-200/60 pb-2">
                         <div>
-                            <h3 class="text-xs sm:text-sm font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1.5"><span>📝</span> Memo & Daftar Belanja</h3>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Kalkulasi harga otomatis (Qty × Harga Est.) saat menyimpan ke memo</p>
+                            <h3 class="text-xs sm:text-sm font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1.5"><span>📝</span> Memo Belanja & Pengingat Kalender</h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Disertai tanggal target belanjaan & tombol integrasi ke Google Calendar</p>
                         </div>
                         <span class="text-[9px] bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm px-3 py-1 rounded-full font-bold" id="lblTotalMemo">0 Item</span>
                     </div>
@@ -468,9 +534,10 @@
                     <form onsubmit="event.preventDefault(); tambahMemoBelanja();" class="flex flex-col gap-2 no-print border-b border-slate-100 pb-3 mb-1">
                         <div class="flex flex-col sm:flex-row gap-2">
                             <input type="text" id="memoInputTitle" placeholder="Nama barang / memo..." required class="w-full sm:flex-1 border border-slate-200/80 p-2.5 text-xs rounded-xl bg-white/60 focus:outline-none transition">
-                            <div class="flex gap-2 w-full sm:w-auto">
+                            <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
+                                <input type="date" id="memoInputDate" required class="border border-slate-200/80 p-2.5 text-xs rounded-xl bg-white/60 focus:outline-none text-slate-600 font-bold">
                                 <input type="number" id="memoInputQty" oninput="kalkulasiOtomatisMemoPreview()" placeholder="Qty" value="1" min="1" class="w-16 border border-slate-200/80 p-2.5 text-xs rounded-xl bg-white/60 focus:outline-none text-center">
-                                <input type="number" id="memoInputPrice" oninput="kalkulasiOtomatisMemoPreview()" placeholder="Harga Satuan (Rp)" class="flex-1 sm:w-36 border border-slate-200/80 p-2.5 text-xs rounded-xl bg-white/60 focus:outline-none">
+                                <input type="number" id="memoInputPrice" oninput="kalkulasiOtomatisMemoPreview()" placeholder="Harga Satuan (Rp)" class="flex-1 sm:w-32 border border-slate-200/80 p-2.5 text-xs rounded-xl bg-white/60 focus:outline-none">
                                 <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1">
                                     <span>➕</span> <span class="hidden sm:inline">Tambah</span>
                                 </button>
@@ -492,7 +559,7 @@
         </main>
 
         <!-- FLOATING GLASS BOTTOM NAVIGATION BAR WITH QRIS-STYLE CENTER BUTTON -->
-        <nav class="fixed bottom-4 left-3 right-3 max-w-md mx-auto glass-nav rounded-3xl z-50 no-print border border-white/60 shadow-2xl">
+        <nav class="fixed bottom-4 left-3 right-3 max-w-lg mx-auto glass-nav rounded-3xl z-50 no-print border border-white/60 shadow-2xl">
             <div class="flex justify-around items-center h-16 px-1 relative">
                 <button onclick="switchTab('beranda')" id="nav-beranda" class="flex flex-col items-center justify-center w-full h-full text-blue-600 font-bold text-[9px] transition">
                     <span class="text-lg mb-0.5">🏠</span>
@@ -511,6 +578,10 @@
                     <span class="text-[9px] font-bold text-indigo-600 mt-1">Transaksi</span>
                 </div>
 
+                <button onclick="switchTab('aset')" id="nav-aset" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-slate-600 font-medium text-[9px] transition">
+                    <span class="text-lg mb-0.5">🏛️</span>
+                    <span>Aset</span>
+                </button>
                 <button onclick="switchTab('impian')" id="nav-impian" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-slate-600 font-medium text-[9px] transition">
                     <span class="text-lg mb-0.5">🎯</span>
                     <span>Impian</span>
@@ -521,6 +592,72 @@
                 </button>
             </div>
         </nav>
+    </div>
+
+    <!-- MODAL FORM ASET BARU / EDIT -->
+    <div id="assetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl relative flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-200/60 pb-3 mb-4">
+                <h3 id="assetFormTitle" class="font-bold text-sm text-slate-800 flex items-center gap-2"><span>🏛️</span> Tambah Aset Baru</h3>
+                <button onclick="tutupModalFormAset()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
+            </div>
+
+            <form onsubmit="event.preventDefault(); simpanAsetCloud();" class="space-y-3 text-xs">
+                <input type="hidden" id="astId">
+                <div>
+                    <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Aset</label>
+                    <input type="text" id="astName" required placeholder="Contoh: Emas Batangan 10gr, Rumah Antapani" class="w-full border border-slate-200/80 p-2.5 font-bold rounded-2xl bg-white/70 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Kategori Aset</label>
+                        <select id="astCategory" required class="w-full border border-slate-200/80 p-2.5 font-bold rounded-2xl bg-white/70 focus:outline-none">
+                            <option value="Emas & Logam Mulia">🥇 Emas & Logam Mulia</option>
+                            <option value="Properti & Tanah">🏠 Properti & Tanah</option>
+                            <option value="Kendaraan">🚗 Kendaraan</option>
+                            <option value="Saham & Reksadana">📈 Saham & Reksadana</option>
+                            <option value="Gadget & Barang Mewah">💻 Gadget & Barang Mewah</option>
+                            <option value="Lain-lain">📦 Lain-lain</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">PIC Pemilik</label>
+                        <select id="astPic" required class="w-full border border-slate-200/80 p-2.5 font-bold rounded-2xl bg-white/70 focus:outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Harga Beli (Rp)</label>
+                        <input type="number" id="astBuyPrice" min="0" required placeholder="0" class="w-full border border-slate-200/80 p-2.5 font-mono font-bold rounded-2xl bg-white/70 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-amber-600 uppercase tracking-wider mb-1">Nilai Saat Ini (Rp)</label>
+                        <input type="number" id="astCurrentVal" min="0" required placeholder="0" class="w-full border border-slate-200/80 p-2.5 font-mono font-bold rounded-2xl bg-white/70 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Tanggal Pembelian</label>
+                    <input type="date" id="astBuyDate" required class="w-full border border-slate-200/80 p-2.5 font-bold rounded-2xl bg-white/70 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Catatan / Spesifikasi</label>
+                    <input type="text" id="astNotes" placeholder="Contoh: Sertifikat Antam / SHM No. 123" class="w-full border border-slate-200/80 p-2.5 font-medium rounded-2xl bg-white/70 focus:outline-none">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" id="btnSubmitAset" class="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black p-3 rounded-2xl shadow-lg shadow-amber-500/25 transition">
+                        💾 Simpan Aset
+                    </button>
+                    <button type="button" onclick="tutupModalFormAset()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 rounded-2xl transition">Batal</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- MODAL PINDAH TABUNGAN / TRANSFER PIC -->
@@ -673,6 +810,7 @@
         let logTargetWishlistCloud = [];
         let logMemoBelanja = [];
         let logNeedsWants = [];
+        let logAsetCloud = [];
         let stringFileBase64 = "";
         let totalSaldoAktifGlobal = 0;
         let chartInstances = {};
@@ -695,7 +833,7 @@
 
         /* --- FUNGSI TAB SWITCHER (BOTTOM NAV MOBILE BANKING) --- */
         function switchTab(tabName) {
-            const tabs = ['beranda', 'laporan', 'transaksi', 'impian', 'belanja'];
+            const tabs = ['beranda', 'laporan', 'transaksi', 'aset', 'impian', 'belanja'];
             tabs.forEach(t => {
                 const page = document.getElementById(`tab-${t}`);
                 const navBtn = document.getElementById(`nav-${t}`);
@@ -813,6 +951,7 @@
 
             resetFormMutasi();
             document.getElementById('txFileBukti').addEventListener('change', konversiFileKeBase64);
+            document.getElementById('memoInputDate').value = new Date().toISOString().split('T')[0];
             muatDataKeuangan();
         }
 
@@ -945,6 +1084,7 @@
             const filterPicSelect = document.getElementById('filterPicLaporan');
             const trfFromPic = document.getElementById('trfFromPic');
             const trfToPic = document.getElementById('trfToPic');
+            const astPicSelect = document.getElementById('astPic');
 
             const prevTx = txPicSelect.value;
             const prevTarget = targetPicSelect.value;
@@ -955,6 +1095,7 @@
             filterPicSelect.innerHTML = '<option value="ALL">Semua PIC</option>';
             if (trfFromPic) trfFromPic.innerHTML = "";
             if (trfToPic) trfToPic.innerHTML = "";
+            if (astPicSelect) astPicSelect.innerHTML = "";
 
             daftarPicLengkap.forEach(p => {
                 const opt1 = document.createElement('option');
@@ -983,6 +1124,12 @@
                     opt5.value = p.id;
                     opt5.innerText = p.label;
                     trfToPic.appendChild(opt5);
+                }
+                if (astPicSelect) {
+                    const opt6 = document.createElement('option');
+                    opt6.value = p.id;
+                    opt6.innerText = p.label;
+                    astPicSelect.appendChild(opt6);
                 }
             });
 
@@ -1252,8 +1399,198 @@
 
             muatMemoBelanja();
             muatNeedsWants();
+            muatAsetCloud();
         }
 
+        /* --- FUNGSI PORTOFOLIO ASET (EMAS, PROPERTI, DLL) --- */
+        async function muatAsetCloud() {
+            try {
+                const data = await fetchAllRows('assets');
+                logAsetCloud = data || [];
+                renderPortofolioAset();
+            } catch (err) {
+                document.getElementById('asset-table-rows').innerHTML = `<tr><td colspan="6" class="p-4 text-center text-amber-600 italic text-xs">Tabel 'assets' belum dibuat di Supabase. Silakan jalankan skrip SQL yang disediakan.</td></tr>`;
+            }
+        }
+
+        function bukaModalFormAset() {
+            document.getElementById('astId').value = "";
+            document.getElementById('astName').value = "";
+            document.getElementById('astCategory').value = "Emas & Logam Mulia";
+            document.getElementById('astBuyPrice').value = "";
+            document.getElementById('astCurrentVal').value = "";
+            document.getElementById('astBuyDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('astNotes').value = "";
+            document.getElementById('assetFormTitle').innerText = "🏛️ Tambah Aset Baru";
+            populasiDropdownPic();
+            document.getElementById('assetModal').classList.remove('hidden');
+        }
+
+        function tutupModalFormAset() {
+            document.getElementById('assetModal').classList.add('hidden');
+        }
+
+        function editAsetModal(idAset) {
+            const ast = logAsetCloud.find(a => String(a.id) === String(idAset));
+            if (!ast) return;
+
+            document.getElementById('astId').value = ast.id;
+            document.getElementById('astName').value = ast.name;
+            document.getElementById('astCategory').value = ast.category;
+            document.getElementById('astPic').value = ast.pic;
+            document.getElementById('astBuyPrice').value = ast.buy_price;
+            document.getElementById('astCurrentVal').value = ast.current_value;
+            document.getElementById('astBuyDate').value = ast.buy_date || new Date().toISOString().split('T')[0];
+            document.getElementById('astNotes').value = ast.notes || "";
+            document.getElementById('assetFormTitle').innerText = "✏️ Ubah Data Aset";
+            
+            document.getElementById('assetModal').classList.remove('hidden');
+        }
+
+        async function simpanAsetCloud() {
+            const astId = document.getElementById('astId').value;
+            const name = document.getElementById('astName').value.trim();
+            const category = document.getElementById('astCategory').value;
+            const pic = document.getElementById('astPic').value;
+            const buy_price = parseFloat(document.getElementById('astBuyPrice').value) || 0;
+            const current_value = parseFloat(document.getElementById('astCurrentVal').value) || 0;
+            const buy_date = document.getElementById('astBuyDate').value;
+            const notes = document.getElementById('astNotes').value.trim();
+
+            const payload = {
+                name, category, pic, buy_price, current_value, buy_date, notes, account_id: currentAccount.username
+            };
+
+            let err;
+            if (astId) {
+                const res = await supabaseClient.from('assets').update(payload).eq('id', astId).eq('account_id', currentAccount.username);
+                err = res.error;
+            } else {
+                const res = await supabaseClient.from('assets').insert([payload]);
+                err = res.error;
+            }
+
+            if (!err) {
+                tutupModalFormAset();
+                muatAsetCloud();
+                alert("Data portofolio aset berhasil disimpan!");
+            } else {
+                alert("Gagal menyimpan aset: " + err.message);
+            }
+        }
+
+        async function hapusAsetCloud(idAset) {
+            if (confirm("Apakah Anda yakin ingin menghapus data aset ini dari portofolio?")) {
+                const { error } = await supabaseClient.from('assets').delete().eq('id', idAset).eq('account_id', currentAccount.username);
+                if (!error) {
+                    muatAsetCloud();
+                } else {
+                    alert("Gagal menghapus aset: " + error.message);
+                }
+            }
+        }
+
+        function renderPortofolioAset() {
+            const tbody = document.getElementById('asset-table-rows');
+            tbody.innerHTML = "";
+
+            let totalCost = 0;
+            let totalVal = 0;
+            let rekapKat = {};
+
+            if (logAsetCloud.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic text-xs">Belum ada aset terdaftar. Silakan klik "+ Tambah Aset Baru".</td></tr>`;
+            } else {
+                logAsetCloud.forEach(ast => {
+                    const buyPrice = parseFloat(ast.buy_price || 0);
+                    const currentVal = parseFloat(ast.current_value || 0);
+                    totalCost += buyPrice;
+                    totalVal += currentVal;
+
+                    rekapKat[ast.category] = (rekapKat[ast.category] || 0) + currentVal;
+
+                    const picLabel = picRenamedMap[ast.pic] || ast.pic;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50/80 border-b border-slate-100 font-medium text-slate-600 text-xs";
+                    tr.innerHTML = `
+                        <td class="p-2.5 font-bold text-slate-800">
+                            ${ast.name}
+                            ${ast.notes ? `<div class="text-[9px] text-slate-400 font-normal">${ast.notes}</div>` : ''}
+                        </td>
+                        <td class="p-2.5 text-slate-700">${ast.category}</td>
+                        <td class="p-2.5 text-center"><span class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 border border-slate-200/80 rounded-md text-slate-700">${picLabel}</span></td>
+                        <td class="p-2.5 text-right font-mono text-slate-700">Rp ${buyPrice.toLocaleString('id-ID')}</td>
+                        <td class="p-2.5 text-right font-mono font-bold text-amber-600">Rp ${currentVal.toLocaleString('id-ID')}</td>
+                        <td class="p-2.5 text-center no-print">
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="editAsetModal('${ast.id}')" title="Edit Aset" class="text-blue-600 hover:text-blue-800 p-1">✏️</button>
+                                <button onclick="hapusAsetCloud('${ast.id}')" title="Hapus Aset" class="text-rose-500 hover:text-rose-700 p-1">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            const gain = totalVal - totalCost;
+            const gainPercent = totalCost > 0 ? ((gain / totalCost) * 100).toFixed(1) : 0;
+
+            document.getElementById('lblTotalAssetVal').innerText = `Rp ${totalVal.toLocaleString('id-ID')}`;
+            document.getElementById('lblTotalAssetCost').innerText = `Rp ${totalCost.toLocaleString('id-ID')}`;
+            
+            const gainElem = document.getElementById('lblTotalAssetGain');
+            const percentElem = document.getElementById('lblAssetGainPercent');
+
+            if (gain >= 0) {
+                gainElem.innerText = `+Rp ${gain.toLocaleString('id-ID')}`;
+                gainElem.className = "text-xl font-black text-emerald-600 block mt-1 font-mono";
+                percentElem.innerText = `▲ ${gainPercent}% Profit Gain`;
+                percentElem.className = "text-[9px] font-bold text-emerald-600";
+            } else {
+                gainElem.innerText = `-Rp ${Math.abs(gain).toLocaleString('id-ID')}`;
+                gainElem.className = "text-xl font-black text-rose-600 block mt-1 font-mono";
+                percentElem.innerText = `▼ ${Math.abs(gainPercent)}% Capital Loss`;
+                percentElem.className = "text-[9px] font-bold text-rose-600";
+            }
+
+            renderChartAsetPie(rekapKat);
+        }
+
+        function renderChartAsetPie(rekapKat) {
+            if (chartInstances.AsetPie) { chartInstances.AsetPie.destroy(); }
+            const ctx = document.getElementById('chartAsetPie').getContext('2d');
+
+            const labels = Object.keys(rekapKat);
+            const dataVal = Object.values(rekapKat);
+
+            if (labels.length === 0) {
+                labels.push("Belum ada aset");
+                dataVal.push(1);
+            }
+
+            chartInstances.AsetPie = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataVal,
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#64748b'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        /* --- FUNGSI MEMO BELANJA & INTEGRASI GOOGLE CALENDAR --- */
         async function muatMemoBelanja() {
             try {
                 const data = await fetchAllRows('shopping_memo');
@@ -1280,6 +1617,18 @@
             }
         }
 
+        function buatGoogleCalendarLink(title, targetDate, totalEst) {
+            if (!targetDate) return "#";
+            const cleanDate = targetDate.replace(/-/g, "");
+            const startDate = `${cleanDate}T090000Z`;
+            const endDate = `${cleanDate}T100000Z`;
+            const details = encodeURIComponent(`Pengingat Rencana Belanja: ${title}\nEstimasi Biaya: Rp ${totalEst.toLocaleString('id-ID')}`);
+            const location = encodeURIComponent("Pusat Perbelanjaan / Toko");
+            const text = encodeURIComponent(`🛒 Belanja: ${title}`);
+
+            return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startDate}/${endDate}&details=${details}&location=${location}`;
+        }
+
         function renderMemoBelanja() {
             const container = document.getElementById('memoListContainer');
             document.getElementById('lblTotalMemo').innerText = `${logMemoBelanja.length} Item`;
@@ -1294,9 +1643,9 @@
                 const li = document.createElement('li');
                 li.className = `p-3 rounded-2xl border transition-all duration-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white/70 border-amber-200/80 text-slate-800 backdrop-blur-md`;
                 
-                const svgDelete = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>`;
-
                 const estPriceTotal = parseFloat(item.estimated_price || 0);
+                const targetDateStr = item.target_date || item.created_at ? (item.target_date || item.created_at.split('T')[0]) : new Date().toISOString().split('T')[0];
+                const calUrl = buatGoogleCalendarLink(item.title, targetDateStr, estPriceTotal);
 
                 li.innerHTML = `
                     <div class="flex items-start sm:items-center gap-2.5 w-full">
@@ -1304,13 +1653,19 @@
                         <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 w-full">
                             <span class="font-bold text-xs sm:text-sm text-slate-800 break-words">${item.title}</span>
                             <span class="text-[9px] font-black px-2 py-0.5 bg-slate-100 rounded-md border border-slate-200/80 text-slate-500 w-max">x${item.qty || 1}</span>
+                            <span class="text-[9px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 w-max">📅 ${formatTanggalPendek(targetDateStr)}</span>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between w-full sm:w-auto pl-6 sm:pl-0 border-t border-slate-200/50 sm:border-0 pt-2 sm:pt-0 mt-1 sm:mt-0">
+                    <div class="flex items-center justify-between w-full sm:w-auto pl-6 sm:pl-0 border-t border-slate-200/50 sm:border-0 pt-2 sm:pt-0 mt-1 sm:mt-0 gap-2">
                         <span class="font-mono font-bold text-xs text-slate-700">Rp ${estPriceTotal.toLocaleString('id-ID')}</span>
-                        <button onclick="hapusMemo('${item.id}')" class="text-rose-400 hover:text-rose-600 bg-white hover:bg-rose-50 p-1.5 rounded-xl border border-slate-100 shadow-sm transition ml-3" title="Hapus Belanjaan">
-                            ${svgDelete}
-                        </button>
+                        <div class="flex items-center gap-1">
+                            <a href="${calUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-xl border border-blue-200 font-bold text-[10px] transition flex items-center gap-1" title="Tambahkan Pengingat ke Google Calendar">
+                                📅 Cal
+                            </a>
+                            <button onclick="hapusMemo('${item.id}')" class="text-rose-400 hover:text-rose-600 bg-white hover:bg-rose-50 p-1.5 rounded-xl border border-slate-100 shadow-sm transition" title="Hapus Belanjaan">
+                                🗑️
+                            </button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(li);
@@ -1319,6 +1674,7 @@
 
         async function tambahMemoBelanja() {
             const title = document.getElementById('memoInputTitle').value.trim();
+            const target_date = document.getElementById('memoInputDate').value;
             const qty = parseInt(document.getElementById('memoInputQty').value) || 1;
             const price = parseFloat(document.getElementById('memoInputPrice').value) || 0;
 
@@ -1326,7 +1682,7 @@
 
             const { error } = await supabaseClient
                 .from('shopping_memo')
-                .insert([{ title, qty, estimated_price: totalCalculatedPrice, is_bought: false, account_id: currentAccount.username }]);
+                .insert([{ title, target_date, qty, estimated_price: totalCalculatedPrice, is_bought: false, account_id: currentAccount.username }]);
 
             if (!error) {
                 document.getElementById('memoInputTitle').value = "";
@@ -1915,7 +2271,7 @@
             document.getElementById('previewContainer').innerHTML = "";
         }
 
-        /* --- FUNGSI RENDER TABEL & GRAFIK REKENING KORAN ESTETIK --- */
+        /* --- FUNGSI RENDER TABEL & GRAFIK REKENING KORAN (DENGAN SALDO BUKU SPESIFIK PER PIC) --- */
         function renderTabelJurnal(targetArrayData) {
             const tbody = document.getElementById('jurnal-rows'); 
             tbody.innerHTML = "";
@@ -1926,7 +2282,23 @@
                 return;
             }
 
-            let runningBalance = 0; 
+            // HITUNG SALDO BUKU KUMULATIF DARI KELUARAN UTUH TERLEBIH DAHULU AGAR AKURAT PER PIC
+            let saldosPicRunning = {};
+            let mapSaldoPerTx = {};
+
+            logArusKeuanganKeluarga.forEach(tx => {
+                const picKey = tx.pic === "Bersama" ? "Tabungan" : tx.pic;
+                if (saldosPicRunning[picKey] === undefined) saldosPicRunning[picKey] = 0;
+
+                if (tx.jenis === "Pemasukan") {
+                    saldosPicRunning[picKey] += tx.nominal;
+                } else {
+                    saldosPicRunning[picKey] -= tx.nominal;
+                }
+                mapSaldoPerTx[tx.id] = saldosPicRunning[picKey];
+            });
+
+            let globalRunningVal = 0;
             let rowsHtmlBuffer = [];
             let labelGrafik = []; 
             let dataSaldoGrafik = [];
@@ -1939,15 +2311,15 @@
                 let kreditText = "-";
                 
                 if (adalahInflow) { 
-                    runningBalance += tx.nominal; 
+                    globalRunningVal += tx.nominal; 
                     debitText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; 
                 } else { 
-                    runningBalance -= tx.nominal; 
+                    globalRunningVal -= tx.nominal; 
                     kreditText = `Rp ${tx.nominal.toLocaleString('id-ID')}`; 
                 }
 
                 labelGrafik.push(formatTanggalPendek(tx.tanggal)); 
-                dataSaldoGrafik.push(runningBalance);
+                dataSaldoGrafik.push(globalRunningVal);
                 
                 let buktiHtml = "";
                 if (allowAttachment) {
@@ -1963,6 +2335,7 @@
                 }
 
                 const displayNamePic = picRenamedMap[tx.pic] || tx.pic;
+                const saldoPicSpesifik = mapSaldoPerTx[tx.id] !== undefined ? mapSaldoPerTx[tx.id] : 0;
 
                 const trHtml = `
                     <tr class="hover:bg-slate-50/80 border-b border-slate-100 font-medium text-slate-600 text-xs">
@@ -1971,7 +2344,9 @@
                         <td class="p-2.5"><div class="text-slate-800 font-semibold leading-tight">${tx.deskripsi}</div><div class="text-[9px] text-slate-400 font-mono">${tx.kategori}</div></td>
                         <td class="p-2.5 text-right font-semibold text-emerald-600 font-mono">${debitText}</td>
                         <td class="p-2.5 text-right font-semibold text-rose-500 font-mono">${kreditText}</td>
-                        <td class="p-2.5 text-right font-bold text-slate-700 bg-slate-50/40 font-mono">Rp ${runningBalance.toLocaleString('id-ID')}</td>
+                        <td class="p-2.5 text-right font-bold text-slate-700 bg-slate-50/40 font-mono" title="Sisa saldo ${displayNamePic} saat transaksi ini">
+                            Rp ${saldoPicSpesifik.toLocaleString('id-ID')}
+                        </td>
                         <td class="p-2.5 text-center no-print">
                             <div class="flex items-center justify-center gap-1.5 font-bold text-xs">
                                 ${buktiHtml}
@@ -2026,7 +2401,7 @@
                             cornerRadius: 12,
                             callbacks: {
                                 label: function(context) {
-                                    return ' Saldo: Rp ' + context.raw.toLocaleString('id-ID');
+                                    return ' Saldo Kas: Rp ' + context.raw.toLocaleString('id-ID');
                                 }
                             }
                         }
