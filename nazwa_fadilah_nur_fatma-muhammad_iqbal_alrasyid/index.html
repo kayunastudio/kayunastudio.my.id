@@ -593,17 +593,18 @@
         }
 
         /* ==========================================================================
-           3. PENGENALAN CATIN (GRADASI MULUS KE SAVE THE DATE)
+           3. PENGENALAN CATIN (DIPERLUAS AGAR NAMA CATIN PRIA TIDAK TERTUTUP GRADASI)
            ========================================================================== */
         .mempelai-section-bg {
             background: linear-gradient(
                 180deg,
                 #FFF8FA 0%,
-                #FCEEF2 65%,
-                #E7B0C0 88%,
+                #FCEEF2 82%,
+                #E7B0C0 93%,
                 #C7748D 100%
             );
-            padding-bottom: 85px;
+            padding-top: 65px;
+            padding-bottom: 145px;
         }
 
         .salam-script-title {
@@ -625,6 +626,8 @@
         .mempelai-card {
             margin: 0 0 28px 0;
             text-align: center;
+            position: relative;
+            z-index: 2;
         }
 
         .catin-circle-wrapper {
@@ -730,7 +733,7 @@
                 #FFF8FA 100%
             );
             color: var(--white);
-            padding: 45px 20px 85px 20px;
+            padding: 35px 20px 85px 20px;
         }
 
         .save-the-date-script {
@@ -922,7 +925,6 @@
             font-style: italic;
         }
 
-        /* Grid Editorial Kolase Estetik */
         .gallery-editorial-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -940,7 +942,6 @@
             aspect-ratio: 3 / 4;
         }
 
-        /* Foto Utama Span 2 Kolom (Landscape / Featured) */
         .gallery-item.featured-wide {
             grid-column: span 2;
             aspect-ratio: 16 / 10;
@@ -960,7 +961,6 @@
             transform: scale(1.07);
         }
 
-        /* Overlay Tipis & Ikon Zoom Saat Hover/Tap */
         .gallery-item-overlay {
             position: absolute;
             inset: 0;
@@ -1052,11 +1052,11 @@
                 180deg,
                 #F9E3EA 0%,
                 #FFF8FA 35%,
-                #FCEEF2 72%,
-                #DDA1B3 90%,
+                #FCEEF2 76%,
+                #DDA1B3 91%,
                 #B85D78 100%
             );
-            padding: 55px 26px 90px 26px;
+            padding: 55px 26px 100px 26px;
         }
 
         .story-script-title {
@@ -1090,14 +1090,13 @@
             gap: 22px;
         }
 
-        /* Kartu Semi-Transparan Lembut Agar Teks Tetap Kontras & Terbaca Jelas */
         .story-chapter-item {
             text-align: center;
-            background: rgba(255, 255, 255, 0.72);
+            background: rgba(255, 255, 255, 0.78);
             backdrop-filter: blur(6px);
             padding: 20px 16px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.9);
             box-shadow: 0 6px 20px rgba(184, 93, 120, 0.08);
         }
 
@@ -1279,13 +1278,13 @@
             background: linear-gradient(
                 180deg,
                 #98445E 0%,
-                #83364E 70%,
+                #83364E 72%,
                 #C98C9F 90%,
                 #FFF8FA 100%
             );
             color: var(--white);
             padding-top: 45px;
-            padding-bottom: 90px;
+            padding-bottom: 95px;
         }
 
         .rsvp-section-bg .header-with-lines {
@@ -1429,17 +1428,17 @@
         }
 
         /* ==========================================================================
-           9. PENUTUP & FOOTER (GRADASI MULUS KE FOOTER)
+           9. PENUTUP & FOOTER (DIPERLUAS AGAR NAMA HANA & IRFAN TIDAK TERTUTUP GRADASI)
            ========================================================================== */
         .thankyou-section-luxury {
             width: 100%;
-            padding: 45px 25px 75px 25px;
+            padding: 50px 25px 135px 25px;
             text-align: center;
             background: linear-gradient(
                 180deg,
                 #FFF8FA 0%,
-                #FCEEF2 65%,
-                #C48095 88%,
+                #FCEEF2 78%,
+                #C48095 91%,
                 #7A384D 100%
             );
             position: relative;
@@ -1451,6 +1450,7 @@
             width: 205px;
             height: 205px;
             margin: 0 auto 24px auto;
+            z-index: 2;
         }
 
         .closing-circle-frame {
@@ -1479,22 +1479,28 @@
             max-width: 330px;
             margin: 0 auto 22px auto;
             font-weight: 500;
+            position: relative;
+            z-index: 2;
         }
 
         .signature-intro-label {
             font-size: 0.8rem;
-            color: var(--text-dark);
+            color: var(--text-muted);
             margin-bottom: 4px;
             font-weight: 500;
+            position: relative;
+            z-index: 2;
         }
 
         .signature-couple-name {
             font-family: 'Great Vibes', 'Alex Brush', cursive;
-            color: var(--primary-rose-dark);
+            color: var(--primary-rose);
             font-size: 3.2rem;
             font-weight: 400;
-            line-height: 1.1;
-            text-shadow: 0 2px 12px rgba(255, 255, 255, 0.65);
+            line-height: 1.15;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 10px rgba(184, 93, 120, 0.14);
         }
 
         .kayuna-branding-footer {
@@ -1774,15 +1780,12 @@
                 </div>
             </div>
 
-            <!-- ==========================================================================
-               GALERI FOTO ESTETIK (SEBELUM LOVE STORY)
-               ========================================================================== -->
+            <!-- GALERI FOTO ESTETIK (SEBELUM LOVE STORY) -->
             <div id="section-gallery" class="section-padding gallery-section-bg">
                 <h2 class="gallery-script-title scroll-reveal">Our Moments</h2>
                 <p class="gallery-subtitle scroll-reveal delay-1">“Setiap momen indah yang terukir menuju hari bahagia”</p>
 
                 <div class="gallery-editorial-grid">
-                    <!-- Foto 1: Featured Wide -->
                     <div class="gallery-item featured-wide oval-reveal delay-1" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg')">
                         <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Galeri Hana & Irfan 1">
                         <div class="gallery-item-overlay">
@@ -1792,7 +1795,6 @@
                         </div>
                     </div>
 
-                    <!-- Foto 2: Portrait Kiri -->
                     <div class="gallery-item oval-reveal delay-2" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg')">
                         <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg" alt="Galeri Hana & Irfan 2">
                         <div class="gallery-item-overlay">
@@ -1802,7 +1804,6 @@
                         </div>
                     </div>
 
-                    <!-- Foto 3: Portrait Kanan -->
                     <div class="gallery-item oval-reveal delay-3" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg')">
                         <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg" alt="Galeri Hana & Irfan 3">
                         <div class="gallery-item-overlay">
@@ -1812,7 +1813,6 @@
                         </div>
                     </div>
 
-                    <!-- Foto 4: Portrait Mempelai Wanita -->
                     <div class="gallery-item oval-reveal delay-2" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg')">
                         <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg" alt="Galeri Hana Handayani">
                         <div class="gallery-item-overlay">
@@ -1822,7 +1822,6 @@
                         </div>
                     </div>
 
-                    <!-- Foto 5: Portrait Mempelai Pria -->
                     <div class="gallery-item oval-reveal delay-3" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg')">
                         <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg" alt="Galeri Irfan Ripandi">
                         <div class="gallery-item-overlay">
