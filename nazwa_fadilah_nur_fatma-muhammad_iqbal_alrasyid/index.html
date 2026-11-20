@@ -1,1 +1,2271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undangan Pernikahan Digital - Hana & Irfan</title>
+    <!-- Google Fonts: Great Vibes, Alex Brush & Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SDK Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <style>
+        /* ==========================================================================
+           COLOR PALETTE & CORE STYLES (Tema: Romantic Blush Pink & Rose Gold)
+           ========================================================================== */
+        :root {
+            --bg-pink-light: #FFF8FA;
+            --bg-pink-soft: #FCEEF2;
+            --bg-pink-blush: #F8DDE5;
+            --bg-pure-white: #FFFFFF;
+            --primary-rose: #B85D78;
+            --primary-rose-dark: #8E3E56;
+            --accent-rose-gold: #D68A9E;
+            --accent-champagne: #E8C5CE;
+            --dark-rose-bg: #7A384D;
+            --text-dark: #4A323A;
+            --text-muted: #7D5E68;
+            --white: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #2B141C;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            background-color: var(--bg-pink-light);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.55);
+            overflow-x: hidden;
+        }
+
+        .mobile-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ==========================================================================
+           ANIMASI GERAKAN & SCROLL REVEAL
+           ========================================================================== */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px) scale(0.96);
+            filter: blur(4px);
+            transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1), 
+                        transform 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+                        filter 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity, filter;
+        }
+
+        .oval-reveal {
+            opacity: 0;
+            transform: translateY(36px) scale(0.9);
+            filter: blur(6px);
+            transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                        transform 1.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        filter 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform, opacity, filter;
+        }
+
+        .scroll-reveal.reveal-active,
+        .oval-reveal.reveal-active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
+        }
+
+        .delay-1 { transition-delay: 140ms; }
+        .delay-2 { transition-delay: 280ms; }
+        .delay-3 { transition-delay: 420ms; }
+        .delay-4 { transition-delay: 560ms; }
+
+        @keyframes gentle-float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-7px); }
+        }
+
+        .float-slow {
+            animation: gentle-float 4.5s ease-in-out infinite;
+        }
+
+        @keyframes button-pulse-pink {
+            0% { box-shadow: 0 0 0 0 rgba(184, 93, 120, 0.55); transform: scale(1); }
+            70% { box-shadow: 0 0 0 12px rgba(184, 93, 120, 0); transform: scale(1.02); }
+            100% { box-shadow: 0 0 0 0 rgba(184, 93, 120, 0); transform: scale(1); }
+        }
+
+        .pulse-btn {
+            animation: button-pulse-pink 2.4s infinite;
+        }
+
+        /* ==========================================================================
+           PARTIKEL KELOPAK BUNGA & DAUN PINK JATUH
+           ========================================================================== */
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 10005;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10%;
+            background: linear-gradient(135deg, #FFD6E2 0%, #F4A6BE 100%);
+            border-radius: 150% 0 150% 0;
+            opacity: 0.65;
+            box-shadow: 0 2px 6px rgba(184, 93, 120, 0.15);
+            animation: fall-sway linear infinite;
+        }
+
+        @keyframes fall-sway {
+            0% {
+                transform: translateY(0vh) translateX(0px) rotate(0deg);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.78;
+            }
+            50% {
+                transform: translateY(50vh) translateX(22px) rotate(180deg);
+            }
+            85% {
+                opacity: 0.68;
+            }
+            100% {
+                transform: translateY(108vh) translateX(-18px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* ==========================================================================
+           ASSET BUNGA SUDUT MELAYANG (PINK TINT)
+           ========================================================================== */
+        .swaying-leaves {
+            position: absolute;
+            width: 95px;
+            height: 95px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.88;
+            filter: hue-rotate(-15deg) saturate(1.15);
+            will-change: transform;
+        }
+
+        .leaves-top-left {
+            top: -4px;
+            left: -4px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png');
+            transform-origin: top left;
+            animation: gentle-wind-left 5s ease-in-out infinite alternate;
+        }
+
+        .leaves-top-right {
+            top: -4px;
+            right: -4px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
+            transform-origin: top right;
+            animation: gentle-wind-right 5s ease-in-out infinite alternate;
+        }
+
+        .leaves-bottom-right {
+            bottom: -4px;
+            right: -4px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
+            transform-origin: bottom right;
+            animation: gentle-wind-right 5s ease-in-out infinite alternate;
+        }
+
+        .leaves-bottom-left {
+            bottom: -4px;
+            left: -4px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png');
+            transform-origin: bottom left;
+            animation: gentle-wind-left 5s ease-in-out infinite alternate;
+        }
+
+        @keyframes gentle-wind-left {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(3deg) scale(1.03) skewX(0.6deg); }
+            100% { transform: rotate(-1.5deg) scale(0.99) skewY(-0.5deg); }
+        }
+
+        @keyframes gentle-wind-right {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(-3deg) scale(1.03) skewY(0.6deg); }
+            100% { transform: rotate(1.5deg) scale(0.99) skewX(-0.5deg); }
+        }
+
+        /* ==========================================================================
+           TYPOGRAPHY & ORNAMENTS
+           ========================================================================== */
+        .script-luxury {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            color: var(--primary-rose);
+            font-size: 3.1rem;
+            font-weight: 400;
+            line-height: 1.15;
+            text-shadow: 0 2px 10px rgba(184, 93, 120, 0.14);
+        }
+
+        .section-padding {
+            padding: 65px 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider-line {
+            width: 75px;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary-rose), transparent);
+            margin: 12px auto;
+        }
+
+        /* ==========================================================================
+           1. COVER DEPAN
+           ========================================================================== */
+        #invitation-cover {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%) scale(1);
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            background-color: var(--bg-pink-light);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            transition: transform 1.25s cubic-bezier(0.76, 0, 0.24, 1),
+                        opacity 1.1s ease,
+                        filter 1.1s ease;
+        }
+
+        #invitation-cover.opened {
+            transform: translate(-50%, -105vh) scale(1.04);
+            opacity: 0;
+            filter: blur(6px);
+            pointer-events: none;
+        }
+
+        .cover-hero-photo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 62%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .cover-hero-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            animation: cover-photo-zoom 14s ease-in-out infinite alternate;
+        }
+
+        @keyframes cover-photo-zoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.06); }
+        }
+
+        .cover-hero-photo::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 248, 250, 0.05) 0%,
+                rgba(255, 248, 250, 0.0) 52%,
+                rgba(255, 248, 250, 0.85) 84%,
+                var(--bg-pink-light) 100%
+            );
+        }
+
+        .cover-bottom-content {
+            position: relative;
+            z-index: 4;
+            width: 100%;
+            padding: 20px 26px 52px 26px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes entrance-rise {
+            0% {
+                opacity: 0;
+                transform: translateY(26px) scale(0.95);
+                filter: blur(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .cover-anim-1 { opacity: 0; animation: entrance-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; }
+        .cover-anim-2 { opacity: 0; animation: entrance-rise 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards; }
+        .cover-anim-3 { opacity: 0; animation: entrance-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
+        .cover-anim-4 { opacity: 0; animation: entrance-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.95s forwards; }
+
+        .cover-subtitle {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            margin-bottom: 6px;
+        }
+
+        .cover-couple-title {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 3.3rem;
+            color: var(--primary-rose);
+            line-height: 1.15;
+            margin-bottom: 18px;
+        }
+
+        .guest-box .dear-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .guest-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            padding: 4px 16px;
+            border-radius: 20px;
+            background: rgba(252, 238, 242, 0.8);
+            border: 1px solid var(--accent-champagne);
+            display: inline-block;
+        }
+
+        .btn-open-pink {
+            background: linear-gradient(135deg, var(--primary-rose) 0%, var(--primary-rose-dark) 100%);
+            color: var(--white);
+            border: none;
+            padding: 12px 32px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(184, 93, 120, 0.35);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-open-pink:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(184, 93, 120, 0.45);
+        }
+
+        /* ==========================================================================
+           2. HALAMAN AWAL (GRADASI MULUS KE AYAT QURAN)
+           ========================================================================== */
+        #main-content {
+            display: none;
+        }
+
+        #main-content.show {
+            display: block;
+        }
+
+        .hero-interior-page {
+            width: 100%;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #FFF7F9 0%, #FCEBF0 65%, #FCEEF2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 24px 75px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-interior-page .top-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 2.5px;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        .circle-portrait-wrapper {
+            position: relative;
+            width: 230px;
+            height: 230px;
+            margin: 0 auto 24px auto;
+        }
+
+        .circle-portrait-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            padding: 5px;
+            background: linear-gradient(135deg, #FFFFFF 0%, var(--accent-champagne) 100%);
+            box-shadow: 0 10px 28px rgba(184, 93, 120, 0.18);
+            border: 2px solid var(--accent-rose-gold);
+            overflow: hidden;
+        }
+
+        .circle-portrait-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .circle-floral-badge {
+            position: absolute;
+            right: -18px;
+            bottom: -6px;
+            width: 115px;
+            height: 115px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            transform: rotate(155deg);
+            filter: hue-rotate(-15deg) saturate(1.2);
+            pointer-events: none;
+            z-index: 3;
+            animation: gentle-wind-right 4.8s ease-in-out infinite alternate;
+        }
+
+        .hero-invite-quote {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            max-width: 290px;
+            margin: 8px auto 12px auto;
+            line-height: 1.55;
+        }
+
+        .hero-interior-page .interior-date {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--primary-rose-dark);
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-save-date-pill {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-rose) 0%, var(--accent-rose-gold) 100%);
+            color: var(--white);
+            text-decoration: none;
+            padding: 10px 28px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 5px 15px rgba(184, 93, 120, 0.3);
+            transition: transform 0.25s ease;
+        }
+
+        .btn-save-date-pill:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================================================
+           HALAMAN AYAT QURAN (GRADASI MULUS KE MEMPELAI)
+           ========================================================================== */
+        .quran-verse-page {
+            width: 100%;
+            padding: 60px 22px 75px 22px;
+            background: linear-gradient(180deg, #FCEEF2 0%, #F9E2E9 50%, #FFF8FA 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .floral-quran-transparent {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            padding: 28px 16px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(6px);
+            border-radius: 24px;
+            border: 1px solid var(--accent-champagne);
+            box-shadow: 0 8px 24px rgba(184, 93, 120, 0.08);
+        }
+
+        .corner-leaf {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            opacity: 0.85;
+            filter: hue-rotate(-15deg) saturate(1.15);
+        }
+
+        .c-top-left { top: -8px; left: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png'); }
+        .c-top-right { top: -8px; right: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png'); }
+        .c-bottom-left { bottom: -8px; left: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png'); transform: rotate(180deg); }
+        .c-bottom-right { bottom: -8px; right: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png'); transform: rotate(180deg); }
+
+        .quran-image-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .quran-image-wrapper img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            object-fit: contain;
+            mix-blend-mode: multiply;
+        }
+
+        .quran-translation {
+            font-size: 0.82rem;
+            line-height: 1.65;
+            color: var(--text-dark);
+            text-align: center;
+            padding: 0 6px;
+        }
+
+        .quran-surah-name {
+            font-weight: 700;
+            color: var(--primary-rose);
+            margin-top: 16px;
+            font-size: 0.85rem;
+        }
+
+        /* ==========================================================================
+           3. PENGENALAN CATIN (GRADASI MULUS KE SAVE THE DATE)
+           ========================================================================== */
+        .mempelai-section-bg {
+            background: linear-gradient(
+                180deg,
+                #FFF8FA 0%,
+                #FCEEF2 65%,
+                #E7B0C0 88%,
+                #C7748D 100%
+            );
+            padding-bottom: 85px;
+        }
+
+        .salam-script-title {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.3rem;
+            color: var(--primary-rose);
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .mempelai-intro-text {
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            padding: 0 8px;
+            margin-bottom: 36px;
+        }
+
+        .mempelai-card {
+            margin: 0 0 28px 0;
+            text-align: center;
+        }
+
+        .catin-circle-wrapper {
+            position: relative;
+            width: 195px;
+            height: 195px;
+            margin: 0 auto 18px auto;
+        }
+
+        .catin-circle-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            padding: 4px;
+            background: var(--white);
+            border: 2px solid var(--accent-rose-gold);
+            box-shadow: 0 8px 22px rgba(184, 93, 120, 0.16);
+            overflow: hidden;
+        }
+
+        .catin-circle-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            border-radius: 50%;
+        }
+
+        .catin-floral-badge {
+            position: absolute;
+            right: -16px;
+            bottom: -6px;
+            width: 98px;
+            height: 98px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            transform: rotate(155deg);
+            filter: hue-rotate(-15deg) saturate(1.2);
+            pointer-events: none;
+            z-index: 3;
+            animation: gentle-wind-right 5s ease-in-out infinite alternate;
+        }
+
+        .catin-script-name {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.55rem;
+            color: var(--primary-rose);
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .mempelai-card .ortu {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+            font-weight: 500;
+        }
+
+        .btn-instagram-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-rose) 0%, var(--accent-rose-gold) 100%);
+            color: var(--white);
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(184, 93, 120, 0.28);
+            transition: transform 0.25s ease;
+            margin-top: 12px;
+        }
+
+        .btn-instagram-circle:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-instagram-circle svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .catin-ampersand {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.4rem;
+            color: var(--primary-rose);
+            margin: 10px 0 26px 0;
+            display: block;
+        }
+
+        /* ==========================================================================
+           4. WAKTU AKAD & RESEPSI (GRADASI MULUS KE GALERI FOTO)
+           ========================================================================== */
+        .event-section-bg {
+            background: linear-gradient(
+                180deg,
+                #C7748D 0%,
+                #B35D77 72%,
+                #E3A9BB 90%,
+                #FFF8FA 100%
+            );
+            color: var(--white);
+            padding: 45px 20px 85px 20px;
+        }
+
+        .save-the-date-script {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.8rem;
+            font-weight: 400;
+            color: var(--white);
+            margin-bottom: 18px;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .countdown-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .countdown-item {
+            width: 66px;
+            height: 62px;
+            background: rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1.5px solid rgba(255, 255, 255, 0.65);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .countdown-item span {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .countdown-item label {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        .waktu-white-card {
+            background-color: var(--bg-pink-light);
+            border-radius: 26px;
+            overflow: hidden;
+            box-shadow: 0 14px 35px rgba(74, 24, 40, 0.22);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            position: relative;
+            text-align: center;
+            padding-bottom: 42px;
+        }
+
+        .waktu-card-photo {
+            width: 100%;
+            height: 270px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .waktu-card-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+        }
+
+        .waktu-card-photo::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 55px;
+            background: linear-gradient(to bottom, transparent, var(--bg-pink-light));
+        }
+
+        .waktu-event-block {
+            padding: 22px 22px 10px 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .waktu-script-heading {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.7rem;
+            color: var(--primary-rose);
+            font-weight: 400;
+            line-height: 1.15;
+            margin-bottom: 10px;
+        }
+
+        .waktu-date-bold {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .waktu-time-text {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .waktu-place-label {
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+
+        .waktu-place-label strong {
+            color: var(--primary-rose-dark);
+            text-transform: uppercase;
+        }
+
+        .waktu-address-text {
+            font-size: 0.78rem;
+            line-height: 1.55;
+            color: var(--text-muted);
+            max-width: 280px;
+            margin: 0 auto 16px auto;
+        }
+
+        .btn-lokasi-pink {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, var(--primary-rose) 0%, var(--accent-rose-gold) 100%);
+            color: var(--white);
+            text-decoration: none;
+            padding: 8px 22px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(184, 93, 120, 0.3);
+            transition: transform 0.25s ease;
+        }
+
+        .btn-lokasi-pink:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-lokasi-pink svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .waktu-card-divider {
+            width: 78%;
+            height: 1px;
+            background-color: var(--accent-champagne);
+            margin: 26px auto 12px auto;
+        }
+
+        /* ==========================================================================
+           5. GALERI FOTO ESTETIK (GRADASI MULUS KE LOVE STORY)
+           ========================================================================== */
+        .gallery-section-bg {
+            background: linear-gradient(
+                180deg,
+                #FFF8FA 0%,
+                #FCEEF2 50%,
+                #F9E3EA 100%
+            );
+            padding: 50px 22px 70px 22px;
+            position: relative;
+        }
+
+        .gallery-script-title {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.9rem;
+            color: var(--primary-rose);
+            font-weight: 400;
+            margin-bottom: 4px;
+        }
+
+        .gallery-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        /* Grid Editorial Kolase Estetik */
+        .gallery-editorial-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 2.5px solid var(--white);
+            box-shadow: 0 8px 22px rgba(184, 93, 120, 0.14);
+            cursor: pointer;
+            background-color: var(--bg-pink-blush);
+            aspect-ratio: 3 / 4;
+        }
+
+        /* Foto Utama Span 2 Kolom (Landscape / Featured) */
+        .gallery-item.featured-wide {
+            grid-column: span 2;
+            aspect-ratio: 16 / 10;
+            border-radius: 22px;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+            display: block;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.07);
+        }
+
+        /* Overlay Tipis & Ikon Zoom Saat Hover/Tap */
+        .gallery-item-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(122, 56, 77, 0.42) 0%, transparent 45%);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 12px;
+        }
+
+        .gallery-item:hover .gallery-item-overlay {
+            opacity: 1;
+        }
+
+        .gallery-zoom-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary-rose);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Lightbox Preview Foto Fullscreen */
+        .gallery-lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(43, 20, 28, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 10020;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .lightbox-img-frame {
+            max-width: 410px;
+            width: 100%;
+            max-height: 78vh;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .lightbox-img-frame img {
+            width: 100%;
+            height: 100%;
+            max-height: 78vh;
+            object-fit: contain;
+            background: #1E0D13;
+            display: block;
+        }
+
+        .btn-close-lightbox {
+            margin-top: 18px;
+            background: var(--white);
+            color: var(--primary-rose-dark);
+            border: none;
+            padding: 9px 24px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        /* ==========================================================================
+           6. LOVE STORY (GRADASI MULUS KE WEDDING GIFT)
+           ========================================================================== */
+        .story-section-bg {
+            background: linear-gradient(
+                180deg,
+                #F9E3EA 0%,
+                #FFF8FA 35%,
+                #FCEEF2 72%,
+                #DDA1B3 90%,
+                #B85D78 100%
+            );
+            padding: 55px 26px 90px 26px;
+        }
+
+        .story-script-title {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.9rem;
+            color: var(--primary-rose);
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        .story-photo-card {
+            width: 100%;
+            height: 310px;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 10px 28px rgba(184, 93, 120, 0.16);
+            border: 3px solid var(--white);
+            margin-bottom: 30px;
+        }
+
+        .story-photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+        }
+
+        .story-chapter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        /* Kartu Semi-Transparan Lembut Agar Teks Tetap Kontras & Terbaca Jelas */
+        .story-chapter-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(6px);
+            padding: 20px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 6px 20px rgba(184, 93, 120, 0.08);
+        }
+
+        .story-chapter-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary-rose);
+            letter-spacing: 0.5px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid var(--accent-champagne);
+            width: 85%;
+            margin: 0 auto 12px auto;
+        }
+
+        .story-chapter-text {
+            font-size: 0.81rem;
+            line-height: 1.7;
+            color: var(--text-dark);
+            padding: 0 4px;
+        }
+
+        /* ==========================================================================
+           7. WEDDING GIFT (GRADASI MULUS KE RSVP)
+           ========================================================================== */
+        .gift-section-bg {
+            background: linear-gradient(180deg, #B85D78 0%, #A64F6A 55%, #98445E 100%);
+            color: var(--white);
+            padding-top: 45px;
+            padding-bottom: 65px;
+        }
+
+        .gift-section-bg .header-with-lines {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 18px;
+        }
+
+        .gift-section-bg .header-with-lines h2 {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.6rem;
+            color: var(--white);
+            font-weight: 400;
+            white-space: nowrap;
+            padding: 0 14px;
+        }
+
+        .gift-section-bg .header-with-lines .horizontal-line {
+            flex: 1;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.35);
+        }
+
+        .gift-intro-narrative {
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.92);
+            margin-bottom: 24px;
+            padding: 0 6px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .btn-toggle-gift {
+            background-color: var(--white);
+            color: var(--primary-rose-dark);
+            border: 2px solid var(--accent-champagne);
+            padding: 10px 26px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.18);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 20px;
+        }
+
+        .gift-details-wrapper {
+            display: none;
+            transition: all 0.5s ease-in-out;
+        }
+
+        .gift-details-wrapper.show {
+            display: block;
+        }
+
+        .white-address-card {
+            background-color: var(--bg-pink-light);
+            border-radius: 16px;
+            padding: 18px 16px;
+            color: var(--text-dark);
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+            margin-bottom: 18px;
+            border: 1.5px solid var(--accent-champagne);
+        }
+
+        .white-address-card h4 {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--primary-rose);
+            margin-bottom: 6px;
+        }
+
+        .white-address-card p {
+            font-weight: 500;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .bank-cards-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .bank-inline-card {
+            background: rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .bank-inline-card .bank-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #FFE4EC;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .bank-inline-card .account-number {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 0.5px;
+            margin: 2px 0;
+        }
+
+        .bank-inline-card .account-holder {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 10px;
+        }
+
+        .btn-copy-instant {
+            background-color: var(--white);
+            color: var(--primary-rose-dark);
+            border: none;
+            padding: 6px 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 20px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'Montserrat', sans-serif;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s;
+        }
+
+        .btn-copy-instant:active {
+            transform: scale(0.96);
+        }
+
+        /* ==========================================================================
+           8. RSVP & UCAPAN (GRADASI MULUS KE PENUTUP)
+           ========================================================================== */
+        .rsvp-section-bg {
+            background: linear-gradient(
+                180deg,
+                #98445E 0%,
+                #83364E 70%,
+                #C98C9F 90%,
+                #FFF8FA 100%
+            );
+            color: var(--white);
+            padding-top: 45px;
+            padding-bottom: 90px;
+        }
+
+        .rsvp-section-bg .header-with-lines {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 26px;
+        }
+
+        .rsvp-section-bg .header-with-lines h2 {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 2.6rem;
+            color: var(--white);
+            font-weight: 400;
+            white-space: nowrap;
+            padding: 0 14px;
+        }
+
+        .rsvp-section-bg .header-with-lines .horizontal-line {
+            flex: 1;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.35);
+        }
+
+        .rsvp-clean-form {
+            width: 100%;
+            text-align: left;
+        }
+
+        .rsvp-clean-form .form-group {
+            margin-bottom: 16px;
+        }
+
+        .rsvp-clean-form label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #FFE8EF;
+            margin-bottom: 6px;
+        }
+
+        .rsvp-clean-form .form-control {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--accent-champagne);
+            border-radius: 10px;
+            background-color: var(--bg-pink-light);
+            font-size: 0.84rem;
+            color: var(--text-dark);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .rsvp-clean-form .form-control::placeholder {
+            color: #A88792;
+        }
+
+        .rsvp-clean-form select.form-control {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%23B85D78'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 18px;
+            padding-right: 32px;
+            color: var(--primary-rose-dark);
+            font-weight: 600;
+        }
+
+        .btn-rsvp-submit-custom {
+            background-color: var(--white);
+            color: var(--primary-rose-dark);
+            border: none;
+            padding: 10px 30px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+            margin-top: 6px;
+            transition: transform 0.2s;
+        }
+
+        .btn-rsvp-submit-custom:hover {
+            transform: translateY(-2px);
+        }
+
+        .ucapan-feed-area {
+            margin-top: 26px;
+            max-height: 280px;
+            overflow-y: auto;
+            text-align: left;
+            padding-right: 6px;
+            scroll-behavior: smooth;
+        }
+
+        .ucapan-feed-area::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .ucapan-feed-area::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+
+        .ucapan-feed-area::-webkit-scrollbar-thumb {
+            background: var(--primary-rose);
+            border-radius: 4px;
+        }
+
+        .ucapan-card-item {
+            background: rgba(122, 56, 77, 0.58);
+            backdrop-filter: blur(6px);
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+        }
+
+        .ucapan-card-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #FFE4EC;
+        }
+
+        .ucapan-card-count {
+            font-size: 0.65rem;
+            background: rgba(255, 255, 255, 0.22);
+            color: var(--white);
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+
+        .ucapan-card-body {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.95);
+            margin-top: 5px;
+            line-height: 1.45;
+        }
+
+        /* ==========================================================================
+           9. PENUTUP & FOOTER (GRADASI MULUS KE FOOTER)
+           ========================================================================== */
+        .thankyou-section-luxury {
+            width: 100%;
+            padding: 45px 25px 75px 25px;
+            text-align: center;
+            background: linear-gradient(
+                180deg,
+                #FFF8FA 0%,
+                #FCEEF2 65%,
+                #C48095 88%,
+                #7A384D 100%
+            );
+            position: relative;
+            overflow: hidden;
+        }
+
+        .closing-circle-wrapper {
+            position: relative;
+            width: 205px;
+            height: 205px;
+            margin: 0 auto 24px auto;
+        }
+
+        .closing-circle-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            padding: 4px;
+            background: var(--white);
+            box-shadow: 0 8px 22px rgba(184, 93, 120, 0.16);
+            border: 2px solid var(--accent-rose-gold);
+            overflow: hidden;
+        }
+
+        .closing-circle-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .thankyou-paragraph-text {
+            font-style: italic;
+            font-size: 0.83rem;
+            line-height: 1.65;
+            color: var(--text-dark);
+            max-width: 330px;
+            margin: 0 auto 22px auto;
+            font-weight: 500;
+        }
+
+        .signature-intro-label {
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .signature-couple-name {
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            color: var(--primary-rose-dark);
+            font-size: 3.2rem;
+            font-weight: 400;
+            line-height: 1.1;
+            text-shadow: 0 2px 12px rgba(255, 255, 255, 0.65);
+        }
+
+        .kayuna-branding-footer {
+            background-color: var(--dark-rose-bg);
+            color: var(--bg-pink-light);
+            padding: 20px 20px 30px 20px;
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+        }
+
+        .kayuna-branding-footer p {
+            opacity: 0.85;
+            margin-bottom: 4px;
+        }
+
+        .kayuna-branding-footer .studio-link {
+            font-style: italic;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--white);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .kayuna-social-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-top: 6px;
+        }
+
+        .kayuna-social-row a {
+            color: var(--bg-pink-light);
+            opacity: 0.85;
+            text-decoration: none;
+            transition: opacity 0.2s, color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kayuna-social-row a:hover {
+            opacity: 1;
+            color: #FFD1DF;
+        }
+
+        .kayuna-social-row svg {
+            width: 13px;
+            height: 13px;
+            fill: currentColor;
+        }
+
+        /* Tombol Musik Melayang */
+        .music-control {
+            position: fixed;
+            bottom: 24px;
+            right: calc(50% - 200px);
+            z-index: 998;
+            background: linear-gradient(135deg, var(--primary-rose) 0%, var(--primary-rose-dark) 100%);
+            color: var(--white);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(184, 93, 120, 0.45);
+            border: 1.5px solid rgba(255, 255, 255, 0.65);
+            animation: spin-music 8s linear infinite;
+        }
+
+        .music-control.paused {
+            animation-play-state: paused;
+        }
+
+        @keyframes spin-music {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 450px) {
+            .music-control { right: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+
+        <!-- PARTIKEL KELOPAK BUNGA & DAUN PINK MELAYANG -->
+        <div class="petals-container" id="petalsContainer"></div>
+
+        <!-- LIGHTBOX POPUP GALERI FOTO -->
+        <div class="gallery-lightbox" id="galleryLightbox" onclick="closeLightbox(event)">
+            <div class="lightbox-img-frame" onclick="event.stopPropagation()">
+                <img id="lightboxImage" src="" alt="Preview Galeri Hana & Irfan">
+            </div>
+            <button class="btn-close-lightbox" onclick="closeLightbox(event)">Tutup Foto</button>
+        </div>
+
+        <!-- ==========================================================================
+           1. COVER DEPAN
+           ========================================================================== -->
+        <div id="invitation-cover">
+            <div class="swaying-leaves leaves-top-left"></div>
+            <div class="swaying-leaves leaves-top-right"></div>
+            <div class="swaying-leaves leaves-bottom-left"></div>
+            <div class="swaying-leaves leaves-bottom-right"></div>
+
+            <div class="cover-hero-photo">
+                <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover.png" alt="Cover Hana & Irfan">
+            </div>
+
+            <div class="cover-bottom-content">
+                <p class="cover-subtitle cover-anim-1">THE WEDDING OF</p>
+                <h1 class="cover-couple-title cover-anim-2">Hana &amp; Irfan</h1>
+                <div class="guest-box cover-anim-3">
+                    <span class="dear-text">Kepada Bapak/Ibu/Saudara/i</span>
+                    <div class="guest-name" id="nama-tamu">Tamu yang Berbahagia</div>
+                </div>
+                <div class="cover-anim-4">
+                    <button class="btn-open-pink pulse-btn" onclick="openInvitation()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        Buka Undangan
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ==========================================================================
+           2. KONTEN UTAMA UNDANGAN
+           ========================================================================== -->
+        <div id="main-content">
+            
+            <!-- Tombol Kontrol Musik -->
+            <div class="music-control" onclick="toggleMusic()" id="music-btn" title="Putar / Jeda Musik">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            </div>
+
+            <!-- HALAMAN AWAL -->
+            <div id="section-home" class="hero-interior-page">
+                <div class="swaying-leaves leaves-top-left"></div>
+                <div class="swaying-leaves leaves-top-right"></div>
+
+                <p class="top-title scroll-reveal">THE WEDDING OF</p>
+
+                <div class="circle-portrait-wrapper oval-reveal delay-1 float-slow">
+                    <div class="circle-portrait-frame">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Hana & Irfan">
+                    </div>
+                    <div class="circle-floral-badge"></div>
+                </div>
+
+                <h1 class="script-luxury scroll-reveal delay-2">Hana &amp; Irfan</h1>
+                <p class="hero-invite-quote scroll-reveal delay-3">Kami berharap Anda menjadi bagian dari hari istimewa kami.</p>
+                <p class="interior-date scroll-reveal delay-3">Minggu, 25 Oktober 2026</p>
+                <a href="#section-event" class="btn-save-date-pill scroll-reveal delay-4">Save The Date</a>
+            </div>
+
+            <!-- HALAMAN AYAT QURAN -->
+            <div class="quran-verse-page">
+                <div class="divider-line scroll-reveal"></div>
+                <div class="floral-quran-transparent oval-reveal">
+                    <div class="corner-leaf c-top-left"></div>
+                    <div class="corner-leaf c-top-right"></div>
+                    <div class="corner-leaf c-bottom-left"></div>
+                    <div class="corner-leaf c-bottom-right"></div>
+
+                    <div class="quran-image-wrapper">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/arrum.png" alt="Kaligrafi QS. Ar-Rum Ayat 21">
+                    </div>
+
+                    <div class="quran-translation scroll-reveal delay-1">
+                        "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir."
+                    </div>
+
+                    <div class="quran-surah-name scroll-reveal delay-2">
+                        ( QS. Ar-Rum : 21 )
+                    </div>
+                </div>
+                <div class="divider-line scroll-reveal"></div>
+            </div>
+
+            <!-- PENGENALAN CATIN -->
+            <div id="section-mempelai" class="section-padding mempelai-section-bg">
+                <h2 class="salam-script-title scroll-reveal">Assalamu’alaikum Wr. Wb.</h2>
+                <p class="mempelai-intro-text scroll-reveal delay-1">
+                    Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i serta kerabat sekalian untuk menghadiri acara pernikahan kami.
+                </p>
+
+                <!-- Mempelai Wanita -->
+                <div class="mempelai-card">
+                    <div class="catin-circle-wrapper oval-reveal float-slow">
+                        <div class="catin-circle-frame">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg" alt="Hana Handayani">
+                        </div>
+                        <div class="catin-floral-badge"></div>
+                    </div>
+                    <h3 class="catin-script-name scroll-reveal delay-1">Hana Handayani, S.T.</h3>
+                    <p class="ortu scroll-reveal delay-2">Putri Pertama dari Bapak Budrik<br>&amp; Ibu Ida Parida</p>
+                    <div class="scroll-reveal delay-3">
+                        <a href="https://www.instagram.com/hanahanday_/" target="_blank" class="btn-instagram-circle" title="Instagram Mempelai Wanita">
+                            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <span class="catin-ampersand scroll-reveal">&amp;</span>
+
+                <!-- Mempelai Pria -->
+                <div class="mempelai-card" style="margin-bottom: 10px;">
+                    <div class="catin-circle-wrapper oval-reveal float-slow">
+                        <div class="catin-circle-frame">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg" alt="Irfan Ripandi">
+                        </div>
+                        <div class="catin-floral-badge"></div>
+                    </div>
+                    <h3 class="catin-script-name scroll-reveal delay-1">Ir. Irfan Ripandi</h3>
+                    <p class="ortu scroll-reveal delay-2">Putra Pertama dari Bapak Tantan Rustandi<br>&amp; Ibu Jumsih</p>
+                    <div class="scroll-reveal delay-3">
+                        <a href="https://instagram.com/" target="_blank" class="btn-instagram-circle" title="Instagram Mempelai Pria">
+                            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WAKTU AKAD & RESEPSI -->
+            <div id="section-event" class="section-padding event-section-bg">
+                <h2 class="save-the-date-script scroll-reveal">Save The Date</h2>
+
+                <div class="countdown-container scroll-reveal delay-1">
+                    <div class="countdown-item"><span id="days">0</span><label>Hari</label></div>
+                    <div class="countdown-item"><span id="hours">0</span><label>Jam</label></div>
+                    <div class="countdown-item"><span id="minutes">0</span><label>Menit</label></div>
+                    <div class="countdown-item"><span id="seconds">0</span><label>Detik</label></div>
+                </div>
+
+                <div class="waktu-white-card oval-reveal delay-2">
+                    <div class="swaying-leaves leaves-bottom-left" style="width: 85px; height: 85px;"></div>
+                    <div class="swaying-leaves leaves-bottom-right" style="width: 85px; height: 85px;"></div>
+
+                    <div class="waktu-card-photo">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg" alt="Acara Pernikahan">
+                    </div>
+
+                    <div class="waktu-event-block scroll-reveal">
+                        <h3 class="waktu-script-heading">Akad Nikah</h3>
+                        <p class="waktu-date-bold">Minggu, 25 Oktober 2026</p>
+                        <p class="waktu-time-text">Pukul : 08.00 WIB - Selesai</p>
+                        <p class="waktu-place-label">Tempat : <strong>KEDIAMAN MEMPELAI WANITA</strong></p>
+                        <p class="waktu-address-text">Jl. Bonceret Kp. Ciminyak Rt 03/ Rw 09 Desa. Rancapanggung, Kec. Cililin, Kab. Bandung Barat</p>
+                        <a href="https://maps.app.goo.gl/ky1oxmMaZ8Rz8wfVA" target="_blank" class="btn-lokasi-pink">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Lihat Lokasi
+                        </a>
+                    </div>
+
+                    <div class="waktu-card-divider"></div>
+
+                    <div class="waktu-event-block scroll-reveal">
+                        <h3 class="waktu-script-heading">Resepsi</h3>
+                        <p class="waktu-date-bold">Minggu, 25 Oktober 2026</p>
+                        <p class="waktu-time-text">Pukul : 11.00 WIB - Selesai</p>
+                        <p class="waktu-place-label">Tempat : <strong>KEDIAMAN MEMPELAI WANITA</strong></p>
+                        <p class="waktu-address-text">Jl. Bonceret Kp. Ciminyak Rt 03/ Rw 09 Desa. Rancapanggung, Kec. Cililin, Kab. Bandung Barat</p>
+                        <a href="https://maps.app.goo.gl/ky1oxmMaZ8Rz8wfVA" target="_blank" class="btn-lokasi-pink">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Lihat Lokasi
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================================
+               GALERI FOTO ESTETIK (SEBELUM LOVE STORY)
+               ========================================================================== -->
+            <div id="section-gallery" class="section-padding gallery-section-bg">
+                <h2 class="gallery-script-title scroll-reveal">Our Moments</h2>
+                <p class="gallery-subtitle scroll-reveal delay-1">“Setiap momen indah yang terukir menuju hari bahagia”</p>
+
+                <div class="gallery-editorial-grid">
+                    <!-- Foto 1: Featured Wide -->
+                    <div class="gallery-item featured-wide oval-reveal delay-1" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Galeri Hana & Irfan 1">
+                        <div class="gallery-item-overlay">
+                            <span class="gallery-zoom-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Foto 2: Portrait Kiri -->
+                    <div class="gallery-item oval-reveal delay-2" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg" alt="Galeri Hana & Irfan 2">
+                        <div class="gallery-item-overlay">
+                            <span class="gallery-zoom-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Foto 3: Portrait Kanan -->
+                    <div class="gallery-item oval-reveal delay-3" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg" alt="Galeri Hana & Irfan 3">
+                        <div class="gallery-item-overlay">
+                            <span class="gallery-zoom-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Foto 4: Portrait Mempelai Wanita -->
+                    <div class="gallery-item oval-reveal delay-2" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg" alt="Galeri Hana Handayani">
+                        <div class="gallery-item-overlay">
+                            <span class="gallery-zoom-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Foto 5: Portrait Mempelai Pria -->
+                    <div class="gallery-item oval-reveal delay-3" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg')">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg" alt="Galeri Irfan Ripandi">
+                        <div class="gallery-item-overlay">
+                            <span class="gallery-zoom-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOVE STORY -->
+            <div id="section-story" class="section-padding story-section-bg">
+                <h2 class="story-script-title scroll-reveal">Love Story</h2>
+
+                <div class="story-photo-card oval-reveal delay-1">
+                    <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg" alt="Love Story Hana & Irfan">
+                </div>
+
+                <div class="story-chapter-list">
+                    <div class="story-chapter-item scroll-reveal">
+                        <h3 class="story-chapter-title">Awal Cerita</h3>
+                        <p class="story-chapter-text">
+                            Berawal dari sebuah pertemuan singkat, melalui satu teman yang sama. Tak banyak percakapan, tak pula setiap hari saling menyapa. Namun, setiap kata yang terucap selalu membawa makna dan tujuan. Komunikasi kami mungkin tidak selalu setiap hari, tetapi selalu memiliki arti.
+                        </p>
+                    </div>
+
+                    <div class="story-chapter-item scroll-reveal delay-1">
+                        <h3 class="story-chapter-title">Lamaran</h3>
+                        <p class="story-chapter-text">
+                            Dari rasa cocok, tumbuh sebuah keyakinan. Dari perkenalan, hadir restu keluarga. Hingga akhirnya, dua keluarga dipertemukan untuk menentukan satu perjalanan baru. Bukan tentang seberapa lama kami mengenal, tetapi tentang keyakinan untuk memilih dan menetap satu sama lain.
+                        </p>
+                    </div>
+
+                    <div class="story-chapter-item scroll-reveal delay-2">
+                        <h3 class="story-chapter-title">Pernikahan</h3>
+                        <p class="story-chapter-text">
+                            Dan kini, kami memilih untuk melangkah bersama—menuju sebuah ikatan yang kami sebut selamanya. Sebuah pertemuan singkat, yang akhirnya membawa kami pulang—satu sama lain. Semoga langkah ini menjadi awal kehidupan baru yang penuh cinta, kebahagiaan, dan keberkahan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEDDING GIFT SECTION -->
+            <div id="section-gift" class="section-padding gift-section-bg">
+                <div class="header-with-lines scroll-reveal">
+                    <div class="horizontal-line"></div>
+                    <h2>Wedding Gift</h2>
+                    <div class="horizontal-line"></div>
+                </div>
+
+                <p class="gift-intro-narrative scroll-reveal delay-1">
+                    Kehadiran Anda merupakan sebuah do'a serta rasa syukur bagi kami, namun jika memberi adalah bentuk Do'a &amp; cinta kasih bagi Anda, Anda dapat memberi kado secara cashless dan kami akan senang hati menerimanya dan tentu semakin melengkapi kebahagiaan kami.
+                </p>
+
+                <div class="scroll-reveal delay-2">
+                    <button class="btn-toggle-gift" id="btnToggleGift" onclick="toggleGiftDetails()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83l1.42 1.42L12 8.41l3.58 3.84L17 10.83 14.92 8H20v6z"/></svg>
+                        <span id="textToggleGift">Kirim Hadiah / Transfer</span>
+                    </button>
+                </div>
+
+                <div class="gift-details-wrapper" id="giftDetailsWrapper">
+                    <div class="white-address-card">
+                        <h4>Penerima Kado: Hana Handayani</h4>
+                        <p>Jl. Bonceret Kp. Ciminyak Rt 03/ Rw 09 Desa. Rancapanggung, Kec. Cililin, Kab. Bandung Barat</p>
+                    </div>
+
+                    <div class="bank-cards-container">
+                        <div class="bank-inline-card">
+                            <div class="bank-name">BANK MANDIRI</div>
+                            <div class="account-number">1300026871866</div>
+                            <div class="account-holder">a.n. Hana Handayani</div>
+                            <button class="btn-copy-instant" onclick="copyAccountText('1300026871866')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                Salin Rekening
+                            </button>
+                        </div>
+
+                        <div class="bank-inline-card">
+                            <div class="bank-name">BANK BSI</div>
+                            <div class="account-number">7212898362</div>
+                            <div class="account-holder">a.n. Irfan Ripandi</div>
+                            <button class="btn-copy-instant" onclick="copyAccountText('7212898362')">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                Salin Rekening
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RSVP SECTION -->
+            <div id="section-wishes" class="section-padding rsvp-section-bg">
+                <div class="header-with-lines scroll-reveal">
+                    <div class="horizontal-line"></div>
+                    <h2>RSVP &amp; Ucapan</h2>
+                    <div class="horizontal-line"></div>
+                </div>
+
+                <div class="rsvp-clean-form scroll-reveal delay-1">
+                    <form id="rsvp-form" onsubmit="kirimUcapan(event)">
+                        <div class="form-group">
+                            <label for="input-nama">Nama</label>
+                            <input type="text" id="input-nama" class="form-control" placeholder="Masukkan nama lengkap Anda" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-jumlah">Jumlah Yang Akan Hadir</label>
+                            <select id="input-jumlah" class="form-control">
+                                <option value="1 orang">1 orang</option>
+                                <option value="2 orang">2 orang</option>
+                                <option value="3 orang">3 orang</option>
+                                <option value="4 orang">4 orang</option>
+                                <option value="5 orang">5 orang</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-kehadiran">Konfirmasi</label>
+                            <select id="input-kehadiran" class="form-control">
+                                <option value="Iya, Saya akan hadir">Iya, Saya akan hadir</option>
+                                <option value="Maaf, Saya tidak bisa hadir">Maaf, Saya tidak bisa hadir</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-pesan">Ucapan Doa &amp; Pesan</label>
+                            <textarea id="input-pesan" class="form-control" rows="3" placeholder="Tulis ucapan selamat &amp; doa restu Anda di sini..." required></textarea>
+                        </div>
+
+                        <button type="submit" id="btn-submit-rsvp" class="btn-rsvp-submit-custom">Kirim Ucapan</button>
+                    </form>
+                </div>
+
+                <div class="ucapan-feed-area scroll-reveal delay-2" id="box-ucapan"></div>
+            </div>
+
+            <!-- PENUTUP UCAPAN TERIMA KASIH -->
+            <div class="thankyou-section-luxury">
+                <div class="swaying-leaves leaves-top-left"></div>
+                <div class="swaying-leaves leaves-top-right"></div>
+
+                <div class="closing-circle-wrapper oval-reveal float-slow">
+                    <div class="closing-circle-frame">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Foto Bersanding Hana & Irfan">
+                    </div>
+                    <div class="circle-floral-badge"></div>
+                </div>
+
+                <p class="thankyou-paragraph-text scroll-reveal delay-1">
+                    Suatu kehormatan dan kebahagiaan bagi kami atas kehadiran dan doa restunya, kami mengucapkan terima kasih.
+                </p>
+
+                <div class="signature-intro-label scroll-reveal delay-2">Kami yang berbahagia,</div>
+                <div class="signature-couple-name scroll-reveal delay-3">Hana &amp; Irfan</div>
+            </div>
+
+            <!-- FOOTER BRANDING KAYUNA STUDIO -->
+            <footer class="kayuna-branding-footer scroll-reveal">
+                <p>Designed &amp; Crafted with Love by</p>
+                <a href="https://kayunastudio.my.id" target="_blank" class="studio-link">Kayuna Studio</a>
+                
+                <div class="kayuna-social-row">
+                    <a href="https://kayunastudio.my.id" target="_blank" title="Website Resmi">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.53c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.4z"/></svg>
+                        kayunastudio
+                    </a>
+                    <a href="https://instagram.com/kayunastd/" target="_blank" title="Instagram">
+                        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        kayunastd
+                    </a>
+                    <a href="https://tiktok.com/@kayuna.studio" target="_blank" title="TikTok">
+                        <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31.01 2.61-.01 3.91.02.08 1.53.63 3.02 1.73 4.09.91.91 2.14 1.47 3.42 1.62V9.61c-1.39-.12-2.74-.75-3.72-1.74-.15-.15-.29-.31-.41-.47v6.33c.09 2.12-.91 4.23-2.67 5.43-1.89 1.34-4.47 1.5-6.52.42-2.22-1.12-3.63-3.63-3.48-6.13.11-2.42 1.84-4.57 4.22-5.07.95-.21 1.95-.12 2.85.25V4.76c-1.21-.38-2.25-1.19-2.92-2.27V.02h3.01z"/></svg>
+                        kayuna.studio
+                    </a>
+                </div>
+            </footer>
+
+        </div>
+
+    </div>
+
+    <!-- AUDIO BACKGROUND -->
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/lagu-pernikahan-kita.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // GENERATE PARTIKEL KELOPAK BUNGA & DAUN PINK MELAYANG
+        function createFloatingPetals() {
+            const container = document.getElementById('petalsContainer');
+            if (!container) return;
+            const petalCount = 16;
+
+            for (let i = 0; i < petalCount; i++) {
+                const petal = document.createElement('div');
+                petal.classList.add('petal');
+                const size = Math.random() * 10 + 8;
+                petal.style.width = `${size}px`;
+                petal.style.height = `${size * 0.8}px`;
+                petal.style.left = `${Math.random() * 100}%`;
+                petal.style.animationDuration = `${Math.random() * 7 + 8}s`;
+                petal.style.animationDelay = `${Math.random() * 5}s`;
+                container.appendChild(petal);
+            }
+        }
+        createFloatingPetals();
+
+        // LIGHTBOX GALERI FOTO
+        function openLightbox(imageUrl) {
+            const lightbox = document.getElementById('galleryLightbox');
+            const img = document.getElementById('lightboxImage');
+            img.src = imageUrl;
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox(event) {
+            if (event) event.stopPropagation();
+            const lightbox = document.getElementById('galleryLightbox');
+            lightbox.classList.remove('active');
+        }
+
+        // AMBIL PARAMETER URL 'to'
+        const urlParams = new URLSearchParams(window.location.search);
+        const namaTamuParam = urlParams.get('to');
+        if (namaTamuParam) {
+            document.getElementById('nama-tamu').innerText = namaTamuParam;
+            const inputNamaElem = document.getElementById('input-nama');
+            if (inputNamaElem) inputNamaElem.value = namaTamuParam;
+        }
+
+        const cover = document.getElementById('invitation-cover');
+        const mainContent = document.getElementById('main-content');
+        const music = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-btn');
+
+        function openInvitation() {
+            cover.classList.add('opened');
+            mainContent.classList.add('show');
+
+            setTimeout(() => {
+                cover.style.display = 'none';
+                initScrollReveal();
+            }, 950);
+
+            music.play().then(() => {
+                musicBtn.classList.remove('paused');
+                musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+            }).catch(e => {
+                musicBtn.classList.add('paused');
+                console.log("Audio autoplay diblokir:", e);
+            });
+
+            muatUcapan();
+        }
+
+        function initScrollReveal() {
+            const itemsToReveal = document.querySelectorAll('.scroll-reveal, .oval-reveal');
+            const revealCallback = (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('reveal-active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            };
+
+            const observer = new IntersectionObserver(revealCallback, {
+                root: null,
+                rootMargin: '0px 0px -35px 0px',
+                threshold: 0.1
+            });
+            itemsToReveal.forEach(item => observer.observe(item));
+        }
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                musicBtn.classList.remove('paused');
+                musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+            } else {
+                music.pause();
+                musicBtn.classList.add('paused');
+                musicBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+            }
+        }
+
+        function toggleGiftDetails() {
+            const wrapper = document.getElementById('giftDetailsWrapper');
+            const btnText = document.getElementById('textToggleGift');
+            if (wrapper.classList.contains('show')) {
+                wrapper.classList.remove('show');
+                btnText.innerText = "Kirim Hadiah / Transfer";
+            } else {
+                wrapper.classList.add('show');
+                btnText.innerText = "Tutup Info Hadiah";
+            }
+        }
+
+        function copyAccountText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Nomor rekening berhasil disalin: " + text);
+            }).catch(err => {
+                console.error('Gagal menyalin text: ', err);
+            });
+        }
+
+        const targetDate = new Date(2026, 9, 25, 8, 0, 0).getTime();
+        setInterval(function() {
+            const distance = targetDate - new Date().getTime();
+            if (distance < 0) {
+                document.getElementById("days").innerText = "0";
+                document.getElementById("hours").innerText = "0";
+                document.getElementById("minutes").innerText = "0";
+                document.getElementById("seconds").innerText = "0";
+                return;
+            }
+            document.getElementById("days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24));
+            document.getElementById("hours").innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            document.getElementById("minutes").innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById("seconds").innerText = Math.floor((distance % (1000 * 60)) / 1000);
+        }, 1000);
+
+        // ==========================================
+        // DETEKSI OTOMATIS SLUG / LOKASI REPOSITORY GITHUB
+        // ==========================================
+        function getInvitationStorageKey() {
+            const pathSegments = window.location.pathname
+                .split('/')
+                .filter(seg => seg && seg.toLowerCase() !== 'index.html');
+
+            if (pathSegments.length > 0) {
+                return pathSegments.join('/').toLowerCase();
+            }
+
+            return 'hana_handayani-irfan_ripandi';
+        }
+
+        const INVITATION_SLUG = getInvitationStorageKey();
+
+        // ==========================================
+        // FUNGSI SUPABASE & RSVP SAFE LOAD
+        // ==========================================
+        const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
+        
+        function getSupabaseClient() {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            return null;
+        }
+
+        async function muatUcapan() {
+            const boxUcapan = document.getElementById('box-ucapan');
+            const client = getSupabaseClient();
+            if (!client) return;
+
+            try {
+                const { data, error } = await client
+                    .from('rsvp_messages')
+                    .select('*')
+                    .eq('invitation_slug', INVITATION_SLUG)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                boxUcapan.innerHTML = "";
+
+                if (!data || data.length === 0) {
+                    boxUcapan.innerHTML = `<div class="ucapan-card-item"><p class="ucapan-card-body" style="text-align:center;">Belum ada ucapan.</p></div>`;
+                    return;
+                }
+
+                data.forEach(item => {
+                    tampilkanItemUcapan(item.nama, item.jumlah_hadir, item.pesan);
+                });
+            } catch (error) {
+                console.error('Gagal memuat ucapan:', error);
+            }
+        }
+
+        function tampilkanItemUcapan(nama, jumlah, pesan) {
+            const item = document.createElement('div');
+            item.classList.add('ucapan-card-item');
+            const safeNama = document.createElement('div'); safeNama.innerText = nama || '';
+            const safeJumlah = document.createElement('div'); safeJumlah.innerText = jumlah || '';
+            const safePesan = document.createElement('div'); safePesan.innerText = pesan || '';
+            item.innerHTML = `<span class="ucapan-card-title">${safeNama.innerHTML}</span><span class="ucapan-card-count">${safeJumlah.innerHTML}</span><p class="ucapan-card-body">${safePesan.innerHTML}</p>`;
+            document.getElementById('box-ucapan').appendChild(item);
+        }
+
+        async function kirimUcapan(event) {
+            event.preventDefault();
+            const btnSubmit = document.getElementById('btn-submit-rsvp');
+            const client = getSupabaseClient();
+            if (!client) {
+                alert("Koneksi layanan RSVP sedang terkendala, silakan coba beberapa saat lagi.");
+                return;
+            }
+            
+            const nama = document.getElementById('input-nama').value;
+            const jumlah = document.getElementById('input-jumlah').value;
+            const kehadiran = document.getElementById('input-kehadiran').value;
+            const pesan = document.getElementById('input-pesan').value;
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Mengirim...";
+            
+            try {
+                const { error } = await client
+                    .from('rsvp_messages')
+                    .insert([{ 
+                        invitation_slug: INVITATION_SLUG,
+                        nama: nama, 
+                        jumlah_hadir: jumlah, 
+                        kehadiran: kehadiran, 
+                        pesan: pesan 
+                    }]);
+
+                if (error) throw error;
+
+                const item = document.createElement('div');
+                item.classList.add('ucapan-card-item');
+                const safeNama = document.createElement('div'); safeNama.innerText = nama;
+                const safeJumlah = document.createElement('div'); safeJumlah.innerText = jumlah;
+                const safePesan = document.createElement('div'); safePesan.innerText = pesan;
+                item.innerHTML = `<span class="ucapan-card-title">${safeNama.innerHTML}</span><span class="ucapan-card-count">${safeJumlah.innerHTML}</span><p class="ucapan-card-body">${safePesan.innerHTML}</p>`;
+                
+                const boxUcapan = document.getElementById('box-ucapan');
+                if (boxUcapan.children.length === 1 && boxUcapan.innerText.includes('Belum ada ucapan.')) {
+                    boxUcapan.innerHTML = "";
+                }
+                boxUcapan.insertBefore(item, boxUcapan.firstChild);
+                document.getElementById('input-pesan').value = "";
+                alert("Terima kasih atas doa dan ucapannya!");
+            } catch (error) {
+                alert("Gagal mengirim pesan: " + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Kirim Ucapan";
+            }
+        }
+    </script>
+</body>
+</html>
