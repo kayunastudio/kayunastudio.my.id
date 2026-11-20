@@ -173,8 +173,8 @@
            ========================================================================== */
         .swaying-leaves {
             position: absolute;
-            width: 95px;
-            height: 95px;
+            width: 85px;
+            height: 85px;
             background-size: contain;
             background-repeat: no-repeat;
             pointer-events: none;
@@ -254,7 +254,7 @@
         }
 
         /* ==========================================================================
-           1. COVER DEPAN
+           1. COVER DEPAN (PROPORSIONAL UNTUK LAYAR HP / 100dvh)
            ========================================================================== */
         #invitation-cover {
             position: fixed;
@@ -264,6 +264,7 @@
             width: 100%;
             max-width: 450px;
             height: 100vh;
+            height: 100dvh;
             background-color: var(--bg-pink-light);
             z-index: 9999;
             display: flex;
@@ -289,7 +290,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 62%;
+            height: 55%;
             z-index: 1;
             overflow: hidden;
         }
@@ -314,8 +315,8 @@
             background: linear-gradient(
                 to bottom,
                 rgba(255, 248, 250, 0.05) 0%,
-                rgba(255, 248, 250, 0.0) 52%,
-                rgba(255, 248, 250, 0.85) 84%,
+                rgba(255, 248, 250, 0.0) 48%,
+                rgba(255, 248, 250, 0.88) 82%,
                 var(--bg-pink-light) 100%
             );
         }
@@ -324,7 +325,7 @@
             position: relative;
             z-index: 4;
             width: 100%;
-            padding: 20px 26px 52px 26px;
+            padding: 12px 24px calc(28px + env(safe-area-inset-bottom, 0px)) 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -349,24 +350,24 @@
         .cover-anim-4 { opacity: 0; animation: entrance-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.95s forwards; }
 
         .cover-subtitle {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             color: var(--text-muted);
             font-weight: 600;
             letter-spacing: 2.5px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .cover-couple-title {
             font-family: 'Great Vibes', 'Alex Brush', cursive;
-            font-size: 3.3rem;
+            font-size: 2.95rem;
             color: var(--primary-rose);
-            line-height: 1.15;
-            margin-bottom: 18px;
+            line-height: 1.1;
+            margin-bottom: 12px;
         }
 
         .guest-box .dear-text {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
             display: block;
             margin-bottom: 4px;
@@ -374,13 +375,13 @@
         }
 
         .guest-name {
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: var(--text-dark);
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             padding: 4px 16px;
             border-radius: 20px;
-            background: rgba(252, 238, 242, 0.8);
+            background: rgba(252, 238, 242, 0.85);
             border: 1px solid var(--accent-champagne);
             display: inline-block;
         }
@@ -389,8 +390,8 @@
             background: linear-gradient(135deg, var(--primary-rose) 0%, var(--primary-rose-dark) 100%);
             color: var(--white);
             border: none;
-            padding: 12px 32px;
-            font-size: 0.82rem;
+            padding: 11px 28px;
+            font-size: 0.8rem;
             font-weight: 600;
             border-radius: 30px;
             cursor: pointer;
@@ -406,6 +407,27 @@
         .btn-open-pink:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 22px rgba(184, 93, 120, 0.45);
+        }
+
+        /* Penyesuaian ekstra untuk layar HP pendek (< 680px tinggi viewport) */
+        @media (max-height: 680px) {
+            .cover-hero-photo {
+                height: 50%;
+            }
+            .cover-bottom-content {
+                padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+            }
+            .cover-couple-title {
+                font-size: 2.65rem;
+                margin-bottom: 8px;
+            }
+            .guest-name {
+                margin-bottom: 10px;
+                font-size: 0.9rem;
+            }
+            .btn-open-pink {
+                padding: 10px 24px;
+            }
         }
 
         /* ==========================================================================
