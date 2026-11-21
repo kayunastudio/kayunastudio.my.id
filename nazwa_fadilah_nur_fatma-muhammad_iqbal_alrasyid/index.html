@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Undangan Pernikahan Digital - Nazwa & Iqbal</title>
-    <!-- Google Fonts: Great Vibes, Alex Brush & Montserrat -->
+    <!-- Google Fonts: Great Vibes, Alex Brush, Cormorant Garamond & Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- SDK Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -169,8 +169,23 @@
         }
 
         /* ==========================================================================
-           ASSET BUNGA SUDUT MELAYANG (PINK TINT)
+           LAYER BACKGROUND GAMBAR FRAME FLORAL (POSISI BAWAH, SALING TIMPA DENGAN FOTO)
            ========================================================================== */
+        .floral-frame-bg-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            /* Ganti URL di bawah ini dengan link gambar frame floral Anda (ukuran ideal 900x1600px / 1080x1920px) */
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-frame.png');
+            background-size: cover;
+            background-position: bottom center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Sudut Standar untuk Card Bagian Dalam */
         .swaying-leaves {
             position: absolute;
             width: 85px;
@@ -179,7 +194,7 @@
             background-repeat: no-repeat;
             pointer-events: none;
             z-index: 5;
-            opacity: 0.88;
+            opacity: 0.9;
             filter: hue-rotate(-15deg) saturate(1.15);
             will-change: transform;
         }
@@ -187,7 +202,7 @@
         .leaves-top-left {
             top: -4px;
             left: -4px;
-            background-image: url('https://raw.githubusercontent.com/kayunastudio/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-top-left.png');
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-top-left.png');
             transform-origin: top left;
             animation: gentle-wind-left 5s ease-in-out infinite alternate;
         }
@@ -195,7 +210,7 @@
         .leaves-top-right {
             top: -4px;
             right: -4px;
-            background-image: url('https://raw.githubusercontent.com/kayunastudio/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-top-right.png');
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-top-right.png');
             transform-origin: top right;
             animation: gentle-wind-right 5s ease-in-out infinite alternate;
         }
@@ -203,7 +218,7 @@
         .leaves-bottom-right {
             bottom: -4px;
             right: -4px;
-            background-image: url('https://raw.githubusercontent.com/kayunastudio/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-bottom-right.png');
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-bottom-right.png');
             transform-origin: bottom right;
             animation: gentle-wind-right 5s ease-in-out infinite alternate;
         }
@@ -211,21 +226,21 @@
         .leaves-bottom-left {
             bottom: -4px;
             left: -4px;
-            background-image: url('https://raw.githubusercontent.com/kayunastudio/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-bottom-left.png');
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-bottom-left.png');
             transform-origin: bottom left;
             animation: gentle-wind-left 5s ease-in-out infinite alternate;
         }
 
         @keyframes gentle-wind-left {
             0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(3deg) scale(1.03) skewX(0.6deg); }
-            100% { transform: rotate(-1.5deg) scale(0.99) skewY(-0.5deg); }
+            50% { transform: rotate(2.5deg) scale(1.02); }
+            100% { transform: rotate(-1.5deg) scale(0.99); }
         }
 
         @keyframes gentle-wind-right {
             0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(-3deg) scale(1.03) skewY(0.6deg); }
-            100% { transform: rotate(1.5deg) scale(0.99) skewX(-0.5deg); }
+            50% { transform: rotate(-2.5deg) scale(1.02); }
+            100% { transform: rotate(1.5deg) scale(0.99); }
         }
 
         /* ==========================================================================
@@ -238,6 +253,16 @@
             font-weight: 400;
             line-height: 1.15;
             text-shadow: 0 2px 10px rgba(184, 93, 120, 0.14);
+        }
+
+        .readable-couple-name {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            color: var(--primary-rose-dark);
+            font-size: 2.35rem;
+            font-weight: 700;
+            line-height: 1.18;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(184, 93, 120, 0.12);
         }
 
         .section-padding {
@@ -254,7 +279,7 @@
         }
 
         /* ==========================================================================
-           1. COVER DEPAN (PROPORSIONAL UNTUK LAYAR HP / 100dvh)
+           1. COVER DEPAN (FOTO DI ATAS + BACKGROUND FRAME FLORAL SALING TIMPA DI BAWAH)
            ========================================================================== */
         #invitation-cover {
             position: fixed;
@@ -285,14 +310,17 @@
             pointer-events: none;
         }
 
+        /* Foto Mempelai Bagian Atas (Saling Timpa Halus dengan Layer Frame Background di Bawah) */
         .cover-hero-photo {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 55%;
-            z-index: 1;
+            height: 56%;
+            z-index: 2;
             overflow: hidden;
+            -webkit-mask-image: linear-gradient(to bottom, #000000 58%, rgba(0, 0, 0, 0.45) 82%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000000 58%, rgba(0, 0, 0, 0.45) 82%, transparent 100%);
         }
 
         .cover-hero-photo img {
@@ -308,24 +336,11 @@
             100% { transform: scale(1.06); }
         }
 
-        .cover-hero-photo::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-                to bottom,
-                rgba(255, 248, 250, 0.05) 0%,
-                rgba(255, 248, 250, 0.0) 48%,
-                rgba(255, 248, 250, 0.88) 82%,
-                var(--bg-pink-light) 100%
-            );
-        }
-
         .cover-bottom-content {
             position: relative;
             z-index: 4;
             width: 100%;
-            padding: 12px 24px calc(28px + env(safe-area-inset-bottom, 0px)) 24px;
+            padding: 12px 24px calc(15vh + env(safe-area-inset-bottom, 0px)) 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -347,27 +362,27 @@
         .cover-anim-1 { opacity: 0; animation: entrance-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; }
         .cover-anim-2 { opacity: 0; animation: entrance-rise 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards; }
         .cover-anim-3 { opacity: 0; animation: entrance-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
-        .cover-anim-4 { opacity: 0; animation: entrance-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.95s forwards; }
 
         .cover-subtitle {
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             text-transform: uppercase;
             color: var(--text-muted);
             font-weight: 600;
             letter-spacing: 2.5px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .cover-couple-title {
             font-family: 'Great Vibes', 'Alex Brush', cursive;
-            font-size: 2.95rem;
+            font-size: 3.1rem;
             color: var(--primary-rose);
             line-height: 1.1;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.9);
         }
 
         .guest-box .dear-text {
-            font-size: 0.75rem;
+            font-size: 0.74rem;
             color: var(--text-muted);
             display: block;
             margin-bottom: 4px;
@@ -375,15 +390,11 @@
         }
 
         .guest-name {
-            font-size: 0.95rem;
+            font-size: 0.98rem;
             font-weight: 700;
             color: var(--text-dark);
             margin-bottom: 14px;
-            padding: 4px 16px;
-            border-radius: 20px;
-            background: rgba(252, 238, 242, 0.85);
-            border: 1px solid var(--accent-champagne);
-            display: inline-block;
+            display: block;
         }
 
         .btn-open-pink {
@@ -409,29 +420,25 @@
             box-shadow: 0 8px 22px rgba(184, 93, 120, 0.45);
         }
 
-        /* Penyesuaian ekstra untuk layar HP pendek (< 680px tinggi viewport) */
         @media (max-height: 680px) {
             .cover-hero-photo {
-                height: 50%;
+                height: 52%;
             }
             .cover-bottom-content {
-                padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+                padding-bottom: calc(10vh + env(safe-area-inset-bottom, 0px));
             }
             .cover-couple-title {
-                font-size: 2.65rem;
-                margin-bottom: 8px;
+                font-size: 2.7rem;
+                margin-bottom: 10px;
             }
             .guest-name {
                 margin-bottom: 10px;
-                font-size: 0.9rem;
-            }
-            .btn-open-pink {
-                padding: 10px 24px;
+                font-size: 0.92rem;
             }
         }
 
         /* ==========================================================================
-           2. HALAMAN AWAL (GRADASI MULUS KE AYAT QURAN)
+           2. HALAMAN AWAL (DENGAN BACKGROUND FRAME FLORAL DI BAWAH)
            ========================================================================== */
         #main-content {
             display: none;
@@ -449,7 +456,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 60px 24px 75px 24px;
+            padding: 85px 24px 95px 24px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -460,15 +467,18 @@
             text-transform: uppercase;
             color: var(--text-muted);
             letter-spacing: 2.5px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             font-weight: 600;
+            position: relative;
+            z-index: 3;
         }
 
         .circle-portrait-wrapper {
             position: relative;
-            width: 230px;
-            height: 230px;
-            margin: 0 auto 24px auto;
+            width: 225px;
+            height: 225px;
+            margin: 0 auto 22px auto;
+            z-index: 3;
         }
 
         .circle-portrait-frame {
@@ -493,32 +503,51 @@
             position: absolute;
             right: -18px;
             bottom: -6px;
-            width: 115px;
-            height: 115px;
-            background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png');
+            width: 84px;
+            height: 84px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-bottom-right.png');
             background-size: contain;
             background-repeat: no-repeat;
             transform: rotate(155deg);
             filter: hue-rotate(-15deg) saturate(1.2);
             pointer-events: none;
-            z-index: 3;
+            z-index: 4;
             animation: gentle-wind-right 4.8s ease-in-out infinite alternate;
+        }
+
+        .circle-floral-badge-top {
+            position: absolute;
+            left: -18px;
+            top: -8px;
+            width: 78px;
+            height: 78px;
+            background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-top-left.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            filter: hue-rotate(-15deg) saturate(1.2);
+            pointer-events: none;
+            z-index: 4;
+            animation: gentle-wind-left 4.8s ease-in-out infinite alternate;
         }
 
         .hero-invite-quote {
             font-size: 0.82rem;
             color: var(--text-muted);
-            max-width: 290px;
-            margin: 8px auto 12px auto;
+            max-width: 280px;
+            margin: 10px auto 12px auto;
             line-height: 1.55;
+            position: relative;
+            z-index: 3;
         }
 
         .hero-interior-page .interior-date {
             font-size: 0.88rem;
             font-weight: 700;
             color: var(--primary-rose-dark);
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             letter-spacing: 0.5px;
+            position: relative;
+            z-index: 3;
         }
 
         .btn-save-date-pill {
@@ -533,6 +562,8 @@
             letter-spacing: 0.5px;
             box-shadow: 0 5px 15px rgba(184, 93, 120, 0.3);
             transition: transform 0.25s ease;
+            position: relative;
+            z-index: 3;
         }
 
         .btn-save-date-pill:hover {
@@ -578,10 +609,10 @@
             filter: hue-rotate(-15deg) saturate(1.15);
         }
 
-        .c-top-left { top: -8px; left: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png'); }
-        .c-top-right { top: -8px; right: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png'); }
-        .c-bottom-left { bottom: -8px; left: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-left.png'); transform: rotate(180deg); }
-        .c-bottom-right { bottom: -8px; right: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/floral-right.png'); transform: rotate(180deg); }
+        .c-top-left { top: -8px; left: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-top-left.png'); }
+        .c-top-right { top: -8px; right: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-top-right.png'); }
+        .c-bottom-left { bottom: -8px; left: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-bottom-left.png'); transform: rotate(180deg); }
+        .c-bottom-right { bottom: -8px; right: -8px; background-image: url('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/floral-bottom-right.png'); transform: rotate(180deg); }
 
         .quran-image-wrapper {
             width: 100%;
@@ -615,13 +646,13 @@
         }
 
         /* ==========================================================================
-           3. PENGENALAN CATIN (DIPERLUAS AGAR NAMA CATIN PRIA TIDAK TERTUTUP GRADASI)
+           3. PENGENALAN CATIN
            ========================================================================== */
         .mempelai-section-bg {
             background: linear-gradient(
                 180deg,
                 #FFF8FA 0%,
-                #FCEEF2 82%,
+                #E7B0C0 82%,
                 #E7B0C0 93%,
                 #C7748D 100%
             );
@@ -694,13 +725,15 @@
             animation: gentle-wind-right 5s ease-in-out infinite alternate;
         }
 
-        .catin-script-name {
-            font-family: 'Great Vibes', 'Alex Brush', cursive;
-            font-size: 2.55rem;
-            color: var(--primary-rose);
-            font-weight: 400;
-            line-height: 1.2;
+        .catin-readable-name {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.65rem;
+            color: var(--primary-rose-dark);
+            font-weight: 700;
+            line-height: 1.25;
+            letter-spacing: 0.3px;
             margin-bottom: 6px;
+            padding: 0 8px;
         }
 
         .mempelai-card .ortu {
@@ -736,15 +769,17 @@
         }
 
         .catin-ampersand {
-            font-family: 'Great Vibes', 'Alex Brush', cursive;
-            font-size: 2.4rem;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-style: italic;
+            font-size: 2rem;
+            font-weight: 600;
             color: var(--primary-rose);
             margin: 10px 0 26px 0;
             display: block;
         }
 
         /* ==========================================================================
-           4. WAKTU AKAD & RESEPSI (GRADASI MULUS KE GALERI FOTO)
+           4. WAKTU AKAD & RESEPSI
            ========================================================================== */
         .event-section-bg {
             background: linear-gradient(
@@ -919,7 +954,7 @@
         }
 
         /* ==========================================================================
-           5. GALERI FOTO ESTETIK (GRADASI MULUS KE LOVE STORY)
+           5. GALERI FOTO POLAROID SLIDE HORIZONTAL
            ========================================================================== */
         .gallery-section-bg {
             background: linear-gradient(
@@ -928,8 +963,12 @@
                 #FCEEF2 50%,
                 #F9E3EA 100%
             );
-            padding: 50px 22px 70px 22px;
+            padding: 50px 0 65px 0;
             position: relative;
+        }
+
+        .gallery-header-wrap {
+            padding: 0 22px;
         }
 
         .gallery-script-title {
@@ -943,75 +982,95 @@
         .gallery-subtitle {
             font-size: 0.8rem;
             color: var(--text-muted);
-            margin-bottom: 24px;
+            margin-bottom: 22px;
             font-style: italic;
         }
 
-        .gallery-editorial-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+        .polaroid-carousel-track {
+            display: flex;
+            gap: 18px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            padding: 16px 32px 26px 32px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
         }
 
-        .gallery-item {
-            position: relative;
-            border-radius: 18px;
-            overflow: hidden;
-            border: 2.5px solid var(--white);
-            box-shadow: 0 8px 22px rgba(184, 93, 120, 0.14);
+        .polaroid-carousel-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        .polaroid-card {
+            flex: 0 0 235px;
+            scroll-snap-align: center;
+            background: #FFFFFF;
+            padding: 12px 12px 18px 12px;
+            border-radius: 6px;
+            box-shadow: 0 12px 28px rgba(122, 56, 77, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(232, 197, 206, 0.65);
             cursor: pointer;
-            background-color: var(--bg-pink-blush);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+            position: relative;
+        }
+
+        .polaroid-card:nth-child(odd) {
+            transform: rotate(-1.8deg);
+        }
+
+        .polaroid-card:nth-child(even) {
+            transform: rotate(1.8deg);
+        }
+
+        .polaroid-card:hover {
+            transform: rotate(0deg) translateY(-6px) scale(1.02);
+            box-shadow: 0 16px 34px rgba(184, 93, 120, 0.24);
+            z-index: 3;
+        }
+
+        .polaroid-photo-box {
+            width: 100%;
             aspect-ratio: 3 / 4;
+            overflow: hidden;
+            border-radius: 3px;
+            background-color: var(--bg-pink-blush);
+            position: relative;
         }
 
-        .gallery-item.featured-wide {
-            grid-column: span 2;
-            aspect-ratio: 16 / 10;
-            border-radius: 22px;
-        }
-
-        .gallery-item img {
+        .polaroid-photo-box img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             object-position: top center;
-            transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
             display: block;
+            transition: transform 0.6s ease;
         }
 
-        .gallery-item:hover img {
-            transform: scale(1.07);
+        .polaroid-card:hover .polaroid-photo-box img {
+            transform: scale(1.05);
         }
 
-        .gallery-item-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(122, 56, 77, 0.42) 0%, transparent 45%);
-            opacity: 0;
-            transition: opacity 0.35s ease;
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-end;
-            padding: 12px;
-        }
-
-        .gallery-item:hover .gallery-item-overlay {
-            opacity: 1;
-        }
-
-        .gallery-zoom-badge {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
+        .polaroid-caption {
+            margin-top: 12px;
+            font-family: 'Great Vibes', 'Alex Brush', cursive;
+            font-size: 1.5rem;
             color: var(--primary-rose);
-            display: flex;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .polaroid-swipe-hint {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            gap: 6px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 4px;
+            opacity: 0.85;
         }
 
-        /* Lightbox Preview Foto Fullscreen */
         .gallery-lightbox {
             position: fixed;
             inset: 0;
@@ -1067,7 +1126,7 @@
         }
 
         /* ==========================================================================
-           6. LOVE STORY (GRADASI MULUS KE WEDDING GIFT)
+           6. LOVE STORY
            ========================================================================== */
         .story-section-bg {
             background: linear-gradient(
@@ -1141,7 +1200,7 @@
         }
 
         /* ==========================================================================
-           7. WEDDING GIFT (GRADASI MULUS KE RSVP)
+           7. WEDDING GIFT
            ========================================================================== */
         .gift-section-bg {
             background: linear-gradient(180deg, #B85D78 0%, #A64F6A 55%, #98445E 100%);
@@ -1209,31 +1268,6 @@
             display: block;
         }
 
-        .white-address-card {
-            background-color: var(--bg-pink-light);
-            border-radius: 16px;
-            padding: 18px 16px;
-            color: var(--text-dark);
-            text-align: center;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-            margin-bottom: 18px;
-            border: 1.5px solid var(--accent-champagne);
-        }
-
-        .white-address-card h4 {
-            font-size: 0.92rem;
-            font-weight: 700;
-            color: var(--primary-rose);
-            margin-bottom: 6px;
-        }
-
-        .white-address-card p {
-            font-weight: 500;
-            font-size: 0.78rem;
-            line-height: 1.5;
-            color: var(--text-muted);
-        }
-
         .bank-cards-container {
             width: 100%;
             display: flex;
@@ -1294,7 +1328,7 @@
         }
 
         /* ==========================================================================
-           8. RSVP & UCAPAN (GRADASI MULUS KE PENUTUP)
+           8. RSVP & UCAPAN
            ========================================================================== */
         .rsvp-section-bg {
             background: linear-gradient(
@@ -1450,7 +1484,7 @@
         }
 
         /* ==========================================================================
-           9. PENUTUP & FOOTER (DIPERLUAS AGAR NAMA HANA & IRFAN TIDAK TERTUTUP GRADASI)
+           9. PENUTUP & FOOTER
            ========================================================================== */
         .thankyou-section-luxury {
             width: 100%;
@@ -1515,14 +1549,15 @@
         }
 
         .signature-couple-name {
-            font-family: 'Great Vibes', 'Alex Brush', cursive;
-            color: var(--primary-rose);
-            font-size: 3.2rem;
-            font-weight: 400;
-            line-height: 1.15;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            color: var(--primary-rose-dark);
+            font-size: 2.35rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: 0.5px;
             position: relative;
             z-index: 2;
-            text-shadow: 0 2px 10px rgba(184, 93, 120, 0.14);
+            text-shadow: 0 2px 8px rgba(184, 93, 120, 0.14);
         }
 
         .kayuna-branding-footer {
@@ -1622,32 +1657,29 @@
         <!-- LIGHTBOX POPUP GALERI FOTO -->
         <div class="gallery-lightbox" id="galleryLightbox" onclick="closeLightbox(event)">
             <div class="lightbox-img-frame" onclick="event.stopPropagation()">
-                <img id="lightboxImage" src="" alt="Preview Galeri Hana & Irfan">
+                <img id="lightboxImage" src="" alt="Preview Galeri Nazwa & Iqbal">
             </div>
             <button class="btn-close-lightbox" onclick="closeLightbox(event)">Tutup Foto</button>
         </div>
 
         <!-- ==========================================================================
-           1. COVER DEPAN
+           1. COVER DEPAN (FOTO DI ATAS + LAYER FRAME FLORAL DI BAWAH)
            ========================================================================== -->
         <div id="invitation-cover">
-            <div class="swaying-leaves leaves-top-left"></div>
-            <div class="swaying-leaves leaves-top-right"></div>
-            <div class="swaying-leaves leaves-bottom-left"></div>
-            <div class="swaying-leaves leaves-bottom-right"></div>
+            <!-- Layer Gambar Frame Floral (Posisi Bawah, Saling Timpa dengan Foto) -->
+            <div class="floral-frame-bg-layer"></div>
 
+            <!-- Foto Mempelai Bagian Atas -->
             <div class="cover-hero-photo">
-                <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover.png" alt="Cover Hana & Irfan">
+                <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/bg-cover.jpg" alt="Cover Nazwa & Iqbal">
             </div>
 
             <div class="cover-bottom-content">
                 <p class="cover-subtitle cover-anim-1">THE WEDDING OF</p>
-                <h1 class="cover-couple-title cover-anim-2">Hana &amp; Irfan</h1>
+                <h1 class="cover-couple-title cover-anim-2">Nazwa &amp; Iqbal</h1>
                 <div class="guest-box cover-anim-3">
-                    <span class="dear-text">Kepada Bapak/Ibu/Saudara/i</span>
+                    <span class="dear-text">Kepada Yth.<br>Bapak/Ibu/Saudara/i</span>
                     <div class="guest-name" id="nama-tamu">Tamu yang Berbahagia</div>
-                </div>
-                <div class="cover-anim-4">
                     <button class="btn-open-pink pulse-btn" onclick="openInvitation()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                         Buka Undangan
@@ -1667,23 +1699,24 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
             </div>
 
-            <!-- HALAMAN AWAL -->
+            <!-- HALAMAN AWAL (DENGAN LAYER FRAME FLORAL DI BAWAH) -->
             <div id="section-home" class="hero-interior-page">
-                <div class="swaying-leaves leaves-top-left"></div>
-                <div class="swaying-leaves leaves-top-right"></div>
+                <!-- Layer Gambar Frame Floral (Posisi Bawah) -->
+                <div class="floral-frame-bg-layer"></div>
 
                 <p class="top-title scroll-reveal">THE WEDDING OF</p>
 
                 <div class="circle-portrait-wrapper oval-reveal delay-1 float-slow">
+                    <div class="circle-floral-badge-top"></div>
                     <div class="circle-portrait-frame">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Hana & Irfan">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/love.jpg" alt="Nazwa & Iqbal">
                     </div>
                     <div class="circle-floral-badge"></div>
                 </div>
 
-                <h1 class="script-luxury scroll-reveal delay-2">Hana &amp; Irfan</h1>
+                <h1 class="readable-couple-name scroll-reveal delay-2">Nazwa &amp; Iqbal</h1>
                 <p class="hero-invite-quote scroll-reveal delay-3">Kami berharap Anda menjadi bagian dari hari istimewa kami.</p>
-                <p class="interior-date scroll-reveal delay-3">Minggu, 25 Oktober 2026</p>
+                <p class="interior-date scroll-reveal delay-3">Minggu, 29 November 2026</p>
                 <a href="#section-event" class="btn-save-date-pill scroll-reveal delay-4">Save The Date</a>
             </div>
 
@@ -1722,14 +1755,14 @@
                 <div class="mempelai-card">
                     <div class="catin-circle-wrapper oval-reveal float-slow">
                         <div class="catin-circle-frame">
-                            <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg" alt="Hana Handayani">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/catin-1.jpg" alt="Nazwa Fadilah Nur Fatma">
                         </div>
                         <div class="catin-floral-badge"></div>
                     </div>
-                    <h3 class="catin-script-name scroll-reveal delay-1">Hana Handayani, S.T.</h3>
-                    <p class="ortu scroll-reveal delay-2">Putri Pertama dari Bapak Budrik<br>&amp; Ibu Ida Parida</p>
+                    <h3 class="catin-readable-name scroll-reveal delay-1">Nazwa Fadilah Nur Fatma, S.Pd</h3>
+                    <p class="ortu scroll-reveal delay-2">Putri dari Bapak Dodo<br>&amp; Ibu Ema Komalasari</p>
                     <div class="scroll-reveal delay-3">
-                        <a href="https://www.instagram.com/hanahanday_/" target="_blank" class="btn-instagram-circle" title="Instagram Mempelai Wanita">
+                        <a href="https://www.instagram.com/nazwa_fdlh26/" target="_blank" class="btn-instagram-circle" title="Instagram Mempelai Wanita">
                             <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                         </a>
                     </div>
@@ -1741,14 +1774,14 @@
                 <div class="mempelai-card" style="margin-bottom: 10px;">
                     <div class="catin-circle-wrapper oval-reveal float-slow">
                         <div class="catin-circle-frame">
-                            <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg" alt="Irfan Ripandi">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/catin-2.jpg" alt="Iqbal Alrasyid">
                         </div>
                         <div class="catin-floral-badge"></div>
                     </div>
-                    <h3 class="catin-script-name scroll-reveal delay-1">Ir. Irfan Ripandi</h3>
-                    <p class="ortu scroll-reveal delay-2">Putra Pertama dari Bapak Tantan Rustandi<br>&amp; Ibu Jumsih</p>
+                    <h3 class="catin-readable-name scroll-reveal delay-1">Muhammad Iqbal Alrasyid</h3>
+                    <p class="ortu scroll-reveal delay-2">Putra dari Bapak Momon Sudirman<br>&amp; Ibu Enok Riayanti</p>
                     <div class="scroll-reveal delay-3">
-                        <a href="https://instagram.com/" target="_blank" class="btn-instagram-circle" title="Instagram Mempelai Pria">
+                        <a href="https://instagram.com/iqbalalrasyid_7/" target="_blank" class="btn-instagram-circle" title="Instagram Mempelai Pria">
                             <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                         </a>
                     </div>
@@ -1771,16 +1804,16 @@
                     <div class="swaying-leaves leaves-bottom-right" style="width: 85px; height: 85px;"></div>
 
                     <div class="waktu-card-photo">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg" alt="Acara Pernikahan">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/love.jpg" alt="Acara Pernikahan">
                     </div>
 
                     <div class="waktu-event-block scroll-reveal">
                         <h3 class="waktu-script-heading">Akad Nikah</h3>
-                        <p class="waktu-date-bold">Minggu, 25 Oktober 2026</p>
-                        <p class="waktu-time-text">Pukul : 08.00 WIB - Selesai</p>
-                        <p class="waktu-place-label">Tempat : <strong>KEDIAMAN MEMPELAI WANITA</strong></p>
-                        <p class="waktu-address-text">Jl. Bonceret Kp. Ciminyak Rt 03/ Rw 09 Desa. Rancapanggung, Kec. Cililin, Kab. Bandung Barat</p>
-                        <a href="https://maps.app.goo.gl/ky1oxmMaZ8Rz8wfVA" target="_blank" class="btn-lokasi-pink">
+                        <p class="waktu-date-bold">Minggu, 29 November 2026</p>
+                        <p class="waktu-time-text">Pukul : 10.00 WIB - Selesai</p>
+                        <p class="waktu-place-label">Tempat : <strong>Lokasi Acara</strong></p>
+                        <p class="waktu-address-text">Jl. Nanjung Babakan Utama RT 04/ RW 13 Kelurahan Utama Kecamatan Cimahi Selatan Kota Cimahi</p>
+                        <a href="https://maps.app.goo.gl/GvDDNQXpSgzDQ5JVA" target="_blank" class="btn-lokasi-pink">
                             <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                             Lihat Lokasi
                         </a>
@@ -1790,11 +1823,11 @@
 
                     <div class="waktu-event-block scroll-reveal">
                         <h3 class="waktu-script-heading">Resepsi</h3>
-                        <p class="waktu-date-bold">Minggu, 25 Oktober 2026</p>
+                        <p class="waktu-date-bold">Minggu, 29 November 2026</p>
                         <p class="waktu-time-text">Pukul : 11.00 WIB - Selesai</p>
-                        <p class="waktu-place-label">Tempat : <strong>KEDIAMAN MEMPELAI WANITA</strong></p>
-                        <p class="waktu-address-text">Jl. Bonceret Kp. Ciminyak Rt 03/ Rw 09 Desa. Rancapanggung, Kec. Cililin, Kab. Bandung Barat</p>
-                        <a href="https://maps.app.goo.gl/ky1oxmMaZ8Rz8wfVA" target="_blank" class="btn-lokasi-pink">
+                        <p class="waktu-place-label">Tempat : <strong>Lokasi Acara</strong></p>
+                        <p class="waktu-address-text">Jl. Nanjung Babakan Utama RT 04/ RW 13 Kelurahan Utama Kecamatan Cimahi Selatan Kota Cimahi</p>
+                        <a href="https://maps.app.goo.gl/GvDDNQXpSgzDQ5JVA" target="_blank" class="btn-lokasi-pink">
                             <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                             Lihat Lokasi
                         </a>
@@ -1802,56 +1835,45 @@
                 </div>
             </div>
 
-            <!-- GALERI FOTO ESTETIK (SEBELUM LOVE STORY) -->
+            <!-- GALERI FOTO POLAROID SLIDE HORIZONTAL (SEBELUM LOVE STORY) -->
             <div id="section-gallery" class="section-padding gallery-section-bg">
-                <h2 class="gallery-script-title scroll-reveal">Our Moments</h2>
-                <p class="gallery-subtitle scroll-reveal delay-1">“Setiap momen indah yang terukir menuju hari bahagia”</p>
+                <div class="gallery-header-wrap">
+                    <h2 class="gallery-script-title scroll-reveal">Our Moments</h2>
+                    <p class="gallery-subtitle scroll-reveal delay-1">“Setiap momen indah yang terukir menuju hari bahagia”</p>
+                </div>
 
-                <div class="gallery-editorial-grid">
-                    <div class="gallery-item featured-wide oval-reveal delay-1" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Galeri Hana & Irfan 1">
-                        <div class="gallery-item-overlay">
-                            <span class="gallery-zoom-badge">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                            </span>
+                <div class="polaroid-carousel-track scroll-reveal delay-2">
+                    <div class="polaroid-card" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/foto-1.jpg')">
+                        <div class="polaroid-photo-box">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/foto-1.jpg" alt="Galeri Nazwa & Iqbal 1">
                         </div>
+                        <p class="polaroid-caption">Together Forever</p>
                     </div>
 
-                    <div class="gallery-item oval-reveal delay-2" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-acara.jpg" alt="Galeri Hana & Irfan 2">
-                        <div class="gallery-item-overlay">
-                            <span class="gallery-zoom-badge">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                            </span>
+                    <div class="polaroid-card" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/foto-2.jpeg')">
+                        <div class="polaroid-photo-box">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/foto-2.jpeg" alt="Galeri Nazwa & Iqbal 2">
                         </div>
+                        <p class="polaroid-caption">Our Special Day</p>
                     </div>
 
-                    <div class="gallery-item oval-reveal delay-3" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg" alt="Galeri Hana & Irfan 3">
-                        <div class="gallery-item-overlay">
-                            <span class="gallery-zoom-badge">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                            </span>
+                    <div class="polaroid-card" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/foto-3.jpg')">
+                        <div class="polaroid-photo-box">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/foto-3.jpg" alt="Galeri Nazwa & Iqbal 3">
                         </div>
+                        <p class="polaroid-caption">Sweet Memories</p>
                     </div>
 
-                    <div class="gallery-item oval-reveal delay-2" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pw.jpg" alt="Galeri Hana Handayani">
-                        <div class="gallery-item-overlay">
-                            <span class="gallery-zoom-badge">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                            </span>
+                    <div class="polaroid-card" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/foto-4.jpeg')">
+                        <div class="polaroid-photo-box">
+                            <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/foto-4.jpeg" alt="Galeri Iqbal">
                         </div>
+                        <p class="polaroid-caption">Our Journey</p>
                     </div>
+                </div>
 
-                    <div class="gallery-item oval-reveal delay-3" onclick="openLightbox('https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg')">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/catin-pp.jpg" alt="Galeri Irfan Ripandi">
-                        <div class="gallery-item-overlay">
-                            <span class="gallery-zoom-badge">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                            </span>
-                        </div>
-                    </div>
+                <div class="polaroid-swipe-hint scroll-reveal delay-3">
+                    <span>&larr; Geser foto ke samping &rarr;</span>
                 </div>
             </div>
 
@@ -1860,28 +1882,42 @@
                 <h2 class="story-script-title scroll-reveal">Love Story</h2>
 
                 <div class="story-photo-card oval-reveal delay-1">
-                    <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/cover-catin.jpg" alt="Love Story Hana & Irfan">
+                    <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/love.jpg" alt="Love Story Nazwa & Iqbal">
                 </div>
 
                 <div class="story-chapter-list">
                     <div class="story-chapter-item scroll-reveal">
-                        <h3 class="story-chapter-title">Awal Cerita</h3>
+                        <h3 class="story-chapter-title">Satu Atap, Beda Jenjang</h3>
                         <p class="story-chapter-text">
-                            Berawal dari sebuah pertemuan singkat, melalui satu teman yang sama. Tak banyak percakapan, tak pula setiap hari saling menyapa. Namun, setiap kata yang terucap selalu membawa makna dan tujuan. Komunikasi kami mungkin tidak selalu setiap hari, tetapi selalu memiliki arti.
+                            2015. Semuanya bermula dari lingkungan pesantren di tahun 2015. Kami berada di angkatan yang sama, tapi beda jenjang—yang satu kakak kelas, yang satu adik kelas. Waktu itu belum ada plot twist apa-apa; hubungan kami cuma sebatas saling kenal dan tahu nama saja, layaknya kakak-adik di pesantren pada umumnya.
                         </p>
                     </div>
 
                     <div class="story-chapter-item scroll-reveal delay-1">
-                        <h3 class="story-chapter-title">Lamaran</h3>
+                        <h3 class="story-chapter-title">Pamit &amp; Berpisah Jalur</h3>
                         <p class="story-chapter-text">
-                            Dari rasa cocok, tumbuh sebuah keyakinan. Dari perkenalan, hadir restu keluarga. Hingga akhirnya, dua keluarga dipertemukan untuk menentukan satu perjalanan baru. Bukan tentang seberapa lama kami mengenal, tetapi tentang keyakinan untuk memilih dan menetap satu sama lain.
+                            Tahun 2018 menjadi garis finish masa pesantren sekaligus awal perjalanan masing-masing. Setelah lulus, kami menapaki hari di jalan yang berbeda. Tak ada yang menyangka bahwa sapaan singkat di masa lalu itu kelak akan punya kelanjutan cerita.
+                        </p>
+                    </div>
+
+                    <div class="story-chapter-item scroll-reveal delay-1">
+                        <h3 class="story-chapter-title">Dari Reply Story Jadi Plot Twist</h3>
+                        <p class="story-chapter-text">
+                            ~7 Tahun Berlalu. Hampir tujuh tahun berlalu tanpa ada yang nyangka bakal ada kelanjutan. Sampai akhirnya, fitur reply story jadi "pemicu" kecil yang bikin obrolan kami tiba-tiba nyambung lagi. Yang tadinya cuma saling balas story iseng-iseng, pelan-pelan berubah jadi obrolan panjang, saling update kabar, dan ngerasa kalau vibe-nya ternyata masih klop!
+                        </p>
+                    </div>
+
+                    <div class="story-chapter-item scroll-reveal delay-1">
+                        <h3 class="story-chapter-title">Pertemuan Pertama &amp; Komitmen Serius</h3>
+                        <p class="story-chapter-text">
+                            5 September 2026. Setelah sekian lama hanya lewat layar, 5 September 2026 menjadi hari pertama kami bertemu secara langsung. Obrolan yang tadinya cuma lewat ketikan akhirnya terasa nyata, dan di titik inilah kami saling meyakinkan diri untuk melangkah ke jenjang yang lebih serius.
                         </p>
                     </div>
 
                     <div class="story-chapter-item scroll-reveal delay-2">
-                        <h3 class="story-chapter-title">Pernikahan</h3>
+                        <h3 class="story-chapter-title">Menuju Akad &amp; Pelaminan</h3>
                         <p class="story-chapter-text">
-                            Dan kini, kami memilih untuk melangkah bersama—menuju sebuah ikatan yang kami sebut selamanya. Sebuah pertemuan singkat, yang akhirnya membawa kami pulang—satu sama lain. Semoga langkah ini menjadi awal kehidupan baru yang penuh cinta, kebahagiaan, dan keberkahan.
+                            29 November 2026. Waktu terasa berjalan begitu tepat. Pada 29 November 2026, dengan izin Allah serta restu keluarga, kami memutuskan untuk menyatukan langkah dalam ikatan pernikahan. Dari sekadar kenal sebagai kakak-adik kelas, kini siap menjadi teman hidup selamanya.
                         </p>
                     </div>
                 </div>
@@ -1896,7 +1932,7 @@
                 </div>
 
                 <p class="gift-intro-narrative scroll-reveal delay-1">
-                    Kehadiran Anda merupakan sebuah do'a serta rasa syukur bagi kami, namun jika memberi adalah bentuk Do'a &amp; cinta kasih bagi Anda, Anda dapat memberi kado secara cashless dan kami akan senang hati menerimanya dan tentu semakin melengkapi kebahagiaan kami.
+                    Kehadiran Anda merupakan sebuah do'a serta rasa syukur bagi kami, namun jika memberi adalah bentuk Do'a &amp; cinta kasih dari Anda, Anda dapat memberi kado secara cashless dan kami akan senang hati menerimanya dan tentu semakin melengkapi kebahagiaan kami.
                 </p>
 
                 <div class="scroll-reveal delay-2">
@@ -1907,27 +1943,22 @@
                 </div>
 
                 <div class="gift-details-wrapper" id="giftDetailsWrapper">
-                    <div class="white-address-card">
-                        <h4>Penerima Kado: Hana Handayani</h4>
-                        <p>Jl. Bonceret Kp. Ciminyak Rt 03/ Rw 09 Desa. Rancapanggung, Kec. Cililin, Kab. Bandung Barat</p>
-                    </div>
-
                     <div class="bank-cards-container">
                         <div class="bank-inline-card">
                             <div class="bank-name">BANK MANDIRI</div>
-                            <div class="account-number">1300026871866</div>
-                            <div class="account-holder">a.n. Hana Handayani</div>
-                            <button class="btn-copy-instant" onclick="copyAccountText('1300026871866')">
+                            <div class="account-number">1300022098514</div>
+                            <div class="account-holder">a.n. Muhammad Iqbal Alrasyid</div>
+                            <button class="btn-copy-instant" onclick="copyAccountText('1300022098514')">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                                 Salin Rekening
                             </button>
                         </div>
 
                         <div class="bank-inline-card">
-                            <div class="bank-name">BANK BSI</div>
-                            <div class="account-number">7212898362</div>
-                            <div class="account-holder">a.n. Irfan Ripandi</div>
-                            <button class="btn-copy-instant" onclick="copyAccountText('7212898362')">
+                            <div class="bank-name">SEABANK</div>
+                            <div class="account-number">901053831847</div>
+                            <div class="account-holder">a.n Nazwa Fadilah Nur Fatmah</div>
+                            <button class="btn-copy-instant" onclick="copyAccountText('901053831847')">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                                 Salin Rekening
                             </button>
@@ -1989,7 +2020,7 @@
 
                 <div class="closing-circle-wrapper oval-reveal float-slow">
                     <div class="closing-circle-frame">
-                        <img src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/foto-cover-1.jpg" alt="Foto Bersanding Hana & Irfan">
+                        <img src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/cover.jpg" alt="Foto Bersanding Nazwa & Iqbal">
                     </div>
                     <div class="circle-floral-badge"></div>
                 </div>
@@ -1999,7 +2030,7 @@
                 </p>
 
                 <div class="signature-intro-label scroll-reveal delay-2">Kami yang berbahagia,</div>
-                <div class="signature-couple-name scroll-reveal delay-3">Hana &amp; Irfan</div>
+                <div class="signature-couple-name scroll-reveal delay-3">Nazwa &amp; Iqbal</div>
             </div>
 
             <!-- FOOTER BRANDING KAYUNA STUDIO -->
@@ -2029,7 +2060,7 @@
 
     <!-- AUDIO BACKGROUND -->
     <audio id="bg-music" loop>
-        <source src="https://raw.githubusercontent.com/kayunastudio/hana_handayani-irfan_ripandi/main/lagu-pernikahan-kita.mp3" type="audio/mpeg">
+        <source src="https://raw.githubusercontent.com/kayunastudio/kayunastudio.my.id/main/nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid/lagu-pernikahan-kita.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -2152,7 +2183,14 @@
             });
         }
 
-        const targetDate = new Date(2026, 9, 25, 8, 0, 0).getTime();
+        /* ==========================================================================
+           === PENGATURAN TANGGAL COUNTDOWN (UBAH TANGGAL ACARA DI SINI) ===
+           Catatan: Bulan di JavaScript dimulai dari 0 (0 = Jan, 10 = Nov, 11 = Des)
+           Format: new Date(TAHUN, BULAN_INDEX, TANGGAL, JAM, MENIT, DETIK)
+           Saat ini diatur ke: 29 November 2026, Pukul 10:00:00
+           ========================================================================== */
+        const targetDate = new Date(2026, 10, 29, 10, 0, 0).getTime();
+
         setInterval(function() {
             const distance = targetDate - new Date().getTime();
             if (distance < 0) {
@@ -2180,7 +2218,7 @@
                 return pathSegments.join('/').toLowerCase();
             }
 
-            return 'hana_handayani-irfan_ripandi';
+            return 'nazwa_fadilah_nur_fatma-muhammad_iqbal_alrasyid';
         }
 
         const INVITATION_SLUG = getInvitationStorageKey();
