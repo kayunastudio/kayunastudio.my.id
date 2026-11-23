@@ -325,7 +325,7 @@
             <div class="card">
                 <div class="card-header">🖼️ Galeri Photobooth Perangkat</div>
                 <p style="font-size: 0.85rem; color: var(--color-text-muted);">
-                    Koleksi kenangan pemotretan yang disimpan pada perangkat ini.
+                    Preview tampil cepat dari Supabase, sedangkan tombol Unduh HD mengambil file asli kualitas tinggi langsung dari Google Drive.
                 </p>
                 <div class="gallery-grid-layout" id="gallery-grid-container"></div>
             </div>
@@ -605,7 +605,7 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 6px;">
-                <a id="preview-modal-download-btn" href="#" target="_blank" download class="btn btn-secondary btn-sm" style="flex: 1;">💾 Unduh Berkas Media</a>
+                <button id="preview-modal-download-btn" type="button" class="btn btn-secondary btn-sm" style="flex: 1;">💾 Unduh Kualitas Tinggi</button>
                 <button class="btn btn-primary btn-sm" onclick="AdminEngine.closePreviewModal()" style="flex: 1;">Tutup</button>
             </div>
         </div>
@@ -616,6 +616,9 @@
         const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // URL WEB APP GOOGLE APPS SCRIPT UNTUK PENYIMPANAN & UNDUH FILE ASLI GOOGLE DRIVE
+        const GDRIVE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwBQ5JOg9WmJCsHn10bmCZzkGy_vbGo2mDFcSKjwmqh-IwN5qcfrcNyvar5Bn3E02VL/exec";
 
         const SUPERADMIN_PIN = "246998";
 
@@ -644,6 +647,121 @@
             allow_ig_share: true,
             allow_zip_download: true,
             show_watermark: true
+        };
+
+        /* HELPER: MASTER FILE KE GOOGLE DRIVE + PREVIEW RINGAN KE SUPABASE + UNDUH HD LANGSUNG VIA WEB */
+        const MediaStorageHelper = {
+            async blobToBase64(blob) {
+                return await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            },
+
+            base64ToBlob(base64, mimeType) {
+                const byteChars = atob(base64);
+                const byteNumbers = new Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i++) {
+                    byteNumbers[i] = byteChars.charCodeAt(i);
+                }
+                return new Blob([new Uint8Array(byteNumbers)], { type: mimeType });
+            },
+
+            async createLightPhotoPreviewBlob(originalBlob, maxWidth = 900, quality = 0.72) {
+                if (!originalBlob || !originalBlob.type.startsWith('image/')) return originalBlob;
+                const bitmap = await createImageBitmap(originalBlob);
+                const scale = Math.min(1, maxWidth / bitmap.width);
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(bitmap.width * scale);
+                canvas.height = Math.round(bitmap.height * scale);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                return await new Promise((resolve) => canvas.toBlob((b) => resolve(b || originalBlob), 'image/jpeg', quality));
+            },
+
+            async uploadMediaHybrid({ eventSlug, mediaType, guestName, guestMessage, originalBlob, fileName }) {
+                let gdriveMeta = { fileId: null, path: null, webUrl: null };
+                let previewStoragePath = null;
+
+                // 1. Unggah file asli kualitas tinggi ke Google Drive via Google Apps Script
+                if (GDRIVE_WEBAPP_URL) {
+                    const base64Data = await this.blobToBase64(originalBlob);
+                    const res = await fetch(GDRIVE_WEBAPP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            event_slug: eventSlug,
+                            media_type: mediaType,
+                            guest_name: guestName,
+                            guest_message: guestMessage,
+                            file_name: fileName,
+                            mime_type: originalBlob.type || 'application/octet-stream',
+                            file_base64: base64Data
+                        })
+                    });
+
+                    const json = await res.json();
+                    if (!json.ok) {
+                        throw new Error(json.message || 'Gagal menyimpan file asli ke Google Drive');
+                    }
+                    gdriveMeta = {
+                        fileId: json.fileId,
+                        path: json.path,
+                        webUrl: json.webUrl
+                    };
+                }
+
+                // 2. Simpan preview ringan ke Supabase Storage agar hemat kuota 1 GB
+                const folder = mediaType === 'photo' ? 'photos' : (mediaType === 'video' ? 'videos' : 'audios');
+                const previewBlob = (mediaType === 'photo' && GDRIVE_WEBAPP_URL)
+                    ? await this.createLightPhotoPreviewBlob(originalBlob)
+                    : (!GDRIVE_WEBAPP_URL ? originalBlob : null);
+
+                if (previewBlob) {
+                    const sbPath = `${eventSlug}/${folder}/${fileName}`;
+                    const { data: sbData, error: sbErr } = await supabaseClient.storage
+                        .from('wedding-photobooth')
+                        .upload(sbPath, previewBlob, { contentType: previewBlob.type || originalBlob.type });
+                    if (sbErr) throw sbErr;
+                    previewStoragePath = sbData.path;
+                }
+
+                return { previewStoragePath, gdriveMeta };
+            },
+
+            getPreviewUrl(item) {
+                const path = item.preview_storage_path || item.storage_path;
+                if (!path) return '';
+                const { data } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(path);
+                return data.publicUrl;
+            },
+
+            async fetchHighResBlob(item) {
+                if (item.gdrive_file_id && GDRIVE_WEBAPP_URL) {
+                    const url = `${GDRIVE_WEBAPP_URL}?file_id=${encodeURIComponent(item.gdrive_file_id)}`;
+                    const res = await fetch(url);
+                    const json = await res.json();
+                    if (!json.ok) throw new Error(json.message || 'Gagal mengunduh file asli dari Google Drive');
+                    return this.base64ToBlob(json.base64, json.mimeType || item.mime_type || 'application/octet-stream');
+                }
+
+                const previewUrl = this.getPreviewUrl(item);
+                const res = await fetch(previewUrl);
+                if (!res.ok) throw new Error('Gagal mengambil berkas media');
+                return await res.blob();
+            },
+
+            async downloadHighRes(item, customFilename = null) {
+                const blob = await this.fetchHighResBlob(item);
+                const safeName = (item.guest_name || 'Tamu').replace(/[^a-zA-Z0-9_-]/g, '_');
+                const ext = item.file_name && item.file_name.includes('.')
+                    ? item.file_name.split('.').pop()
+                    : (item.media_type === 'photo' ? 'jpg' : 'webm');
+                const targetName = customFilename || item.file_name || `${item.media_type}_${safeName}.${ext}`;
+                saveAs(blob, targetName);
+            }
         };
 
         const AppRouter = {
@@ -1138,14 +1256,14 @@
 
         /* SOCIAL SHARE ENGINE */
         const SocialShareEngine = {
-            async shareResultToInstagram(imageUrl = null) {
+            async shareResultToInstagram(item = null) {
                 if (!FEATURE_FLAGS.allow_ig_share) return alert("Fitur bagikan ke Instagram disembunyikan berdasarkan paket sewa.");
                 try {
                     let fileToShare = null;
-                    if (CameraEngine.finalMergedBlob && !imageUrl) {
+                    if (CameraEngine.finalMergedBlob && !item) {
                         fileToShare = new File([CameraEngine.finalMergedBlob], 'photobooth_layout.jpg', { type: 'image/jpeg' });
-                    } else if (imageUrl) {
-                        const res = await fetch(imageUrl); const blob = await res.blob();
+                    } else if (item) {
+                        const blob = await MediaStorageHelper.fetchHighResBlob(item);
                         fileToShare = new File([blob], 'photobooth_layout.jpg', { type: 'image/jpeg' });
                     }
 
@@ -1234,7 +1352,7 @@
             }
         };
 
-        /* UPLOAD CONTROLLER & SUPABASE MULTI-TENANT INTEGRATION */
+        /* UPLOAD CONTROLLER & HYBRID STORAGE INTEGRATION */
         const UploadController = {
             async executeUploadProcess() {
                 if (!CameraEngine.finalMergedBlob) return alert("Foto belum diambil.");
@@ -1248,68 +1366,97 @@
 
                 try {
                     const timestamp = Date.now();
-                    const photoPath = `${CURRENT_EVENT_SLUG}/photos/photo_${timestamp}.jpg`;
+                    const localKey = `my_photos_${CURRENT_EVENT_SLUG}`;
+                    let localUploads = JSON.parse(localStorage.getItem(localKey) || '[]');
 
-                    const { data: photoData, error: photoErr } = await supabaseClient
-                        .storage.from('wedding-photobooth').upload(photoPath, CameraEngine.finalMergedBlob, { contentType: 'image/jpeg' });
-                    if (photoErr) throw photoErr;
+                    const photoFileName = `photo_${timestamp}.jpg`;
+                    const photoUp = await MediaStorageHelper.uploadMediaHybrid({
+                        eventSlug: CURRENT_EVENT_SLUG,
+                        mediaType: 'photo',
+                        guestName,
+                        guestMessage: guestMsg,
+                        originalBlob: CameraEngine.finalMergedBlob,
+                        fileName: photoFileName
+                    });
 
-                    // Upload Photo Record
-                    const { error: dbErr } = await supabaseClient
+                    const { data: insertedPhoto, error: dbErr } = await supabaseClient
                         .from('media')
                         .insert([{
                             event_slug: CURRENT_EVENT_SLUG,
                             media_type: 'photo',
-                            storage_path: photoData.path,
-                            file_name: `photo_${timestamp}.jpg`,
+                            storage_path: photoUp.previewStoragePath,
+                            preview_storage_path: photoUp.previewStoragePath,
+                            gdrive_file_id: photoUp.gdriveMeta.fileId,
+                            gdrive_path: photoUp.gdriveMeta.path,
+                            gdrive_web_url: photoUp.gdriveMeta.webUrl,
+                            file_name: photoFileName,
                             mime_type: 'image/jpeg',
                             guest_name: guestName,
                             guest_message: guestMsg,
                             status: 'approved'
-                        }]);
+                        }])
+                        .select()
+                        .single();
 
                     if (dbErr) throw dbErr;
-
-                    let localKey = `my_photos_${CURRENT_EVENT_SLUG}`;
-                    let localUploads = JSON.parse(localStorage.getItem(localKey) || '[]');
-                    localUploads.push(photoData.path);
+                    if (insertedPhoto?.id) localUploads.push(insertedPhoto.id);
 
                     // Optional Video Upload
                     if (FEATURE_FLAGS.allow_video_guestbook && VideoEngine.videoBlob && VideoEngine.videoBlob.size > 0) {
-                        const vPath = `${CURRENT_EVENT_SLUG}/videos/video_${timestamp}.webm`;
-                        const { data: vData } = await supabaseClient.storage.from('wedding-photobooth').upload(vPath, VideoEngine.videoBlob, { contentType: VideoEngine.videoBlob.type });
-                        if (vData) {
-                            await supabaseClient.from('media').insert([{
-                                event_slug: CURRENT_EVENT_SLUG,
-                                media_type: 'video',
-                                storage_path: vData.path,
-                                file_name: `video_${timestamp}.webm`,
-                                mime_type: VideoEngine.videoBlob.type || 'video/webm',
-                                guest_name: guestName,
-                                guest_message: guestMsg,
-                                status: 'approved'
-                            }]);
-                            localUploads.push(vData.path);
-                        }
+                        const vFileName = `video_${timestamp}.webm`;
+                        const vUp = await MediaStorageHelper.uploadMediaHybrid({
+                            eventSlug: CURRENT_EVENT_SLUG,
+                            mediaType: 'video',
+                            guestName,
+                            guestMessage: guestMsg,
+                            originalBlob: VideoEngine.videoBlob,
+                            fileName: vFileName
+                        });
+
+                        const { data: insertedVid } = await supabaseClient.from('media').insert([{
+                            event_slug: CURRENT_EVENT_SLUG,
+                            media_type: 'video',
+                            storage_path: vUp.previewStoragePath,
+                            preview_storage_path: vUp.previewStoragePath,
+                            gdrive_file_id: vUp.gdriveMeta.fileId,
+                            gdrive_path: vUp.gdriveMeta.path,
+                            gdrive_web_url: vUp.gdriveMeta.webUrl,
+                            file_name: vFileName,
+                            mime_type: VideoEngine.videoBlob.type || 'video/webm',
+                            guest_name: guestName,
+                            guest_message: guestMsg,
+                            status: 'approved'
+                        }]).select().single();
+                        if (insertedVid?.id) localUploads.push(insertedVid.id);
                     }
 
                     // Optional Audio Upload
                     if (FEATURE_FLAGS.allow_audio_guestbook && AudioEngine.audioBlob && AudioEngine.audioBlob.size > 0) {
-                        const aPath = `${CURRENT_EVENT_SLUG}/audios/audio_${timestamp}.webm`;
-                        const { data: aData } = await supabaseClient.storage.from('wedding-photobooth').upload(aPath, AudioEngine.audioBlob, { contentType: AudioEngine.audioBlob.type });
-                        if (aData) {
-                            await supabaseClient.from('media').insert([{
-                                event_slug: CURRENT_EVENT_SLUG,
-                                media_type: 'audio',
-                                storage_path: aData.path,
-                                file_name: `audio_${timestamp}.webm`,
-                                mime_type: AudioEngine.audioBlob.type || 'audio/webm',
-                                guest_name: guestName,
-                                guest_message: guestMsg,
-                                status: 'approved'
-                            }]);
-                            localUploads.push(aData.path);
-                        }
+                        const aFileName = `audio_${timestamp}.webm`;
+                        const aUp = await MediaStorageHelper.uploadMediaHybrid({
+                            eventSlug: CURRENT_EVENT_SLUG,
+                            mediaType: 'audio',
+                            guestName,
+                            guestMessage: guestMsg,
+                            originalBlob: AudioEngine.audioBlob,
+                            fileName: aFileName
+                        });
+
+                        const { data: insertedAud } = await supabaseClient.from('media').insert([{
+                            event_slug: CURRENT_EVENT_SLUG,
+                            media_type: 'audio',
+                            storage_path: aUp.previewStoragePath,
+                            preview_storage_path: aUp.previewStoragePath,
+                            gdrive_file_id: aUp.gdriveMeta.fileId,
+                            gdrive_path: aUp.gdriveMeta.path,
+                            gdrive_web_url: aUp.gdriveMeta.webUrl,
+                            file_name: aFileName,
+                            mime_type: AudioEngine.audioBlob.type || 'audio/webm',
+                            guest_name: guestName,
+                            guest_message: guestMsg,
+                            status: 'approved'
+                        }]).select().single();
+                        if (insertedAud?.id) localUploads.push(insertedAud.id);
                     }
 
                     localStorage.setItem(localKey, JSON.stringify(localUploads));
@@ -1332,53 +1479,79 @@
             async loadDeviceGallery() {
                 const container = document.getElementById('gallery-grid-container');
                 let localKey = `my_photos_${CURRENT_EVENT_SLUG}`;
-                let myPaths = JSON.parse(localStorage.getItem(localKey) || '[]');
+                let myIdsOrPaths = JSON.parse(localStorage.getItem(localKey) || '[]');
 
                 container.innerHTML = "<p style='grid-column: 1/-1;'>Memuat koleksi galeri Anda...</p>";
-                if (myPaths.length === 0) {
+                if (myIdsOrPaths.length === 0) {
                     container.innerHTML = "<p style='grid-column: 1/-1;'>Belum ada foto yang diambil dari perangkat ini untuk acara ini.</p>";
                     return;
                 }
 
-                const validPaths = []; container.innerHTML = "";
+                try {
+                    const { data: rows } = await supabaseClient
+                        .from('media')
+                        .select('*')
+                        .eq('event_slug', CURRENT_EVENT_SLUG);
 
-                for (let path of myPaths) {
-                    const { data: urlData } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(path);
-                    try {
-                        const res = await fetch(urlData.publicUrl, { method: 'HEAD' });
-                        if (res.ok) {
-                            validPaths.push(path);
-                            const card = document.createElement('div');
-                            card.className = 'gallery-item-card';
+                    const matched = (rows || []).filter(r =>
+                        myIdsOrPaths.includes(r.id) ||
+                        myIdsOrPaths.includes(r.preview_storage_path) ||
+                        myIdsOrPaths.includes(r.storage_path)
+                    );
 
-                            let mediaHtml = '';
-                            let isPhoto = !path.includes('/videos/') && !path.includes('/audios/');
+                    container.innerHTML = "";
+                    if (matched.length === 0) {
+                        container.innerHTML = "<p style='grid-column: 1/-1;'>Belum ada berkas aktif pada galeri acara ini.</p>";
+                        return;
+                    }
 
-                            if (path.includes('/videos/')) {
-                                mediaHtml = `<video src="${urlData.publicUrl}" controls class="gallery-item-media"></video>`;
-                            } else if (path.includes('/audios/')) {
-                                mediaHtml = `<div class="gallery-item-media" style="display:flex; justify-content:center; align-items:center; background:#1c1917; height: 180px;"><audio src="${urlData.publicUrl}" controls style="width:90%;"></audio></div>`;
-                            } else {
-                                mediaHtml = `<img src="${urlData.publicUrl}" class="gallery-item-media" loading="lazy" />`;
-                            }
+                    matched.forEach((item, index) => {
+                        const previewUrl = MediaStorageHelper.getPreviewUrl(item);
+                        const card = document.createElement('div');
+                        card.className = 'gallery-item-card';
 
-                            let shareBtn = (isPhoto && FEATURE_FLAGS.allow_ig_share) ? `<button class="btn btn-instagram btn-sm" style="flex:1;" onclick="SocialShareEngine.shareResultToInstagram('${urlData.publicUrl}')">📸 IG Story</button>` : '';
+                        let mediaHtml = '';
+                        const isPhoto = item.media_type === 'photo';
 
-                            card.innerHTML = `
-                                ${mediaHtml}
-                                <div class="gallery-item-content">
-                                    <div style="display:flex; gap:8px; margin-top:auto;">
-                                        <a href="${urlData.publicUrl}" target="_blank" download class="btn btn-secondary btn-sm" style="flex:1;">💾 Unduh</a>
-                                        ${shareBtn}
-                                    </div>
-                                </div>
-                            `;
-                            container.appendChild(card);
+                        if (item.media_type === 'video' && previewUrl) {
+                            mediaHtml = `<video src="${previewUrl}" controls class="gallery-item-media"></video>`;
+                        } else if (item.media_type === 'audio' && previewUrl) {
+                            mediaHtml = `<div class="gallery-item-media" style="display:flex; justify-content:center; align-items:center; background:#1c1917; height: 180px;"><audio src="${previewUrl}" controls style="width:90%;"></audio></div>`;
+                        } else if (previewUrl) {
+                            mediaHtml = `<img src="${previewUrl}" class="gallery-item-media" loading="lazy" />`;
+                        } else {
+                            mediaHtml = `<div class="gallery-item-media" style="display:flex; justify-content:center; align-items:center; color:#d6d3d1; padding:16px; text-align:center;">Media tersimpan di Google Drive (${item.file_name || item.media_type})</div>`;
                         }
-                    } catch(e) {}
-                }
 
-                localStorage.setItem(localKey, JSON.stringify(validPaths));
+                        const dlBtnId = `gal-dl-${index}`;
+                        const shareBtnId = `gal-sh-${index}`;
+
+                        card.innerHTML = `
+                            ${mediaHtml}
+                            <div class="gallery-item-content">
+                                <div style="display:flex; gap:8px; margin-top:auto;">
+                                    <button id="${dlBtnId}" type="button" class="btn btn-secondary btn-sm" style="flex:1;">💾 Unduh HD</button>
+                                    ${isPhoto && FEATURE_FLAGS.allow_ig_share ? `<button id="${shareBtnId}" type="button" class="btn btn-instagram btn-sm" style="flex:1;">📸 IG Story</button>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+
+                        document.getElementById(dlBtnId).onclick = async () => {
+                            try {
+                                await MediaStorageHelper.downloadHighRes(item);
+                            } catch (e) {
+                                alert("Gagal mengunduh berkas: " + e.message);
+                            }
+                        };
+
+                        if (isPhoto && FEATURE_FLAGS.allow_ig_share) {
+                            document.getElementById(shareBtnId).onclick = () => SocialShareEngine.shareResultToInstagram(item);
+                        }
+                    });
+                } catch (e) {
+                    container.innerHTML = `<p style='grid-column: 1/-1; color:var(--color-danger);'>Gagal memuat galeri: ${e.message}</p>`;
+                }
             }
         };
 
@@ -1414,7 +1587,7 @@
             }
         };
 
-        /* SUPERADMIN ENGINE (PAKET SEWA SAAS, EXpiry DATE & FEATURE FLAGS DALAM SUPABASE) */
+        /* SUPERADMIN ENGINE (PAKET SEWA SAAS, EXPIRY DATE & FEATURE FLAGS DALAM SUPABASE) */
         const SuperAdminEngine = {
             async loadDashboard() {
                 document.getElementById('sa-feat-layouts').checked = FEATURE_FLAGS.allow_layouts;
@@ -1484,7 +1657,7 @@
                 if (!hexVal.startsWith('#')) {
                     hexVal = '#' + hexVal;
                 }
-                const isValidHex = /^#([0-9A-F]{3}){1,2}\$/i.test(hexVal);
+                const isValidHex = /^#([0-9A-F]{3}){1,2}$/i.test(hexVal);
                 if (isValidHex) {
                     document.getElementById(colorInputId).value = hexVal;
                 }
@@ -1732,7 +1905,6 @@
                     }
 
                     data.forEach(item => {
-                        const { data: urlData } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(item.storage_path);
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td><strong>${item.media_type.toUpperCase()}</strong></td>
@@ -1742,14 +1914,24 @@
                             <td style="text-align: right;">
                                 <div style="display: flex; gap: 6px; justify-content: flex-end;">
                                     <button class="btn btn-purple btn-sm" onclick="AdminEngine.openPreviewModal('${item.id}')">👁️ Preview</button>
-                                    <a href="${urlData.publicUrl}" target="_blank" download class="btn btn-secondary btn-sm">💾</a>
-                                    <button class="btn btn-danger btn-sm" onclick="AdminEngine.deleteMedia('${item.id}', '${item.storage_path}')">🗑️</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="AdminEngine.downloadSingleHighRes('${item.id}')">💾</button>
+                                    <button class="btn btn-danger btn-sm" onclick="AdminEngine.deleteMedia('${item.id}', '${item.preview_storage_path || item.storage_path || ''}')">🗑️</button>
                                 </div>
                             </td>
                         `;
                         tbody.appendChild(tr);
                     });
                 } catch(err) { tbody.innerHTML = `<tr><td colspan='5' style='color:var(--color-danger);'>Gagal: ${err.message}</td></tr>`; }
+            },
+
+            async downloadSingleHighRes(id) {
+                const item = this.mediaItemsCache.find(m => m.id === id);
+                if (!item) return alert("Data media tidak ditemukan.");
+                try {
+                    await MediaStorageHelper.downloadHighRes(item);
+                } catch (e) {
+                    alert("Gagal mengunduh berkas kualitas tinggi: " + e.message);
+                }
             },
 
             openPreviewModal(id) {
@@ -1759,27 +1941,35 @@
                 const modal = document.getElementById('admin-preview-modal');
                 const bodyContainer = document.getElementById('preview-modal-body');
                 const downloadBtn = document.getElementById('preview-modal-download-btn');
-                const { data: urlData } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(item.storage_path);
+                const previewUrl = MediaStorageHelper.getPreviewUrl(item);
 
-                downloadBtn.href = urlData.publicUrl;
+                downloadBtn.onclick = async () => {
+                    try {
+                        await MediaStorageHelper.downloadHighRes(item);
+                    } catch (e) {
+                        alert("Gagal mengunduh berkas: " + e.message);
+                    }
+                };
 
                 let mediaElement = '';
-                if (item.media_type === 'video') {
+                if (item.media_type === 'video' && previewUrl) {
                     mediaElement = `
                         <div class="viewport-container" style="max-height: 280px; width: 100%;">
-                            <video src="${urlData.publicUrl}" controls class="viewport-element" autoplay></video>
+                            <video src="${previewUrl}" controls class="viewport-element" autoplay></video>
                         </div>`;
-                } else if (item.media_type === 'audio') {
+                } else if (item.media_type === 'audio' && previewUrl) {
                     mediaElement = `
                         <div style="background: #1c1917; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="color: #d6d3d1; font-size: 0.85rem; margin-bottom: 10px;">🎙️ Rekaman Suara Ucapan</div>
-                            <audio src="${urlData.publicUrl}" controls style="width: 100%;"></audio>
+                            <audio src="${previewUrl}" controls style="width: 100%;"></audio>
                         </div>`;
-                } else {
+                } else if (previewUrl) {
                     mediaElement = `
                         <div class="viewport-container" style="max-height: 320px; width: 100%;">
-                            <img src="${urlData.publicUrl}" class="viewport-element" style="object-fit: contain;" />
+                            <img src="${previewUrl}" class="viewport-element" style="object-fit: contain;" />
                         </div>`;
+                } else {
+                    mediaElement = `<div style="background:#1c1917; color:#d6d3d1; padding:20px; border-radius:12px; text-align:center;">Preview tidak disimpan di Supabase; file asli tersimpan di Google Drive (${item.gdrive_path || item.file_name || '-'}).</div>`;
                 }
 
                 bodyContainer.innerHTML = `
@@ -1788,6 +1978,7 @@
                         <div><strong style="color: var(--color-secondary); font-size: 0.75rem; text-transform: uppercase;">Pengirim:</strong></div>
                         <div style="font-weight: 800; font-size: 1rem; color: var(--color-primary);">${item.guest_name || 'Tamu Kehormatan'}</div>
                         <div style="font-size: 0.75rem; color: var(--color-text-muted);">Waktu: ${new Date(item.created_at).toLocaleString('id-ID')}</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted);">Arsip Master: ${item.gdrive_file_id ? 'Google Drive (' + (item.gdrive_path || item.file_name) + ')' : 'Supabase Storage'}</div>
                         <hr style="border: 0; border-top: 1px solid var(--color-border); margin: 4px 0;">
                         <div><strong style="color: var(--color-secondary); font-size: 0.75rem; text-transform: uppercase;">Pesan & Ucapan Teks:</strong></div>
                         <div style="font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; color: var(--color-text-main);">${item.guest_message || '<em>(Tidak melampirkan ucapan teks)</em>'}</div>
@@ -1830,9 +2021,7 @@
                         downloadedCount++;
                         btnDownload.innerText = `⏳ Unduh ${downloadedCount}/${total}...`;
 
-                        const { data: urlData } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(item.storage_path);
-                        const response = await fetch(urlData.publicUrl);
-                        const blob = await response.blob();
+                        const blob = await MediaStorageHelper.fetchHighResBlob(item);
 
                         const safeName = (item.guest_name || 'Tamu').replace(/[^a-zA-Z0-9]/g, '_');
                         const ext = item.file_name ? item.file_name.split('.').pop() : (item.media_type === 'photo' ? 'jpg' : 'webm');
@@ -1853,6 +2042,7 @@
                             tipe_media: item.media_type,
                             pesan_ucapan: item.guest_message || '',
                             file_path: fileNameInZip,
+                            gdrive_path: item.gdrive_path || null,
                             waktu_kirim: item.created_at
                         });
                     }
@@ -1863,7 +2053,7 @@
                     btnDownload.innerText = "⚡ Mengompres ZIP...";
                     const content = await zip.generateAsync({ type: "blob" });
                     saveAs(content, `Photobooth_${CURRENT_EVENT_SLUG}_Lengkap.zip`);
-                    alert("✅ Seluruh berkas (Foto, Video, Audio & Ucapan Teks) berhasil diunduh dalam file ZIP!");
+                    alert("✅ Seluruh berkas kualitas tinggi (Foto, Video, Audio & Ucapan Teks) berhasil diunduh dalam file ZIP!");
                 } catch (e) {
                     alert("Gagal mengunduh berkas ZIP: " + e.message);
                 } finally {
@@ -1876,7 +2066,9 @@
                 if (!confirm("⚠️ Hapus data media ini secara permanen?")) return;
                 try {
                     await supabaseClient.from('media').delete().eq('id', id);
-                    await supabaseClient.storage.from('wedding-photobooth').remove([storagePath]);
+                    if (storagePath) {
+                        await supabaseClient.storage.from('wedding-photobooth').remove([storagePath]);
+                    }
                     alert("✅ Media berhasil dihapus.");
                     this.loadDashboard();
                 } catch (err) { alert("Gagal menghapus media: " + err.message); }
