@@ -1,1 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #0284c7;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+        h2 { font-size: 18px; margin-bottom: 16px; color: var(--text); }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+        }
+        input[type="text"]:focus { border-color: var(--accent); }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
+        input[type="color"] {
+            width: 100%;
+            height: 38px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            cursor: pointer;
+            padding: 2px;
+        }
+        input[type="color"]:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text);
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: white; margin-top: 6px; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-download { background: #10b981; color: white; margin-top: 12px; display: none; }
+        .qr-wrapper {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        .qr-wrapper.checkerboard {
+            background-color: #e2e8f0;
+            background-image:
+                linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
+                linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+                linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+        }
+        #finalCanvas {
+            width: 220px;
+            height: 220px;
+            display: block;
+        }
+        .hint {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h2>QR Code Link Generator</h2>
+    
+    <div class="form-group">
+        <label>URL / Link Tujuan</label>
+        <input type="text" id="urlInput" placeholder="https://www.kayunastudio.my.id" value="https://www.kayunastudio.my.id">
+    </div>
+
+    <div class="row">
+        <div class="form-group">
+            <label>Warna QR</label>
+            <input type="color" id="colorDark" value="#0f172a">
+        </div>
+        <div class="form-group">
+            <label>Warna Background</label>
+            <input type="color" id="colorLight" value="#ffffff">
+            <label class="toggle-row">
+                <input type="checkbox" id="transparentBg" onchange="toggleTransparentBg()">
+                <span>Background Transparan (PNG)</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Error Correction Level (Ketahanan Scan)</label>
+        <select id="correctLevel">
+            <option value="L">Low (7% - Ukuran simpel)</option>
+            <option value="M" selected>Medium (15% - Standar)</option>
+            <option value="Q">Quartile (25% - Tahan noda ringan)</option>
+            <option value="H">High (30% - Cocok jika ingin ditempel logo)</option>
+        </select>
+    </div>
+
+    <button class="btn-primary" onclick="generateQR()">Buat QR Code</button>
+
+    <div class="qr-wrapper" id="qrWrapper">
+        <div id="qrSource" style="display:none;"></div>
+        <canvas id="finalCanvas" width="512" height="512"></canvas>
+    </div>
+
+    <p class="hint" id="bgHint">Tips: Untuk ditempel di atas desain/foto/undangan berwarna gelap, gunakan warna QR terang (misal putih) dengan background transparan.</p>
+
+    <button class="btn-download" id="downloadBtn" onclick="downloadQR()">Download PNG (Resolusi Tinggi)</button>
+</div>
+
+<script>
+    function toggleTransparentBg() {
+        const isTransparent = document.getElementById("transparentBg").checked;
+        const colorLightInput = document.getElementById("colorLight");
+        colorLightInput.disabled = isTransparent;
+        if (document.getElementById("qrWrapper").style.display === "flex") {
+            generateQR();
+        }
+    }
+
+    function generateQR() {
+        const url = document.getElementById("urlInput").value.trim();
+        const colorDark = document.getElementById("colorDark").value;
+        const colorLight = document.getElementById("colorLight").value;
+        const isTransparent = document.getElementById("transparentBg").checked;
+        const levelKey = document.getElementById("correctLevel").value;
+
+        const qrSource = document.getElementById("qrSource");
+        const qrWrapper = document.getElementById("qrWrapper");
+        const finalCanvas = document.getElementById("finalCanvas");
+        const ctx = finalCanvas.getContext("2d");
+        const downloadBtn = document.getElementById("downloadBtn");
+
+        if (!url) {
+            alert("Masukkan link tujuan terlebih dahulu.");
+            return;
+        }
+
+        const levels = {
+            L: QRCode.CorrectLevel.L,
+            M: QRCode.CorrectLevel.M,
+            Q: QRCode.CorrectLevel.Q,
+            H: QRCode.CorrectLevel.H
+        };
+
+        qrSource.innerHTML = "";
+        const qrInstance = new QRCode(qrSource, {
+            text: url,
+            width: 512,
+            height: 512,
+            colorDark: colorDark,
+            colorLight: "#ffffff",
+            correctLevel: levels[levelKey]
+        });
+
+        const size = finalCanvas.width;
+        ctx.clearRect(0, 0, size, size);
+
+        if (isTransparent) {
+            qrWrapper.classList.add("checkerboard");
+            qrWrapper.style.background = "";
+        } else {
+            qrWrapper.classList.remove("checkerboard");
+            qrWrapper.style.background = colorLight;
+            ctx.fillStyle = colorLight;
+            ctx.fillRect(0, 0, size, size);
+        }
+
+        // Gambar modul QR langsung dari matriks internal agar transparansi bersih tanpa sisa piksel putih
+        const qrModel = qrInstance._oQRCode;
+        if (qrModel && typeof qrModel.getModuleCount === "function") {
+            const count = qrModel.getModuleCount();
+            const quietZone = 4; // margin standar quiet zone agar mudah di-scan
+            const totalCells = count + quietZone * 2;
+            const cellSize = size / totalCells;
+
+            ctx.fillStyle = colorDark;
+            for (let row = 0; row < count; row++) {
+                for (let col = 0; col < count; col++) {
+                    if (qrModel.isDark(row, col)) {
+                        const x = Math.floor((col + quietZone) * cellSize);
+                        const y = Math.floor((row + quietZone) * cellSize);
+                        const w = Math.ceil(cellSize);
+                        const h = Math.ceil(cellSize);
+                        ctx.fillRect(x, y, w, h);
+                    }
+                }
+            }
+        } else {
+            const srcCanvas = qrSource.querySelector("canvas");
+            if (srcCanvas) {
+                ctx.drawImage(srcCanvas, 0, 0, size, size);
+            }
+        }
+
+        qrWrapper.style.display = "flex";
+        downloadBtn.style.display = "block";
+    }
+
+    function downloadQR() {
+        const finalCanvas = document.getElementById("finalCanvas");
+        const isTransparent = document.getElementById("transparentBg").checked;
+        if (!finalCanvas) return;
+
+        const link = document.createElement("a");
+        link.download = isTransparent ? "qrcode-link-transparent.png" : "qrcode-link.png";
+        link.href = finalCanvas.toDataURL("image/png");
+        link.click();
+    }
+
+    window.onload = generateQR;
+</script>
+
+</body>
+</html>
