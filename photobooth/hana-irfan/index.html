@@ -232,7 +232,7 @@
         <!-- 1. SECTION: HOME -->
         <section id="section-home" class="component-section active-section">
             <div class="card">
-                <div class="card-header">Pilih Varian Studio & Grid Layout</div>
+                <div class="card-header">Pilih Layout</div>
                 <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5;">
                     Silakan pilih kombinasi desain latar dan komposisi grid yang Anda sukai!
                 </p>
@@ -323,9 +323,9 @@
         <!-- 4. SECTION: GALERI LOKAL -->
         <section id="section-gallery" class="component-section">
             <div class="card">
-                <div class="card-header">🖼️ Galeri Photobooth Perangkat</div>
+                <div class="card-header">🖼️ Galeri Photobooth</div>
                 <p style="font-size: 0.85rem; color: var(--color-text-muted);">
-                    Preview tampil cepat dari Supabase, sedangkan tombol Unduh HD mengambil file asli kualitas tinggi langsung dari Google Drive.
+                    Preview hasil.
                 </p>
                 <div class="gallery-grid-layout" id="gallery-grid-container"></div>
             </div>
@@ -334,7 +334,7 @@
         <!-- 5. SECTION: ADMIN PANEL EVENT -->
         <section id="section-admin" class="component-section">
             <div class="card">
-                <div class="card-header">⚙️ Customization & Branding Control</div>
+                <div class="card-header">⚙️ Customization</div>
                 
                 <!-- PENGATURAN COVER SCREEN -->
                 <div style="border: 1px solid var(--color-border); padding: 16px; border-radius: var(--radius-btn); background: var(--color-surface-card);">
@@ -438,7 +438,7 @@
             </div>
 
             <div class="card" id="admin-frame-card">
-                <div class="card-header">🖼️ Manajemen Background / Frame (Multi-Background)</div>
+                <div class="card-header">🖼️ Frame Photobooth</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
                     <div class="form-group">
                         <label class="form-label">Nama / Variasi Background</label>
@@ -468,7 +468,7 @@
 
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div class="card-header">🔒 Admin Console (Data Digital Guestbook)</div>
+                    <div class="card-header">🔒 Daftar Photobooth Tamu</div>
                     <div style="display: flex; gap: 8px;">
                         <button id="btn-admin-download-all" class="btn btn-success btn-sm" onclick="AdminEngine.downloadAllMediaZip()">📦 Unduh Semua (.ZIP)</button>
                         <button class="btn btn-danger btn-sm" onclick="AuthEngine.logoutAdmin()">Sign Out Admin</button>
@@ -704,7 +704,7 @@
 
                     const json = await res.json();
                     if (!json.ok) {
-                        throw new Error(json.message || 'Gagal menyimpan file asli ke Google Drive');
+                        throw new Error(json.message || 'Gagal menyimpan');
                     }
                     gdriveMeta = {
                         fileId: json.fileId,
@@ -743,7 +743,7 @@
                     const url = `${GDRIVE_WEBAPP_URL}?file_id=${encodeURIComponent(item.gdrive_file_id)}`;
                     const res = await fetch(url);
                     const json = await res.json();
-                    if (!json.ok) throw new Error(json.message || 'Gagal mengunduh file asli dari Google Drive');
+                    if (!json.ok) throw new Error(json.message || 'Gagal mengunduh file');
                     return this.base64ToBlob(json.base64, json.mimeType || item.mime_type || 'application/octet-stream');
                 }
 
@@ -1520,7 +1520,7 @@
                         } else if (previewUrl) {
                             mediaHtml = `<img src="${previewUrl}" class="gallery-item-media" loading="lazy" />`;
                         } else {
-                            mediaHtml = `<div class="gallery-item-media" style="display:flex; justify-content:center; align-items:center; color:#d6d3d1; padding:16px; text-align:center;">Media tersimpan di Google Drive (${item.file_name || item.media_type})</div>`;
+                            mediaHtml = `<div class="gallery-item-media" style="display:flex; justify-content:center; align-items:center; color:#d6d3d1; padding:16px; text-align:center;">Media tersimpan (${item.file_name || item.media_type})</div>`;
                         }
 
                         const dlBtnId = `gal-dl-${index}`;
@@ -1969,7 +1969,7 @@
                             <img src="${previewUrl}" class="viewport-element" style="object-fit: contain;" />
                         </div>`;
                 } else {
-                    mediaElement = `<div style="background:#1c1917; color:#d6d3d1; padding:20px; border-radius:12px; text-align:center;">Preview tidak disimpan di Supabase; file asli tersimpan di Google Drive (${item.gdrive_path || item.file_name || '-'}).</div>`;
+                    mediaElement = `<div style="background:#1c1917; color:#d6d3d1; padding:20px; border-radius:12px; text-align:center;">Preview tidak disimpan di Supabase; file asli tersimpan (${item.gdrive_path || item.file_name || '-'}).</div>`;
                 }
 
                 bodyContainer.innerHTML = `
