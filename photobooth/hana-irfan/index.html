@@ -576,12 +576,15 @@
                         <summary style="cursor: pointer; font-weight: 800; color: var(--color-purple); font-size: 0.875rem;">➕ Tambah Klien / Event Baru</summary>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 14px;">
                             <div class="form-group">
-                                <label class="form-label">Slug URL (unik, tanpa spasi)</label>
-                                <input type="text" id="sa-new-slug" class="form-input" placeholder="misal: budi_sari">
+                                <label class="form-label">Nama Event / Klien</label>
+                                <input type="text" id="sa-new-name" class="form-input" placeholder="Budi & Sari Wedding" oninput="SuperAdminEngine.generateSlugFromName(this.value)">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Nama Event / Klien</label>
-                                <input type="text" id="sa-new-name" class="form-input" placeholder="Budi & Sari Wedding">
+                                <label class="form-label">Slug URL (otomatis / bisa diedit)</label>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <input type="text" id="sa-new-slug" class="form-input" placeholder="budi_sari_wedding" oninput="this.dataset.manualEdited = 'true'">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sa-new-slug').dataset.manualEdited = 'false'; SuperAdminEngine.generateSlugFromName(document.getElementById('sa-new-name').value, true)" title="Generate ulang slug otomatis">↻</button>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">PIN Admin Klien</label>
@@ -1717,6 +1720,37 @@
             mediaCountMap: {},
             selectedSlug: null,
 
+            generateSlugFromName(rawName, forceUpdate = false) {
+                const slugInput = document.getElementById('sa-new-slug');
+                if (!slugInput) return;
+
+                if (!forceUpdate && slugInput.dataset.manualEdited === 'true') return;
+
+                const baseSlug = (rawName || '')
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-z0-9]+/g, '_')
+                    .replace(/^_+|_+$/g, '');
+
+                if (!baseSlug) {
+                    slugInput.value = '';
+                    return;
+                }
+
+                const existingSlugs = new Set((this.clientsCache || []).map(c => (c.slug || '').toLowerCase()));
+                if (!existingSlugs.has(baseSlug)) {
+                    slugInput.value = baseSlug;
+                    return;
+                }
+
+                let counter = 2;
+                while (existingSlugs.has(`${baseSlug}_${counter}`)) {
+                    counter++;
+                }
+                slugInput.value = `${baseSlug}_${counter}`;
+            },
+
             toLocalDateTimeInput(isoString) {
                 if (!isoString) return '';
                 const d = new Date(isoString);
@@ -1909,8 +1943,9 @@
             },
 
             async createClientEvent() {
-                const slug = (document.getElementById('sa-new-slug').value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+                const slugInput = document.getElementById('sa-new-slug');
                 const eventName = (document.getElementById('sa-new-name').value || '').trim();
+                const slug = (slugInput.value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
                 const pin = (document.getElementById('sa-new-pin').value || '').trim();
                 const expiryVal = document.getElementById('sa-new-expiry').value;
 
@@ -1943,7 +1978,8 @@
 
                     if (stErr) throw stErr;
 
-                    document.getElementById('sa-new-slug').value = '';
+                    slugInput.value = '';
+                    slugInput.dataset.manualEdited = 'false';
                     document.getElementById('sa-new-name').value = '';
                     document.getElementById('sa-new-pin').value = '';
                     document.getElementById('sa-new-expiry').value = '';
@@ -2165,7 +2201,7 @@
 
                 const fontTitleVal = document.getElementById('adm-font-title').value;
 
-                const payload = {
+                let payload = {
                     event_slug: CURRENT_EVENT_SLUG,
                     cover_title: document.getElementById('adm-cover-title').value.trim(),
                     cover_subtitle: document.getElementById('adm-cover-sub').value.trim(),
@@ -2182,15 +2218,38 @@
                     watermark_text: WATERMARK_TEXT
                 };
 
-                const { error } = await supabaseClient
-                    .from('event_settings')
-                    .upsert(payload, { onConflict: 'event_slug' });
+                const skippedColumns = [];
 
-                if (error) return alert("Gagal menyimpan setting ke database: " + error.message);
+                for (let attempt = 0; attempt < 8; attempt++) {
+                    const { error } = await supabaseClient
+                        .from('event_settings')
+                        .upsert(payload, { onConflict: 'event_slug' });
 
-                coverFileInput.value = '';
-                await this.loadStyleSettingsFromDB();
-                alert("✅ Pengaturan Tampilan & Font Berhasil Disimpan di Database!");
+                    if (!error) {
+                        coverFileInput.value = '';
+                        await this.loadStyleSettingsFromDB();
+                        if (skippedColumns.length > 0) {
+                            alert(
+                                "⚠️ Pengaturan tersimpan, namun kolom berikut belum ada di tabel event_settings: " +
+                                skippedColumns.join(", ") +
+                                ". Jalankan SQL ALTER TABLE untuk menyimpannya juga."
+                            );
+                        } else {
+                            alert("✅ Pengaturan Tampilan & Font Berhasil Disimpan di Database!");
+                        }
+                        return;
+                    }
+
+                    const match = error.message && error.message.match(/Could not find the '([^']+)' column/);
+                    if (match && match[1] && match[1] in payload && match[1] !== 'event_slug') {
+                        skippedColumns.push(match[1]);
+                        const { [match[1]]: _removed, ...restPayload } = payload;
+                        payload = restPayload;
+                        continue;
+                    }
+
+                    return alert("Gagal menyimpan setting ke database: " + error.message);
+                }
             },
 
             async loadAdminFrames() {
