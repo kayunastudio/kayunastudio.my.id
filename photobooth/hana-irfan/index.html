@@ -227,7 +227,7 @@
     <!-- APP HEADER -->
     <header>
         <div style="font-weight: 900; font-size: 1.25rem; color: var(--color-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;">
-            <span>🌸</span> <span id="header-event-name">Wedding Photobooth</span>
+            <span>🌸</span> <span id="header-event-name">Kayuna Wedding Photobooth</span>
         </div>
         <button class="btn btn-secondary btn-sm" onclick="AuthEngine.toggleAdminModal()">
             🔒 Admin Access
@@ -2112,7 +2112,7 @@
 
                     if (st) {
                         RENTAL_EXPIRES_AT = st.rental_expires_at || null;
-                        WATERMARK_TEXT = st.watermark_text || "Powered by Kayuna Photobooth Studio";
+                        WATERMARK_TEXT = st.watermark_text || "Designed by Kayuna Photobooth Studio";
 
                         if (RENTAL_EXPIRES_AT) {
                             const expiryTime = new Date(RENTAL_EXPIRES_AT).getTime();
