@@ -179,6 +179,18 @@
         .switch-sub { font-size: 0.75rem; color: var(--color-text-muted); }
         .switch-checkbox { width: 20px; height: 20px; accent-color: var(--color-purple); cursor: pointer; }
 
+        /* SUPERADMIN KPI & STATUS BADGE */
+        .sa-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+        .sa-kpi-card { background: #fff; border: 1px solid var(--color-border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 4px; }
+        .sa-kpi-label { font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: var(--color-text-muted); }
+        .sa-kpi-value { font-size: 1.4rem; font-weight: 900; color: var(--color-purple); }
+        .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-expiring { background: #fef3c7; color: #92400e; }
+        .status-expired { background: #fee2e2; color: #991b1b; }
+        .status-locked { background: #f3e8ff; color: #5b21b6; }
+        .pin-code { font-family: monospace; background: #f3ece1; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
+
         #error-screen { position: fixed; inset: 0; background: #fff; z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; }
     </style>
 </head>
@@ -205,7 +217,7 @@
         </div>
 
         <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 320px;">
-            <p class="cover-subtitle" id="display-cover-subtitle">Abadikan momen berkesan Anda di Perayaan Pernikahan Kami</p>
+            <p class="cover-subtitle" id="display-cover-subtitle">Abadikan momen berkesanmu di Perayaan Pernikahan Kami</p>
             <button class="btn btn-primary" style="padding: 16px 36px; font-size: 1rem; width: 100%;" onclick="AppRouter.enterAppFromCover()">
                 ✨ Sesi Pemotretan ✨
             </button>
@@ -361,7 +373,7 @@
 
                         <div class="form-group">
                             <label class="form-label">Sub-Judul / Ucapan</label>
-                            <input type="text" id="adm-cover-sub" class="form-input" value="Abadikan momen berkesan Anda di Perayaan Pernikahan Kami">
+                            <input type="text" id="adm-cover-sub" class="form-input" value="Abadikan momen berkesanmu di Perayaan Pernikahan Kami">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Unggah Foto Polaroid (File PNG/JPG)</label>
@@ -498,20 +510,133 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <div class="card-header" style="color: var(--color-purple);">👑 Master Dashboard Superadmin SaaS</div>
-                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Atur batasan fitur, durasi sewa & modul aktif penyewa photobooth.</p>
+                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Kelola daftar klien aktif, PIN admin klien, masa sewa & modul paket SaaS.</p>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="AuthEngine.logoutAdmin()">Sign Out Superadmin</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.loadDashboard()">🔄 Refresh Data</button>
+                        <button class="btn btn-danger btn-sm" onclick="AuthEngine.logoutAdmin()">Sign Out Superadmin</button>
+                    </div>
                 </div>
 
-                <!-- MANAGEMENT CONTROL PAKET SEWA -->
-                <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
-                    <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Penyesuaian Masa Sewa & Feature Flags</strong>
+                <!-- RINGKASAN STATISTIK SAAS -->
+                <div class="sa-kpi-grid">
+                    <div class="sa-kpi-card">
+                        <span class="sa-kpi-label">Total Klien</span>
+                        <span class="sa-kpi-value" id="sa-kpi-total">0</span>
+                    </div>
+                    <div class="sa-kpi-card">
+                        <span class="sa-kpi-label">Klien Aktif</span>
+                        <span class="sa-kpi-value" id="sa-kpi-active" style="color: #166534;">0</span>
+                    </div>
+                    <div class="sa-kpi-card">
+                        <span class="sa-kpi-label">Expired / Terkunci</span>
+                        <span class="sa-kpi-value" id="sa-kpi-inactive" style="color: var(--color-danger);">0</span>
+                    </div>
+                    <div class="sa-kpi-card">
+                        <span class="sa-kpi-label">Total Media Klien Aktif</span>
+                        <span class="sa-kpi-value" id="sa-kpi-media">0</span>
+                    </div>
+                </div>
 
-                    <!-- DURATION RENTAL CONTROL -->
+                <!-- DAFTAR KLIEN AKTIF & SEMUA EVENT -->
+                <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <strong style="color: var(--color-purple); font-size: 0.95rem;">📋 Daftar Klien / Event Photobooth</strong>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <select id="sa-filter-status" class="form-select" style="padding: 8px 12px; font-size: 0.8rem; width: auto;" onchange="SuperAdminEngine.renderClientsTable()">
+                                <option value="all">Semua Klien</option>
+                                <option value="active">Sedang Aktif</option>
+                                <option value="expiring">Akan Habis (≤ 3 Hari)</option>
+                                <option value="expired">Expired / Terkunci</option>
+                            </select>
+                            <input type="text" id="sa-search-client" class="form-input" style="padding: 8px 12px; font-size: 0.8rem; width: 190px;" placeholder="Cari nama / slug..." oninput="SuperAdminEngine.renderClientsTable()">
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Klien / Event</th>
+                                    <th>PIN Admin</th>
+                                    <th>Status</th>
+                                    <th>Masa Aktif</th>
+                                    <th>Media</th>
+                                    <th style="text-align: right;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sa-clients-table-body">
+                                <tr><td colspan="6">Memuat daftar klien...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAMBAH KLIEN BARU -->
+                    <details style="background: #fff; border: 1px solid var(--color-border); border-radius: 12px; padding: 14px;">
+                        <summary style="cursor: pointer; font-weight: 800; color: var(--color-purple); font-size: 0.875rem;">➕ Tambah Klien / Event Baru</summary>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 14px;">
+                            <div class="form-group">
+                                <label class="form-label">Slug URL (unik, tanpa spasi)</label>
+                                <input type="text" id="sa-new-slug" class="form-input" placeholder="misal: budi_sari">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nama Event / Klien</label>
+                                <input type="text" id="sa-new-name" class="form-input" placeholder="Budi & Sari Wedding">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">PIN Admin Klien</label>
+                                <input type="text" id="sa-new-pin" class="form-input" placeholder="misal: 123456">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Masa Aktif Hingga</label>
+                                <input type="datetime-local" id="sa-new-expiry" class="form-input">
+                            </div>
+                        </div>
+                        <button class="btn btn-success btn-sm" style="margin-top: 12px;" onclick="SuperAdminEngine.createClientEvent()">✅ Buat Klien Baru</button>
+                    </details>
+                </div>
+
+                <!-- PENGATURAN PIN KLIEN, MASA SEWA & FEATURE FLAGS -->
+                <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Pengaturan PIN Klien, Masa Sewa & Feature Flags</strong>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-primary);" id="sa-selected-client-label">Target: -</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                        <!-- PENGATURAN PIN KLIEN -->
+                        <div class="form-group" style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
+                            <label class="form-label" style="color: var(--color-purple);">🔑 PIN Admin Klien Terpilih</label>
+                            <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                <input type="text" id="sa-client-pin" class="form-input" placeholder="PIN / Password klien">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.generateRandomPin()">🎲 Acak</button>
+                            </div>
+                            <span style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px;">Digunakan klien saat login di tombol 🔒 Admin Access.</span>
+                        </div>
+
+                        <!-- DURATION RENTAL CONTROL -->
+                        <div class="form-group" style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
+                            <label class="form-label" style="color: var(--color-purple);">⏱️ Masa Aktif Sewa (Rental Expiry Date)</label>
+                            <input type="datetime-local" id="sa-rental-expiry" class="form-input" style="margin-top: 4px;">
+                            <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.extendExpiryDays(7)">+7 Hari</button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.extendExpiryDays(30)">+30 Hari</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KILL SWITCH & CUSTOM WATERMARK -->
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">🔒 Kunci Darurat Event (Lock Access)</div>
+                            <div class="switch-sub">Blokir akses halaman event ini secara instan meskipun masa sewa belum habis</div>
+                        </div>
+                        <input type="checkbox" id="sa-client-locked" class="switch-checkbox">
+                    </div>
+
                     <div class="form-group" style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
-                        <label class="form-label" style="color: var(--color-purple);">⏱️ Masa Aktif Sewa (Rental Expiry Date)</label>
-                        <input type="datetime-local" id="sa-rental-expiry" class="form-input" style="margin-top: 4px;">
-                        <span style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px;">Jika waktu saat ini melebihi tanggal di atas, halaman client photobooth akan otomatis dikunci.</span>
+                        <label class="form-label" style="color: var(--color-purple);">🏷️ Teks Watermark Kanvas</label>
+                        <input type="text" id="sa-watermark-text" class="form-input" value="Powered by Kayuna Photobooth Studio" placeholder="Teks watermark di pojok kanan bawah hasil foto">
                     </div>
 
                     <div class="switch-control">
@@ -565,12 +690,12 @@
                     <div class="switch-control">
                         <div>
                             <div class="switch-label">7. Tampilkan Watermark Studio</div>
-                            <div class="switch-sub">Sertakan teks/branding Kayuna Photobooth di kaki kanvas</div>
+                            <div class="switch-sub">Sertakan teks/branding di kaki kanvas</div>
                         </div>
                         <input type="checkbox" id="sa-feat-watermark" class="switch-checkbox" checked>
                     </div>
 
-                    <button class="btn btn-purple" style="margin-top: 10px; padding: 14px;" onclick="SuperAdminEngine.savePackageSettings()">💾 Simpan Konfigurasi Paket Sewa ke Supabase</button>
+                    <button class="btn btn-purple" style="margin-top: 10px; padding: 14px;" onclick="SuperAdminEngine.savePackageSettings()">💾 Simpan PIN, Masa Sewa & Konfigurasi Klien</button>
                 </div>
             </div>
         </section>
@@ -639,6 +764,7 @@
         let CURRENT_EVENT_SLUG = resolveEventSlugFromURL();
         let CURRENT_EVENT_DATA = null;
         let RENTAL_EXPIRES_AT = null;
+        let WATERMARK_TEXT = "Powered by Kayuna Photobooth Studio";
         let FEATURE_FLAGS = {
             allow_layouts: true,
             allow_multiframe: true,
@@ -685,7 +811,6 @@
                 let gdriveMeta = { fileId: null, path: null, webUrl: null };
                 let previewStoragePath = null;
 
-                // 1. Unggah file asli kualitas tinggi ke Google Drive via Google Apps Script
                 if (GDRIVE_WEBAPP_URL) {
                     const base64Data = await this.blobToBase64(originalBlob);
                     const res = await fetch(GDRIVE_WEBAPP_URL, {
@@ -713,7 +838,6 @@
                     };
                 }
 
-                // 2. Simpan preview ringan ke Supabase Storage agar hemat kuota 1 GB
                 const folder = mediaType === 'photo' ? 'photos' : (mediaType === 'video' ? 'videos' : 'audios');
                 const previewBlob = (mediaType === 'photo' && GDRIVE_WEBAPP_URL)
                     ? await this.createLightPhotoPreviewBlob(originalBlob)
@@ -1241,11 +1365,11 @@
                     this.ctx.fillText("Photobooth Memories", W / 2, marginBottomY + 180);
                 }
 
-                if (FEATURE_FLAGS.show_watermark) {
+                if (FEATURE_FLAGS.show_watermark && WATERMARK_TEXT) {
                     this.ctx.textAlign = "right";
                     this.ctx.fillStyle = "rgba(0,0,0,0.4)";
                     this.ctx.font = "bold 20px system-ui, sans-serif";
-                    this.ctx.fillText("Powered by Kayuna Photobooth Studio", W - 40, H - 40);
+                    this.ctx.fillText(WATERMARK_TEXT, W - 40, H - 40);
                 }
             },
 
@@ -1401,7 +1525,6 @@
                     if (dbErr) throw dbErr;
                     if (insertedPhoto?.id) localUploads.push(insertedPhoto.id);
 
-                    // Optional Video Upload
                     if (FEATURE_FLAGS.allow_video_guestbook && VideoEngine.videoBlob && VideoEngine.videoBlob.size > 0) {
                         const vFileName = `video_${timestamp}.webm`;
                         const vUp = await MediaStorageHelper.uploadMediaHybrid({
@@ -1430,7 +1553,6 @@
                         if (insertedVid?.id) localUploads.push(insertedVid.id);
                     }
 
-                    // Optional Audio Upload
                     if (FEATURE_FLAGS.allow_audio_guestbook && AudioEngine.audioBlob && AudioEngine.audioBlob.size > 0) {
                         const aFileName = `audio_${timestamp}.webm`;
                         const aUp = await MediaStorageHelper.uploadMediaHybrid({
@@ -1559,8 +1681,9 @@
         const AuthEngine = {
             toggleAdminModal() {
                 const modal = document.getElementById('admin-login-modal');
-                const eventName = CURRENT_EVENT_DATA?.event_name || CURRENT_EVENT_DATA?.title || CURRENT_EVENT_SLUG;
+                const eventName = CURRENT_EVENT_DATA?.event_name || CURRENT_EVENT_DATA?.title || CURRENT_EVENT_SLUG || 'Master SaaS';
                 document.getElementById('modal-adm-event-label').innerText = `Acara: ${eventName}`;
+                document.getElementById('modal-adm-pass').value = '';
                 modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
             },
 
@@ -1574,7 +1697,7 @@
                     return;
                 }
 
-                if (CURRENT_EVENT_DATA && pass === expectedPass) {
+                if (CURRENT_EVENT_DATA && expectedPass && pass === expectedPass) {
                     this.toggleAdminModal();
                     AppRouter.switchRoute('admin');
                 } else {
@@ -1587,26 +1710,261 @@
             }
         };
 
-        /* SUPERADMIN ENGINE (PAKET SEWA SAAS, EXPIRY DATE & FEATURE FLAGS DALAM SUPABASE) */
+        /* SUPERADMIN ENGINE (LIST KLIEN AKTIF, PENGATURAN PIN KLIEN, MASA SEWA & FEATURE FLAGS) */
         const SuperAdminEngine = {
-            async loadDashboard() {
-                document.getElementById('sa-feat-layouts').checked = FEATURE_FLAGS.allow_layouts;
-                document.getElementById('sa-feat-multiframe').checked = FEATURE_FLAGS.allow_multiframe;
-                document.getElementById('sa-feat-video-guestbook').checked = FEATURE_FLAGS.allow_video_guestbook;
-                document.getElementById('sa-feat-audio-guestbook').checked = FEATURE_FLAGS.allow_audio_guestbook;
-                document.getElementById('sa-feat-ig-share').checked = FEATURE_FLAGS.allow_ig_share;
-                document.getElementById('sa-feat-zip-download').checked = FEATURE_FLAGS.allow_zip_download;
-                document.getElementById('sa-feat-watermark').checked = FEATURE_FLAGS.show_watermark;
+            clientsCache: [],
+            settingsMap: {},
+            mediaCountMap: {},
+            selectedSlug: null,
 
-                if (RENTAL_EXPIRES_AT) {
-                    const expDate = new Date(RENTAL_EXPIRES_AT);
-                    const formattedLocal = new Date(expDate.getTime() - expDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-                    document.getElementById('sa-rental-expiry').value = formattedLocal;
+            toLocalDateTimeInput(isoString) {
+                if (!isoString) return '';
+                const d = new Date(isoString);
+                if (Number.isNaN(d.getTime())) return '';
+                return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            },
+
+            getClientStatus(eventObj, settingObj) {
+                if (eventObj?.is_locked) {
+                    return { code: 'locked', label: '🔒 Terkunci', css: 'status-locked' };
+                }
+                const expiryIso = settingObj?.rental_expires_at || null;
+                if (!expiryIso) {
+                    return { code: 'active', label: '✅ Aktif', css: 'status-active' };
+                }
+                const diffMs = new Date(expiryIso).getTime() - Date.now();
+                if (diffMs <= 0) {
+                    return { code: 'expired', label: '⏳ Expired', css: 'status-expired' };
+                }
+                const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+                if (diffMs <= threeDaysMs) {
+                    return { code: 'expiring', label: '⚠️ Akan Habis', css: 'status-expiring' };
+                }
+                return { code: 'active', label: '✅ Aktif', css: 'status-active' };
+            },
+
+            async loadDashboard() {
+                const tbody = document.getElementById('sa-clients-table-body');
+                tbody.innerHTML = "<tr><td colspan='6'>Memuat data klien dari Supabase...</td></tr>";
+
+                try {
+                    const [eventsRes, settingsRes, mediaRes] = await Promise.all([
+                        supabaseClient.from('events').select('*').order('created_at', { ascending: false }),
+                        supabaseClient.from('event_settings').select('*'),
+                        supabaseClient.from('media').select('event_slug')
+                    ]);
+
+                    if (eventsRes.error) throw eventsRes.error;
+
+                    this.clientsCache = eventsRes.data || [];
+                    this.settingsMap = {};
+                    (settingsRes.data || []).forEach(st => {
+                        this.settingsMap[st.event_slug] = st;
+                    });
+
+                    this.mediaCountMap = {};
+                    (mediaRes.data || []).forEach(m => {
+                        this.mediaCountMap[m.event_slug] = (this.mediaCountMap[m.event_slug] || 0) + 1;
+                    });
+
+                    this.updateKpis();
+
+                    const targetSlug = this.selectedSlug || CURRENT_EVENT_SLUG || (this.clientsCache[0]?.slug ?? null);
+                    if (targetSlug) {
+                        this.selectClient(targetSlug, false);
+                    } else {
+                        this.renderClientsTable();
+                    }
+                } catch (e) {
+                    tbody.innerHTML = `<tr><td colspan='6' style='color:var(--color-danger);'>Gagal memuat daftar klien: ${e.message}</td></tr>`;
+                }
+            },
+
+            updateKpis() {
+                const total = this.clientsCache.length;
+                let activeCount = 0;
+                let inactiveCount = 0;
+                let activeMediaTotal = 0;
+
+                this.clientsCache.forEach(ev => {
+                    const st = this.getClientStatus(ev, this.settingsMap[ev.slug]);
+                    if (st.code === 'expired' || st.code === 'locked') {
+                        inactiveCount++;
+                    } else {
+                        activeCount++;
+                        activeMediaTotal += (this.mediaCountMap[ev.slug] || 0);
+                    }
+                });
+
+                document.getElementById('sa-kpi-total').innerText = total;
+                document.getElementById('sa-kpi-active').innerText = activeCount;
+                document.getElementById('sa-kpi-inactive').innerText = inactiveCount;
+                document.getElementById('sa-kpi-media').innerText = activeMediaTotal;
+            },
+
+            renderClientsTable() {
+                const tbody = document.getElementById('sa-clients-table-body');
+                const filterStatus = document.getElementById('sa-filter-status')?.value || 'all';
+                const searchQuery = (document.getElementById('sa-search-client')?.value || '').trim().toLowerCase();
+
+                const filtered = this.clientsCache.filter(ev => {
+                    const stObj = this.settingsMap[ev.slug];
+                    const status = this.getClientStatus(ev, stObj);
+                    if (filterStatus !== 'all' && status.code !== filterStatus) return false;
+
+                    if (searchQuery) {
+                        const name = (ev.event_name || ev.title || '').toLowerCase();
+                        const slug = (ev.slug || '').toLowerCase();
+                        if (!name.includes(searchQuery) && !slug.includes(searchQuery)) return false;
+                    }
+                    return true;
+                });
+
+                tbody.innerHTML = "";
+                if (filtered.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='6'>Tidak ada klien yang cocok dengan filter.</td></tr>";
+                    return;
+                }
+
+                filtered.forEach(ev => {
+                    const stObj = this.settingsMap[ev.slug] || {};
+                    const status = this.getClientStatus(ev, stObj);
+                    const pin = ev.admin_password || ev.passcode || '-';
+                    const name = ev.event_name || ev.title || ev.slug;
+                    const expiryText = stObj.rental_expires_at
+                        ? new Date(stObj.rental_expires_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+                        : 'Tanpa Batas';
+                    const mediaCount = this.mediaCountMap[ev.slug] || 0;
+                    const isSelected = ev.slug === this.selectedSlug;
+
+                    const tr = document.createElement('tr');
+                    if (isSelected) tr.style.background = '#f5f3ff';
+
+                    tr.innerHTML = `
+                        <td>
+                            <div style="font-weight: 800; color: var(--color-text-main);">${name}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-muted); font-family: monospace;">?event=${ev.slug}</div>
+                        </td>
+                        <td><span class="pin-code">${pin}</span></td>
+                        <td><span class="status-pill ${status.css}">${status.label}</span></td>
+                        <td style="font-size: 0.8rem;">${expiryText}</td>
+                        <td><strong>${mediaCount}</strong></td>
+                        <td style="text-align: right;">
+                            <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-purple btn-sm" onclick="SuperAdminEngine.selectClient('${ev.slug}')">✏️ Kelola</button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.copyClientLink('${ev.slug}')" title="Salin Link Event">🔗</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            selectClient(slug, rerenderTable = true) {
+                const ev = this.clientsCache.find(c => c.slug === slug);
+                if (!ev) return;
+
+                this.selectedSlug = slug;
+                const stObj = this.settingsMap[slug] || {};
+                const flags = { ...FEATURE_FLAGS, ...(stObj.feature_flags || {}) };
+
+                const name = ev.event_name || ev.title || slug;
+                document.getElementById('sa-selected-client-label').innerText = `Target: ${name} (${slug})`;
+                document.getElementById('sa-client-pin').value = ev.admin_password || ev.passcode || '';
+                document.getElementById('sa-rental-expiry').value = this.toLocalDateTimeInput(stObj.rental_expires_at);
+                document.getElementById('sa-client-locked').checked = Boolean(ev.is_locked);
+                document.getElementById('sa-watermark-text').value = stObj.watermark_text || "Powered by Kayuna Photobooth Studio";
+
+                document.getElementById('sa-feat-layouts').checked = flags.allow_layouts;
+                document.getElementById('sa-feat-multiframe').checked = flags.allow_multiframe;
+                document.getElementById('sa-feat-video-guestbook').checked = flags.allow_video_guestbook;
+                document.getElementById('sa-feat-audio-guestbook').checked = flags.allow_audio_guestbook;
+                document.getElementById('sa-feat-ig-share').checked = flags.allow_ig_share;
+                document.getElementById('sa-feat-zip-download').checked = flags.allow_zip_download;
+                document.getElementById('sa-feat-watermark').checked = flags.show_watermark;
+
+                if (rerenderTable) this.renderClientsTable();
+            },
+
+            generateRandomPin() {
+                const pin = String(Math.floor(100000 + Math.random() * 900000));
+                document.getElementById('sa-client-pin').value = pin;
+            },
+
+            extendExpiryDays(days) {
+                const currentInput = document.getElementById('sa-rental-expiry').value;
+                const baseTime = currentInput ? new Date(currentInput).getTime() : Date.now();
+                const validBase = Number.isNaN(baseTime) ? Date.now() : Math.max(baseTime, Date.now());
+                const nextDate = new Date(validBase + days * 24 * 60 * 60 * 1000);
+                document.getElementById('sa-rental-expiry').value = this.toLocalDateTimeInput(nextDate.toISOString());
+            },
+
+            copyClientLink(slug) {
+                const url = `${window.location.origin}${window.location.pathname}?event=${encodeURIComponent(slug)}`;
+                navigator.clipboard?.writeText(url).then(() => {
+                    alert("🔗 Link event disalin:\n" + url);
+                }).catch(() => {
+                    prompt("Salin link event berikut:", url);
+                });
+            },
+
+            async createClientEvent() {
+                const slug = (document.getElementById('sa-new-slug').value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+                const eventName = (document.getElementById('sa-new-name').value || '').trim();
+                const pin = (document.getElementById('sa-new-pin').value || '').trim();
+                const expiryVal = document.getElementById('sa-new-expiry').value;
+
+                if (!slug || !eventName || !pin) {
+                    return alert("Harap isi Slug URL, Nama Event, dan PIN Admin Klien.");
+                }
+
+                try {
+                    const { error: evErr } = await supabaseClient
+                        .from('events')
+                        .insert([{
+                            slug,
+                            event_name: eventName,
+                            admin_password: pin,
+                            is_locked: false
+                        }]);
+
+                    if (evErr) throw evErr;
+
+                    const rentalExpiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
+                    const { error: stErr } = await supabaseClient
+                        .from('event_settings')
+                        .upsert({
+                            event_slug: slug,
+                            cover_title: eventName,
+                            rental_expires_at: rentalExpiresAt,
+                            feature_flags: FEATURE_FLAGS,
+                            watermark_text: "Powered by Kayuna Photobooth Studio"
+                        }, { onConflict: 'event_slug' });
+
+                    if (stErr) throw stErr;
+
+                    document.getElementById('sa-new-slug').value = '';
+                    document.getElementById('sa-new-name').value = '';
+                    document.getElementById('sa-new-pin').value = '';
+                    document.getElementById('sa-new-expiry').value = '';
+
+                    this.selectedSlug = slug;
+                    await this.loadDashboard();
+                    alert(`✅ Klien "${eventName}" (${slug}) berhasil dibuat!`);
+                } catch (e) {
+                    alert("Gagal membuat klien baru: " + e.message);
                 }
             },
 
             async savePackageSettings() {
-                FEATURE_FLAGS = {
+                const targetSlug = this.selectedSlug || CURRENT_EVENT_SLUG;
+                if (!targetSlug) return alert("Tidak ada klien yang dipilih.");
+
+                const newPin = document.getElementById('sa-client-pin').value.trim();
+                const isLocked = document.getElementById('sa-client-locked').checked;
+                const watermarkText = document.getElementById('sa-watermark-text').value.trim() || "Powered by Kayuna Photobooth Studio";
+
+                const nextFlags = {
                     allow_layouts: document.getElementById('sa-feat-layouts').checked,
                     allow_multiframe: document.getElementById('sa-feat-multiframe').checked,
                     allow_video_guestbook: document.getElementById('sa-feat-video-guestbook').checked,
@@ -1620,19 +1978,38 @@
                 const rentalExpiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
 
                 try {
-                    const { error } = await supabaseClient
+                    const eventUpdatePayload = { is_locked: isLocked };
+                    if (newPin) eventUpdatePayload.admin_password = newPin;
+
+                    const { error: evErr } = await supabaseClient
+                        .from('events')
+                        .update(eventUpdatePayload)
+                        .eq('slug', targetSlug);
+                    if (evErr) throw evErr;
+
+                    const { error: stErr } = await supabaseClient
                         .from('event_settings')
                         .upsert({
-                            event_slug: CURRENT_EVENT_SLUG,
-                            feature_flags: FEATURE_FLAGS,
-                            rental_expires_at: rentalExpiresAt
+                            event_slug: targetSlug,
+                            feature_flags: nextFlags,
+                            rental_expires_at: rentalExpiresAt,
+                            watermark_text: watermarkText
                         }, { onConflict: 'event_slug' });
+                    if (stErr) throw stErr;
 
-                    if (error) throw error;
+                    if (targetSlug === CURRENT_EVENT_SLUG) {
+                        FEATURE_FLAGS = nextFlags;
+                        RENTAL_EXPIRES_AT = rentalExpiresAt;
+                        WATERMARK_TEXT = watermarkText;
+                        if (CURRENT_EVENT_DATA) {
+                            if (newPin) CURRENT_EVENT_DATA.admin_password = newPin;
+                            CURRENT_EVENT_DATA.is_locked = isLocked;
+                        }
+                        AppRouter.applyFeatureFlagsToUI();
+                    }
 
-                    RENTAL_EXPIRES_AT = rentalExpiresAt;
-                    AppRouter.applyFeatureFlagsToUI();
-                    alert("✅ Konfigurasi Paket Sewa & Masa Aktif Superadmin Berhasil Disimpan di Supabase!");
+                    await this.loadDashboard();
+                    alert(`✅ PIN, Masa Sewa & Konfigurasi untuk "${targetSlug}" berhasil disimpan!`);
                 } catch (e) {
                     alert("Gagal menyimpan konfigurasi Superadmin: " + e.message);
                 }
@@ -1682,6 +2059,13 @@
 
             async loadStyleSettingsFromDB() {
                 try {
+                    if (CURRENT_EVENT_DATA?.is_locked) {
+                        document.getElementById('error-screen-title').innerText = "🔒 Event Dikunci";
+                        document.getElementById('error-screen-msg').innerText = "Akses photobooth untuk acara ini sedang dikunci sementara oleh penyedia layanan.";
+                        document.getElementById('error-screen').style.display = 'flex';
+                        return false;
+                    }
+
                     const { data: st } = await supabaseClient
                         .from('event_settings')
                         .select('*')
@@ -1692,6 +2076,7 @@
 
                     if (st) {
                         RENTAL_EXPIRES_AT = st.rental_expires_at || null;
+                        WATERMARK_TEXT = st.watermark_text || "Powered by Kayuna Photobooth Studio";
 
                         if (RENTAL_EXPIRES_AT) {
                             const expiryTime = new Date(RENTAL_EXPIRES_AT).getTime();
@@ -1718,7 +2103,6 @@
                         document.getElementById('adm-cover-img').value = st.polaroid_url || '';
                         if (st.polaroid_url) document.getElementById('display-cover-image').src = st.polaroid_url;
 
-                        /* SYNC FONT COVER POLAROID */
                         const fontVal = st.font_cover_title || "'Great Vibes', cursive";
                         document.getElementById('adm-font-title').value = fontVal;
                         document.documentElement.style.setProperty('--font-cover-title', fontVal);
@@ -1752,7 +2136,6 @@
                             document.documentElement.style.setProperty('--color-surface', st.color_surface);
                         }
                     } else {
-                        // JIKA BELUM ADA SETTING DI DATABASE, TETAPKAN DEFAULT FONT GREAT VIBES
                         document.documentElement.style.setProperty('--font-cover-title', "'Great Vibes', cursive");
                     }
                     return true;
@@ -1795,7 +2178,8 @@
                     color_secondary: document.getElementById('adm-color-secondary').value,
                     color_bg_app: document.getElementById('adm-color-bg-app').value,
                     color_surface: document.getElementById('adm-color-surface').value,
-                    feature_flags: FEATURE_FLAGS
+                    feature_flags: FEATURE_FLAGS,
+                    watermark_text: WATERMARK_TEXT
                 };
 
                 const { error } = await supabaseClient
