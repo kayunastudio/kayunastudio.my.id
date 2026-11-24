@@ -2273,8 +2273,7 @@
             copyClientLink(slug) {
                 const url = `${window.location.origin}${window.location.pathname}?event=${encodeURIComponent(slug)}`;
                 navigator.clipboard?.writeText(url).then(() => {
-                    alert("🔗 Link event klien disalin:
-" + url);
+                    alert("🔗 Link event klien disalin:\n" + url);
                 }).catch(() => {
                     prompt("Salin link event berikut:", url);
                 });
