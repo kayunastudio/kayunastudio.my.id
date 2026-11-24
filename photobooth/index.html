@@ -888,7 +888,7 @@
 
             const pathSegments = window.location.pathname
                 .split('/')
-                .filter(s => s && s !== 'index.html' && s !== 'index_6.html' && s !== 'index_7.html' && s !== 'photobooth');
+                .filter(s => s && s !== 'index.html' && s !== 'index_6.html' && s !== 'index_7.html' && s !== 'index_9.html' && s !== 'photobooth');
             if (pathSegments.length > 0) {
                 return pathSegments[0].trim();
             }
@@ -1890,7 +1890,7 @@
                 let baseSlug = (rawName || '')
                     .toLowerCase()
                     .normalize('NFD')
-                    .replace(/[̀-ͯ]/g, '')
+                    .replace(/[\u0300-\u036f]/g, '')
                     .replace(/[^a-z0-9]+/g, '_')
                     .replace(/^_+|_+$/g, '');
 
@@ -1980,8 +1980,12 @@
                     if (defaultTarget) {
                         await this.selectClient(defaultTarget, false);
                     } else {
-                        this.renderClientsTable();
+                        document.getElementById('sa-selected-client-label').innerText = 'Target: -';
+                        document.getElementById('sa-client-frames-header').innerText = 'Daftar Frame Aktif pada Klien Terpilih:';
+                        document.getElementById('sa-client-frames-tbody').innerHTML = "<tr><td colspan='3'>Belum ada klien aktif.</td></tr>";
                     }
+
+                    this.renderClientsTable();
                 } catch (e) {
                     tbody.innerHTML = `<tr><td colspan='6' style='color:var(--color-danger);'>Gagal memuat daftar klien: ${e.message}</td></tr>`;
                 }
@@ -2167,15 +2171,19 @@
                     const rentalExpiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
 
                     if (newSlug === oldSlug) {
-                        const { error: evErr } = await supabaseClient
+                        const { data: updatedEv, error: evErr } = await supabaseClient
                             .from('events')
                             .update({
                                 event_name: newName,
                                 admin_password: newPin,
                                 is_locked: oldSlug === MASTER_SLUG ? false : isLocked
                             })
-                            .eq('slug', oldSlug);
+                            .eq('slug', oldSlug)
+                            .select('slug');
                         if (evErr) throw evErr;
+                        if (!updatedEv || updatedEv.length === 0) {
+                            throw new Error("Update pada tabel 'events' tidak berpengaruh (periksa kebijakan RLS UPDATE di Supabase).");
+                        }
 
                         const { error: stErr } = await supabaseClient
                             .from('event_settings')
@@ -2198,7 +2206,10 @@
                         await supabaseClient.from('event_settings').update({ event_slug: newSlug, rental_expires_at: rentalExpiresAt }).eq('event_slug', oldSlug);
                         await supabaseClient.from('frames').update({ event_slug: newSlug }).eq('event_slug', oldSlug);
                         await supabaseClient.from('media').update({ event_slug: newSlug }).eq('event_slug', oldSlug);
-                        await supabaseClient.from('events').delete().eq('slug', oldSlug);
+                        const { data: delOld, error: delOldErr } = await supabaseClient.from('events').delete().eq('slug', oldSlug).select('slug');
+                        if (delOldErr || !delOld || delOld.length === 0) {
+                            throw new Error("Slug lama tidak terhapus saat migrasi (periksa kebijakan RLS DELETE di Supabase).");
+                        }
                     }
 
                     this.selectedSlug = newSlug;
@@ -2211,7 +2222,7 @@
             },
 
             async deleteClientAccount(slug) {
-                if (slug === MASTER_SLUG) {
+                if (!slug || slug === MASTER_SLUG) {
                     return alert("Slug master tidak dapat dihapus.");
                 }
                 const ev = this.clientsCache.find(c => c.slug === slug);
@@ -2221,7 +2232,7 @@
                 }
 
                 try {
-                    // Hapus file storage jika ada
+                    // 1. Ambil daftar storage_path sebelum menghapus baris database
                     const [framesRes, mediaRes] = await Promise.all([
                         supabaseClient.from('frames').select('storage_path').eq('event_slug', slug),
                         supabaseClient.from('media').select('storage_path, preview_storage_path').eq('event_slug', slug)
@@ -2236,22 +2247,45 @@
                         }
                     });
 
+                    // 2. Hapus relasi anak terlebih dahulu
+                    const { error: delMediaErr } = await supabaseClient.from('media').delete().eq('event_slug', slug);
+                    if (delMediaErr) throw delMediaErr;
+
+                    const { error: delFramesErr } = await supabaseClient.from('frames').delete().eq('event_slug', slug);
+                    if (delFramesErr) throw delFramesErr;
+
+                    const { error: delSettingsErr } = await supabaseClient.from('event_settings').delete().eq('event_slug', slug);
+                    if (delSettingsErr) throw delSettingsErr;
+
+                    // 3. Hapus baris utama pada tabel 'events' & verifikasi baris terhapus
+                    const { data: deletedRows, error: delEvErr } = await supabaseClient
+                        .from('events')
+                        .delete()
+                        .eq('slug', slug)
+                        .select('slug');
+
+                    if (delEvErr) throw delEvErr;
+
+                    if (!deletedRows || deletedRows.length === 0) {
+                        throw new Error(
+                            `Akun "${slug}" tidak terhapus dari tabel 'events'. Pastikan policy RLS DELETE untuk role anon/authenticated aktif pada tabel 'events' di Supabase.`
+                        );
+                    }
+
+                    // 4. Bersihkan storage & cache lokal perangkat
                     if (pathsToRemove.length > 0) {
                         await supabaseClient.storage.from('wedding-photobooth').remove(pathsToRemove);
                     }
-
-                    await supabaseClient.from('media').delete().eq('event_slug', slug);
-                    await supabaseClient.from('frames').delete().eq('event_slug', slug);
-                    await supabaseClient.from('event_settings').delete().eq('event_slug', slug);
-                    const { error: delEvErr } = await supabaseClient.from('events').delete().eq('slug', slug);
-                    if (delEvErr) throw delEvErr;
+                    try {
+                        localStorage.removeItem(`my_photos_${slug}`);
+                    } catch (_) {}
 
                     if (this.selectedSlug === slug) {
                         this.selectedSlug = null;
                     }
 
                     await this.loadDashboard();
-                    alert(`✅ Akun klien "${label}" berhasil dihapus.`);
+                    alert(`✅ Akun klien "${label}" berhasil dihapus permanen dari database.`);
                 } catch (e) {
                     alert("Gagal menghapus akun klien: " + e.message);
                 }
