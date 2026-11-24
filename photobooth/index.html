@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Photobooth SaaS</title>
+    <title>Kayuna Digital Photobooth SaaS</title>
 
     <!-- Supabase JS Client v2 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,7 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-    <!-- GOOGLE FONTS (Memuat Great Vibes & Font Estetik Utama) -->
+    <!-- GOOGLE FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;800&family=Great+Vibes&family=Montserrat:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@
             --color-text-cover-title: #e07a5f;
             --color-text-cover-sub: #8d7b68;
 
-            /* VARIABEL FONT TITLE COVER POLAROID (DEFAULT: GREAT VIBES) */
+            /* VARIABEL FONT TITLE COVER POLAROID */
             --font-cover-title: 'Great Vibes', cursive;
 
             --color-text-main: #2b2d42;
@@ -84,7 +84,6 @@
         #cover-screen { position: fixed; inset: 0; background: var(--color-bg-cover); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; transition: opacity 0.5s ease, visibility 0.5s ease; }
         #cover-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        /* PENERAPAN FONT COVER TITLE YANG DITEGASKAN */
         .cover-title { 
             font-family: var(--font-cover-title, 'Great Vibes', cursive) !important; 
             font-size: 3.2rem; 
@@ -161,7 +160,7 @@
         th { background: #f7f3ec; color: var(--color-secondary); text-transform: uppercase; font-size: 0.75rem; font-weight: 800; }
 
         .modal-backdrop { position: fixed; inset: 0; background: rgba(43, 45, 66, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(6px); }
-        .modal-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-modal); max-width: 480px; width: 100%; padding: 28px; display: flex; flex-direction: column; gap: 18px; position: relative; }
+        .modal-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-modal); max-width: 480px; width: 100%; padding: 28px; display: flex; flex-direction: column; gap: 18px; position: relative; max-height: 90vh; overflow-y: auto; }
         .modal-close-button { position: absolute; top: 16px; right: 16px; background: #f3ece1; border: none; color: var(--color-secondary); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; }
 
         /* ADVANCED COLOR PICKER GRID & HEX INPUT STYLES */
@@ -174,10 +173,10 @@
         .color-picker-controls input[type="text"]:focus { border-color: var(--color-primary); background: var(--color-surface); }
 
         /* SWITCH TOGGLE MULTI FEATURE */
-        .switch-control { display: flex; align-items: center; justify-content: space-between; background: var(--color-surface-card); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--color-border); }
+        .switch-control { display: flex; align-items: center; justify-content: space-between; background: var(--color-surface-card); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--color-border); gap: 12px; }
         .switch-label { font-size: 0.85rem; font-weight: 700; color: var(--color-text-main); }
         .switch-sub { font-size: 0.75rem; color: var(--color-text-muted); }
-        .switch-checkbox { width: 20px; height: 20px; accent-color: var(--color-purple); cursor: pointer; }
+        .switch-checkbox { width: 20px; height: 20px; accent-color: var(--color-purple); cursor: pointer; flex-shrink: 0; }
 
         /* SUPERADMIN KPI & STATUS BADGE */
         .sa-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
@@ -189,7 +188,16 @@
         .status-expiring { background: #fef3c7; color: #92400e; }
         .status-expired { background: #fee2e2; color: #991b1b; }
         .status-locked { background: #f3e8ff; color: #5b21b6; }
+        .status-master { background: #e0e7ff; color: #3730a3; }
         .pin-code { font-family: monospace; background: #f3ece1; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
+
+        /* CHECKBOX LIST MULTI CLIENT UPLOAD FRAME */
+        .client-checklist-box { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; max-height: 210px; overflow-y: auto; background: #fff; border: 1.5px solid var(--color-border); border-radius: 12px; padding: 12px; }
+        .client-check-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-surface-card); cursor: pointer; font-size: 0.82rem; }
+        .client-check-item:hover { border-color: var(--color-purple); }
+        .client-check-item input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--color-purple); cursor: pointer; }
+
+        .layout-limit-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; margin-top: 10px; background: #fff; padding: 12px; border-radius: 12px; border: 1px solid var(--color-border); }
 
         #error-screen { position: fixed; inset: 0; background: #fff; z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; }
     </style>
@@ -204,7 +212,7 @@
 
     <!-- 0. COVER PAGE LANDING -->
     <div id="cover-screen">
-        <div class="cover-title" id="display-cover-title">Wedding Photobooth</div>
+        <div class="cover-title" id="display-cover-title">Kayuna Photobooth</div>
 
         <div class="polaroid-camera-housing">
             <div class="camera-slot"></div>
@@ -217,7 +225,7 @@
         </div>
 
         <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 320px;">
-            <p class="cover-subtitle" id="display-cover-subtitle">Abadikan momen berkesanmu di Perayaan Pernikahan Kami</p>
+            <p class="cover-subtitle" id="display-cover-subtitle">Abadikan momen berkesanmu di Perayaan Spesial Kami</p>
             <button class="btn btn-primary" style="padding: 16px 36px; font-size: 1rem; width: 100%;" onclick="AppRouter.enterAppFromCover()">
                 ✨ Sesi Pemotretan ✨
             </button>
@@ -227,7 +235,7 @@
     <!-- APP HEADER -->
     <header>
         <div style="font-weight: 900; font-size: 1.25rem; color: var(--color-primary); letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;">
-            <span>🌸</span> <span id="header-event-name">Kayuna Wedding Photobooth</span>
+            <span>🌸</span> <span id="header-event-name">Kayuna Photobooth</span>
         </div>
         <button class="btn btn-secondary btn-sm" onclick="AuthEngine.toggleAdminModal()">
             🔒 Admin Access
@@ -265,7 +273,6 @@
                 
                 <div class="viewport-container" id="camera-viewport-box">
                     <video id="photo-camera-stream" class="viewport-element camera-mirror" autoplay playsinline muted></video>
-                    <!-- KANVAS PENYUSUNAN FOTO BERLAYOUT -->
                     <canvas id="photo-overlay-canvas" class="viewport-element" style="display: none;"></canvas>
                     
                     <div id="photo-countdown-layer" class="countdown-overlay">3</div>
@@ -322,7 +329,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Pesan & Doa Restu</label>
-                    <textarea id="input-guest-message" class="form-textarea" placeholder="Tuliskan harapan terbaik untuk kedua mempelai..."></textarea>
+                    <textarea id="input-guest-message" class="form-textarea" placeholder="Tuliskan harapan terbaik..."></textarea>
                 </div>
 
                 <div class="btn-group" style="margin-top: 6px;">
@@ -337,13 +344,13 @@
             <div class="card">
                 <div class="card-header">🖼️ Galeri Photobooth</div>
                 <p style="font-size: 0.85rem; color: var(--color-text-muted);">
-                    Preview hasil.
+                    Preview hasil pemotretan dari perangkat ini.
                 </p>
                 <div class="gallery-grid-layout" id="gallery-grid-container"></div>
             </div>
         </section>
 
-        <!-- 5. SECTION: ADMIN PANEL EVENT -->
+        <!-- 5. SECTION: ADMIN PANEL EVENT (KLIEN) -->
         <section id="section-admin" class="component-section">
             <div class="card">
                 <div class="card-header">⚙️ Customization</div>
@@ -354,10 +361,9 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                         <div class="form-group">
                             <label class="form-label">Judul Utama</label>
-                            <input type="text" id="adm-cover-title" class="form-input" value="Wedding Photobooth">
+                            <input type="text" id="adm-cover-title" class="form-input" value="Kayuna Photobooth">
                         </div>
                         
-                        <!-- DROP DOWN PILIHAN FONT TITLE COVER POLAROID -->
                         <div class="form-group">
                             <label class="form-label">Jenis Font Judul Cover</label>
                             <select id="adm-font-title" class="form-select" onchange="AdminEngine.updateFontPreview(this.value)">
@@ -373,7 +379,7 @@
 
                         <div class="form-group">
                             <label class="form-label">Sub-Judul / Ucapan</label>
-                            <input type="text" id="adm-cover-sub" class="form-input" value="Abadikan momen berkesanmu di Perayaan Pernikahan Kami">
+                            <input type="text" id="adm-cover-sub" class="form-input" value="Abadikan momen berkesanmu di Perayaan Spesial Kami">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Unggah Foto Polaroid (File PNG/JPG)</label>
@@ -449,21 +455,27 @@
                 <button class="btn btn-primary btn-sm" style="align-self: flex-start;" onclick="AdminEngine.saveStyleSettings()">💾 Simpan Pengaturan Tampilan</button>
             </div>
 
+            <!-- KARTU FRAME KLIEN (DIKONTROL OLEH allow_frame_upload & allow_multiframe) -->
             <div class="card" id="admin-frame-card">
                 <div class="card-header">🖼️ Frame Photobooth</div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
-                    <div class="form-group">
-                        <label class="form-label">Nama / Variasi Background</label>
-                        <input type="text" id="adm-frame-title" class="form-input" placeholder="Misal: Theme Classic Floral (1080x1920)">
+                <div id="admin-frame-upload-controls" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                        <div class="form-group">
+                            <label class="form-label">Nama / Variasi Background</label>
+                            <input type="text" id="adm-frame-title" class="form-input" placeholder="Misal: Theme Classic Floral (1080x1920)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Berkas Gambar (PNG/JPG 1080x1920)</label>
+                            <input type="file" id="adm-frame-file" class="form-input" accept="image/*">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Berkas Gambar (PNG/JPG 1080x1920)</label>
-                        <input type="file" id="adm-frame-file" class="form-input" accept="image/*">
-                    </div>
+                    <button class="btn btn-primary btn-sm" style="align-self: flex-start;" onclick="AdminEngine.uploadFrame()">➕ Tambah Variasi Background</button>
                 </div>
-                <button class="btn btn-primary btn-sm" style="align-self: flex-start; margin-top: 4px;" onclick="AdminEngine.uploadFrame()">➕ Tambah Variasi Background</button>
+                <div id="admin-frame-locked-notice" style="display: none; background: #fef3c7; color: #92400e; padding: 12px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;">
+                    🔒 Fitur unggah / hapus frame mandiri dinonaktifkan oleh Superadmin pada paket Anda.
+                </div>
 
-                <div class="table-container" style="margin-top: 10px;">
+                <div class="table-container" style="margin-top: 6px;">
                     <div style="padding: 12px 16px; font-weight: 700; color: var(--color-secondary); font-size: 0.85rem;">Daftar Background Aktif Event Ini:</div>
                     <table>
                         <thead>
@@ -510,7 +522,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <div class="card-header" style="color: var(--color-purple);">👑 Master Dashboard Superadmin SaaS</div>
-                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Kelola daftar klien aktif, PIN admin klien, masa sewa & modul paket SaaS.</p>
+                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Slug Master aktif sebagai pusat manajemen. Setiap klien memiliki slug terpisah yang terisolasi penuh.</p>
                     </div>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.loadDashboard()">🔄 Refresh Data</button>
@@ -571,16 +583,16 @@
                         </table>
                     </div>
 
-                    <!-- TAMBAH KLIEN BARU -->
-                    <details style="background: #fff; border: 1px solid var(--color-border); border-radius: 12px; padding: 14px;">
-                        <summary style="cursor: pointer; font-weight: 800; color: var(--color-purple); font-size: 0.875rem;">➕ Tambah Klien / Event Baru</summary>
+                    <!-- TAMBAH KLIEN BARU (AUTO SLUG UNIK TERISOLASI) -->
+                    <details style="background: #fff; border: 1px solid var(--color-border); border-radius: 12px; padding: 14px;" open>
+                        <summary style="cursor: pointer; font-weight: 800; color: var(--color-purple); font-size: 0.875rem;">➕ Tambah Klien / Event Baru (Auto-Slug Terisolasi)</summary>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 14px;">
                             <div class="form-group">
                                 <label class="form-label">Nama Event / Klien</label>
                                 <input type="text" id="sa-new-name" class="form-input" placeholder="Budi & Sari Wedding" oninput="SuperAdminEngine.generateSlugFromName(this.value)">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Slug URL (otomatis / bisa diedit)</label>
+                                <label class="form-label">Slug URL Baru (Otomatis)</label>
                                 <div style="display: flex; gap: 6px; align-items: center;">
                                     <input type="text" id="sa-new-slug" class="form-input" placeholder="budi_sari_wedding" oninput="this.dataset.manualEdited = 'true'">
                                     <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sa-new-slug').dataset.manualEdited = 'false'; SuperAdminEngine.generateSlugFromName(document.getElementById('sa-new-name').value, true)" title="Generate ulang slug otomatis">↻</button>
@@ -588,36 +600,41 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">PIN Admin Klien</label>
-                                <input type="text" id="sa-new-pin" class="form-input" placeholder="misal: 123456">
+                                <div style="display: flex; gap: 6px;">
+                                    <input type="text" id="sa-new-pin" class="form-input" placeholder="misal: 123456">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sa-new-pin').value = String(Math.floor(100000 + Math.random() * 900000))" title="Acak PIN">🎲</button>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Masa Aktif Hingga</label>
                                 <input type="datetime-local" id="sa-new-expiry" class="form-input">
                             </div>
                         </div>
-                        <button class="btn btn-success btn-sm" style="margin-top: 12px;" onclick="SuperAdminEngine.createClientEvent()">✅ Buat Klien Baru</button>
+                        <button class="btn btn-success btn-sm" style="margin-top: 12px;" onclick="SuperAdminEngine.createClientEvent()">✅ Buat Klien & Slug Baru</button>
                     </details>
                 </div>
 
-                <!-- PENGATURAN PIN KLIEN, MASA SEWA & FEATURE FLAGS -->
+                <!-- PENGATURAN EDIT AKUN KLIEN, MASA SEWA, UPLOAD FRAME & PEMBATASAN LAYOUT -->
                 <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Pengaturan PIN Klien, Masa Sewa & Feature Flags</strong>
+                        <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Pengaturan Akun Klien, Pembatasan Frame & Layout</strong>
                         <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-primary);" id="sa-selected-client-label">Target: -</span>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-                        <!-- PENGATURAN PIN KLIEN -->
+                        <div class="form-group" style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
+                            <label class="form-label" style="color: var(--color-purple);">📝 Nama Event / Klien Terpilih</label>
+                            <input type="text" id="sa-client-name" class="form-input" style="margin-top: 4px;" placeholder="Nama acara klien">
+                        </div>
+
                         <div class="form-group" style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
                             <label class="form-label" style="color: var(--color-purple);">🔑 PIN Admin Klien Terpilih</label>
                             <div style="display: flex; gap: 8px; margin-top: 4px;">
                                 <input type="text" id="sa-client-pin" class="form-input" placeholder="PIN / Password klien">
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.generateRandomPin()">🎲 Acak</button>
                             </div>
-                            <span style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px;">Digunakan klien saat login di tombol 🔒 Admin Access.</span>
                         </div>
 
-                        <!-- DURATION RENTAL CONTROL -->
                         <div class="form-group" style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
                             <label class="form-label" style="color: var(--color-purple);">⏱️ Masa Aktif Sewa (Rental Expiry Date)</label>
                             <input type="datetime-local" id="sa-rental-expiry" class="form-input" style="margin-top: 4px;">
@@ -642,18 +659,42 @@
                         <input type="text" id="sa-watermark-text" class="form-input" value="Powered by Kayuna Photobooth Studio" placeholder="Teks watermark di pojok kanan bawah hasil foto">
                     </div>
 
+                    <!-- PENGATURAN BARU: IZIN UPLOAD FRAME & PEMBATASAN JUMLAH/JENIS LAYOUT -->
                     <div class="switch-control">
                         <div>
-                            <div class="switch-label">1. Fitur Pilihan Layout Grid</div>
-                            <div class="switch-sub">Izinkan pengguna memilih variasi komposisi grid foto (Single, Strip 2-3, Quad 4, 6)</div>
+                            <div class="switch-label">🚫 Izinkan Klien Upload Frame Mandiri</div>
+                            <div class="switch-sub">Matikan opsi ini agar klien tidak bisa mengunggah atau menghapus frame sendiri (hanya dari Superadmin)</div>
+                        </div>
+                        <input type="checkbox" id="sa-feat-frame-upload" class="switch-checkbox" checked>
+                    </div>
+
+                    <div class="switch-control">
+                        <div>
+                            <div class="switch-label">1. Fitur Pilihan Layout Grid (Multi-Layout)</div>
+                            <div class="switch-sub">Jika dimatikan, hanya 1 layout dasar pertama yang tampil untuk klien ini</div>
                         </div>
                         <input type="checkbox" id="sa-feat-layouts" class="switch-checkbox" checked>
+                    </div>
+
+                    <!-- PEMBATASAN JUMLAH & PILIHAN LAYOUT SPESIFIK -->
+                    <div style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <div class="switch-label">📐 Pembatasan Jumlah & Jenis Layout Tersedia</div>
+                                <div class="switch-sub">Batasi maksimal jumlah layout yang tampil dan pilih jenis layout yang diizinkan untuk klien ini</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label class="form-label" style="margin: 0;">Maks. Layout:</label>
+                                <input type="number" id="sa-max-layouts" class="form-input" min="1" max="8" value="8" style="width: 85px; padding: 8px 10px;">
+                            </div>
+                        </div>
+                        <div class="layout-limit-checklist" id="sa-allowed-layouts-list"></div>
                     </div>
 
                     <div class="switch-control">
                         <div>
                             <div class="switch-label">2. Fitur Multi-Background / Multi-Frame</div>
-                            <div class="switch-sub">Izinkan upload lebih dari 1 variasi frame background</div>
+                            <div class="switch-sub">Izinkan tampilan lebih dari 1 variasi frame background</div>
                         </div>
                         <input type="checkbox" id="sa-feat-multiframe" class="switch-checkbox" checked>
                     </div>
@@ -684,8 +725,8 @@
 
                     <div class="switch-control">
                         <div>
-                            <div class="switch-label">6. Unduh Unduhan ZIP Hasil Sesi Pemotretan & Pesan</div>
-                            <div class="switch-sub">Izinkan admin event mengunduh seluruh file hasil sesi (foto, video, audio, ucapan teks) dalam ZIP</div>
+                            <div class="switch-label">6. Unduh ZIP Hasil Sesi Pemotretan & Pesan</div>
+                            <div class="switch-sub">Izinkan admin event mengunduh seluruh file hasil sesi dalam ZIP</div>
                         </div>
                         <input type="checkbox" id="sa-feat-zip-download" class="switch-checkbox" checked>
                     </div>
@@ -698,7 +739,58 @@
                         <input type="checkbox" id="sa-feat-watermark" class="switch-checkbox" checked>
                     </div>
 
-                    <button class="btn btn-purple" style="margin-top: 10px; padding: 14px;" onclick="SuperAdminEngine.savePackageSettings()">💾 Simpan PIN, Masa Sewa & Konfigurasi Klien</button>
+                    <button class="btn btn-purple" style="margin-top: 6px; padding: 14px;" onclick="SuperAdminEngine.savePackageSettings()">💾 Simpan Perubahan Akun & Konfigurasi Klien</button>
+                </div>
+
+                <!-- FITUR BARU: UPLOAD FRAME UNTUK BEBERAPA KLIEN SEKALIGUS MELALUI SUPERADMIN -->
+                <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <strong style="color: var(--color-purple); font-size: 0.95rem;">🖼️ Upload & Distribusi Frame ke Beberapa Klien (Batch Frame)</strong>
+                            <p style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 2px;">Unggah 1 desain frame (1080x1920) dan distribusikan sekaligus ke banyak akun klien terpilih.</p>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.toggleAllBatchClients(true)">☑️ Pilih Semua</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.toggleAllBatchClients(false)">⬜ Batal Pilih</button>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Nama Template Frame</label>
+                            <input type="text" id="sa-batch-frame-title" class="form-input" placeholder="Misal: Gold Luxury Frame 2026">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Berkas Frame (PNG/JPG 1080x1920)</label>
+                            <input type="file" id="sa-batch-frame-file" class="form-input" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Pilih Klien Penerima Frame:</label>
+                        <div class="client-checklist-box" id="sa-batch-clients-list">
+                            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Memuat daftar klien...</span>
+                        </div>
+                    </div>
+
+                    <button id="btn-sa-batch-upload-frame" class="btn btn-primary" style="align-self: flex-start;" onclick="SuperAdminEngine.uploadFrameToMultipleClients()">🚀 Upload & Terapkan Frame ke Klien Terpilih</button>
+
+                    <!-- KELOLA FRAME MILIK KLIEN TERPILIH DARI SUPERADMIN -->
+                    <div class="table-container" style="margin-top: 6px;">
+                        <div style="padding: 12px 16px; font-weight: 700; color: var(--color-purple); font-size: 0.85rem;" id="sa-client-frames-header">Daftar Frame Aktif pada Klien Terpilih:</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Preview</th>
+                                    <th>Nama Template</th>
+                                    <th style="text-align: right;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sa-client-frames-tbody">
+                                <tr><td colspan="3">Pilih klien pada tabel di atas untuk melihat daftar framenya.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
@@ -722,15 +814,53 @@
         </div>
     </div>
 
+    <!-- MODAL EDIT AKUN KLIEN (SUPERADMIN) -->
+    <div id="sa-edit-client-modal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 500px;">
+            <button class="modal-close-button" onclick="SuperAdminEngine.closeEditClientModal()">✕</button>
+            <div class="card-header" style="color: var(--color-purple);">✏️ Edit Akun Klien</div>
+            <input type="hidden" id="sa-edit-original-slug">
+            <div class="form-group">
+                <label class="form-label">Nama Event / Klien</label>
+                <input type="text" id="sa-edit-name" class="form-input" placeholder="Nama Event">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Slug URL (Unik)</label>
+                <input type="text" id="sa-edit-slug" class="form-input" placeholder="slug_event">
+                <span style="font-size: 0.72rem; color: var(--color-text-muted);">Mengubah slug akan memperbarui tautan URL event dan relasi datanya.</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">PIN Admin Klien</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="sa-edit-pin" class="form-input" placeholder="PIN Admin">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sa-edit-pin').value = String(Math.floor(100000 + Math.random() * 900000))">🎲 Acak</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Masa Aktif Hingga</label>
+                <input type="datetime-local" id="sa-edit-expiry" class="form-input">
+            </div>
+            <div class="switch-control">
+                <div>
+                    <div class="switch-label">🔒 Kunci Akses Event</div>
+                    <div class="switch-sub">Nonaktifkan akses sementara tanpa menghapus data</div>
+                </div>
+                <input type="checkbox" id="sa-edit-locked" class="switch-checkbox">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 6px;">
+                <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="SuperAdminEngine.closeEditClientModal()">Batal</button>
+                <button type="button" class="btn btn-purple" style="flex: 1.5;" onclick="SuperAdminEngine.saveEditedClientModal()">💾 Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL MEDIA PREVIEW ADMIN -->
     <div id="admin-preview-modal" class="modal-backdrop">
         <div class="modal-card" style="max-width: 520px;">
             <button class="modal-close-button" onclick="AdminEngine.closePreviewModal()">✕</button>
             <div class="card-header" id="preview-modal-title">👁️ Detail Media & Pesan</div>
             
-            <div id="preview-modal-body" style="display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
-                <!-- Konten dinamis akan disuntikkan dari JS -->
-            </div>
+            <div id="preview-modal-body" style="display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;"></div>
 
             <div style="display: flex; gap: 10px; margin-top: 6px;">
                 <button id="preview-modal-download-btn" type="button" class="btn btn-secondary btn-sm" style="flex: 1;">💾 Unduh Kualitas Tinggi</button>
@@ -745,31 +875,37 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // URL WEB APP GOOGLE APPS SCRIPT UNTUK PENYIMPANAN & UNDUH FILE ASLI GOOGLE DRIVE
         const GDRIVE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwBQ5JOg9WmJCsHn10bmCZzkGy_vbGo2mDFcSKjwmqh-IwN5qcfrcNyvar5Bn3E02VL/exec";
 
         const SUPERADMIN_PIN = "246998";
+        const MASTER_SLUG = "master";
 
-        // ADVANCED URL SLUG RESOLVER
+        // RESOLVE SLUG: DEFAULT KE SLUG 'master' JIKA TIDAK ADA PARAMETER EVENT DI URL
         function resolveEventSlugFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
             const querySlug = urlParams.get('event');
-            if (querySlug) return querySlug;
+            if (querySlug) return querySlug.trim();
 
-            const pathSegments = window.location.pathname.split('/').filter(s => s && s !== 'index.html' && s !== 'photobooth');
+            const pathSegments = window.location.pathname
+                .split('/')
+                .filter(s => s && s !== 'index.html' && s !== 'index_6.html' && s !== 'index_7.html' && s !== 'photobooth');
             if (pathSegments.length > 0) {
-                return pathSegments[0];
+                return pathSegments[0].trim();
             }
 
-            return null;
+            return MASTER_SLUG;
         }
 
         let CURRENT_EVENT_SLUG = resolveEventSlugFromURL();
+        let IS_MASTER_SLUG = CURRENT_EVENT_SLUG === MASTER_SLUG;
         let CURRENT_EVENT_DATA = null;
         let RENTAL_EXPIRES_AT = null;
         let WATERMARK_TEXT = "Powered by Kayuna Photobooth Studio";
         let FEATURE_FLAGS = {
             allow_layouts: true,
+            max_layouts: 8,
+            allowed_layout_ids: [],
+            allow_frame_upload: true,
             allow_multiframe: true,
             allow_video_guestbook: true,
             allow_audio_guestbook: true,
@@ -944,7 +1080,13 @@
                 if (shareIgBtn) shareIgBtn.style.display = FEATURE_FLAGS.allow_ig_share ? 'inline-flex' : 'none';
 
                 const frameCard = document.getElementById('admin-frame-card');
-                if (frameCard) frameCard.style.display = FEATURE_FLAGS.allow_multiframe ? 'flex' : 'none';
+                const frameUploadControls = document.getElementById('admin-frame-upload-controls');
+                const frameLockedNotice = document.getElementById('admin-frame-locked-notice');
+                const canUploadFrame = FEATURE_FLAGS.allow_frame_upload !== false;
+
+                if (frameCard) frameCard.style.display = 'flex';
+                if (frameUploadControls) frameUploadControls.style.display = canUploadFrame ? 'flex' : 'none';
+                if (frameLockedNotice) frameLockedNotice.style.display = canUploadFrame ? 'none' : 'block';
 
                 const zipBtn = document.getElementById('btn-admin-download-all');
                 if (zipBtn) zipBtn.style.display = FEATURE_FLAGS.allow_zip_download ? 'inline-flex' : 'none';
@@ -991,6 +1133,25 @@
                 { id: 'grid_2x3_6', title: 'Grid 2x3 (6 Foto)', pose_count: 6, rows: '1fr 1fr 1fr', cols: '1fr 1fr' }
             ],
 
+            getEffectiveGridTemplates() {
+                if (!FEATURE_FLAGS.allow_layouts) {
+                    return [this.baseGridTemplates[0]];
+                }
+
+                let pool = [...this.baseGridTemplates];
+                if (Array.isArray(FEATURE_FLAGS.allowed_layout_ids) && FEATURE_FLAGS.allowed_layout_ids.length > 0) {
+                    const filtered = pool.filter(t => FEATURE_FLAGS.allowed_layout_ids.includes(t.id));
+                    if (filtered.length > 0) pool = filtered;
+                }
+
+                const maxCount = parseInt(FEATURE_FLAGS.max_layouts, 10);
+                if (!Number.isNaN(maxCount) && maxCount > 0 && maxCount < pool.length) {
+                    pool = pool.slice(0, maxCount);
+                }
+
+                return pool;
+            },
+
             async loadPublicLayouts() {
                 const container = document.getElementById('public-layout-grid');
                 const dotsContainer = document.getElementById('slider-dots-container');
@@ -1016,9 +1177,7 @@
                         availableBackgrounds = [{ title: 'Standard Background', url: null }];
                     }
 
-                    const activeTemplates = FEATURE_FLAGS.allow_layouts 
-                        ? this.baseGridTemplates 
-                        : [this.baseGridTemplates[0]];
+                    const activeTemplates = this.getEffectiveGridTemplates();
 
                     const generatedLayoutList = [];
                     availableBackgrounds.forEach((bg, bgIdx) => {
@@ -1088,7 +1247,9 @@
 
                     container.onscroll = () => {
                         const scrollPos = container.scrollLeft;
-                        const cardW = container.querySelector('.layout-card').offsetWidth + 16;
+                        const firstCard = container.querySelector('.layout-card');
+                        if (!firstCard) return;
+                        const cardW = firstCard.offsetWidth + 16;
                         const activeIndex = Math.round(scrollPos / cardW);
 
                         document.querySelectorAll('.slider-dots .dot').forEach((d, i) => {
@@ -1713,7 +1874,7 @@
             }
         };
 
-        /* SUPERADMIN ENGINE (LIST KLIEN AKTIF, PENGATURAN PIN KLIEN, MASA SEWA & FEATURE FLAGS) */
+        /* SUPERADMIN ENGINE: SLUG MASTER, EDIT/HAPUS KLIEN, PEMBATASAN FRAME & LAYOUT, MULTI-CLIENT FRAME UPLOAD */
         const SuperAdminEngine = {
             clientsCache: [],
             settingsMap: {},
@@ -1726,16 +1887,20 @@
 
                 if (!forceUpdate && slugInput.dataset.manualEdited === 'true') return;
 
-                const baseSlug = (rawName || '')
+                let baseSlug = (rawName || '')
                     .toLowerCase()
                     .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[̀-ͯ]/g, '')
                     .replace(/[^a-z0-9]+/g, '_')
                     .replace(/^_+|_+$/g, '');
 
                 if (!baseSlug) {
                     slugInput.value = '';
                     return;
+                }
+
+                if (baseSlug === MASTER_SLUG) {
+                    baseSlug = `${MASTER_SLUG}_client`;
                 }
 
                 const existingSlugs = new Set((this.clientsCache || []).map(c => (c.slug || '').toLowerCase()));
@@ -1759,6 +1924,9 @@
             },
 
             getClientStatus(eventObj, settingObj) {
+                if (eventObj?.slug === MASTER_SLUG) {
+                    return { code: 'master', label: '👑 Master Hub', css: 'status-master' };
+                }
                 if (eventObj?.is_locked) {
                     return { code: 'locked', label: '🔒 Terkunci', css: 'status-locked' };
                 }
@@ -1802,10 +1970,15 @@
                     });
 
                     this.updateKpis();
+                    this.renderBatchClientsChecklist();
 
-                    const targetSlug = this.selectedSlug || CURRENT_EVENT_SLUG || (this.clientsCache[0]?.slug ?? null);
-                    if (targetSlug) {
-                        this.selectClient(targetSlug, false);
+                    const nonMasterClients = this.clientsCache.filter(c => c.slug !== MASTER_SLUG);
+                    const defaultTarget = (this.selectedSlug && this.clientsCache.some(c => c.slug === this.selectedSlug))
+                        ? this.selectedSlug
+                        : (nonMasterClients[0]?.slug || this.clientsCache[0]?.slug || null);
+
+                    if (defaultTarget) {
+                        await this.selectClient(defaultTarget, false);
                     } else {
                         this.renderClientsTable();
                     }
@@ -1815,12 +1988,13 @@
             },
 
             updateKpis() {
-                const total = this.clientsCache.length;
+                const clientList = this.clientsCache.filter(ev => ev.slug !== MASTER_SLUG);
+                const total = clientList.length;
                 let activeCount = 0;
                 let inactiveCount = 0;
                 let activeMediaTotal = 0;
 
-                this.clientsCache.forEach(ev => {
+                clientList.forEach(ev => {
                     const st = this.getClientStatus(ev, this.settingsMap[ev.slug]);
                     if (st.code === 'expired' || st.code === 'locked') {
                         inactiveCount++;
@@ -1865,11 +2039,14 @@
                     const status = this.getClientStatus(ev, stObj);
                     const pin = ev.admin_password || ev.passcode || '-';
                     const name = ev.event_name || ev.title || ev.slug;
-                    const expiryText = stObj.rental_expires_at
-                        ? new Date(stObj.rental_expires_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
-                        : 'Tanpa Batas';
+                    const expiryText = ev.slug === MASTER_SLUG
+                        ? 'Permanen (Master)'
+                        : (stObj.rental_expires_at
+                            ? new Date(stObj.rental_expires_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+                            : 'Tanpa Batas');
                     const mediaCount = this.mediaCountMap[ev.slug] || 0;
                     const isSelected = ev.slug === this.selectedSlug;
+                    const isMasterRow = ev.slug === MASTER_SLUG;
 
                     const tr = document.createElement('tr');
                     if (isSelected) tr.style.background = '#f5f3ff';
@@ -1885,8 +2062,10 @@
                         <td><strong>${mediaCount}</strong></td>
                         <td style="text-align: right;">
                             <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
-                                <button type="button" class="btn btn-purple btn-sm" onclick="SuperAdminEngine.selectClient('${ev.slug}')">✏️ Kelola</button>
+                                <button type="button" class="btn btn-purple btn-sm" onclick="SuperAdminEngine.selectClient('${ev.slug}')" title="Kelola Paket & Frame">⚙️</button>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="SuperAdminEngine.openEditClientModal('${ev.slug}')" title="Edit Akun Klien">✏️</button>
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.copyClientLink('${ev.slug}')" title="Salin Link Event">🔗</button>
+                                ${!isMasterRow ? `<button type="button" class="btn btn-danger btn-sm" onclick="SuperAdminEngine.deleteClientAccount('${ev.slug}')" title="Hapus Akun Klien">🗑️</button>` : ''}
                             </div>
                         </td>
                     `;
@@ -1894,7 +2073,26 @@
                 });
             },
 
-            selectClient(slug, rerenderTable = true) {
+            renderAllowedLayoutsChecklist(allowedIds) {
+                const container = document.getElementById('sa-allowed-layouts-list');
+                if (!container) return;
+                const activeSet = new Set(Array.isArray(allowedIds) && allowedIds.length > 0
+                    ? allowedIds
+                    : LayoutController.baseGridTemplates.map(t => t.id));
+
+                container.innerHTML = "";
+                LayoutController.baseGridTemplates.forEach(tpl => {
+                    const label = document.createElement('label');
+                    label.className = 'client-check-item';
+                    label.innerHTML = `
+                        <input type="checkbox" class="sa-layout-choice" value="${tpl.id}" ${activeSet.has(tpl.id) ? 'checked' : ''}>
+                        <span>${tpl.title}</span>
+                    `;
+                    container.appendChild(label);
+                });
+            },
+
+            async selectClient(slug, rerenderTable = true) {
                 const ev = this.clientsCache.find(c => c.slug === slug);
                 if (!ev) return;
 
@@ -1904,20 +2102,159 @@
 
                 const name = ev.event_name || ev.title || slug;
                 document.getElementById('sa-selected-client-label').innerText = `Target: ${name} (${slug})`;
+                document.getElementById('sa-client-name').value = name;
                 document.getElementById('sa-client-pin').value = ev.admin_password || ev.passcode || '';
                 document.getElementById('sa-rental-expiry').value = this.toLocalDateTimeInput(stObj.rental_expires_at);
                 document.getElementById('sa-client-locked').checked = Boolean(ev.is_locked);
                 document.getElementById('sa-watermark-text').value = stObj.watermark_text || "Powered by Kayuna Photobooth Studio";
 
-                document.getElementById('sa-feat-layouts').checked = flags.allow_layouts;
-                document.getElementById('sa-feat-multiframe').checked = flags.allow_multiframe;
-                document.getElementById('sa-feat-video-guestbook').checked = flags.allow_video_guestbook;
-                document.getElementById('sa-feat-audio-guestbook').checked = flags.allow_audio_guestbook;
-                document.getElementById('sa-feat-ig-share').checked = flags.allow_ig_share;
-                document.getElementById('sa-feat-zip-download').checked = flags.allow_zip_download;
-                document.getElementById('sa-feat-watermark').checked = flags.show_watermark;
+                document.getElementById('sa-feat-frame-upload').checked = flags.allow_frame_upload !== false;
+                document.getElementById('sa-feat-layouts').checked = flags.allow_layouts !== false;
+                document.getElementById('sa-max-layouts').value = flags.max_layouts || 8;
+                this.renderAllowedLayoutsChecklist(flags.allowed_layout_ids);
+
+                document.getElementById('sa-feat-multiframe').checked = flags.allow_multiframe !== false;
+                document.getElementById('sa-feat-video-guestbook').checked = flags.allow_video_guestbook !== false;
+                document.getElementById('sa-feat-audio-guestbook').checked = flags.allow_audio_guestbook !== false;
+                document.getElementById('sa-feat-ig-share').checked = flags.allow_ig_share !== false;
+                document.getElementById('sa-feat-zip-download').checked = flags.allow_zip_download !== false;
+                document.getElementById('sa-feat-watermark').checked = flags.show_watermark !== false;
 
                 if (rerenderTable) this.renderClientsTable();
+                await this.loadSelectedClientFrames(slug);
+            },
+
+            openEditClientModal(slug) {
+                const ev = this.clientsCache.find(c => c.slug === slug);
+                if (!ev) return;
+                const stObj = this.settingsMap[slug] || {};
+
+                document.getElementById('sa-edit-original-slug').value = slug;
+                document.getElementById('sa-edit-name').value = ev.event_name || ev.title || '';
+                const slugField = document.getElementById('sa-edit-slug');
+                slugField.value = slug;
+                slugField.disabled = (slug === MASTER_SLUG);
+
+                document.getElementById('sa-edit-pin').value = ev.admin_password || ev.passcode || '';
+                document.getElementById('sa-edit-expiry').value = this.toLocalDateTimeInput(stObj.rental_expires_at);
+                document.getElementById('sa-edit-locked').checked = Boolean(ev.is_locked);
+
+                document.getElementById('sa-edit-client-modal').style.display = 'flex';
+            },
+
+            closeEditClientModal() {
+                document.getElementById('sa-edit-client-modal').style.display = 'none';
+            },
+
+            async saveEditedClientModal() {
+                const oldSlug = document.getElementById('sa-edit-original-slug').value;
+                const newName = document.getElementById('sa-edit-name').value.trim();
+                const rawNewSlug = document.getElementById('sa-edit-slug').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+                const newSlug = oldSlug === MASTER_SLUG ? MASTER_SLUG : rawNewSlug;
+                const newPin = document.getElementById('sa-edit-pin').value.trim();
+                const expiryVal = document.getElementById('sa-edit-expiry').value;
+                const isLocked = document.getElementById('sa-edit-locked').checked;
+
+                if (!newName || !newSlug || !newPin) {
+                    return alert("Nama Event, Slug URL, dan PIN Admin wajib diisi.");
+                }
+
+                if (newSlug !== oldSlug && this.clientsCache.some(c => c.slug === newSlug)) {
+                    return alert(`Slug "${newSlug}" sudah digunakan oleh klien lain. Gunakan slug yang berbeda.`);
+                }
+
+                try {
+                    const rentalExpiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
+
+                    if (newSlug === oldSlug) {
+                        const { error: evErr } = await supabaseClient
+                            .from('events')
+                            .update({
+                                event_name: newName,
+                                admin_password: newPin,
+                                is_locked: oldSlug === MASTER_SLUG ? false : isLocked
+                            })
+                            .eq('slug', oldSlug);
+                        if (evErr) throw evErr;
+
+                        const { error: stErr } = await supabaseClient
+                            .from('event_settings')
+                            .upsert({
+                                event_slug: oldSlug,
+                                rental_expires_at: rentalExpiresAt
+                            }, { onConflict: 'event_slug' });
+                        if (stErr) throw stErr;
+                    } else {
+                        const { error: insErr } = await supabaseClient
+                            .from('events')
+                            .insert([{
+                                slug: newSlug,
+                                event_name: newName,
+                                admin_password: newPin,
+                                is_locked: isLocked
+                            }]);
+                        if (insErr) throw insErr;
+
+                        await supabaseClient.from('event_settings').update({ event_slug: newSlug, rental_expires_at: rentalExpiresAt }).eq('event_slug', oldSlug);
+                        await supabaseClient.from('frames').update({ event_slug: newSlug }).eq('event_slug', oldSlug);
+                        await supabaseClient.from('media').update({ event_slug: newSlug }).eq('event_slug', oldSlug);
+                        await supabaseClient.from('events').delete().eq('slug', oldSlug);
+                    }
+
+                    this.selectedSlug = newSlug;
+                    this.closeEditClientModal();
+                    await this.loadDashboard();
+                    alert(`✅ Akun klien "${newName}" berhasil diperbarui!`);
+                } catch (e) {
+                    alert("Gagal mengedit akun klien: " + e.message);
+                }
+            },
+
+            async deleteClientAccount(slug) {
+                if (slug === MASTER_SLUG) {
+                    return alert("Slug master tidak dapat dihapus.");
+                }
+                const ev = this.clientsCache.find(c => c.slug === slug);
+                const label = ev ? `${ev.event_name || slug} (${slug})` : slug;
+                if (!confirm(`⚠️ PERINGATAN: Hapus akun klien "${label}" beserta seluruh pengaturan, frame, dan media terkait secara permanen?`)) {
+                    return;
+                }
+
+                try {
+                    // Hapus file storage jika ada
+                    const [framesRes, mediaRes] = await Promise.all([
+                        supabaseClient.from('frames').select('storage_path').eq('event_slug', slug),
+                        supabaseClient.from('media').select('storage_path, preview_storage_path').eq('event_slug', slug)
+                    ]);
+
+                    const pathsToRemove = [];
+                    (framesRes.data || []).forEach(f => { if (f.storage_path) pathsToRemove.push(f.storage_path); });
+                    (mediaRes.data || []).forEach(m => {
+                        if (m.storage_path) pathsToRemove.push(m.storage_path);
+                        if (m.preview_storage_path && m.preview_storage_path !== m.storage_path) {
+                            pathsToRemove.push(m.preview_storage_path);
+                        }
+                    });
+
+                    if (pathsToRemove.length > 0) {
+                        await supabaseClient.storage.from('wedding-photobooth').remove(pathsToRemove);
+                    }
+
+                    await supabaseClient.from('media').delete().eq('event_slug', slug);
+                    await supabaseClient.from('frames').delete().eq('event_slug', slug);
+                    await supabaseClient.from('event_settings').delete().eq('event_slug', slug);
+                    const { error: delEvErr } = await supabaseClient.from('events').delete().eq('slug', slug);
+                    if (delEvErr) throw delEvErr;
+
+                    if (this.selectedSlug === slug) {
+                        this.selectedSlug = null;
+                    }
+
+                    await this.loadDashboard();
+                    alert(`✅ Akun klien "${label}" berhasil dihapus.`);
+                } catch (e) {
+                    alert("Gagal menghapus akun klien: " + e.message);
+                }
             },
 
             generateRandomPin() {
@@ -1936,7 +2273,8 @@
             copyClientLink(slug) {
                 const url = `${window.location.origin}${window.location.pathname}?event=${encodeURIComponent(slug)}`;
                 navigator.clipboard?.writeText(url).then(() => {
-                    alert("🔗 Link event disalin:\n" + url);
+                    alert("🔗 Link event klien disalin:
+" + url);
                 }).catch(() => {
                     prompt("Salin link event berikut:", url);
                 });
@@ -1945,12 +2283,21 @@
             async createClientEvent() {
                 const slugInput = document.getElementById('sa-new-slug');
                 const eventName = (document.getElementById('sa-new-name').value || '').trim();
-                const slug = (slugInput.value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+                let slug = (slugInput.value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
                 const pin = (document.getElementById('sa-new-pin').value || '').trim();
                 const expiryVal = document.getElementById('sa-new-expiry').value;
 
                 if (!slug || !eventName || !pin) {
-                    return alert("Harap isi Slug URL, Nama Event, dan PIN Admin Klien.");
+                    return alert("Harap isi Nama Event, Slug URL, dan PIN Admin Klien.");
+                }
+
+                if (slug === MASTER_SLUG) {
+                    return alert('Slug "master" dicadangkan untuk pusat kontrol. Gunakan slug lain.');
+                }
+
+                if (this.clientsCache.some(c => c.slug === slug)) {
+                    this.generateSlugFromName(eventName, true);
+                    slug = slugInput.value;
                 }
 
                 try {
@@ -1965,6 +2312,19 @@
 
                     if (evErr) throw evErr;
 
+                    const defaultClientFlags = {
+                        allow_layouts: true,
+                        max_layouts: 8,
+                        allowed_layout_ids: LayoutController.baseGridTemplates.map(t => t.id),
+                        allow_frame_upload: true,
+                        allow_multiframe: true,
+                        allow_video_guestbook: true,
+                        allow_audio_guestbook: true,
+                        allow_ig_share: true,
+                        allow_zip_download: true,
+                        show_watermark: true
+                    };
+
                     const rentalExpiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
                     const { error: stErr } = await supabaseClient
                         .from('event_settings')
@@ -1972,7 +2332,7 @@
                             event_slug: slug,
                             cover_title: eventName,
                             rental_expires_at: rentalExpiresAt,
-                            feature_flags: FEATURE_FLAGS,
+                            feature_flags: defaultClientFlags,
                             watermark_text: "Powered by Kayuna Photobooth Studio"
                         }, { onConflict: 'event_slug' });
 
@@ -1986,7 +2346,12 @@
 
                     this.selectedSlug = slug;
                     await this.loadDashboard();
-                    alert(`✅ Klien "${eventName}" (${slug}) berhasil dibuat!`);
+
+                    const clientUrl = `${window.location.origin}${window.location.pathname}?event=${encodeURIComponent(slug)}`;
+                    alert(`✅ Klien "${eventName}" berhasil dibuat dengan slug baru "${slug}"!
+
+Link Klien:
+${clientUrl}`);
                 } catch (e) {
                     alert("Gagal membuat klien baru: " + e.message);
                 }
@@ -1996,12 +2361,25 @@
                 const targetSlug = this.selectedSlug || CURRENT_EVENT_SLUG;
                 if (!targetSlug) return alert("Tidak ada klien yang dipilih.");
 
+                const updatedName = document.getElementById('sa-client-name').value.trim();
                 const newPin = document.getElementById('sa-client-pin').value.trim();
-                const isLocked = document.getElementById('sa-client-locked').checked;
+                const isLocked = targetSlug === MASTER_SLUG ? false : document.getElementById('sa-client-locked').checked;
                 const watermarkText = document.getElementById('sa-watermark-text').value.trim() || "Powered by Kayuna Photobooth Studio";
 
+                const checkedLayouts = Array.from(document.querySelectorAll('.sa-layout-choice:checked')).map(el => el.value);
+                if (checkedLayouts.length === 0) {
+                    return alert("Pilih minimal 1 jenis layout yang diizinkan.");
+                }
+
+                let maxLayoutsVal = parseInt(document.getElementById('sa-max-layouts').value, 10);
+                if (Number.isNaN(maxLayoutsVal) || maxLayoutsVal < 1) maxLayoutsVal = 1;
+                if (maxLayoutsVal > 8) maxLayoutsVal = 8;
+
                 const nextFlags = {
+                    allow_frame_upload: document.getElementById('sa-feat-frame-upload').checked,
                     allow_layouts: document.getElementById('sa-feat-layouts').checked,
+                    max_layouts: maxLayoutsVal,
+                    allowed_layout_ids: checkedLayouts,
                     allow_multiframe: document.getElementById('sa-feat-multiframe').checked,
                     allow_video_guestbook: document.getElementById('sa-feat-video-guestbook').checked,
                     allow_audio_guestbook: document.getElementById('sa-feat-audio-guestbook').checked,
@@ -2015,6 +2393,7 @@
 
                 try {
                     const eventUpdatePayload = { is_locked: isLocked };
+                    if (updatedName) eventUpdatePayload.event_name = updatedName;
                     if (newPin) eventUpdatePayload.admin_password = newPin;
 
                     const { error: evErr } = await supabaseClient
@@ -2038,6 +2417,7 @@
                         RENTAL_EXPIRES_AT = rentalExpiresAt;
                         WATERMARK_TEXT = watermarkText;
                         if (CURRENT_EVENT_DATA) {
+                            if (updatedName) CURRENT_EVENT_DATA.event_name = updatedName;
                             if (newPin) CURRENT_EVENT_DATA.admin_password = newPin;
                             CURRENT_EVENT_DATA.is_locked = isLocked;
                         }
@@ -2045,9 +2425,146 @@
                     }
 
                     await this.loadDashboard();
-                    alert(`✅ PIN, Masa Sewa & Konfigurasi untuk "${targetSlug}" berhasil disimpan!`);
+                    alert(`✅ Pengaturan akun, pembatasan frame & layout untuk "${targetSlug}" berhasil disimpan!`);
                 } catch (e) {
                     alert("Gagal menyimpan konfigurasi Superadmin: " + e.message);
+                }
+            },
+
+            renderBatchClientsChecklist() {
+                const container = document.getElementById('sa-batch-clients-list');
+                if (!container) return;
+
+                const targets = this.clientsCache.filter(c => c.slug !== MASTER_SLUG);
+                if (targets.length === 0) {
+                    container.innerHTML = "<span style='font-size:0.8rem; color:var(--color-text-muted);'>Belum ada akun klien selain master.</span>";
+                    return;
+                }
+
+                container.innerHTML = "";
+                targets.forEach(ev => {
+                    const name = ev.event_name || ev.title || ev.slug;
+                    const label = document.createElement('label');
+                    label.className = 'client-check-item';
+                    label.innerHTML = `
+                        <input type="checkbox" class="sa-batch-client-cb" value="${ev.slug}" ${ev.slug === this.selectedSlug ? 'checked' : ''}>
+                        <div>
+                            <div style="font-weight: 700; color: var(--color-text-main);">${name}</div>
+                            <div style="font-size: 0.72rem; color: var(--color-text-muted); font-family: monospace;">${ev.slug}</div>
+                        </div>
+                    `;
+                    container.appendChild(label);
+                });
+            },
+
+            toggleAllBatchClients(checkedState) {
+                document.querySelectorAll('.sa-batch-client-cb').forEach(cb => {
+                    cb.checked = checkedState;
+                });
+            },
+
+            async uploadFrameToMultipleClients() {
+                const title = document.getElementById('sa-batch-frame-title').value.trim();
+                const fileInput = document.getElementById('sa-batch-frame-file');
+                const selectedSlugs = Array.from(document.querySelectorAll('.sa-batch-client-cb:checked')).map(cb => cb.value);
+
+                if (!title || fileInput.files.length === 0) {
+                    return alert("Harap isi Nama Template Frame dan pilih berkas gambar terlebih dahulu.");
+                }
+                if (selectedSlugs.length === 0) {
+                    return alert("Pilih minimal 1 akun klien penerima frame.");
+                }
+
+                const file = fileInput.files[0];
+                const btn = document.getElementById('btn-sa-batch-upload-frame');
+                btn.disabled = true;
+                btn.innerText = `⏳ Mengunggah ke ${selectedSlugs.length} klien...`;
+
+                try {
+                    const timestamp = Date.now();
+                    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'png';
+
+                    for (let i = 0; i < selectedSlugs.length; i++) {
+                        const targetSlug = selectedSlugs[i];
+                        const path = `${targetSlug}/frames/sa_frame_${timestamp}_${i}.${ext}`;
+
+                        const { data: sData, error: sErr } = await supabaseClient.storage
+                            .from('wedding-photobooth')
+                            .upload(path, file, { contentType: file.type });
+                        if (sErr) throw sErr;
+
+                        const { error: dbErr } = await supabaseClient.from('frames').insert([{
+                            event_slug: targetSlug,
+                            title: title,
+                            pose_count: 1,
+                            storage_path: sData.path
+                        }]);
+                        if (dbErr) throw dbErr;
+                    }
+
+                    document.getElementById('sa-batch-frame-title').value = '';
+                    fileInput.value = '';
+                    if (this.selectedSlug) {
+                        await this.loadSelectedClientFrames(this.selectedSlug);
+                    }
+                    alert(`✅ Frame "${title}" berhasil diunggah & diterapkan ke ${selectedSlugs.length} klien terpilih!`);
+                } catch (e) {
+                    alert("Gagal mendistribusikan frame ke klien: " + e.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "🚀 Upload & Terapkan Frame ke Klien Terpilih";
+                }
+            },
+
+            async loadSelectedClientFrames(slug) {
+                const header = document.getElementById('sa-client-frames-header');
+                const tbody = document.getElementById('sa-client-frames-tbody');
+                if (!tbody) return;
+
+                if (header) header.innerText = `Daftar Frame Aktif pada Klien: ${slug}`;
+                tbody.innerHTML = "<tr><td colspan='3'>Memuat daftar frame klien...</td></tr>";
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('frames')
+                        .select('*')
+                        .eq('event_slug', slug)
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+                    tbody.innerHTML = "";
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='3'>Klien ini belum memiliki template frame.</td></tr>";
+                        return;
+                    }
+
+                    data.forEach(f => {
+                        const { data: u } = supabaseClient.storage.from('wedding-photobooth').getPublicUrl(f.storage_path);
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><img src="${u.publicUrl}" style="height:40px; border-radius:6px; background:#1c1917;" /></td>
+                            <td><strong>${f.title}</strong></td>
+                            <td style="text-align: right;">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="SuperAdminEngine.deleteClientFrame('${slug}', '${f.id}', '${f.storage_path}')">🗑️ Hapus</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } catch (e) {
+                    tbody.innerHTML = `<tr><td colspan='3' style='color:var(--color-danger);'>Gagal: ${e.message}</td></tr>`;
+                }
+            },
+
+            async deleteClientFrame(slug, frameId, storagePath) {
+                if (!confirm("Hapus frame ini dari akun klien?")) return;
+                try {
+                    await supabaseClient.from('frames').delete().eq('id', frameId);
+                    if (storagePath) {
+                        await supabaseClient.storage.from('wedding-photobooth').remove([storagePath]);
+                    }
+                    await this.loadSelectedClientFrames(slug);
+                } catch (e) {
+                    alert("Gagal menghapus frame klien: " + e.message);
                 }
             }
         };
@@ -2095,7 +2612,7 @@
 
             async loadStyleSettingsFromDB() {
                 try {
-                    if (CURRENT_EVENT_DATA?.is_locked) {
+                    if (CURRENT_EVENT_DATA?.is_locked && !IS_MASTER_SLUG) {
                         document.getElementById('error-screen-title').innerText = "🔒 Event Dikunci";
                         document.getElementById('error-screen-msg').innerText = "Akses photobooth untuk acara ini sedang dikunci sementara oleh penyedia layanan.";
                         document.getElementById('error-screen').style.display = 'flex';
@@ -2108,13 +2625,15 @@
                         .eq('event_slug', CURRENT_EVENT_SLUG)
                         .maybeSingle();
 
-                    const defaultTitle = CURRENT_EVENT_DATA?.event_name || CURRENT_EVENT_DATA?.title || 'Wedding Photobooth';
+                    const defaultTitle = IS_MASTER_SLUG
+                        ? 'Kayuna Photobooth'
+                        : (CURRENT_EVENT_DATA?.event_name || CURRENT_EVENT_DATA?.title || 'Kayuna Photobooth');
 
                     if (st) {
                         RENTAL_EXPIRES_AT = st.rental_expires_at || null;
-                        WATERMARK_TEXT = st.watermark_text || "Designed by Kayuna Photobooth Studio";
+                        WATERMARK_TEXT = st.watermark_text || "Powered by Kayuna Photobooth Studio";
 
-                        if (RENTAL_EXPIRES_AT) {
+                        if (RENTAL_EXPIRES_AT && !IS_MASTER_SLUG) {
                             const expiryTime = new Date(RENTAL_EXPIRES_AT).getTime();
                             const currentTime = Date.now();
                             if (currentTime > expiryTime) {
@@ -2133,8 +2652,8 @@
                         document.getElementById('adm-cover-title').value = st.cover_title || defaultTitle;
                         document.getElementById('display-cover-title').innerText = st.cover_title || defaultTitle;
                         
-                        document.getElementById('adm-cover-sub').value = st.cover_subtitle || '';
-                        document.getElementById('display-cover-subtitle').innerText = st.cover_subtitle || '';
+                        document.getElementById('adm-cover-sub').value = st.cover_subtitle || 'Abadikan momen berkesanmu di Perayaan Spesial Kami';
+                        document.getElementById('display-cover-subtitle').innerText = st.cover_subtitle || 'Abadikan momen berkesanmu di Perayaan Spesial Kami';
 
                         document.getElementById('adm-cover-img').value = st.polaroid_url || '';
                         if (st.polaroid_url) document.getElementById('display-cover-image').src = st.polaroid_url;
@@ -2231,8 +2750,7 @@
                         if (skippedColumns.length > 0) {
                             alert(
                                 "⚠️ Pengaturan tersimpan, namun kolom berikut belum ada di tabel event_settings: " +
-                                skippedColumns.join(", ") +
-                                ". Jalankan SQL ALTER TABLE untuk menyimpannya juga."
+                                skippedColumns.join(", ")
                             );
                         } else {
                             alert("✅ Pengaturan Tampilan & Font Berhasil Disimpan di Database!");
@@ -2255,6 +2773,7 @@
             async loadAdminFrames() {
                 const tbody = document.getElementById('admin-frames-table-body');
                 tbody.innerHTML = "<tr><td colspan='3'>Memuat daftar background...</td></tr>";
+                const canManageFrames = FEATURE_FLAGS.allow_frame_upload !== false;
 
                 try {
                     const { data, error } = await supabaseClient
@@ -2277,7 +2796,9 @@
                             <td><img src="${u.publicUrl}" style="height:40px; border-radius:6px; background:#1c1917;" /></td>
                             <td><strong>${f.title}</strong></td>
                             <td style="text-align: right;">
-                                <button class="btn btn-danger btn-sm" onclick="AdminEngine.deleteFrame('${f.id}', '${f.storage_path}')">🗑️ Hapus</button>
+                                ${canManageFrames
+                                    ? `<button class="btn btn-danger btn-sm" onclick="AdminEngine.deleteFrame('${f.id}', '${f.storage_path}')">🗑️ Hapus</button>`
+                                    : `<span style="font-size:0.75rem; color:var(--color-text-muted);">Dikelola Superadmin</span>`}
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -2286,6 +2807,10 @@
             },
 
             async uploadFrame() {
+                if (FEATURE_FLAGS.allow_frame_upload === false) {
+                    return alert("Fitur unggah frame dinonaktifkan oleh Superadmin.");
+                }
+
                 const title = document.getElementById('adm-frame-title').value.trim();
                 const fileInput = document.getElementById('adm-frame-file');
 
@@ -2319,6 +2844,9 @@
             },
 
             async deleteFrame(id, storagePath) {
+                if (FEATURE_FLAGS.allow_frame_upload === false) {
+                    return alert("Fitur hapus frame dinonaktifkan oleh Superadmin.");
+                }
                 if (!confirm("Hapus template background ini?")) return;
                 try {
                     await supabaseClient.from('frames').delete().eq('id', id);
@@ -2450,12 +2978,19 @@
                 const total = this.mediaItemsCache.length;
                 let downloadedCount = 0;
 
-                let txtContent = `=================================================\n`;
-                txtContent += ` DIGITAL GUESTBOOK - PESAN & UCAPAN TAMU\n`;
-                txtContent += ` Event: ${CURRENT_EVENT_SLUG}\n`;
-                txtContent += ` Tanggal Ekspor: ${new Date().toLocaleString('id-ID')}\n`;
-                txtContent += ` Total Entri: ${total}\n`;
-                txtContent += `=================================================\n\n`;
+                let txtContent = `=================================================
+`;
+                txtContent += ` DIGITAL GUESTBOOK - PESAN & UCAPAN TAMU
+`;
+                txtContent += ` Event: ${CURRENT_EVENT_SLUG}
+`;
+                txtContent += ` Tanggal Ekspor: ${new Date().toLocaleString('id-ID')}
+`;
+                txtContent += ` Total Entri: ${total}
+`;
+                txtContent += `=================================================
+
+`;
 
                 const exportedJson = [];
 
@@ -2472,12 +3007,19 @@
 
                         zip.file(fileNameInZip, blob);
 
-                        txtContent += `[${new Date(item.created_at).toLocaleString('id-ID')}]\n`;
-                        txtContent += `Nama Tamu : ${item.guest_name || 'Tamu'}\n`;
-                        txtContent += `Tipe Media: ${item.media_type.toUpperCase()}\n`;
-                        txtContent += `Berkas    : ${fileNameInZip}\n`;
-                        txtContent += `Pesan     : ${item.guest_message || '(Tidak ada pesan teks)'}\n`;
-                        txtContent += `-------------------------------------------------\n\n`;
+                        txtContent += `[${new Date(item.created_at).toLocaleString('id-ID')}]
+`;
+                        txtContent += `Nama Tamu : ${item.guest_name || 'Tamu'}
+`;
+                        txtContent += `Tipe Media: ${item.media_type.toUpperCase()}
+`;
+                        txtContent += `Berkas    : ${fileNameInZip}
+`;
+                        txtContent += `Pesan     : ${item.guest_message || '(Tidak ada pesan teks)'}
+`;
+                        txtContent += `-------------------------------------------------
+
+`;
 
                         exportedJson.push({
                             id: item.id,
@@ -2518,13 +3060,8 @@
             }
         };
 
-        // INITIALIZATION CHECK
+        // INITIALIZATION CHECK (MENDUKUNG SLUG 'master' SECARA OTOMATIS)
         window.addEventListener('DOMContentLoaded', async () => {
-            if (!CURRENT_EVENT_SLUG) {
-                document.getElementById('error-screen').style.display = 'flex';
-                return;
-            }
-
             try {
                 let { data: ev, error } = await supabaseClient
                     .from('events')
@@ -2532,29 +3069,54 @@
                     .eq('slug', CURRENT_EVENT_SLUG)
                     .maybeSingle();
 
-                if (!ev && (CURRENT_EVENT_SLUG.includes('hana_handayani') || CURRENT_EVENT_SLUG.includes('hana'))) {
-                    CURRENT_EVENT_SLUG = 'hanairfan';
-                    const { data: evFallback } = await supabaseClient
+                // Auto-provision slug 'master' jika belum terdaftar di database
+                if (!ev && CURRENT_EVENT_SLUG === MASTER_SLUG) {
+                    const { data: createdMaster, error: createMasterErr } = await supabaseClient
                         .from('events')
-                        .select('*')
-                        .eq('slug', CURRENT_EVENT_SLUG)
-                        .maybeSingle();
-                    ev = evFallback;
+                        .insert([{
+                            slug: MASTER_SLUG,
+                            event_name: 'Kayuna Photobooth (Master)',
+                            admin_password: SUPERADMIN_PIN,
+                            is_locked: false
+                        }])
+                        .select()
+                        .single();
+
+                    if (!createMasterErr && createdMaster) {
+                        ev = createdMaster;
+                    } else {
+                        ev = {
+                            slug: MASTER_SLUG,
+                            event_name: 'Kayuna Photobooth',
+                            admin_password: SUPERADMIN_PIN,
+                            is_locked: false
+                        };
+                    }
                 }
 
-                if (error || !ev) {
+                if (error && CURRENT_EVENT_SLUG !== MASTER_SLUG) {
+                    document.getElementById('error-screen').style.display = 'flex';
+                    return;
+                }
+
+                if (!ev) {
                     document.getElementById('error-screen').style.display = 'flex';
                     return;
                 }
 
                 CURRENT_EVENT_DATA = ev;
-                const titleStr = ev.event_name || ev.title || CURRENT_EVENT_SLUG;
-                document.getElementById('header-event-name').innerText = titleStr;
-                document.getElementById('display-cover-title').innerText = titleStr;
+                document.getElementById('header-event-name').innerText = 'Kayuna Photobooth';
+
+                const coverTitle = IS_MASTER_SLUG
+                    ? 'Kayuna Photobooth'
+                    : (ev.event_name || ev.title || CURRENT_EVENT_SLUG);
+                document.getElementById('display-cover-title').innerText = coverTitle;
 
                 await AdminEngine.loadStyleSettingsFromDB();
             } catch(e) {
-                document.getElementById('error-screen').style.display = 'flex';
+                if (CURRENT_EVENT_SLUG !== MASTER_SLUG) {
+                    document.getElementById('error-screen').style.display = 'flex';
+                }
             }
         });
     </script>
