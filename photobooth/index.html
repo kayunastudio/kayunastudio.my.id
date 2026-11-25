@@ -199,6 +199,14 @@
 
         .layout-limit-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; margin-top: 10px; background: #fff; padding: 12px; border-radius: 12px; border: 1px solid var(--color-border); }
 
+        /* STORAGE QUOTA METER */
+        .storage-meter-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 135px; }
+        .storage-meter-bar { width: 100%; height: 8px; background: #ece2d0; border-radius: 999px; overflow: hidden; }
+        .storage-meter-fill { height: 100%; background: var(--color-purple); border-radius: 999px; transition: width 0.3s ease; }
+        .storage-meter-fill.warn { background: #d97706; }
+        .storage-meter-fill.danger { background: var(--color-danger); }
+        .storage-meter-text { font-size: 0.72rem; font-weight: 700; color: var(--color-text-muted); }
+
         #error-screen { position: fixed; inset: 0; background: #fff; z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center; }
     </style>
 </head>
@@ -493,7 +501,10 @@
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div class="card-header">🔒 Daftar Photobooth Tamu</div>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <div id="admin-storage-quota-badge" style="background: var(--color-surface-card); border: 1px solid var(--color-border); padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: var(--color-secondary);">
+                            💾 Penyimpanan: Menghitung...
+                        </div>
                         <button id="btn-admin-download-all" class="btn btn-success btn-sm" onclick="AdminEngine.downloadAllMediaZip()">📦 Unduh Semua (.ZIP)</button>
                         <button class="btn btn-danger btn-sm" onclick="AuthEngine.logoutAdmin()">Sign Out Admin</button>
                     </div>
@@ -522,7 +533,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div>
                         <div class="card-header" style="color: var(--color-purple);">👑 Master Dashboard Superadmin SaaS</div>
-                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Slug Master aktif sebagai pusat manajemen. Setiap klien memiliki slug terpisah yang terisolasi penuh.</p>
+                        <p style="font-size: 0.85rem; color: var(--color-text-muted);">Slug Master aktif sebagai pusat manajemen. Setiap klien memiliki link slug unik (<code>?event=slug_klien</code>) yang terisolasi penuh.</p>
                     </div>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.loadDashboard()">🔄 Refresh Data</button>
@@ -573,7 +584,7 @@
                                     <th>PIN Admin</th>
                                     <th>Status</th>
                                     <th>Masa Aktif</th>
-                                    <th>Media</th>
+                                    <th>Penyimpanan</th>
                                     <th style="text-align: right;">Aksi</th>
                                 </tr>
                             </thead>
@@ -609,15 +620,19 @@
                                 <label class="form-label">Masa Aktif Hingga</label>
                                 <input type="datetime-local" id="sa-new-expiry" class="form-input">
                             </div>
+                            <div class="form-group">
+                                <label class="form-label">Batas Penyimpanan (MB)</label>
+                                <input type="number" id="sa-new-storage-mb" class="form-input" min="0" step="10" value="500" placeholder="500 (0 = Unlimited)">
+                            </div>
                         </div>
                         <button class="btn btn-success btn-sm" style="margin-top: 12px;" onclick="SuperAdminEngine.createClientEvent()">✅ Buat Klien & Slug Baru</button>
                     </details>
                 </div>
 
-                <!-- PENGATURAN EDIT AKUN KLIEN, MASA SEWA, UPLOAD FRAME & PEMBATASAN LAYOUT -->
+                <!-- PENGATURAN EDIT AKUN KLIEN, MASA SEWA, KAPASITAS PENYIMPANAN, UPLOAD FRAME & PEMBATASAN LAYOUT -->
                 <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Pengaturan Akun Klien, Pembatasan Frame & Layout</strong>
+                        <strong style="color: var(--color-purple); font-size: 0.95rem;">⚙️ Pengaturan Akun Klien, Kapasitas Penyimpanan, Frame & Layout</strong>
                         <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-primary);" id="sa-selected-client-label">Target: -</span>
                     </div>
 
@@ -643,6 +658,18 @@
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.extendExpiryDays(30)">+30 Hari</button>
                             </div>
                         </div>
+
+                        <div class="form-group" style="background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--color-border);">
+                            <label class="form-label" style="color: var(--color-purple);">💾 Kapasitas Penyimpanan (MB)</label>
+                            <input type="number" id="sa-storage-limit-mb" class="form-input" style="margin-top: 4px;" min="0" step="10" value="500" placeholder="500 (0 = Unlimited)">
+                            <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sa-storage-limit-mb').value = 250">250 MB</button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sa-storage-limit-mb').value = 500">500 MB</button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sa-storage-limit-mb').value = 1024">1 GB</button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sa-storage-limit-mb').value = 0">∞</button>
+                            </div>
+                            <div id="sa-client-storage-usage-info" style="font-size: 0.74rem; color: var(--color-text-muted); margin-top: 4px;">Terpakai: 0 MB</div>
+                        </div>
                     </div>
 
                     <!-- KILL SWITCH & CUSTOM WATERMARK -->
@@ -659,7 +686,7 @@
                         <input type="text" id="sa-watermark-text" class="form-input" value="Powered by Kayuna Photobooth Studio" placeholder="Teks watermark di pojok kanan bawah hasil foto">
                     </div>
 
-                    <!-- PENGATURAN BARU: IZIN UPLOAD FRAME & PEMBATASAN JUMLAH/JENIS LAYOUT -->
+                    <!-- PENGATURAN IZIN UPLOAD FRAME & PEMBATASAN JUMLAH/JENIS LAYOUT -->
                     <div class="switch-control">
                         <div>
                             <div class="switch-label">🚫 Izinkan Klien Upload Frame Mandiri</div>
@@ -742,7 +769,7 @@
                     <button class="btn btn-purple" style="margin-top: 6px; padding: 14px;" onclick="SuperAdminEngine.savePackageSettings()">💾 Simpan Perubahan Akun & Konfigurasi Klien</button>
                 </div>
 
-                <!-- FITUR BARU: UPLOAD FRAME UNTUK BEBERAPA KLIEN SEKALIGUS MELALUI SUPERADMIN -->
+                <!-- UPLOAD FRAME UNTUK BEBERAPA KLIEN SEKALIGUS MELALUI SUPERADMIN -->
                 <div style="border: 1px solid var(--color-border); padding: 18px; border-radius: var(--radius-btn); background: var(--color-surface-card); display: flex; flex-direction: column; gap: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <div>
@@ -840,6 +867,10 @@
                 <label class="form-label">Masa Aktif Hingga</label>
                 <input type="datetime-local" id="sa-edit-expiry" class="form-input">
             </div>
+            <div class="form-group">
+                <label class="form-label">Batas Penyimpanan (MB, 0 = Tanpa Batas)</label>
+                <input type="number" id="sa-edit-storage-mb" class="form-input" min="0" step="10" value="500">
+            </div>
             <div class="switch-control">
                 <div>
                     <div class="switch-label">🔒 Kunci Akses Event</div>
@@ -888,7 +919,7 @@
 
             const pathSegments = window.location.pathname
                 .split('/')
-                .filter(s => s && s !== 'index.html' && s !== 'index_6.html' && s !== 'index_7.html' && s !== 'index_9.html' && s !== 'photobooth');
+                .filter(s => s && !s.endsWith('.html') && s !== 'photobooth');
             if (pathSegments.length > 0) {
                 return pathSegments[0].trim();
             }
@@ -911,7 +942,60 @@
             allow_audio_guestbook: true,
             allow_ig_share: true,
             allow_zip_download: true,
-            show_watermark: true
+            show_watermark: true,
+            storage_limit_mb: 500
+        };
+
+        /* HELPER: PENGHITUNG & VALIDASI KAPASITAS PENYIMPANAN PER KLIEN */
+        const StorageQuotaHelper = {
+            formatMB(bytes) {
+                return (bytes / (1024 * 1024)).toFixed(2);
+            },
+
+            async getEventStorageUsageBytes(eventSlug) {
+                let totalBytes = 0;
+
+                const subFolders = ['frames', 'cover', 'photos', 'videos', 'audios'];
+                for (const folder of subFolders) {
+                    const { data: files } = await supabaseClient.storage
+                        .from('wedding-photobooth')
+                        .list(`${eventSlug}/${folder}`, { limit: 1000 });
+                    if (Array.isArray(files)) {
+                        files.forEach(f => {
+                            const sz = f?.metadata?.size || 0;
+                            totalBytes += Number(sz) || 0;
+                        });
+                    }
+                }
+
+                const { data: mediaRows } = await supabaseClient
+                    .from('media')
+                    .select('media_type')
+                    .eq('event_slug', eventSlug);
+
+                if (Array.isArray(mediaRows) && totalBytes === 0 && mediaRows.length > 0) {
+                    mediaRows.forEach(m => {
+                        totalBytes += m.media_type === 'video'
+                            ? 2.5 * 1024 * 1024
+                            : (m.media_type === 'audio' ? 0.5 * 1024 * 1024 : 0.6 * 1024 * 1024);
+                    });
+                }
+
+                return totalBytes;
+            },
+
+            async checkCanUpload(eventSlug, incomingBytes, limitMbOverride = null) {
+                if (eventSlug === MASTER_SLUG) return { allowed: true, usedBytes: 0, limitBytes: 0, limitMb: 0 };
+                const limitMb = limitMbOverride !== null ? Number(limitMbOverride) : Number(FEATURE_FLAGS.storage_limit_mb ?? 500);
+                if (!limitMb || limitMb <= 0) {
+                    return { allowed: true, usedBytes: 0, limitBytes: 0, limitMb: 0 };
+                }
+
+                const usedBytes = await this.getEventStorageUsageBytes(eventSlug);
+                const limitBytes = limitMb * 1024 * 1024;
+                const allowed = (usedBytes + incomingBytes) <= limitBytes;
+                return { allowed, usedBytes, limitBytes, limitMb };
+            }
         };
 
         /* HELPER: MASTER FILE KE GOOGLE DRIVE + PREVIEW RINGAN KE SUPABASE + UNDUH HD LANGSUNG VIA WEB */
@@ -1653,6 +1737,17 @@
                 btnSubmit.innerText = "⏳ Memproses Upload...";
 
                 try {
+                    let incomingBytes = CameraEngine.finalMergedBlob.size || 0;
+                    if (FEATURE_FLAGS.allow_video_guestbook && VideoEngine.videoBlob) incomingBytes += VideoEngine.videoBlob.size || 0;
+                    if (FEATURE_FLAGS.allow_audio_guestbook && AudioEngine.audioBlob) incomingBytes += AudioEngine.audioBlob.size || 0;
+
+                    const quotaCheck = await StorageQuotaHelper.checkCanUpload(CURRENT_EVENT_SLUG, incomingBytes);
+                    if (!quotaCheck.allowed) {
+                        throw new Error(
+                            `Kapasitas penyimpanan event ini sudah penuh (${StorageQuotaHelper.formatMB(quotaCheck.usedBytes)} MB / ${quotaCheck.limitMb} MB). Hubungi admin acara atau penyedia layanan.`
+                        );
+                    }
+
                     const timestamp = Date.now();
                     const localKey = `my_photos_${CURRENT_EVENT_SLUG}`;
                     let localUploads = JSON.parse(localStorage.getItem(localKey) || '[]');
@@ -1874,11 +1969,12 @@
             }
         };
 
-        /* SUPERADMIN ENGINE: SLUG MASTER, EDIT/HAPUS KLIEN, PEMBATASAN FRAME & LAYOUT, MULTI-CLIENT FRAME UPLOAD */
+        /* SUPERADMIN ENGINE: SLUG MASTER, EDIT/HAPUS KLIEN, KAPASITAS PENYIMPANAN, PEMBATASAN FRAME & LAYOUT */
         const SuperAdminEngine = {
             clientsCache: [],
             settingsMap: {},
             mediaCountMap: {},
+            storageUsageMap: {},
             selectedSlug: null,
 
             generateSlugFromName(rawName, forceUpdate = false) {
@@ -1969,6 +2065,13 @@
                         this.mediaCountMap[m.event_slug] = (this.mediaCountMap[m.event_slug] || 0) + 1;
                     });
 
+                    this.storageUsageMap = {};
+                    await Promise.all(
+                        this.clientsCache.map(async (ev) => {
+                            this.storageUsageMap[ev.slug] = await StorageQuotaHelper.getEventStorageUsageBytes(ev.slug);
+                        })
+                    );
+
                     this.updateKpis();
                     this.renderBatchClientsChecklist();
 
@@ -2051,6 +2154,23 @@
                     const mediaCount = this.mediaCountMap[ev.slug] || 0;
                     const isSelected = ev.slug === this.selectedSlug;
                     const isMasterRow = ev.slug === MASTER_SLUG;
+                    const usedBytes = this.storageUsageMap[ev.slug] || 0;
+                    const usedMb = StorageQuotaHelper.formatMB(usedBytes);
+                    const limitMb = Number(stObj?.feature_flags?.storage_limit_mb ?? 500);
+
+                    let storageCellHtml = '';
+                    if (isMasterRow || !limitMb || limitMb <= 0) {
+                        storageCellHtml = `<div class="storage-meter-wrap"><span class="storage-meter-text">${usedMb} MB / ∞ (${mediaCount} file)</span></div>`;
+                    } else {
+                        const pct = Math.min(100, Math.round((usedBytes / (limitMb * 1024 * 1024)) * 100));
+                        const fillClass = pct >= 90 ? 'danger' : (pct >= 75 ? 'warn' : '');
+                        storageCellHtml = `
+                            <div class="storage-meter-wrap">
+                                <div class="storage-meter-bar"><div class="storage-meter-fill ${fillClass}" style="width:${pct}%;"></div></div>
+                                <span class="storage-meter-text">${usedMb} / ${limitMb} MB (${pct}%)</span>
+                            </div>
+                        `;
+                    }
 
                     const tr = document.createElement('tr');
                     if (isSelected) tr.style.background = '#f5f3ff';
@@ -2063,12 +2183,12 @@
                         <td><span class="pin-code">${pin}</span></td>
                         <td><span class="status-pill ${status.css}">${status.label}</span></td>
                         <td style="font-size: 0.8rem;">${expiryText}</td>
-                        <td><strong>${mediaCount}</strong></td>
+                        <td>${storageCellHtml}</td>
                         <td style="text-align: right;">
                             <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
-                                <button type="button" class="btn btn-purple btn-sm" onclick="SuperAdminEngine.selectClient('${ev.slug}')" title="Kelola Paket & Frame">⚙️</button>
+                                <button type="button" class="btn btn-purple btn-sm" onclick="SuperAdminEngine.selectClient('${ev.slug}')" title="Kelola Paket, Kuota & Frame">⚙️</button>
                                 <button type="button" class="btn btn-primary btn-sm" onclick="SuperAdminEngine.openEditClientModal('${ev.slug}')" title="Edit Akun Klien">✏️</button>
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.copyClientLink('${ev.slug}')" title="Salin Link Event">🔗</button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="SuperAdminEngine.copyClientLink('${ev.slug}')" title="Salin Link Event Klien">🔗</button>
                                 ${!isMasterRow ? `<button type="button" class="btn btn-danger btn-sm" onclick="SuperAdminEngine.deleteClientAccount('${ev.slug}')" title="Hapus Akun Klien">🗑️</button>` : ''}
                             </div>
                         </td>
@@ -2112,6 +2232,13 @@
                 document.getElementById('sa-client-locked').checked = Boolean(ev.is_locked);
                 document.getElementById('sa-watermark-text').value = stObj.watermark_text || "Powered by Kayuna Photobooth Studio";
 
+                const limitMbVal = flags.storage_limit_mb !== undefined ? Number(flags.storage_limit_mb) : 500;
+                document.getElementById('sa-storage-limit-mb').value = limitMbVal;
+                const usedMbStr = StorageQuotaHelper.formatMB(this.storageUsageMap[slug] || 0);
+                document.getElementById('sa-client-storage-usage-info').innerText = limitMbVal > 0
+                    ? `Terpakai: ${usedMbStr} MB dari ${limitMbVal} MB`
+                    : `Terpakai: ${usedMbStr} MB (Tanpa Batas)`;
+
                 document.getElementById('sa-feat-frame-upload').checked = flags.allow_frame_upload !== false;
                 document.getElementById('sa-feat-layouts').checked = flags.allow_layouts !== false;
                 document.getElementById('sa-max-layouts').value = flags.max_layouts || 8;
@@ -2141,6 +2268,7 @@
 
                 document.getElementById('sa-edit-pin').value = ev.admin_password || ev.passcode || '';
                 document.getElementById('sa-edit-expiry').value = this.toLocalDateTimeInput(stObj.rental_expires_at);
+                document.getElementById('sa-edit-storage-mb').value = stObj?.feature_flags?.storage_limit_mb !== undefined ? Number(stObj.feature_flags.storage_limit_mb) : 500;
                 document.getElementById('sa-edit-locked').checked = Boolean(ev.is_locked);
 
                 document.getElementById('sa-edit-client-modal').style.display = 'flex';
@@ -2157,6 +2285,7 @@
                 const newSlug = oldSlug === MASTER_SLUG ? MASTER_SLUG : rawNewSlug;
                 const newPin = document.getElementById('sa-edit-pin').value.trim();
                 const expiryVal = document.getElementById('sa-edit-expiry').value;
+                const storageLimitMb = Math.max(0, parseInt(document.getElementById('sa-edit-storage-mb').value || '500', 10));
                 const isLocked = document.getElementById('sa-edit-locked').checked;
 
                 if (!newName || !newSlug || !newPin) {
@@ -2169,6 +2298,7 @@
 
                 try {
                     const rentalExpiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
+                    const prevFlags = (this.settingsMap[oldSlug]?.feature_flags) || { ...FEATURE_FLAGS };
 
                     if (newSlug === oldSlug) {
                         const { data: updatedEv, error: evErr } = await supabaseClient
@@ -2189,7 +2319,8 @@
                             .from('event_settings')
                             .upsert({
                                 event_slug: oldSlug,
-                                rental_expires_at: rentalExpiresAt
+                                rental_expires_at: rentalExpiresAt,
+                                feature_flags: { ...prevFlags, storage_limit_mb: storageLimitMb }
                             }, { onConflict: 'event_slug' });
                         if (stErr) throw stErr;
                     } else {
@@ -2203,7 +2334,11 @@
                             }]);
                         if (insErr) throw insErr;
 
-                        await supabaseClient.from('event_settings').update({ event_slug: newSlug, rental_expires_at: rentalExpiresAt }).eq('event_slug', oldSlug);
+                        await supabaseClient.from('event_settings').update({
+                            event_slug: newSlug,
+                            rental_expires_at: rentalExpiresAt,
+                            feature_flags: { ...prevFlags, storage_limit_mb: storageLimitMb }
+                        }).eq('event_slug', oldSlug);
                         await supabaseClient.from('frames').update({ event_slug: newSlug }).eq('event_slug', oldSlug);
                         await supabaseClient.from('media').update({ event_slug: newSlug }).eq('event_slug', oldSlug);
                         const { data: delOld, error: delOldErr } = await supabaseClient.from('events').delete().eq('slug', oldSlug).select('slug');
@@ -2232,7 +2367,6 @@
                 }
 
                 try {
-                    // 1. Ambil daftar storage_path sebelum menghapus baris database
                     const [framesRes, mediaRes] = await Promise.all([
                         supabaseClient.from('frames').select('storage_path').eq('event_slug', slug),
                         supabaseClient.from('media').select('storage_path, preview_storage_path').eq('event_slug', slug)
@@ -2247,7 +2381,6 @@
                         }
                     });
 
-                    // 2. Hapus relasi anak terlebih dahulu
                     const { error: delMediaErr } = await supabaseClient.from('media').delete().eq('event_slug', slug);
                     if (delMediaErr) throw delMediaErr;
 
@@ -2257,7 +2390,6 @@
                     const { error: delSettingsErr } = await supabaseClient.from('event_settings').delete().eq('event_slug', slug);
                     if (delSettingsErr) throw delSettingsErr;
 
-                    // 3. Hapus baris utama pada tabel 'events' & verifikasi baris terhapus
                     const { data: deletedRows, error: delEvErr } = await supabaseClient
                         .from('events')
                         .delete()
@@ -2272,7 +2404,6 @@
                         );
                     }
 
-                    // 4. Bersihkan storage & cache lokal perangkat
                     if (pathsToRemove.length > 0) {
                         await supabaseClient.storage.from('wedding-photobooth').remove(pathsToRemove);
                     }
@@ -2319,6 +2450,7 @@
                 let slug = (slugInput.value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
                 const pin = (document.getElementById('sa-new-pin').value || '').trim();
                 const expiryVal = document.getElementById('sa-new-expiry').value;
+                const newStorageLimitMb = Math.max(0, parseInt(document.getElementById('sa-new-storage-mb')?.value || '500', 10));
 
                 if (!slug || !eventName || !pin) {
                     return alert("Harap isi Nama Event, Slug URL, dan PIN Admin Klien.");
@@ -2355,7 +2487,8 @@
                         allow_audio_guestbook: true,
                         allow_ig_share: true,
                         allow_zip_download: true,
-                        show_watermark: true
+                        show_watermark: true,
+                        storage_limit_mb: newStorageLimitMb
                     };
 
                     const rentalExpiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
@@ -2376,6 +2509,7 @@
                     document.getElementById('sa-new-name').value = '';
                     document.getElementById('sa-new-pin').value = '';
                     document.getElementById('sa-new-expiry').value = '';
+                    document.getElementById('sa-new-storage-mb').value = '500';
 
                     this.selectedSlug = slug;
                     await this.loadDashboard();
@@ -2383,8 +2517,10 @@
                     const clientUrl = `${window.location.origin}${window.location.pathname}?event=${encodeURIComponent(slug)}`;
                     alert(`✅ Klien "${eventName}" berhasil dibuat dengan slug baru "${slug}"!
 
-Link Klien:
-${clientUrl}`);
+Link Khusus Klien (Bagikan ke Klien):
+${clientUrl}
+
+PIN Admin Klien: ${pin}`);
                 } catch (e) {
                     alert("Gagal membuat klien baru: " + e.message);
                 }
@@ -2398,6 +2534,7 @@ ${clientUrl}`);
                 const newPin = document.getElementById('sa-client-pin').value.trim();
                 const isLocked = targetSlug === MASTER_SLUG ? false : document.getElementById('sa-client-locked').checked;
                 const watermarkText = document.getElementById('sa-watermark-text').value.trim() || "Powered by Kayuna Photobooth Studio";
+                const storageLimitMbVal = Math.max(0, parseInt(document.getElementById('sa-storage-limit-mb')?.value || '500', 10));
 
                 const checkedLayouts = Array.from(document.querySelectorAll('.sa-layout-choice:checked')).map(el => el.value);
                 if (checkedLayouts.length === 0) {
@@ -2418,7 +2555,8 @@ ${clientUrl}`);
                     allow_audio_guestbook: document.getElementById('sa-feat-audio-guestbook').checked,
                     allow_ig_share: document.getElementById('sa-feat-ig-share').checked,
                     allow_zip_download: document.getElementById('sa-feat-zip-download').checked,
-                    show_watermark: document.getElementById('sa-feat-watermark').checked
+                    show_watermark: document.getElementById('sa-feat-watermark').checked,
+                    storage_limit_mb: storageLimitMbVal
                 };
 
                 const expiryVal = document.getElementById('sa-rental-expiry').value;
@@ -2458,7 +2596,7 @@ ${clientUrl}`);
                     }
 
                     await this.loadDashboard();
-                    alert(`✅ Pengaturan akun, pembatasan frame & layout untuk "${targetSlug}" berhasil disimpan!`);
+                    alert(`✅ Pengaturan akun, kuota penyimpanan, frame & layout untuk "${targetSlug}" berhasil disimpan!`);
                 } catch (e) {
                     alert("Gagal menyimpan konfigurasi Superadmin: " + e.message);
                 }
@@ -2540,6 +2678,7 @@ ${clientUrl}`);
                     if (this.selectedSlug) {
                         await this.loadSelectedClientFrames(this.selectedSlug);
                     }
+                    await this.loadDashboard();
                     alert(`✅ Frame "${title}" berhasil diunggah & diterapkan ke ${selectedSlugs.length} klien terpilih!`);
                 } catch (e) {
                     alert("Gagal mendistribusikan frame ke klien: " + e.message);
@@ -2596,6 +2735,7 @@ ${clientUrl}`);
                         await supabaseClient.storage.from('wedding-photobooth').remove([storagePath]);
                     }
                     await this.loadSelectedClientFrames(slug);
+                    await this.loadDashboard();
                 } catch (e) {
                     alert("Gagal menghapus frame klien: " + e.message);
                 }
@@ -2641,6 +2781,26 @@ ${clientUrl}`);
                 AppRouter.applyFeatureFlagsToUI();
                 this.loadAdminFrames();
                 this.loadAdminMedia();
+                this.updateStorageQuotaBadge();
+            },
+
+            async updateStorageQuotaBadge() {
+                const badge = document.getElementById('admin-storage-quota-badge');
+                if (!badge) return;
+                try {
+                    const usedBytes = await StorageQuotaHelper.getEventStorageUsageBytes(CURRENT_EVENT_SLUG);
+                    const usedMb = StorageQuotaHelper.formatMB(usedBytes);
+                    const limitMb = Number(FEATURE_FLAGS.storage_limit_mb ?? 500);
+                    if (CURRENT_EVENT_SLUG === MASTER_SLUG || !limitMb || limitMb <= 0) {
+                        badge.innerText = `💾 Terpakai: ${usedMb} MB (Unlimited)`;
+                    } else {
+                        const pct = Math.min(100, Math.round((usedBytes / (limitMb * 1024 * 1024)) * 100));
+                        badge.innerText = `💾 Penyimpanan: ${usedMb} / ${limitMb} MB (${pct}%)`;
+                        badge.style.color = pct >= 90 ? 'var(--color-danger)' : (pct >= 75 ? '#d97706' : 'var(--color-secondary)');
+                    }
+                } catch (_) {
+                    badge.innerText = '💾 Penyimpanan: -';
+                }
             },
 
             async loadStyleSettingsFromDB() {
@@ -2737,6 +2897,11 @@ ${clientUrl}`);
                 if (coverFileInput.files.length > 0) {
                     const file = coverFileInput.files[0];
                     try {
+                        const quotaCheck = await StorageQuotaHelper.checkCanUpload(CURRENT_EVENT_SLUG, file.size || 0);
+                        if (!quotaCheck.allowed) {
+                            return alert(`⚠️ Kapasitas penyimpanan Anda sudah penuh (${StorageQuotaHelper.formatMB(quotaCheck.usedBytes)} MB / ${quotaCheck.limitMb} MB).`);
+                        }
+
                         const timestamp = Date.now();
                         const path = `${CURRENT_EVENT_SLUG}/cover/polaroid_${timestamp}.png`;
                         
@@ -2780,6 +2945,7 @@ ${clientUrl}`);
                     if (!error) {
                         coverFileInput.value = '';
                         await this.loadStyleSettingsFromDB();
+                        this.updateStorageQuotaBadge();
                         if (skippedColumns.length > 0) {
                             alert(
                                 "⚠️ Pengaturan tersimpan, namun kolom berikut belum ada di tabel event_settings: " +
@@ -2854,6 +3020,11 @@ ${clientUrl}`);
                 const file = fileInput.files[0];
 
                 try {
+                    const quotaCheck = await StorageQuotaHelper.checkCanUpload(CURRENT_EVENT_SLUG, file.size || 0);
+                    if (!quotaCheck.allowed) {
+                        return alert(`⚠️ Kapasitas penyimpanan Anda sudah penuh (${StorageQuotaHelper.formatMB(quotaCheck.usedBytes)} MB / ${quotaCheck.limitMb} MB). Hapus beberapa media/frame lama atau hubungi Superadmin untuk menambah kapasitas.`);
+                    }
+
                     const timestamp = Date.now();
                     const path = `${CURRENT_EVENT_SLUG}/frames/frame_${timestamp}.png`;
 
@@ -2873,6 +3044,7 @@ ${clientUrl}`);
                     document.getElementById('adm-frame-title').value = '';
                     fileInput.value = '';
                     this.loadAdminFrames();
+                    this.updateStorageQuotaBadge();
                 } catch(e) { alert("Gagal unggah frame: " + e.message); }
             },
 
@@ -2885,6 +3057,7 @@ ${clientUrl}`);
                     await supabaseClient.from('frames').delete().eq('id', id);
                     await supabaseClient.storage.from('wedding-photobooth').remove([storagePath]);
                     this.loadAdminFrames();
+                    this.updateStorageQuotaBadge();
                 } catch(e) { alert("Gagal hapus frame: " + e.message); }
             },
 
