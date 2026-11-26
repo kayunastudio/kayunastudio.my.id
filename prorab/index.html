@@ -169,7 +169,7 @@
                     <span>🏢</span> <span id="txtNamaUserAktif" class="max-w-[110px] truncate">Memuat...</span>
                 </button>
                 
-                <button onclick="muatDataProyekSemua()" class="hidden sm:flex w-8 h-8 items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-sm transition shadow" title="Sync Database">
+                <button onclick="muatDataProyekSemua()" class="hidden sm:flex w-8 h-8 items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-sm transition shadow" title="Sync Database & Hak Akses Fitur">
                     ⚡
                 </button>
 
@@ -1190,7 +1190,7 @@
                         <span class="text-xl">👑</span>
                         <h2 class="text-base sm:text-lg font-black uppercase tracking-tight text-amber-400">Superadmin Access, Productivity & Feature Control</h2>
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">Kelola akun klien keseluruhan, PIN akses, masa sewa, modul & fitur yang diizinkan, serta audit produktivitas & durasi pekerjaan lintas klien.</p>
+                    <p class="text-xs text-slate-400 mt-1">Kelola akun klien keseluruhan, PIN akses, masa sewa, modul & fitur yang diizinkan (tersinkron otomatis ke akun klien), serta audit produktivitas & durasi pekerjaan lintas klien.</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="badgeSuperadminClientCount" class="text-xs font-mono font-bold bg-slate-800 border border-slate-700 text-amber-400 px-3 py-1.5 rounded-xl">0 Akun</span>
@@ -1205,7 +1205,7 @@
                             <h3 id="txtHeaderFormAkun" class="text-xs font-black text-slate-900 uppercase">➕ Tambah Akun Klien Baru</h3>
                             <p class="text-[10px] text-slate-400">Atur kredensial login & paket fitur klien</p>
                         </div>
-                        <span class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">ROLE CONTROL</span>
+                        <span class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">CLOUD SYNC</span>
                     </div>
 
                     <form onsubmit="event.preventDefault(); simpanAkunKlien();" class="space-y-3 text-xs">
@@ -1331,7 +1331,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-2">
                         <div>
                             <h3 class="text-xs font-black text-slate-900 uppercase">👥 Daftar Akun Klien & Hak Akses Fitur</h3>
-                            <p class="text-[10px] text-slate-400">Klik tombol toggle fitur langsung pada tabel atau edit akun untuk mengatur akses</p>
+                            <p class="text-[10px] text-slate-400">Klik tombol toggle fitur langsung pada tabel (otomatis sinkron ke Supabase & akun klien)</p>
                         </div>
                         <div class="relative w-full sm:w-56">
                             <input type="text" id="inpCariAkunKlien" oninput="renderTabelAkunKlien()" placeholder="Cari klien / user ID..." class="w-full border border-slate-200 pl-7 pr-2.5 py-1.5 text-xs rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500">
@@ -1729,6 +1729,7 @@
         const SUPABASE_URL = "https://qhuijciuvgobuvilknlu.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodWlqY2l1dmdvYnV2aWxrbmx1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTUwMTQsImV4cCI6MjEwMTE5MTAxNH0.giHriDXp3Ks0VIMIh1I2Axgf4RQ-zpXTQanfz1CcCi0";
         const DEFAULT_LOGO = "https://github.com/kayunastudio/kayunastudio.my.id/blob/main/prorab/logo_kayuna.png?raw=true";
+        const ACCOUNT_REGISTRY_PROJECT_ID = "__PRORAB_ACCOUNTS_REGISTRY__";
 
         const ALL_FEATURE_KEYS = [
             { key: 'rab', label: 'RAB', fullLabel: 'Dashboard & RAB' },
@@ -2007,25 +2008,108 @@
         ];
 
         let LIST_AKUN = [];
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function normalisasiFiturAkun(akun) {
+            if (!akun) return akun;
+            const allKeys = ALL_FEATURE_KEYS.map(f => f.key);
+            if (isSuperadminUser(akun)) {
+                akun.features = [...allKeys];
+                return akun;
+            }
+            if (!Array.isArray(akun.features)) {
+                akun.features = [...allKeys];
+            }
+            return akun;
+        }
+
+        function mergeDaftarAkun(remoteList, localList) {
+            const mergedMap = new Map();
+            DEFAULT_LIST_AKUN.forEach(acc => {
+                mergedMap.set(acc.userId, normalisasiFiturAkun(JSON.parse(JSON.stringify(acc))));
+            });
+            if (Array.isArray(localList)) {
+                localList.forEach(acc => {
+                    if (acc && acc.userId) {
+                        const base = mergedMap.get(acc.userId) || {};
+                        mergedMap.set(acc.userId, normalisasiFiturAkun({ ...base, ...acc }));
+                    }
+                });
+            }
+            if (Array.isArray(remoteList)) {
+                remoteList.forEach(acc => {
+                    if (acc && acc.userId) {
+                        const base = mergedMap.get(acc.userId) || {};
+                        mergedMap.set(acc.userId, normalisasiFiturAkun({ ...base, ...acc }));
+                    }
+                });
+            }
+            return Array.from(mergedMap.values());
+        }
 
         function muatDaftarAkunDariStorage() {
             const saved = localStorage.getItem('prorab_accounts_registry_v2');
-            if (saved) {
-                const parsed = safeJSONParse(saved, null);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    LIST_AKUN = parsed;
-                    return;
-                }
-            }
-            LIST_AKUN = JSON.parse(JSON.stringify(DEFAULT_LIST_AKUN));
-            simpanDaftarAkunKeStorage();
-        }
-
-        function simpanDaftarAkunKeStorage() {
+            const parsed = saved ? safeJSONParse(saved, null) : null;
+            LIST_AKUN = mergeDaftarAkun(null, Array.isArray(parsed) ? parsed : []);
             localStorage.setItem('prorab_accounts_registry_v2', JSON.stringify(LIST_AKUN));
         }
 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        async function sinkronDaftarAkunDariCloud() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('project')
+                    .select('id, data_bq')
+                    .eq('id', ACCOUNT_REGISTRY_PROJECT_ID)
+                    .maybeSingle();
+
+                if (!error && data && data.data_bq) {
+                    const remoteAccounts = safeJSONParse(data.data_bq, null);
+                    if (Array.isArray(remoteAccounts) && remoteAccounts.length > 0) {
+                        LIST_AKUN = mergeDaftarAkun(remoteAccounts, []);
+                        localStorage.setItem('prorab_accounts_registry_v2', JSON.stringify(LIST_AKUN));
+                        if (currentUser) {
+                            const updatedSelf = LIST_AKUN.find(a => a.userId === currentUser.userId);
+                            if (updatedSelf) {
+                                currentUser = { ...currentUser, ...updatedSelf };
+                                localStorage.setItem('prorab_current_user', JSON.stringify(currentUser));
+                            }
+                        }
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.warn('Cloud account registry sync skipped:', e);
+            }
+            return false;
+        }
+
+        async function simpanDaftarAkunKeStorage(syncCloud = true) {
+            LIST_AKUN = LIST_AKUN.map(a => normalisasiFiturAkun(a));
+            localStorage.setItem('prorab_accounts_registry_v2', JSON.stringify(LIST_AKUN));
+            if (!syncCloud) return;
+            try {
+                const registryPayload = {
+                    id: ACCOUNT_REGISTRY_PROJECT_ID,
+                    user_id: 'superadmin_registry',
+                    nama_proyek: 'SYSTEM_ACCOUNT_REGISTRY',
+                    pemilik: 'Superadmin',
+                    lokasi: 'SYSTEM',
+                    tanggal: '2026-01-01',
+                    total_biaya: 0,
+                    status: 'system_registry',
+                    data_bq: LIST_AKUN,
+                    custom_hsd: {}
+                };
+                const { error } = await supabaseClient
+                    .from('project')
+                    .upsert([registryPayload], { onConflict: 'id' });
+                if (error) {
+                    console.warn('Gagal upsert account registry ke cloud:', error.message);
+                }
+            } catch (e) {
+                console.warn('Error sync account registry ke cloud:', e);
+            }
+        }
 
         const HARI_LIBUR_NASIONAL_2026 = [
             "2026-01-01", "2026-01-16", "2026-02-17", "2026-03-19",
@@ -2078,8 +2162,10 @@
 
             document.querySelectorAll('[data-feature]').forEach(el => {
                 const feat = el.getAttribute('data-feature');
-                if (hasFeatureAccess(feat)) {
+                const allowed = hasFeatureAccess(feat);
+                if (allowed) {
                     el.classList.remove('hidden');
+                    el.style.removeProperty('display');
                 } else {
                     el.classList.add('hidden');
                 }
@@ -2184,8 +2270,9 @@
             if(menu) menu.classList.toggle('hidden');
         }
 
-        function periksaSesiLogin() {
+        async function periksaSesiLogin() {
             muatDaftarAkunDariStorage();
+            await sinkronDaftarAkunDariCloud();
             const savedUser = localStorage.getItem('prorab_current_user');
             const overlay = document.getElementById('loginOverlay');
             if (savedUser) {
@@ -2194,7 +2281,7 @@
                     const syncedAccount = LIST_AKUN.find(a => a.userId === parsedUser.userId);
                     const sewaInfo = evaluasiStatusSewaAkun(syncedAccount);
                     if (syncedAccount && syncedAccount.status !== 'suspended' && !sewaInfo.expired) {
-                        currentUser = syncedAccount;
+                        currentUser = normalisasiFiturAkun(syncedAccount);
                         localStorage.setItem('prorab_current_user', JSON.stringify(currentUser));
                         muatProfilIdentitasAkun();
                         overlay.classList.add('hidden');
@@ -2210,8 +2297,9 @@
             overlay.classList.remove('hidden');
         }
 
-        function eksekusiLoginPasscode() {
+        async function eksekusiLoginPasscode() {
             muatDaftarAkunDariStorage();
+            await sinkronDaftarAkunDariCloud();
             const inputVal = document.getElementById('inpPasscode').value.trim();
             const errLbl = document.getElementById('lblLoginError');
             const akunDitemukan = LIST_AKUN.find(a => a.pin === inputVal);
@@ -2232,7 +2320,7 @@
                 return;
             }
 
-            currentUser = akunDitemukan;
+            currentUser = normalisasiFiturAkun(akunDitemukan);
             localStorage.setItem('prorab_current_user', JSON.stringify(currentUser));
             muatProfilIdentitasAkun();
             document.getElementById('loginOverlay').classList.add('hidden');
@@ -2395,6 +2483,15 @@
 
             window.addEventListener('scroll', updatePopoverPosition, true);
             window.addEventListener('resize', updatePopoverPosition);
+            document.addEventListener('visibilitychange', async () => {
+                if (!document.hidden && currentUser) {
+                    const updated = await sinkronDaftarAkunDariCloud();
+                    if (updated) {
+                        perbaruiUIUser();
+                        terapkanHakAksesFiturUI();
+                    }
+                }
+            });
         });
 
         function switchTab(tabName) {
@@ -2971,7 +3068,7 @@
             });
         }
 
-        function simpanAkunKlien() {
+        async function simpanAkunKlien() {
             if (!isSuperadminUser()) return showToast("Akses ditolak!", "error");
 
             const now = new Date();
@@ -3044,13 +3141,13 @@
                 showToast(`Akun klien baru "${nama}" berhasil ditambahkan!`);
             }
 
-            simpanDaftarAkunKeStorage();
+            await simpanDaftarAkunKeStorage(true);
             resetFormAkunKlien();
             renderTabelAkunKlien();
             renderSuperadminProductivityMonitor();
         }
 
-        function perpanjangSewaKlien(userId, tambahBulan = 1) {
+        async function perpanjangSewaKlien(userId, tambahBulan = 1) {
             if (!isSuperadminUser()) return;
             const akun = LIST_AKUN.find(a => a.userId === userId);
             if (!akun || isSuperadminUser(akun)) return;
@@ -3066,7 +3163,7 @@
             akun.rentEnd = newEnd;
             akun.status = 'active';
 
-            simpanDaftarAkunKeStorage();
+            await simpanDaftarAkunKeStorage(true);
             renderTabelAkunKlien();
             showToast(`Sewa ${akun.nama} diperpanjang +${tambahBulan} bulan (s/d ${newEnd})`);
         }
@@ -3122,7 +3219,7 @@
             document.getElementById('btnBatalEditAkun').classList.add('hidden');
         }
 
-        function toggleFiturAkunKlien(userId, featureKey) {
+        async function toggleFiturAkunKlien(userId, featureKey) {
             if (!isSuperadminUser()) return;
             const akun = LIST_AKUN.find(a => a.userId === userId);
             if (!akun || isSuperadminUser(akun)) return;
@@ -3137,30 +3234,30 @@
                 akun.features.push(featureKey);
             }
 
-            simpanDaftarAkunKeStorage();
+            await simpanDaftarAkunKeStorage(true);
             renderTabelAkunKlien();
             showToast(`Fitur "${featureKey}" diperbarui untuk ${akun.nama}`);
         }
 
-        function toggleStatusAkunKlien(userId) {
+        async function toggleStatusAkunKlien(userId) {
             if (!isSuperadminUser()) return;
             const akun = LIST_AKUN.find(a => a.userId === userId);
             if (!akun || isSuperadminUser(akun)) return;
 
             akun.status = (akun.status === 'suspended') ? 'active' : 'suspended';
-            simpanDaftarAkunKeStorage();
+            await simpanDaftarAkunKeStorage(true);
             renderTabelAkunKlien();
             showToast(`Status akun ${akun.nama}: ${akun.status === 'active' ? 'Aktif' : 'Nonaktif'}`);
         }
 
-        function hapusAkunKlien(userId) {
+        async function hapusAkunKlien(userId) {
             if (!isSuperadminUser()) return;
             const akun = LIST_AKUN.find(a => a.userId === userId);
             if (!akun || isSuperadminUser(akun)) return;
 
             if (!confirm(`Yakin ingin menghapus akun klien "${akun.nama}" (${akun.userId})?`)) return;
             LIST_AKUN = LIST_AKUN.filter(a => a.userId !== userId);
-            simpanDaftarAkunKeStorage();
+            await simpanDaftarAkunKeStorage(true);
             renderTabelAkunKlien();
             renderSuperadminProductivityMonitor();
             showToast(`Akun "${akun.nama}" berhasil dihapus.`);
@@ -3334,17 +3431,23 @@
         async function muatDataProyekSemua() {
             if (!currentUser) return;
             try {
+                await sinkronDaftarAkunDariCloud();
+                perbaruiUIUser();
+                terapkanHakAksesFiturUI();
+
                 const [dataProject, dataAHSP, dataHSD, dataSchedule, dataDaily] = await Promise.all([
                     fetchAllRowsWithUserFilter('project'), fetchAllRowsWithUserFilter('01_ahsp'),
                     fetchAllRowsWithUserFilter('02_hsd'), fetchAllRowsWithUserFilter('03_schedule'),
                     fetchAllRowsWithUserFilter('04_daily_report')
                 ]);
 
-                listProyek = (dataProject || []).map(item => {
-                    let parsedBQ = safeJSONParse(item.data_bq, []);
-                    let parsedCustomHSD = safeJSONParse(item.custom_hsd, {});
-                    return { ...item, status: item.status || 'active', data_bq: parsedBQ, custom_hsd: parsedCustomHSD };
-                });
+                listProyek = (dataProject || [])
+                    .filter(item => item.id !== ACCOUNT_REGISTRY_PROJECT_ID && item.status !== 'system_registry')
+                    .map(item => {
+                        let parsedBQ = safeJSONParse(item.data_bq, []);
+                        let parsedCustomHSD = safeJSONParse(item.custom_hsd, {});
+                        return { ...item, status: item.status || 'active', data_bq: parsedBQ, custom_hsd: parsedCustomHSD };
+                    });
 
                 listAHSPMaster = (dataAHSP || []).map(a => ({ ...a, tahun: a.tahun || 2026 })); 
                 listHSDMaster = (dataHSD || []).map(h => ({ ...h, tahun: h.tahun || 2026 }));
@@ -3804,92 +3907,205 @@
             document.getElementById('btnUnselectProject').classList.remove('hidden');
             ['lblActiveProjectBadge', 'badgeScheduleProject', 'badgeDailyProject', 'badgeProductivityProject'].forEach(el => {
                 const node = document.getElementById(el);
-                if (node) node.innerText = `${proyekAktif.id}`;
+                if (node) node.innerText = proyekAktif.id;
             });
-            document.getElementById('lblLokasiProyekAktif').innerText = proyekAktif.lokasi || "Nasional";
-            ['btnSimpanItem', 'btnSimpanLsItem', 'btnSimpanDaily'].forEach(el => document.getElementById(el).disabled = false);
-
-            document.getElementById('docNamaProyek').innerText = proyekAktif.nama_proyek;
-            document.getElementById('docLokasiProyek').innerText = "Lokasi: " + (proyekAktif.lokasi || '-');
-            document.getElementById('docPemilikKlien').innerText = "Klien: " + (proyekAktif.pemilik || '-');
-            document.getElementById('docKodeProyek').innerText = "ID Proyek: " + proyekAktif.id;
-            document.getElementById('docTanggal').innerText = "Tanggal: " + formatTanggalIndoFormal(proyekAktif.tanggal || new Date());
-
-            perbaruiTanggalTtdEkspor();
+            document.getElementById('lblLokasiProyekAktif').innerText = proyekAktif.lokasi || '-';
             
+            document.getElementById('docNamaProyek').innerText = proyekAktif.nama_proyek;
+            document.getElementById('docLokasiProyek').innerText = "Lokasi: " + proyekAktif.lokasi;
+            document.getElementById('docPemilikKlien').innerText = "Klien: " + proyekAktif.pemilik;
+            document.getElementById('docKodeProyek').innerText = "ID Proyek: " + proyekAktif.id;
+            document.getElementById('docTanggal').innerText = "Tanggal: " + proyekAktif.tanggal;
+            perbaruiTanggalTtdEkspor();
+
+            document.getElementById('btnSimpanItem').disabled = false;
+            document.getElementById('btnSimpanLsItem').disabled = false;
+            document.getElementById('btnSimpanDaily').disabled = false;
+
             reKalkulasiBQProyekAktif();
             renderBQDanRekapitulasi(proyekAktif.data_bq || []);
             renderLampiranHSDProyek();
             renderLampiranAHSPProyek();
             renderTabelLaporanHarian();
             renderTabelProduktivitasPekerja();
-            showToast(`Proyek "${proyekAktif.nama_proyek}" dipilih`);
-        }
-
-        function reKalkulasiBQProyekAktif() {
-            if(!proyekAktif || !proyekAktif.data_bq) return;
-            proyekAktif.data_bq.forEach(item => {
-                if(item.kode_ahsp && item.kode_ahsp !== 'LUMPSUM') {
-                    let masterAhsp = listAHSPMaster.find(a => a.kode_ahsp === item.kode_ahsp);
-                    if(masterAhsp) {
-                        item.hargaSatuan = Math.round(hitungKalkulasiAHSPPUPR(masterAhsp, true));
-                    }
-                }
-            });
+            if(!document.getElementById('pageSchedule').classList.contains('hidden')) renderTabelPenjadwalan();
         }
 
         function unselectProyek() {
             proyekAktif = null;
+            renderDaftarProyekKartu();
             document.getElementById('btnUnselectProject').classList.add('hidden');
             ['lblActiveProjectBadge', 'badgeScheduleProject', 'badgeDailyProject', 'badgeProductivityProject'].forEach(el => {
                 const node = document.getElementById(el);
                 if (node) node.innerText = 'PILIH PROYEK';
             });
-            ['btnSimpanItem', 'btnSimpanLsItem', 'btnSimpanDaily'].forEach(el => document.getElementById(el).disabled = true);
-            renderDaftarProyekKartu(); renderBQDanRekapitulasi([]); renderTabelLaporanHarian(); renderTabelProduktivitasPekerja();
+            document.getElementById('lblLokasiProyekAktif').innerText = '-';
+            
+            document.getElementById('docNamaProyek').innerText = "(Pilih Proyek Terlebih Dahulu)";
+            document.getElementById('docLokasiProyek').innerText = "Lokasi: -";
+            document.getElementById('docPemilikKlien').innerText = "Klien: -";
+            document.getElementById('docKodeProyek').innerText = "ID Proyek: -";
+            document.getElementById('docTanggal').innerText = "Tanggal: -";
+            perbaruiTanggalTtdEkspor();
+
+            document.getElementById('btnSimpanItem').disabled = true;
+            document.getElementById('btnSimpanLsItem').disabled = true;
+            document.getElementById('btnSimpanDaily').disabled = true;
+
+            renderBQDanRekapitulasi([]);
             document.getElementById('tabelLampiranHSDDetailRows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek untuk melihat rincian HSD terpakai.</td></tr>`;
             document.getElementById('containerLampiranAHSPDetail').innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Pilih proyek untuk melihat rincian koefisien AHSP.</p>`;
+            document.getElementById('tabelDailyReportRows').innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu.</td></tr>`;
+            renderTabelProduktivitasPekerja();
+            
+            if (kurvaSChartInstance) { kurvaSChartInstance.destroy(); kurvaSChartInstance = null; }
+            const ganttContainer = document.getElementById('ganttChartContainer');
+            if(ganttContainer) ganttContainer.innerHTML = `<p class="text-center text-slate-400 italic py-4">Pilih proyek untuk menampilkan Gantt Chart.</p>`;
+            const schBody = document.getElementById('tabelScheduleRows');
+            if(schBody) schBody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu di tab 'Dashboard & RAB Proyek'.</td></tr>`;
         }
 
-        function hitungPreviewHargaItem() { document.getElementById('txtSubtotalPreview').innerText = "Rp " + (getNumericValue('inpVolume', 0) * getNumericValue('inpHargaSatuan', 0)).toLocaleString('id-ID'); }
-        function hitungPreviewLumpsum() { document.getElementById('txtSubtotalLsPreview').innerText = "Rp " + (getNumericValue('inpLsVolume', 0) * getNumericValue('inpLsHargaSatuan', 0)).toLocaleString('id-ID'); }
-
-        function simpanItemKeProyek() {
-            let updatedBQ = proyekAktif.data_bq || [];
-            updatedBQ.push({ id: Date.now(), kode_ahsp: ahspTerpilih ? ahspTerpilih.kode_ahsp : '', kategori: document.getElementById('inpKategori').value, sub: document.getElementById('inpSubPekerjaan').value, vol: getNumericValue('inpVolume', 0), sat: document.getElementById('inpSatuan').value, hargaSatuan: getNumericValue('inpHargaSatuan', 0) });
-            simpanBQKeSupabase(updatedBQ);
+        function reKalkulasiBQProyekAktif() {
+            if (!proyekAktif || !proyekAktif.data_bq) return;
+            proyekAktif.data_bq = proyekAktif.data_bq.map(bq => {
+                if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM') {
+                    const master = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if (master) {
+                        const hargaSatuanBaru = Math.round(hitungKalkulasiAHSPPUPR(master, true));
+                        return { ...bq, harga_satuan: hargaSatuanBaru, subtotal: bq.vol * hargaSatuanBaru };
+                    }
+                }
+                return { ...bq, subtotal: bq.vol * bq.harga_satuan };
+            });
+            proyekAktif.total_biaya = proyekAktif.data_bq.reduce((sum, item) => sum + item.subtotal, 0);
         }
 
-        function simpanItemLumpsumKeProyek() {
-            let updatedBQ = proyekAktif.data_bq || [];
-            updatedBQ.push({ id: Date.now(), kode_ahsp: 'LUMPSUM', kategori: document.getElementById('inpLsKategori').value, sub: document.getElementById('inpLsSubPekerjaan').value, vol: getNumericValue('inpLsVolume', 1), sat: document.getElementById('inpLsSatuan').value, hargaSatuan: getNumericValue('inpLsHargaSatuan', 0) });
-            simpanBQKeSupabase(updatedBQ);
+        function hitungPreviewHargaItem() {
+            const vol = getNumericValue('inpVolume', 0);
+            const hrg = parseFloat(document.getElementById('inpHargaSatuan').value) || 0;
+            document.getElementById('txtSubtotalPreview').innerText = "Rp " + Math.round(vol * hrg).toLocaleString('id-ID');
         }
 
-        async function simpanBQKeSupabase(updatedBQ) {
-            let totalDPA = updatedBQ.reduce((s, i) => s + (i.vol * i.hargaSatuan), 0);
-            let grandTotal = Math.round(totalDPA * 1.11);
-            const { error } = await supabaseClient.from('project').update({ data_bq: updatedBQ, total_biaya: grandTotal }).eq('id', proyekAktif.id);
-            if (!error) {
-                proyekAktif.data_bq = updatedBQ; proyekAktif.total_biaya = grandTotal;
-                renderBQDanRekapitulasi(updatedBQ);
-                renderLampiranHSDProyek();
-                renderLampiranAHSPProyek();
-                renderTabelProduktivitasPekerja();
-                showToast("BQ Proyek Berhasil Disimpan!");
+        function hitungPreviewLumpsum() {
+            const vol = getNumericValue('inpLsVolume', 0);
+            const hrg = getNumericValue('inpLsHargaSatuan', 0);
+            document.getElementById('txtSubtotalLsPreview').innerText = "Rp " + Math.round(vol * hrg).toLocaleString('id-ID');
+        }
+
+        async function simpanItemKeProyek() {
+            if (!proyekAktif) return;
+            const vol = getNumericValue('inpVolume', 0);
+            const hrg = parseFloat(document.getElementById('inpHargaSatuan').value) || 0;
+            if (vol <= 0) return showToast("Volume harus > 0", "error");
+
+            const itemBaru = { 
+                id: Date.now(), 
+                kode_ahsp: ahspTerpilih ? ahspTerpilih.kode_ahsp : 'LUMPSUM', 
+                kategori: document.getElementById('inpKategori').value, 
+                sub: document.getElementById('inpSubPekerjaan').value, 
+                vol: vol, 
+                sat: document.getElementById('inpSatuan').value, 
+                harga_satuan: hrg, 
+                subtotal: vol * hrg 
+            };
+            proyekAktif.data_bq.push(itemBaru);
+            proyekAktif.total_biaya = proyekAktif.data_bq.reduce((s, i) => s + i.subtotal, 0);
+
+            const { error } = await supabaseClient.from('project').update({ data_bq: proyekAktif.data_bq, total_biaya: proyekAktif.total_biaya }).eq('id', proyekAktif.id);
+            if(!error) {
+                showToast("Item AHSP berhasil ditambahkan!");
+                document.getElementById('inpVolume').value = '';
+                document.getElementById('txtSubtotalPreview').innerText = 'Rp 0';
+                pilihProyek(proyekAktif.id);
             } else {
-                showToast("Gagal menyimpan BQ: " + error.message, "error");
+                showToast("Gagal menyimpan item: " + error.message, "error");
             }
         }
 
-        function renderBQDanRekapitulasi(items) {
-            const tbodyRekap = document.getElementById('tabelRekapUmumRows');
-            const tbodyBQ = document.getElementById('tabelBQDetailRows');
-            tbodyRekap.innerHTML = ""; tbodyBQ.innerHTML = "";
+        async function simpanItemLumpsumKeProyek() {
+            if (!proyekAktif) return;
+            const kategori = document.getElementById('inpLsKategori').value.trim();
+            const sub = document.getElementById('inpLsSubPekerjaan').value.trim();
+            const vol = getNumericValue('inpLsVolume', 0);
+            const sat = document.getElementById('inpLsSatuan').value.trim();
+            const hrg = getNumericValue('inpLsHargaSatuan', 0);
 
-            if(items.length === 0) {
+            if (!kategori || !sub || vol <= 0 || !sat || hrg <= 0) {
+                return showToast("Mohon lengkapi semua field pekerjaan Lumpsum!", "error");
+            }
+
+            const itemBaru = { 
+                id: Date.now(), 
+                kode_ahsp: 'LUMPSUM', 
+                kategori: kategori, 
+                sub: sub, 
+                vol: vol, 
+                sat: sat, 
+                harga_satuan: hrg, 
+                subtotal: vol * hrg 
+            };
+            proyekAktif.data_bq.push(itemBaru);
+            proyekAktif.total_biaya = proyekAktif.data_bq.reduce((s, i) => s + i.subtotal, 0);
+
+            const { error } = await supabaseClient.from('project').update({ data_bq: proyekAktif.data_bq, total_biaya: proyekAktif.total_biaya }).eq('id', proyekAktif.id);
+            if(!error) {
+                showToast("Item Lumpsum berhasil ditambahkan!");
+                document.getElementById('inpLsSubPekerjaan').value = '';
+                document.getElementById('inpLsVolume').value = '1';
+                document.getElementById('inpLsHargaSatuan').value = '';
+                document.getElementById('txtSubtotalLsPreview').innerText = 'Rp 0';
+                pilihProyek(proyekAktif.id);
+            } else {
+                showToast("Gagal menyimpan item Lumpsum: " + error.message, "error");
+            }
+        }
+
+        function bukaModalEditBQ(itemId) {
+            if(!proyekAktif) return;
+            const item = proyekAktif.data_bq.find(i => i.id == itemId);
+            if(!item) return;
+            document.getElementById('editBqId').value = item.id;
+            document.getElementById('editBqSub').value = item.sub;
+            document.getElementById('editBqVol').value = item.vol;
+            document.getElementById('editBqSat').value = item.sat;
+            document.getElementById('modalEditBQ').classList.remove('hidden');
+        }
+        function tutupModalEditBQ() { document.getElementById('modalEditBQ').classList.add('hidden'); }
+
+        async function eksekekusiSimpanEditBQ() {
+            const id = document.getElementById('editBqId').value;
+            const sub = document.getElementById('editBqSub').value;
+            const vol = getNumericValue('editBqVol', 0);
+            if(vol <= 0) return showToast("Volume harus > 0", "error");
+
+            const idx = proyekAktif.data_bq.findIndex(i => i.id == id);
+            if(idx >= 0) {
+                proyekAktif.data_bq[idx].sub = sub;
+                proyekAktif.data_bq[idx].vol = vol;
+                proyekAktif.data_bq[idx].subtotal = vol * proyekAktif.data_bq[idx].harga_satuan;
+                proyekAktif.total_biaya = proyekAktif.data_bq.reduce((s, i) => s + i.subtotal, 0);
+
+                const { error } = await supabaseClient.from('project').update({ data_bq: proyekAktif.data_bq, total_biaya: proyekAktif.total_biaya }).eq('id', proyekAktif.id);
+                if(!error) { tutupModalEditBQ(); showToast("Item BQ diperbarui!"); pilihProyek(proyekAktif.id); }
+            }
+        }
+
+        async function hapusItemBQ(itemId) {
+            if(!proyekAktif || !confirm("Hapus item ini?")) return;
+            proyekAktif.data_bq = proyekAktif.data_bq.filter(i => i.id != itemId);
+            proyekAktif.total_biaya = proyekAktif.data_bq.reduce((s, i) => s + i.subtotal, 0);
+            const { error } = await supabaseClient.from('project').update({ data_bq: proyekAktif.data_bq, total_biaya: proyekAktif.total_biaya }).eq('id', proyekAktif.id);
+            if(!error) { showToast("Item BQ dihapus"); pilihProyek(proyekAktif.id); }
+        }
+
+        function renderBQDanRekapitulasi(dataBQ) {
+            const tbodyBQ = document.getElementById('tabelBQDetailRows');
+            const tbodyRekap = document.getElementById('tabelRekapUmumRows');
+            tbodyBQ.innerHTML = ""; tbodyRekap.innerHTML = "";
+
+            if (!dataBQ || dataBQ.length === 0) {
+                tbodyBQ.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada item pekerjaan.</td></tr>`;
                 tbodyRekap.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Belum ada rincian divisi.</td></tr>`;
-                tbodyBQ.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada item BQ.</td></tr>`;
                 document.getElementById('txtGrandTotalDPA').innerText = "Rp 0";
                 document.getElementById('txtGrandTotalPPN').innerText = "Rp 0";
                 document.getElementById('txtGrandTotalPlusPPN').innerText = "Rp 0";
@@ -3898,151 +4114,68 @@
                 return;
             }
 
-            let totalDPA = items.reduce((s, i) => s + ((parseFloat(i.vol)||0) * (parseFloat(i.hargaSatuan)||0)), 0);
-            let ppn = Math.round(totalDPA * 0.11);
-            let grandTotalPlusPPN = Math.round(totalDPA + ppn);
-
-            document.getElementById('txtGrandTotalDPA').innerText = "Rp " + Math.round(totalDPA).toLocaleString('id-ID');
-            document.getElementById('txtGrandTotalPPN').innerText = "Rp " + ppn.toLocaleString('id-ID');
-            document.getElementById('txtGrandTotalPlusPPN').innerText = "Rp " + grandTotalPlusPPN.toLocaleString('id-ID');
-            document.getElementById('txtTerbilangTotal').innerText = terbilangRupiah(grandTotalPlusPPN);
-
-            let grouped = {};
-            items.forEach(item => { if(!grouped[item.kategori]) grouped[item.kategori] = []; grouped[item.kategori].push(item); });
-
-            let idxKat = 1; let totalBobotSemua = 0;
-            for(let kat in grouped) {
-                let divTotal = grouped[kat].reduce((s, i) => s + ((parseFloat(i.vol)||0) * (parseFloat(i.hargaSatuan)||0)), 0);
-                let bobotDiv = totalDPA > 0 ? (divTotal / totalDPA) * 100 : 0; totalBobotSemua += bobotDiv;
-                tbodyRekap.innerHTML += `<tr class="border-b"><td class="p-2 text-center border font-bold">${idxKat}</td><td class="p-2 border font-bold">${kat}</td><td class="p-2 border text-right font-mono font-bold">Rp ${Math.round(divTotal).toLocaleString('id-ID')}</td><td class="p-2 border text-right font-mono">${bobotDiv.toFixed(2)}%</td></tr>`;
-                tbodyBQ.innerHTML += `<tr class="bg-slate-100 font-black"><td colspan="6" class="p-2 border border-slate-300 uppercase">${kat}</td><td class="border no-print"></td></tr>`;
-                grouped[kat].forEach((it, idxIt) => {
-                    let subTotal = (parseFloat(it.vol)||0) * (parseFloat(it.hargaSatuan)||0);
-                    tbodyBQ.innerHTML += `<tr class="border-b"><td class="p-2 text-center border">${idxIt+1}</td><td class="p-2 border">${it.sub}</td><td class="p-2 text-center border font-mono">${it.vol}</td><td class="p-2 text-center border">${it.sat}</td><td class="p-2 text-right border font-mono">Rp ${Math.round(it.hargaSatuan).toLocaleString('id-ID')}</td><td class="p-2 text-right border font-mono font-bold">Rp ${Math.round(subTotal).toLocaleString('id-ID')}</td><td class="p-2 text-center border no-print"><button onclick="bukaModalEditBQ(${it.id})" class="text-blue-600 px-1">✏️</button><button onclick="hapusItemBQ(${it.id})" class="text-rose-600 px-1">🗑️</button></td></tr>`;
-                });
-                idxKat++;
-            }
-            document.getElementById('txtTotalBobot').innerText = totalBobotSemua.toFixed(2) + "%";
-        }
-
-        function renderLampiranAHSPProyek() {
-            const container = document.getElementById('containerLampiranAHSPDetail');
-            if (!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Belum ada item AHSP terpakai pada proyek ini.</p>`;
-                return;
-            }
-
-            let kodeSet = new Set();
-            proyekAktif.data_bq.forEach(item => {
-                if (item.kode_ahsp && item.kode_ahsp !== 'LUMPSUM') {
-                    kodeSet.add(item.kode_ahsp);
-                }
+            let kelompok = {}; let grandTotalDPA = 0;
+            dataBQ.forEach(item => {
+                if (!kelompok[item.kategori]) kelompok[item.kategori] = [];
+                kelompok[item.kategori].push(item);
+                grandTotalDPA += (item.subtotal || 0);
             });
 
-            if (kodeSet.size === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Proyek ini hanya berisi pekerjaan Lumpsum / Custom tanpa AHSP standar.</p>`;
-                return;
+            let divIndex = 1;
+            for (const [kategori, items] of Object.entries(kelompok)) {
+                let divTotal = items.reduce((s, i) => s + (i.subtotal || 0), 0);
+                let bobotDiv = grandTotalDPA > 0 ? ((divTotal / grandTotalDPA) * 100).toFixed(2) : 0;
+
+                tbodyRekap.innerHTML += `<tr class="border-b"><td class="p-2 text-center font-bold border border-slate-200">${divIndex++}</td><td class="p-2 font-bold text-slate-900 border border-slate-200">${kategori}</td><td class="p-2 text-right font-mono font-bold border border-slate-200">Rp ${Math.round(divTotal).toLocaleString('id-ID')}</td><td class="p-2 text-right font-mono text-slate-600 border border-slate-200">${bobotDiv}%</td></tr>`;
+
+                tbodyBQ.innerHTML += `<tr class="bg-slate-100 font-bold"><td colspan="7" class="p-2 uppercase border border-slate-300 text-[10px]">${kategori}</td></tr>`;
+                items.forEach((item, idx) => {
+                    const isLumpsum = item.kode_ahsp === 'LUMPSUM';
+                    const badgeKode = isLumpsum 
+                        ? `<span class="text-[9px] text-emerald-700 font-mono bg-emerald-100 px-1 rounded">LUMPSUM</span>`
+                        : `<span class="text-[9px] text-amber-700 font-mono bg-amber-100 px-1 rounded">${item.kode_ahsp}</span>`;
+                    
+                    tbodyBQ.innerHTML += `<tr class="border-b"><td class="p-2 text-center border border-slate-200">${idx+1}</td><td class="p-2 border border-slate-200">${item.sub} ${badgeKode}</td><td class="p-2 text-center font-mono border border-slate-200">${item.vol}</td><td class="p-2 text-center font-mono border border-slate-200">${item.sat}</td><td class="p-2 text-right font-mono border border-slate-200">Rp ${Math.round(item.harga_satuan).toLocaleString('id-ID')}</td><td class="p-2 text-right font-mono font-bold border border-slate-200">Rp ${Math.round(item.subtotal).toLocaleString('id-ID')}</td><td class="p-2 text-center no-print"><button onclick="bukaModalEditBQ(${item.id})" class="text-blue-600 hover:underline mr-1">✏️</button><button onclick="hapusItemBQ(${item.id})" class="text-rose-600 hover:underline">🗑️</button></td></tr>`;
+                });
             }
 
-            let html = "";
-            let loc = proyekAktif ? (proyekAktif.lokasi || "").toLowerCase() : "";
-
-            Array.from(kodeSet).forEach((kode, idx) => {
-                let ahsp = listAHSPMaster.find(a => a.kode_ahsp === kode);
-                if (!ahsp) return;
-
-                let comp = safeJSONParse(ahsp.komponen_json, []);
-                let thnAhsp = ahsp.tahun || 2026;
-                let subtotalGroup = { 'Upah': 0, 'Bahan': 0, 'Alat': 0 };
-                let rowsHtml = "";
-
-                ['Upah', 'Bahan', 'Alat'].forEach((tipe, i) => {
-                    let list = comp.filter(c => c.tipe === tipe);
-                    if (list.length > 0) {
-                        rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300 text-center">${['A', 'B', 'C'][i]}</td><td colspan="6" class="p-1.5 border border-slate-300">${tipe}</td></tr>`;
-                        list.forEach(c => {
-                            let hrg = cariHargaHSD(c, loc, true, thnAhsp);
-                            let sub = parseFloat(c.koefisien) * hrg;
-                            subtotalGroup[tipe] += sub;
-                            rowsHtml += `<tr>
-                                <td class="p-1.5 border border-slate-300"></td>
-                                <td class="p-1.5 border border-slate-300">${c.uraian}</td>
-                                <td class="p-1.5 border border-slate-300 font-mono text-center text-blue-600">${c.kode || '-'}</td>
-                                <td class="p-1.5 border border-slate-300 font-mono text-center">${c.satuan}</td>
-                                <td class="p-1.5 border border-slate-300 font-mono text-center">${c.koefisien}</td>
-                                <td class="p-1.5 border border-slate-300 font-mono text-right">Rp ${Math.round(hrg).toLocaleString('id-ID')}</td>
-                                <td class="p-1.5 border border-slate-300 font-mono text-right">Rp ${Math.round(sub).toLocaleString('id-ID')}</td>
-                            </tr>`;
-                        });
-                        rowsHtml += `<tr class="bg-slate-50 font-bold"><td colspan="6" class="p-1.5 border border-slate-300 text-right uppercase">Jumlah Harga ${tipe}</td><td class="p-1.5 border border-slate-300 text-right font-mono">Rp ${Math.round(subtotalGroup[tipe]).toLocaleString('id-ID')}</td></tr>`;
-                    }
-                });
-
-                let base = subtotalGroup.Upah + subtotalGroup.Bahan + subtotalGroup.Alat;
-                let oh = base * (parseFloat(ahsp.overhead_persen || 12) / 100);
-
-                rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300 text-center">D</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Jumlah Harga Bahan, Upah dan Alat (A + B + C)</td><td class="p-1.5 border border-slate-300 text-right font-mono font-bold">Rp ${Math.round(base).toLocaleString('id-ID')}</td></tr>`;
-                rowsHtml += `<tr class="bg-slate-100 font-bold"><td class="p-1.5 border border-slate-300 text-center">E</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Overhead & Profit (${ahsp.overhead_persen || 12}% x D)</td><td class="p-1.5 border border-slate-300 text-right font-mono font-bold">Rp ${Math.round(oh).toLocaleString('id-ID')}</td></tr>`;
-                rowsHtml += `<tr class="bg-amber-100 font-black"><td class="p-1.5 border border-slate-300 text-center">F</td><td colspan="5" class="p-1.5 border border-slate-300 uppercase">Harga Satuan Pekerjaan (D + E)</td><td class="p-1.5 border border-slate-300 text-right font-mono text-amber-800">Rp ${Math.round(base + oh).toLocaleString('id-ID')}</td></tr>`;
-
-                html += `
-                    <div class="border border-slate-300 rounded-xl overflow-hidden page-break-inside-avoid">
-                        <div class="bg-slate-800 text-white p-2 flex justify-between items-center text-xs">
-                            <span class="font-bold">${idx + 1}. [${ahsp.kode_ahsp}] ${ahsp.nama_pekerjaan} <span class="text-[9px] text-amber-300 font-normal">(${thnAhsp})</span></span>
-                            <span class="font-mono text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-bold">Satuan: ${ahsp.satuan}</span>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse text-[11px]">
-                                <thead>
-                                    <tr class="bg-slate-200 text-slate-700 font-bold text-[10px] uppercase">
-                                        <th class="p-1.5 border border-slate-300 w-8 text-center">NO</th>
-                                        <th class="p-1.5 border border-slate-300">URAIAN KOMPONEN</th>
-                                        <th class="p-1.5 border border-slate-300 w-16 text-center">KODE</th>
-                                        <th class="p-1.5 border border-slate-300 w-14 text-center">SAT</th>
-                                        <th class="p-1.5 border border-slate-300 w-16 text-center">KOEF</th>
-                                        <th class="p-1.5 border border-slate-300 w-24 text-right">HARGA SAT.</th>
-                                        <th class="p-1.5 border border-slate-300 w-28 text-right">JUMLAH (RP)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${rowsHtml}</tbody>
-                            </table>
-                        </div>
-                    </div>`;
-            });
-
-            container.innerHTML = html;
+            let ppn = grandTotalDPA * 0.11; let totalAll = grandTotalDPA + ppn;
+            document.getElementById('txtGrandTotalDPA').innerText = "Rp " + Math.round(grandTotalDPA).toLocaleString('id-ID');
+            document.getElementById('txtGrandTotalPPN').innerText = "Rp " + Math.round(ppn).toLocaleString('id-ID');
+            document.getElementById('txtGrandTotalPlusPPN').innerText = "Rp " + Math.round(totalAll).toLocaleString('id-ID');
+            document.getElementById('txtTotalBobot').innerText = "100.00%";
+            document.getElementById('txtTerbilangTotal').innerText = terbilangRupiah(totalAll);
         }
 
         function renderLampiranHSDProyek() {
             const tbody = document.getElementById('tabelLampiranHSDDetailRows');
-            if(!proyekAktif || !proyekAktif.data_bq) return;
+            tbody.innerHTML = "";
+            if(!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Tidak ada HSD terpakai.</td></tr>`;
+                return;
+            }
 
+            let mapHsd = {}; 
             let loc = (proyekAktif.lokasi || "").toLowerCase();
-            let usedItems = {};
-
-            proyekAktif.data_bq.forEach(item => {
-                if (item.kode_ahsp && item.kode_ahsp !== 'LUMPSUM') {
-                    let ahsp = listAHSPMaster.find(a => a.kode_ahsp === item.kode_ahsp);
-                    if (ahsp) {
-                        let comp = safeJSONParse(ahsp.komponen_json, []);
-                        let thnAhsp = ahsp.tahun || 2026;
+            
+            proyekAktif.data_bq.forEach(bq => {
+                if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM') {
+                    const ahsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if(ahsp) {
+                        const thnAhsp = ahsp.tahun || 2026;
+                        const comp = safeJSONParse(ahsp.komponen_json, []);
                         comp.forEach(c => {
-                            let key = normalizeString(c.kode || c.uraian) || c.uraian;
-                            if (!usedItems[key]) {
-                                let matchedHsd = cariHsdObjectLengkap(c, loc, false, thnAhsp);
-                                let hrg = (proyekAktif.custom_hsd && proyekAktif.custom_hsd[key] !== undefined)
-                                    ? proyekAktif.custom_hsd[key]
-                                    : (matchedHsd ? parseFloat(matchedHsd.harga) || 0 : parseFloat(c.harga || 0));
-
-                                usedItems[key] = {
+                            let key = c.kode || c.uraian;
+                            if(!mapHsd[key]) {
+                                const hsdObj = cariHsdObjectLengkap(c, loc, true, thnAhsp);
+                                mapHsd[key] = {
                                     originalKey: key,
-                                    tipe: c.tipe,
-                                    kode: (matchedHsd && matchedHsd.kode) ? matchedHsd.kode : (c.kode || '-'),
-                                    nama: (matchedHsd && matchedHsd.nama_item) ? matchedHsd.nama_item : (c.uraian || '-'),
-                                    satuan: (matchedHsd && matchedHsd.satuan) ? matchedHsd.satuan : (c.satuan || '-'),
-                                    harga: hrg,
-                                    lokasi: (matchedHsd && matchedHsd.lokasi) ? `${matchedHsd.lokasi} (${matchedHsd.tahun || thnAhsp})` : (proyekAktif.lokasi || 'Master HSD'),
-                                    referensi: (matchedHsd && matchedHsd.referensi) ? matchedHsd.referensi : ''
+                                    tipe: c.tipe || 'Bahan',
+                                    kode: hsdObj ? (hsdObj.kode || c.kode || '-') : (c.kode || '-'),
+                                    nama: hsdObj ? (hsdObj.nama_item || hsdObj.uraian || c.uraian) : c.uraian,
+                                    satuan: hsdObj ? (hsdObj.satuan || c.satuan || '-') : (c.satuan || '-'),
+                                    harga: hsdObj ? (parseFloat(hsdObj.harga) || 0) : (parseFloat(c.harga) || 0),
+                                    lokasi: hsdObj ? `${hsdObj.lokasi || 'Nasional'} (${hsdObj.tahun||thnAhsp})` : 'Standar AHSP'
                                 };
                             }
                         });
@@ -4050,539 +4183,817 @@
                 }
             });
 
-            const list = Object.values(usedItems);
-            tbody.innerHTML = "";
-            if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Tidak ada item HSD terpakai.</td></tr>`;
+            const hsdList = Object.values(mapHsd);
+            if(hsdList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Tidak ada item HSD terpakai (Hanya pekerjaan Lumpsum).</td></tr>`;
                 return;
             }
 
-            list.forEach((it, idx) => {
-                let refDisplay = it.referensi || it.lokasi;
-                if (it.referensi && it.referensi.startsWith('http')) {
-                    refDisplay = `<a href="${it.referensi}" target="_blank" class="text-blue-600 underline hover:text-blue-800 truncate inline-block max-w-[100px]" title="${it.referensi}">🔗 Link Ref</a>`;
-                }
-
-                tbody.innerHTML += `<tr class="border-b row-hsd-lampiran" data-originalkey="${it.originalKey}">
-                    <td class="p-1.5 border text-center">${idx + 1}</td>
-                    <td class="p-1.5 border text-center font-bold">${it.tipe}</td>
-                    <td class="p-1.5 border font-mono text-center cell-hsd-kode">${it.kode}</td>
-                    <td class="p-1.5 border">
-                        <input type="text" value="${it.nama}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="w-full border-b border-dashed border-slate-300 bg-transparent focus:outline-none focus:border-amber-500 font-medium text-slate-800 no-print" title="Ketik untuk memilih item lain dari Master HSD">
-                        <span class="hidden print:inline">${it.nama}</span>
-                    </td>
-                    <td class="p-1.5 border text-center font-mono cell-hsd-satuan">${it.satuan}</td>
-                    <td class="p-1.5 border text-right font-mono">
-                        <input type="text" inputmode="decimal" value="${it.harga}" data-key="${it.originalKey}" placeholder="0 atau =75000*1.1" class="excel-num inp-override-hsd w-24 text-right font-bold bg-amber-50 border border-amber-300 rounded px-1 py-0.5 no-print">
-                        <span class="hidden print:inline">Rp ${Math.round(it.harga).toLocaleString('id-ID')}</span>
-                    </td>
-                    <td class="p-1.5 border text-center text-slate-500 text-[10px] cell-hsd-lokasi">${refDisplay}</td>
-                </tr>`;
+            hsdList.forEach((h, i) => {
+                const badgeColor = h.tipe === 'Upah' ? 'bg-blue-100 text-blue-800' : (h.tipe === 'Alat' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800');
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50 row-hsd-lampiran" data-originalkey="${h.originalKey}">
+                        <td class="p-2 text-center border border-slate-200">${i+1}</td>
+                        <td class="p-2 text-center border border-slate-200"><span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${badgeColor}">${h.tipe}</span></td>
+                        <td class="p-2 font-mono font-bold text-blue-700 border border-slate-200 cell-hsd-kode">${h.kode}</td>
+                        <td class="p-2 font-medium border border-slate-200">
+                            <span class="hidden print:inline pdf-only-text font-medium text-slate-800">${h.nama}</span>
+                            <input type="text" value="${h.nama}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" placeholder="Cari material/upah HSD..." class="no-print w-full border border-slate-200 rounded px-1.5 py-1 text-xs font-medium text-slate-800 bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        </td>
+                        <td class="p-2 text-center font-mono border border-slate-200 cell-hsd-satuan">${h.satuan}</td>
+                        <td class="p-2 text-right font-mono font-bold border border-slate-200">
+                            <span class="hidden print:inline pdf-only-text">Rp ${Math.round(h.harga).toLocaleString('id-ID')}</span>
+                            <input type="text" inputmode="decimal" value="${h.harga}" data-key="${h.originalKey}" onchange="updateCustomHsdCache('${h.originalKey}', this.value)" placeholder="0 atau =50000*1.1" class="excel-num inp-override-hsd no-print w-24 text-right border border-emerald-300 rounded px-1.5 py-0.5 font-mono font-bold text-emerald-800 bg-emerald-50 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        </td>
+                        <td class="p-2 text-[10px] text-slate-500 border border-slate-200 cell-hsd-lokasi">${h.lokasi}</td>
+                    </tr>`;
             });
+        }
+
+        function updateCustomHsdCache(key, val) {
+            if(!proyekAktif) return;
+            proyekAktif.custom_hsd = proyekAktif.custom_hsd || {};
+            const parsed = evaluateExcelFormula(val);
+            proyekAktif.custom_hsd[key] = (parsed.valid && Number.isFinite(parsed.value)) ? parsed.value : 0;
         }
 
         async function simpanOverrideHsdProyek() {
-            if(!proyekAktif) return;
-            let overrides = proyekAktif.custom_hsd || {};
+            if(!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
             document.querySelectorAll('.inp-override-hsd').forEach(inp => {
-                overrides[inp.dataset.key] = getNumericValue(inp, 0);
+                commitExcelFormulaInput(inp);
+                const key = inp.getAttribute('data-key');
+                const val = getNumericValue(inp, 0);
+                proyekAktif.custom_hsd[key] = val;
             });
 
-            const { error } = await supabaseClient.from('project').update({ custom_hsd: overrides }).eq('id', proyekAktif.id);
+            reKalkulasiBQProyekAktif();
+            const { error } = await supabaseClient.from('project').update({ 
+                custom_hsd: proyekAktif.custom_hsd,
+                data_bq: proyekAktif.data_bq,
+                total_biaya: proyekAktif.total_biaya
+            }).eq('id', proyekAktif.id);
+
             if(!error) {
-                proyekAktif.custom_hsd = overrides;
-                reKalkulasiBQProyekAktif();
-                simpanBQKeSupabase(proyekAktif.data_bq);
-                showToast("Override HSD proyek berhasil diterapkan ke seluruh RAB!");
+                showToast("Override HSD Proyek berhasil disimpan & RAB otomatis dikalkulasi ulang!");
+                pilihProyek(proyekAktif.id);
             } else {
-                showToast("Gagal menyimpan Override HSD: " + error.message, "error");
+                showToast("Gagal menyimpan override HSD: " + error.message, "error");
             }
         }
 
-        function bukaModalEditBQ(id) {
-            const it = proyekAktif.data_bq.find(i => i.id === id);
-            document.getElementById('editBqId').value = it.id; document.getElementById('editBqSub').value = it.sub; document.getElementById('editBqVol').value = it.vol; document.getElementById('editBqSat').value = it.sat;
-            document.getElementById('modalEditBQ').classList.remove('hidden');
-        }
-        function tutupModalEditBQ() { document.getElementById('modalEditBQ').classList.add('hidden'); }
-        function eksekekusiSimpanEditBQ() {
-            let id = parseInt(document.getElementById('editBqId').value);
-            let idx = proyekAktif.data_bq.findIndex(i => i.id === id);
-            proyekAktif.data_bq[idx].sub = document.getElementById('editBqSub').value; proyekAktif.data_bq[idx].vol = getNumericValue('editBqVol', 0);
-            tutupModalEditBQ(); simpanBQKeSupabase(proyekAktif.data_bq);
-        }
-        function hapusItemBQ(id) { if(confirm("Hapus item ini?")) simpanBQKeSupabase(proyekAktif.data_bq.filter(i => i.id !== id)); }
+        function renderLampiranAHSPProyek() {
+            const container = document.getElementById('containerLampiranAHSPDetail');
+            container.innerHTML = "";
+            if(!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Tidak ada AHSP terpakai.</p>`;
+                return;
+            }
+            
+            let seen = new Set(); let loc = (proyekAktif.lokasi || "").toLowerCase();
+            proyekAktif.data_bq.forEach(bq => {
+                if(bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM' && !seen.has(bq.kode_ahsp)) {
+                    seen.add(bq.kode_ahsp);
+                    const ahsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if(ahsp) {
+                        const thnAhsp = ahsp.tahun || 2026;
+                        const comp = safeJSONParse(ahsp.komponen_json, []);
+                        let rows = ""; let base = 0;
+                        comp.forEach(c => {
+                            let hrg = cariHargaHSD(c, loc, true, thnAhsp); let sub = parseFloat(c.koefisien) * hrg; base += sub;
+                            rows += `<tr><td class="p-1.5 border">${c.tipe}</td><td class="p-1.5 border font-mono text-center text-blue-600">${c.kode||'-'}</td><td class="p-1.5 border">${c.uraian}</td><td class="p-1.5 border font-mono text-center">${c.satuan}</td><td class="p-1.5 border font-mono text-center">${c.koefisien}</td><td class="p-1.5 border font-mono text-right">Rp ${Math.round(hrg).toLocaleString('id-ID')}</td><td class="p-1.5 border font-mono text-right font-bold">Rp ${Math.round(sub).toLocaleString('id-ID')}</td></tr>`;
+                        });
+                        let oh = base * (parseFloat(ahsp.overhead_persen||12)/100);
+                        container.innerHTML += `<div class="border rounded-xl p-3 bg-slate-50 space-y-2 page-break-inside-avoid"><h4 class="font-bold text-xs text-slate-900"><span class="text-blue-600 font-mono">${ahsp.kode_ahsp} (${thnAhsp})</span> - ${ahsp.nama_pekerjaan}</h4><div class="overflow-x-auto"><table class="w-full text-[11px] bg-white border-collapse border"><thead><tr class="bg-slate-200 font-bold text-center text-[10px]"><th>TIPE</th><th>KODE</th><th class="text-left p-1">KOMPONEN</th><th>SAT</th><th>KOEF</th><th class="text-right p-1">HARGA SAT.</th><th class="text-right p-1">SUBTOTAL</th></tr></thead><tbody>${rows}<tr class="bg-amber-50 font-bold"><td colspan="6" class="p-1.5 text-right uppercase">Total + Overhead (${ahsp.overhead_persen||12}%)</td><td class="p-1.5 text-right font-mono text-amber-800">Rp ${Math.round(base+oh).toLocaleString('id-ID')}</td></tr></tbody></table></div></div>`;
+                    }
+                }
+            });
 
-        function bukaModalBuatProyek() { document.getElementById('modalProyek').classList.remove('hidden'); }
-        function tutupModalBuatProyek() { document.getElementById('modalProyek').classList.add('hidden'); }
-        async function eksekusiSimpanProyekBaru() {
-            const now = new Date();
-            const todayLocal = formatLocalDateISO(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
-            const newProj = { id: "PRJ-" + Math.floor(100 + Math.random() * 899), user_id: currentUser.userId, nama_proyek: document.getElementById('modalNamaProyek').value, pemilik: document.getElementById('modalPemilik').value, lokasi: document.getElementById('modalLokasi').value, tanggal: todayLocal, total_biaya: 0, status: 'active', data_bq: [], custom_hsd: {} };
-            const { error } = await supabaseClient.from('project').insert([newProj]);
-            if(!error) { tutupModalBuatProyek(); muatDataProyekSemua(); }
-            else showToast("Gagal membuat proyek: " + error.message, "error");
+            if (seen.size === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Tidak ada analisa AHSP terpakai (Proyek hanya berisi pekerjaan Lumpsum).</p>`;
+            }
         }
 
-        // ==========================================
-        // PENJADWALAN, GANTT CHART & KURVA S
-        // ==========================================
-        function parsePredecessorRefs(predStr, totalTasks) {
-            if (!predStr) return [];
-            const raw = String(predStr).trim();
-            if (!raw || raw === '-' || raw === '0') return [];
-            const tokens = raw.split(/[,;+\s]+/).map(t => t.trim()).filter(Boolean);
-            const refs = [];
-            tokens.forEach(tok => {
-                const match = tok.match(/^(\d+)(?:(FS|SS|FF|SF)([+-]\d+)?)?$/i);
-                if (match) {
-                    const taskNo = parseInt(match[1], 10);
-                    if (taskNo >= 1 && taskNo <= totalTasks) {
-                        refs.push({
-                            taskNo: taskNo,
-                            type: (match[2] || 'FS').toUpperCase(),
-                            lag: match[3] ? parseInt(match[3], 10) : 0
+        function renderTabelMonitorHSD(page = 1) {
+            pageHsdCurrent = page;
+            const tbody = document.getElementById('tabelMasterHSDMasterRows');
+            const badge = document.getElementById('badgeCountHsd');
+            const keyword = (document.getElementById('searchHsdInput')?.value || "").toLowerCase().trim();
+            const lokasiFilter = document.getElementById('filterHsdLokasiSelect')?.value || "";
+            const tahunFilter = document.getElementById('filterHsdTahunSelect')?.value || "";
+
+            let filtered = listHSDMaster.filter(item => {
+                let matchKw = (item.kode||'').toLowerCase().includes(keyword) || (item.nama_item||'').toLowerCase().includes(keyword);
+                let matchLok = !lokasiFilter || (item.lokasi || '') === lokasiFilter;
+                let matchTh = !tahunFilter || String(item.tahun || 2026) === tahunFilter;
+                return matchKw && matchLok && matchTh;
+            });
+
+            badge.innerText = `${filtered.length} Item`;
+            const totalPages = Math.max(1, Math.ceil(filtered.length / pageHsdSize));
+            if (pageHsdCurrent > totalPages) pageHsdCurrent = totalPages;
+            const paginated = filtered.slice((pageHsdCurrent - 1) * pageHsdSize, pageHsdCurrent * pageHsdSize);
+
+            tbody.innerHTML = "";
+            if (paginated.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400 italic">Tidak ada item HSD ditemukan.</td></tr>`;
+                document.getElementById('lblPageHsdInfo').innerText = `Halaman 1 dari 1`;
+                return;
+            }
+
+            paginated.forEach(item => {
+                const isChecked = selectedHsdKodeSet.has(item.kode) ? 'checked' : '';
+                const thnItem = item.tahun || 2026;
+                
+                let refDisplay = '<span class="text-slate-300">-</span>';
+                if (item.referensi && item.referensi.trim() !== '') {
+                    const refText = item.referensi.trim();
+                    if (refText.startsWith('http://') || refText.startsWith('https://')) {
+                        refDisplay = `<a href="${refText}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 px-2 py-0.5 rounded font-bold text-[10px] transition" title="${refText}">🔗 Buka Link</a>`;
+                    } else {
+                        refDisplay = `<span class="inline-block bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded font-mono text-[10px] font-bold" title="${refText}">📄 ${refText}</span>`;
+                    }
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b">
+                        <td class="p-2 text-center"><input type="checkbox" value="${item.kode}" ${isChecked} onchange="toggleSelectRowHSD(this)" class="chk-hsd-item"></td>
+                        <td class="p-2 text-center font-mono font-bold text-[10px] bg-blue-50/50 text-blue-700">${thnItem}</td>
+                        <td class="p-2 font-mono font-bold text-blue-600">${item.kode || '-'}</td>
+                        <td class="p-2 font-medium">${item.nama_item}</td>
+                        <td class="p-2 text-center font-mono">${item.satuan}</td>
+                        <td class="p-2 text-right font-mono font-bold">Rp ${parseFloat(item.harga).toLocaleString('id-ID')}</td>
+                        <td class="p-2 text-center text-[10px] text-slate-400 font-bold">${item.lokasi || '-'}</td>
+                        <td class="p-2 text-center">${refDisplay}</td>
+                        <td class="p-2 text-center">
+                            <button onclick="editHSDMaster('${item.kode}', '${item.lokasi||''}', ${thnItem})" class="text-blue-600 hover:underline mr-1" title="Edit">✏️</button>
+                            <button onclick="hapusHSDMaster('${item.kode}', '${item.lokasi||''}', ${thnItem})" class="text-rose-600 hover:underline" title="Hapus">🗑️</button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('lblPageHsdInfo').innerText = `Halaman ${pageHsdCurrent} dari ${totalPages}`;
+            document.getElementById('btnHsdPrev').disabled = pageHsdCurrent <= 1;
+            document.getElementById('btnHsdNext').disabled = pageHsdCurrent >= totalPages;
+        }
+        function gantiHalamanHsd(delta) { renderTabelMonitorHSD(pageHsdCurrent + delta); }
+
+        function lompatHalamanHsd() {
+            const val = parseInt(document.getElementById('inpHsdJumpPage').value);
+            if (!isNaN(val) && val >= 1) {
+                renderTabelMonitorHSD(val);
+            } else {
+                showToast("Masukkan nomor halaman valid", "error");
+            }
+        }
+
+        function editHSDMaster(kode, lokasi, tahun = 2026) {
+            const item = listHSDMaster.find(h => h.kode === kode && (h.lokasi||'') === lokasi && (h.tahun || 2026) == tahun);
+            if(!item) return;
+            document.getElementById('editHsdOldKode').value = item.kode;
+            document.getElementById('addHsdKode').value = item.kode;
+            document.getElementById('addHsdNama').value = item.nama_item;
+            document.getElementById('addHsdSatuan').value = item.satuan;
+            document.getElementById('addHsdHarga').value = item.harga;
+            document.getElementById('addHsdLokasi').value = item.lokasi;
+            document.getElementById('addHsdTahun').value = item.tahun || 2026;
+            document.getElementById('addHsdReferensi').value = item.referensi || '';
+            document.getElementById('txtHeaderFormHSD').innerText = `✏️ Edit Item HSD (${item.tahun || 2026})`;
+            document.getElementById('btnBatalEditHsd').classList.remove('hidden');
+            document.getElementById('sectionFormHSD').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetFormHSD() {
+            document.getElementById('editHsdOldKode').value = "";
+            document.getElementById('addHsdKode').value = "";
+            document.getElementById('addHsdNama').value = "";
+            document.getElementById('addHsdSatuan').value = "";
+            document.getElementById('addHsdHarga').value = "";
+            document.getElementById('addHsdLokasi').value = "";
+            document.getElementById('addHsdTahun').value = "2026";
+            document.getElementById('addHsdReferensi').value = "";
+            document.getElementById('txtHeaderFormHSD').innerText = "📦 Form Tambah HSD Baru";
+            document.getElementById('btnBatalEditHsd').classList.add('hidden');
+        }
+
+        async function simpanHSDBaru() {
+            const oldKode = document.getElementById('editHsdOldKode').value;
+            const tahun = parseInt(document.getElementById('addHsdTahun').value) || 2026;
+            const referensiVal = document.getElementById('addHsdReferensi').value.trim();
+
+            const payload = { 
+                kode: document.getElementById('addHsdKode').value.trim() || "ITEM-" + Date.now().toString().slice(-4), 
+                nama_item: document.getElementById('addHsdNama').value.trim(), 
+                satuan: document.getElementById('addHsdSatuan').value.trim(), 
+                harga: getNumericValue('addHsdHarga', 0), 
+                lokasi: document.getElementById('addHsdLokasi').value.trim() || 'INDONESIA',
+                tahun: tahun,
+                referensi: referensiVal
+            };
+
+            let res;
+            if (oldKode) {
+                res = await supabaseClient.from('02_hsd').update(payload).eq('kode', oldKode).eq('tahun', tahun);
+            } else {
+                res = await supabaseClient.from('02_hsd').insert([payload]);
+            }
+
+            if (res.error && res.error.message && res.error.message.includes("referensi")) {
+                delete payload.referensi;
+                if (oldKode) {
+                    res = await supabaseClient.from('02_hsd').update(payload).eq('kode', oldKode).eq('tahun', tahun);
+                } else {
+                    res = await supabaseClient.from('02_hsd').insert([payload]);
+                }
+            }
+
+            if(!res.error) { showToast("Data HSD berhasil disimpan!"); resetFormHSD(); muatDataProyekSemua(); }
+            else showToast("Gagal menyimpan HSD: " + res.error.message, "error");
+        }
+
+        async function hapusHSDMaster(kode, lokasi, tahun = 2026) {
+            if(!confirm(`Hapus HSD ${kode} Tahun ${tahun}?`)) return;
+            const { error } = await supabaseClient.from('02_hsd').delete().eq('kode', kode).eq('lokasi', lokasi).eq('tahun', tahun);
+            if(!error) { showToast("Item HSD dihapus"); muatDataProyekSemua(); }
+            else showToast("Gagal menghapus HSD: " + error.message, "error");
+        }
+
+        function renderTabelMonitorAHSP(page = 1) {
+            pageAhspCurrent = page;
+            const tbody = document.getElementById('tabelMasterAHSPMasterRows');
+            const badge = document.getElementById('badgeCountAhsp');
+            const keyword = (document.getElementById('searchAhspInput')?.value || "").toLowerCase().trim();
+            const tahunFilter = document.getElementById('filterAhspTahunSelect')?.value || "";
+
+            let filtered = listAHSPMaster.filter(item => {
+                let matchKw = (item.kode_ahsp||'').toLowerCase().includes(keyword) || (item.nama_pekerjaan||'').toLowerCase().includes(keyword);
+                let matchTh = !tahunFilter || String(item.tahun || 2026) === tahunFilter;
+                return matchKw && matchTh;
+            });
+
+            badge.innerText = `${filtered.length} Item`;
+            const totalPages = Math.max(1, Math.ceil(filtered.length / pageAhspSize));
+            if (pageAhspCurrent > totalPages) pageAhspCurrent = totalPages;
+            const paginated = filtered.slice((pageAhspCurrent - 1) * pageAhspSize, pageAhspCurrent * pageAhspSize);
+
+            tbody.innerHTML = "";
+            if (paginated.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Tidak ada item AHSP ditemukan.</td></tr>`;
+                document.getElementById('lblPageAhspInfo').innerText = `Halaman 1 dari 1`;
+                return;
+            }
+
+            paginated.forEach(item => {
+                const thnItem = item.tahun || 2026;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b">
+                        <td class="p-2 text-center font-mono font-bold text-[10px] bg-amber-50 text-amber-800">${thnItem}</td>
+                        <td class="p-2 font-mono font-bold text-amber-700">${item.kode_ahsp}</td>
+                        <td class="p-2 font-medium">${item.nama_pekerjaan}</td>
+                        <td class="p-2 text-center font-mono">${item.satuan}</td>
+                        <td class="p-2 text-center font-mono text-amber-600 font-bold">${item.overhead_persen || 12}%</td>
+                        <td class="p-2 text-center">
+                            <button onclick="previewAHSPByKode('${item.kode_ahsp}', ${thnItem})" class="text-emerald-600 hover:underline mr-1" title="Preview">👁️</button>
+                            <button onclick="editAHSPMaster('${item.kode_ahsp}', ${thnItem})" class="text-blue-600 hover:underline mr-1" title="Edit">✏️</button>
+                            <button onclick="hapusAHSPMaster('${item.kode_ahsp}', ${thnItem})" class="text-rose-600 hover:underline" title="Hapus">🗑️</button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('lblPageAhspInfo').innerText = `Halaman ${pageAhspCurrent} dari ${totalPages}`;
+            document.getElementById('btnAhspPrev').disabled = pageAhspCurrent <= 1;
+            document.getElementById('btnAhspNext').disabled = pageAhspCurrent >= totalPages;
+        }
+        function gantiHalamanAhsp(delta) { renderTabelMonitorAHSP(pageAhspCurrent + delta); }
+
+        function lompatHalamanAhsp() {
+            const val = parseInt(document.getElementById('inpAhspJumpPage').value);
+            if (!isNaN(val) && val >= 1) {
+                renderTabelMonitorAHSP(val);
+            } else {
+                showToast("Masukkan nomor halaman valid", "error");
+            }
+        }
+
+        function previewAHSPByKode(kode, tahun = 2026) {
+            const item = listAHSPMaster.find(a => a.kode_ahsp === kode && (a.tahun || 2026) == tahun) || listAHSPMaster.find(a => a.kode_ahsp === kode);
+            if(item) previewStrukturAHSP(item);
+        }
+
+        function tambahBarisKomponenBuilder(containerId, data = { tipe: 'Upah', kode: '', uraian: '', satuan: '', koefisien: '' }) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-12 gap-1 items-center bg-white p-1.5 rounded-lg border text-xs row-komponen-builder";
+            div.innerHTML = `<select class="col-span-3 border p-1 rounded builder-tipe"><option value="Upah" ${data.tipe==='Upah'?'selected':''}>Upah</option><option value="Bahan" ${data.tipe==='Bahan'?'selected':''}>Bahan</option><option value="Alat" ${data.tipe==='Alat'?'selected':''}>Alat</option></select><input type="text" placeholder="Kode" value="${data.kode}" class="col-span-2 border p-1 rounded font-mono builder-kode"><input type="text" placeholder="Uraian" value="${data.uraian}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="col-span-4 border p-1 rounded builder-uraian"><input type="text" placeholder="Sat" value="${data.satuan}" class="col-span-1 border p-1 rounded text-center builder-satuan"><input type="text" inputmode="decimal" placeholder="Koef / =rumus" value="${data.koefisien}" class="excel-num col-span-1 border p-1 rounded text-center builder-koef"><button type="button" onclick="this.parentElement.remove()" class="col-span-1 text-rose-500 font-bold text-center">✕</button>`;
+            container.appendChild(div);
+        }
+
+        function editAHSPMaster(kode, tahun = 2026) {
+            const item = listAHSPMaster.find(a => a.kode_ahsp === kode && (a.tahun || 2026) == tahun) || listAHSPMaster.find(a => a.kode_ahsp === kode);
+            if(!item) return;
+            document.getElementById('editAhspOldKode').value = item.kode_ahsp;
+            document.getElementById('addAhspKode').value = item.kode_ahsp;
+            document.getElementById('addAhspNama').value = item.nama_pekerjaan;
+            document.getElementById('addAhspSatuan').value = item.satuan;
+            document.getElementById('addAhspKategori').value = item.kategori;
+            document.getElementById('addAhspOverhead').value = item.overhead_persen || 12;
+            document.getElementById('addAhspTahun').value = item.tahun || 2026;
+            const cont = document.getElementById('containerKomponenBuilder'); cont.innerHTML = "";
+            safeJSONParse(item.komponen_json, []).forEach(c => tambahBarisKomponenBuilder('containerKomponenBuilder', c));
+            document.getElementById('txtHeaderFormAHSP').innerText = `✏️ Edit AHSP (${item.tahun || 2026})`;
+            document.getElementById('btnBatalEditAhsp').classList.remove('hidden');
+            document.getElementById('sectionFormAHSP').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetFormAHSP() {
+            document.getElementById('editAhspOldKode').value = "";
+            document.getElementById('addAhspKode').value = "";
+            document.getElementById('addAhspNama').value = "";
+            document.getElementById('addAhspSatuan').value = "";
+            document.getElementById('addAhspKategori').value = "";
+            document.getElementById('addAhspTahun').value = "2026";
+            document.getElementById('containerKomponenBuilder').innerHTML = "";
+            tambahBarisKomponenBuilder('containerKomponenBuilder');
+            document.getElementById('txtHeaderFormAHSP').innerText = "🏗️ Form Tambah AHSP Pekerjaan";
+            document.getElementById('btnBatalEditAhsp').classList.add('hidden');
+        }
+
+        async function simpanAHSPBaru() {
+            const oldKode = document.getElementById('editAhspOldKode').value;
+            const tahun = parseInt(document.getElementById('addAhspTahun').value) || 2026;
+            const comp = [];
+            document.querySelectorAll('#containerKomponenBuilder .row-komponen-builder').forEach(r => {
+                let u = r.querySelector('.builder-uraian').value.trim();
+                let k = getNumericValue(r.querySelector('.builder-koef'), 0);
+                if(u && k > 0) comp.push({ tipe: r.querySelector('.builder-tipe').value, kode: r.querySelector('.builder-kode').value.trim(), uraian: u, satuan: r.querySelector('.builder-satuan').value.trim(), koefisien: k });
+            });
+            const payload = { 
+                kode_ahsp: document.getElementById('addAhspKode').value.trim() || "A.CUSTOM." + Date.now().toString().slice(-4), 
+                nama_pekerjaan: document.getElementById('addAhspNama').value.trim(), 
+                satuan: document.getElementById('addAhspSatuan').value.trim(), 
+                kategori: document.getElementById('addAhspKategori').value.trim(), 
+                overhead_persen: getNumericValue('addAhspOverhead', 12), 
+                tahun: tahun,
+                komponen_json: comp 
+            };
+            const res = oldKode 
+                ? await supabaseClient.from('01_ahsp').update(payload).eq('kode_ahsp', oldKode).eq('tahun', tahun) 
+                : await supabaseClient.from('01_ahsp').insert([payload]);
+            if(!res.error) { showToast("Data AHSP berhasil disimpan!"); resetFormAHSP(); muatDataProyekSemua(); }
+            else showToast("Gagal menyimpan AHSP: " + res.error.message, "error");
+        }
+
+        async function hapusAHSPMaster(kode, tahun = 2026) {
+            if(!confirm(`Hapus AHSP ${kode} Tahun ${tahun}?`)) return;
+            const { error } = await supabaseClient.from('01_ahsp').delete().eq('kode_ahsp', kode).eq('tahun', tahun);
+            if(!error) { showToast("Item AHSP dihapus"); muatDataProyekSemua(); }
+            else showToast("Gagal menghapus AHSP: " + error.message, "error");
+        }
+
+        function downloadTemplateImportHSD() {
+            const templateData = [
+                {
+                    "Tahun": 2026,
+                    "Kode": "L.01",
+                    "Nama Item": "Pekerja / Kenek (Contoh)",
+                    "Satuan": "OH",
+                    "Harga": 125000,
+                    "Lokasi": "Bandung",
+                    "Referensi": "Kepwal Bandung 2026 Hal 12"
+                },
+                {
+                    "Tahun": 2026,
+                    "Kode": "M.01",
+                    "Nama Item": "Semen Portland 50kg (Contoh)",
+                    "Satuan": "sak",
+                    "Harga": 72000,
+                    "Lokasi": "Bandung",
+                    "Referensi": "https://katalog-harga.example.com"
+                },
+                {
+                    "Tahun": 2026,
+                    "Kode": "E.01",
+                    "Nama Item": "Sewa Concrete Mixer / Molen (Contoh)",
+                    "Satuan": "hari",
+                    "Harga": 350000,
+                    "Lokasi": "INDONESIA",
+                    "Referensi": "Standar SNI"
+                }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(templateData);
+            ws['!cols'] = [
+                { wch: 8 },
+                { wch: 12 },
+                { wch: 35 },
+                { wch: 10 },
+                { wch: 15 },
+                { wch: 18 },
+                { wch: 30 }
+            ];
+            XLSX.utils.book_append_sheet(wb, ws, "Template_Import_HSD");
+            XLSX.writeFile(wb, "Format_Import_HSD_ProRAB.xlsx");
+            showToast("Format Import HSD berhasil diunduh!");
+        }
+
+        function downloadTemplateImportAHSP() {
+            const templateData = [
+                {
+                    "Tahun": 2026,
+                    "Kode AHSP": "A.4.4.1.9",
+                    "Nama Pekerjaan": "Pemasangan 1 m2 Dinding Bata Merah (Contoh)",
+                    "Satuan": "m2",
+                    "Kategori Divisi": "III. PEKERJAAN DINDING",
+                    "Overhead (%)": 12,
+                    "Tipe Komponen": "Upah",
+                    "Kode Komponen": "L.01",
+                    "Uraian Komponen": "Pekerja",
+                    "Satuan Komponen": "OH",
+                    "Koefisien": 0.300
+                },
+                {
+                    "Tahun": 2026,
+                    "Kode AHSP": "A.4.4.1.9",
+                    "Nama Pekerjaan": "Pemasangan 1 m2 Dinding Bata Merah (Contoh)",
+                    "Satuan": "m2",
+                    "Kategori Divisi": "III. PEKERJAAN DINDING",
+                    "Overhead (%)": 12,
+                    "Tipe Komponen": "Upah",
+                    "Kode Komponen": "L.02",
+                    "Uraian Komponen": "Tukang Batu",
+                    "Satuan Komponen": "OH",
+                    "Koefisien": 0.100
+                },
+                {
+                    "Tahun": 2026,
+                    "Kode AHSP": "A.4.4.1.9",
+                    "Nama Pekerjaan": "Pemasangan 1 m2 Dinding Bata Merah (Contoh)",
+                    "Satuan": "m2",
+                    "Kategori Divisi": "III. PEKERJAAN DINDING",
+                    "Overhead (%)": 12,
+                    "Tipe Komponen": "Bahan",
+                    "Kode Komponen": "M.01",
+                    "Uraian Komponen": "Bata Merah",
+                    "Satuan Komponen": "bh",
+                    "Koefisien": 70.000
+                }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(templateData);
+            ws['!cols'] = [
+                { wch: 8 },
+                { wch: 14 },
+                { wch: 42 },
+                { wch: 10 },
+                { wch: 24 },
+                { wch: 14 },
+                { wch: 15 },
+                { wch: 15 },
+                { wch: 28 },
+                { wch: 16 },
+                { wch: 12 }
+            ];
+            XLSX.utils.book_append_sheet(wb, ws, "Template_Import_AHSP");
+            XLSX.writeFile(wb, "Format_Import_AHSP_ProRAB.xlsx");
+            showToast("Format Import AHSP berhasil diunduh!");
+        }
+
+        function exportMasterHSD(type) {
+            if (!listHSDMaster || listHSDMaster.length === 0) return showToast("Data HSD Master kosong!", "error");
+            const dataToExport = listHSDMaster.map((h, i) => ({
+                No: i + 1,
+                Tahun: h.tahun || 2026,
+                Kode: h.kode || '-',
+                Nama_Item: h.nama_item || h.uraian || '-',
+                Satuan: h.satuan || '-',
+                Harga: parseFloat(h.harga) || 0,
+                Lokasi: h.lokasi || 'INDONESIA',
+                Referensi: h.referensi || '-'
+            }));
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            XLSX.utils.book_append_sheet(wb, ws, "Master_HSD");
+            XLSX.writeFile(wb, `Master_HSD_ProRAB_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showToast("Master HSD berhasil diekspor ke Excel!");
+        }
+
+        function exportMasterAHSP(type) {
+            if (!listAHSPMaster || listAHSPMaster.length === 0) return showToast("Data AHSP Master kosong!", "error");
+            const dataToExport = [];
+            listAHSPMaster.forEach(a => {
+                const comps = safeJSONParse(a.komponen_json, []);
+                if (comps.length === 0) {
+                    dataToExport.push({
+                        Tahun: a.tahun || 2026,
+                        Kode_AHSP: a.kode_ahsp,
+                        Nama_Pekerjaan: a.nama_pekerjaan,
+                        Satuan: a.satuan,
+                        Kategori: a.kategori,
+                        Overhead: a.overhead_persen || 12,
+                        Tipe_Komponen: '',
+                        Kode_Komponen: '',
+                        Uraian_Komponen: '',
+                        Satuan_Komponen: '',
+                        Koefisien: ''
+                    });
+                } else {
+                    comps.forEach(c => {
+                        dataToExport.push({
+                            Tahun: a.tahun || 2026,
+                            Kode_AHSP: a.kode_ahsp,
+                            Nama_Pekerjaan: a.nama_pekerjaan,
+                            Satuan: a.satuan,
+                            Kategori: a.kategori,
+                            Overhead: a.overhead_persen || 12,
+                            Tipe_Komponen: c.tipe || 'Bahan',
+                            Kode_Komponen: c.kode || '',
+                            Uraian_Komponen: c.uraian || '',
+                            Satuan_Komponen: c.satuan || '',
+                            Koefisien: c.koefisien || 0
+                        });
+                    });
+                }
+            });
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            XLSX.utils.book_append_sheet(wb, ws, "Master_AHSP");
+            XLSX.writeFile(wb, `Master_AHSP_ProRAB_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showToast("Master AHSP berhasil diekspor ke Excel!");
+        }
+
+        function prosesImportHSD(e) {
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(ev) {
+                const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                const formatted = rows.map(r => ({ 
+                    kode: String(r.Kode || r.kode || "IMP-" + Math.floor(Math.random()*9999)).trim(), 
+                    nama_item: String(r['Nama Item'] || r.Nama_Item || r.nama_item || r.Uraian || "").trim(), 
+                    satuan: String(r.Satuan || r.satuan || "unit").trim(), 
+                    harga: parseFloat(String(r.Harga || r.harga || 0).replace(/[^0-9.-]+/g,"")) || 0, 
+                    lokasi: String(r.Lokasi || r.lokasi || "INDONESIA").trim(),
+                    tahun: parseInt(r.Tahun || r.tahun || 2026) || 2026,
+                    referensi: String(r.Referensi || r.referensi || r['No. Halaman'] || "").trim()
+                })).filter(i => i.nama_item);
+
+                if (formatted.length === 0) return showToast("Format kolom file Excel/CSV tidak sesuai atau kosong.", "error");
+                showToast(`Mengimpor ${formatted.length} item HSD...`, "success", 3000);
+                
+                let { error } = await supabaseClient.from('02_hsd').insert(formatted);
+                if (error && error.message && error.message.includes("referensi")) {
+                    const fallbackRows = formatted.map(({ referensi, ...rest }) => rest);
+                    const resFallback = await supabaseClient.from('02_hsd').insert(fallbackRows);
+                    error = resFallback.error;
+                }
+
+                if(!error) { showToast(`Berhasil mengimpor ${formatted.length} item HSD!`); muatDataProyekSemua(); }
+                else showToast("Gagal import HSD: " + error.message, "error");
+                e.target.value = "";
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function prosesImportAHSP(e) {
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(ev) {
+                const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                
+                let grouped = {};
+                rows.forEach(r => {
+                    const kode = String(r['Kode AHSP'] || r.Kode_AHSP || r.kode_ahsp || "").trim();
+                    const nama = String(r['Nama Pekerjaan'] || r.Nama_Pekerjaan || r.nama_pekerjaan || "").trim();
+                    if (!kode || !nama) return;
+
+                    const tahun = parseInt(r.Tahun || r.tahun || 2026) || 2026;
+                    const groupKey = `${kode}_${tahun}`;
+                    if (!grouped[groupKey]) {
+                        grouped[groupKey] = {
+                            kode_ahsp: kode,
+                            nama_pekerjaan: nama,
+                            satuan: String(r.Satuan || r.satuan || "m2").trim(),
+                            kategori: String(r['Kategori Divisi'] || r.Kategori || r.kategori || "I. PEKERJAAN UMUM").trim(),
+                            overhead_persen: parseFloat(r['Overhead (%)'] || r.Overhead || r.overhead_persen || 12) || 12,
+                            tahun: tahun,
+                            komponen_json: []
+                        };
+                    }
+
+                    const uraianKomp = String(r['Uraian Komponen'] || r.Uraian_Komponen || r.uraian || "").trim();
+                    const koef = parseFloat(r.Koefisien || r.koefisien || 0) || 0;
+                    if (uraianKomp && koef > 0) {
+                        grouped[groupKey].komponen_json.push({
+                            tipe: String(r['Tipe Komponen'] || r.Tipe_Komponen || r.tipe || "Bahan").trim(),
+                            kode: String(r['Kode Komponen'] || r.Kode_Komponen || r.kode || "").trim(),
+                            uraian: uraianKomp,
+                            satuan: String(r['Satuan Komponen'] || r.Satuan_Komponen || r.satuan_komponen || "unit").trim(),
+                            koefisien: koef
                         });
                     }
-                }
-            });
-            return refs;
+                });
+
+                const payloadList = Object.values(grouped);
+                if (payloadList.length === 0) return showToast("Data AHSP tidak valid / kosong pada file!", "error");
+
+                showToast(`Mengimpor ${payloadList.length} item AHSP...`, "success", 3000);
+                const { error } = await supabaseClient.from('01_ahsp').insert(payloadList);
+                if(!error) { showToast(`Berhasil mengimpor ${payloadList.length} item AHSP!`); muatDataProyekSemua(); }
+                else showToast("Gagal import AHSP: " + error.message, "error");
+                e.target.value = "";
+            };
+            reader.readAsArrayBuffer(file);
         }
 
-        function tambahHariKerjaDenganLag(dateObj, lagDays) {
-            let d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-            if (!lagDays || lagDays === 0) return d;
-            const step = lagDays > 0 ? 1 : -1;
-            let remaining = Math.abs(lagDays);
-            while (remaining > 0) {
-                d.setDate(d.getDate() + step);
-                if (!isHariLibur(d)) remaining--;
-            }
-            return d;
-        }
-
-        function hitungStartDariFinishDanDurasi(finishStr, durasi) {
-            if (!finishStr || isNaN(durasi) || durasi <= 0) return finishStr;
-            let current = parseLocalDate(finishStr);
-            if (!current || isNaN(current.getTime())) return finishStr;
-            let count = 1;
-            while (count < durasi) {
-                current.setDate(current.getDate() - 1);
-                if (!isHariLibur(current)) count++;
-            }
-            return formatLocalDateISO(current);
-        }
-
-        function hitungJadwalTerurutPredecessor() {
-            const rows = Array.from(document.querySelectorAll('#tabelScheduleRows .row-schedule'));
-            const total = rows.length;
-            if (!total) return [];
-
-            const rawTasks = rows.map((tr, idx) => {
-                const bqId = tr.dataset.bqid;
-                const bobot = parseFloat(tr.dataset.bobot) || 0;
-                const bq = (proyekAktif && Array.isArray(proyekAktif.data_bq))
-                    ? proyekAktif.data_bq.find(i => String(i.id) === String(bqId))
-                    : null;
-                const sch = listScheduleMaster.find(s => String(s.id_proyek) === String(proyekAktif.id) && String(s.id_bq) === String(bqId)) || {};
-                const startStr = tr.querySelector('.inp-start').value;
-                const finishStr = tr.querySelector('.inp-finish').value;
-                const durasi = Math.max(1, Math.round(getNumericValue(tr.querySelector('.inp-durasi'), 1)));
-                const predStr = (tr.querySelector('.inp-pred').value || '').trim();
-                const prog = Math.min(100, Math.max(0, parseFloat(sch.progress_persen) || 0));
-
-                return {
-                    taskNo: idx + 1,
-                    bqId: bqId,
-                    name: bq ? bq.sub : `Task ${idx + 1}`,
-                    kategori: bq ? (bq.kategori || '') : '',
-                    bobot: bobot,
-                    durasi: durasi,
-                    predStr: predStr || '-',
-                    refs: parsePredecessorRefs(predStr, total).filter(r => r.taskNo !== (idx + 1)),
-                    rawStartStr: startStr,
-                    rawFinishStr: finishStr,
-                    prog: prog,
-                    tr: tr
+        function handlePreviewFotoDaily(input) {
+            dailyFotoBase64Array = [];
+            const container = document.getElementById('previewFotoDailyContainer'); container.innerHTML = "";
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    dailyFotoBase64Array.push(e.target.result);
+                    const img = document.createElement('img');
+                    img.src = e.target.result; img.className = "w-full h-20 object-cover rounded-lg border shadow-sm";
+                    container.appendChild(img);
                 };
+                reader.readAsDataURL(file);
             });
-
-            // Topological sort berdasarkan predecessor yang diatur di tabel pertama
-            const taskMap = new Map(rawTasks.map(t => [t.taskNo, t]));
-            const inDegree = new Map();
-            const adj = new Map();
-            rawTasks.forEach(t => {
-                inDegree.set(t.taskNo, 0);
-                adj.set(t.taskNo, []);
-            });
-
-            rawTasks.forEach(t => {
-                const seenPred = new Set();
-                t.refs.forEach(r => {
-                    if (!seenPred.has(r.taskNo) && taskMap.has(r.taskNo)) {
-                        seenPred.add(r.taskNo);
-                        adj.get(r.taskNo).push(t.taskNo);
-                        inDegree.set(t.taskNo, (inDegree.get(t.taskNo) || 0) + 1);
-                    }
-                });
-            });
-
-            const queue = [];
-            rawTasks.forEach(t => {
-                if ((inDegree.get(t.taskNo) || 0) === 0) queue.push(t.taskNo);
-            });
-            queue.sort((a, b) => a - b);
-
-            const topoOrder = [];
-            const visited = new Set();
-            while (queue.length > 0) {
-                const currNo = queue.shift();
-                if (visited.has(currNo)) continue;
-                visited.add(currNo);
-                topoOrder.push(currNo);
-
-                const neighbors = (adj.get(currNo) || []).slice().sort((a, b) => a - b);
-                neighbors.forEach(nextNo => {
-                    const nd = (inDegree.get(nextNo) || 0) - 1;
-                    inDegree.set(nextNo, nd);
-                    if (nd === 0 && !visited.has(nextNo)) {
-                        queue.push(nextNo);
-                        queue.sort((a, b) => a - b);
-                    }
-                });
-            }
-
-            rawTasks.forEach(t => {
-                if (!visited.has(t.taskNo)) topoOrder.push(t.taskNo);
-            });
-
-            const computedMap = new Map();
-            topoOrder.forEach(taskNo => {
-                const t = taskMap.get(taskNo);
-                let baseStart = parseLocalDate(t.rawStartStr) || new Date();
-                while (isHariLibur(baseStart)) {
-                    baseStart.setDate(baseStart.getDate() + 1);
-                }
-
-                let startCandidate = new Date(baseStart);
-                let predMaxStart = null;
-
-                t.refs.forEach(r => {
-                    const predTask = computedMap.get(r.taskNo);
-                    if (!predTask || !predTask.start || !predTask.end) return;
-                    let reqStart = null;
-
-                    if (r.type === 'FS') {
-                        reqStart = dapatkanHariKerjaBerikutnya(predTask.end);
-                        if (r.lag !== 0) reqStart = tambahHariKerjaDenganLag(reqStart, r.lag);
-                    } else if (r.type === 'SS') {
-                        reqStart = new Date(predTask.start);
-                        if (r.lag !== 0) reqStart = tambahHariKerjaDenganLag(reqStart, r.lag);
-                    } else if (r.type === 'FF') {
-                        let reqFinish = new Date(predTask.end);
-                        if (r.lag !== 0) reqFinish = tambahHariKerjaDenganLag(reqFinish, r.lag);
-                        reqStart = parseLocalDate(hitungStartDariFinishDanDurasi(formatLocalDateISO(reqFinish), t.durasi));
-                    } else if (r.type === 'SF') {
-                        let reqFinish = new Date(predTask.start);
-                        if (r.lag !== 0) reqFinish = tambahHariKerjaDenganLag(reqFinish, r.lag);
-                        reqStart = parseLocalDate(hitungStartDariFinishDanDurasi(formatLocalDateISO(reqFinish), t.durasi));
-                    }
-
-                    if (reqStart && !isNaN(reqStart.getTime())) {
-                        while (isHariLibur(reqStart)) reqStart.setDate(reqStart.getDate() + 1);
-                        if (!predMaxStart || reqStart > predMaxStart) predMaxStart = reqStart;
-                    }
-                });
-
-                if (predMaxStart) startCandidate = predMaxStart;
-
-                const startIso = formatLocalDateISO(startCandidate);
-                const finishIso = hitungFinishDateDariDurasi(startIso, t.durasi);
-                const finishObj = parseLocalDate(finishIso);
-
-                if (t.tr) {
-                    const inpSt = t.tr.querySelector('.inp-start');
-                    const inpFn = t.tr.querySelector('.inp-finish');
-                    if (inpSt && inpSt.value !== startIso) inpSt.value = startIso;
-                    if (inpFn && inpFn.value !== finishIso) inpFn.value = finishIso;
-                }
-
-                computedMap.set(taskNo, {
-                    ...t,
-                    start: startCandidate,
-                    end: finishObj,
-                    startStr: startIso,
-                    finishStr: finishIso,
-                    effDays: Math.max(1, hitungHariKerjaEfektif(startIso, finishIso) || t.durasi)
-                });
-            });
-
-            return topoOrder.map(no => computedMap.get(no)).filter(Boolean);
         }
 
-        function onPredecessorChanged() {
-            renderGanttChart();
-            renderKurvaS();
+        async function simpanLaporanHarian() {
+            if (!proyekAktif) return;
+            const payload = { id_proyek: proyekAktif.id, tanggal: document.getElementById('dailyTanggal').value, hari_ke: Math.round(getNumericValue('dailyHariKe', 1)), cuaca: document.getElementById('dailyCuaca').value, tenaga_kerja: document.getElementById('dailyTenaga').value, material: document.getElementById('dailyMaterial').value, kegiatan: document.getElementById('dailyKegiatan').value, kendala: document.getElementById('dailyKendala').value, foto_urls: dailyFotoBase64Array };
+            const { error } = await supabaseClient.from('04_daily_report').insert([payload]);
+            if(!error) { showToast("Laporan harian tersimpan!"); dailyFotoBase64Array = []; muatDataProyekSemua(); }
+            else showToast("Gagal menyimpan laporan: " + error.message, "error");
+        }
+
+        function renderTabelLaporanHarian() {
+            const tbody = document.getElementById('tabelDailyReportRows'); tbody.innerHTML = "";
+            if(!proyekAktif) return;
+            const list = listDailyMaster.filter(d => d.id_proyek === proyekAktif.id);
+            if(list.length === 0) return tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada laporan harian.</td></tr>`;
+
+            list.forEach((d, idx) => {
+                let fotos = safeJSONParse(d.foto_urls, []);
+                tbody.innerHTML += `<tr class="border-b"><td class="p-2 text-center font-bold">${idx+1}</td><td class="p-2 text-center font-mono text-[10px]">${d.tanggal}</td><td class="p-2 text-center font-bold">Ke-${d.hari_ke}</td><td class="p-2 text-center font-bold">${d.cuaca}</td><td class="p-2 line-clamp-2 max-w-[200px]">${d.kegiatan}</td><td class="p-2 text-center">${fotos.length} Foto</td><td class="p-2 text-center"><button onclick="bukaModalPrintDaily(${d.id})" class="text-blue-600 hover:underline mr-1">📄</button><button onclick="hapusDailyReport(${d.id})" class="text-rose-600 hover:underline">🗑️</button></td></tr>`;
+            });
+        }
+
+        async function hapusDailyReport(id) {
+            if(!confirm("Hapus laporan ini?")) return;
+            const { error } = await supabaseClient.from('04_daily_report').delete().eq('id', id);
+            if(!error) { showToast("Laporan dihapus"); muatDataProyekSemua(); }
+        }
+
+        function bukaModalPrintDaily(id) {
+            const d = listDailyMaster.find(item => item.id == id); if(!d) return;
+            document.getElementById('viewDailyNamaProyek').innerText = proyekAktif ? proyekAktif.nama_proyek : "-";
+            document.getElementById('viewDailyTgl').innerText = d.tanggal;
+            document.getElementById('viewDailyHariKe').innerText = "Hari ke-" + d.hari_ke;
+            document.getElementById('viewDailyCuaca').innerText = d.cuaca;
+            document.getElementById('viewDailyTenaga').innerText = d.tenaga_kerja;
+            document.getElementById('viewDailyMaterial').innerText = d.material || "-";
+            document.getElementById('viewDailyKegiatan').innerText = d.kegiatan;
+            document.getElementById('viewDailyKendala').innerText = d.kendala || "Tidak ada kendala.";
+            const gal = document.getElementById('viewDailyFotoGallery'); gal.innerHTML = "";
+            safeJSONParse(d.foto_urls, []).forEach(src => gal.innerHTML += `<img src="${src}" class="w-full h-24 object-cover rounded border">`);
+            document.getElementById('modalPrintDaily').classList.remove('hidden');
+        }
+        function tutupModalPrintDaily() { document.getElementById('modalPrintDaily').classList.add('hidden'); }
+        function cetakDokumenDailyPDF() {
+            html2pdf().set({ margin: 10, filename: 'Laporan_Harian.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(document.getElementById('areaCetakDaily')).save();
         }
 
         function renderTabelPenjadwalan() {
             const tbody = document.getElementById('tabelScheduleRows');
             if(!tbody) return;
+            tbody.innerHTML = "";
             if(!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu di tab 'Dashboard & RAB Proyek'.</td></tr>`;
-                document.getElementById('ganttChartContainer').innerHTML = `<p class="text-center text-slate-400 italic py-4">Pilih proyek untuk menampilkan Gantt Chart.</p>`;
-                if (kurvaSChartInstance) { kurvaSChartInstance.destroy(); kurvaSChartInstance = null; }
                 return;
             }
-
+            const totalRAB = proyekAktif.total_biaya || 1;
+            const projSchedules = listScheduleMaster.filter(s => String(s.id_proyek) === String(proyekAktif.id));
             const now = new Date();
-            const todayLocal = formatLocalDateISO(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
-            let totalDPA = proyekAktif.data_bq.reduce((s, i) => s + ((parseFloat(i.vol) || 0) * (parseFloat(i.hargaSatuan) || 0)), 0);
-            let projSchedules = listScheduleMaster.filter(s => String(s.id_proyek) === String(proyekAktif.id));
-
-            tbody.innerHTML = "";
+            const todayStr = formatLocalDateISO(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+            
             proyekAktif.data_bq.forEach((bq, idx) => {
-                let bqAmt = (parseFloat(bq.vol) || 0) * (parseFloat(bq.hargaSatuan) || 0);
-                let bobot = totalDPA > 0 ? (bqAmt / totalDPA) * 100 : 0;
-                let sch = projSchedules.find(s => String(s.id_bq) === String(bq.id)) || {};
-                let startDate = sch.tgl_mulai || todayLocal;
-                let finishDate = sch.tgl_selesai || startDate;
-                let durasi = Math.max(1, hitungHariKerjaEfektif(startDate, finishDate) || 1);
-                let pred = sch.predecessor || (idx > 0 ? String(idx) : '-');
-                let prog = parseFloat(sch.progress_persen) || 0;
-                let st = sch.status || 'Not Started';
+                const sch = projSchedules.find(s => String(s.id_bq) === String(bq.id)) || {};
+                const bobot = ((bq.subtotal / totalRAB) * 100).toFixed(2);
+                const startDate = sch.tgl_mulai || todayStr;
+                const finishDate = sch.tgl_selesai || startDate;
+                const dur = hitungHariKerjaEfektif(startDate, finishDate) || 1;
+                const pred = sch.predecessor || '-';
+                const actualPct = sch.progress_persen || 0;
+                const status = sch.status || 'Not Started';
 
-                let badgeColor = "bg-slate-100 text-slate-600";
-                if(st === 'In Progress') badgeColor = "bg-blue-100 text-blue-800";
-                if(st === 'Completed') badgeColor = "bg-emerald-100 text-emerald-800";
-                if(st === 'Delayed') badgeColor = "bg-rose-100 text-rose-800";
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-slate-50 transition";
+                tr.setAttribute('data-bqid', bq.id);
+                tr.setAttribute('data-bobot', bobot);
+                if (sch.id !== undefined && sch.id !== null) {
+                    tr.setAttribute('data-schid', sch.id);
+                }
+                tr.setAttribute('data-actstart', sch.actual_start || '');
+                tr.setAttribute('data-actfinish', sch.actual_finish || '');
+                tr.setAttribute('data-actdur', sch.actual_duration || 0);
+                tr.setAttribute('data-remdur', sch.remaining_duration || 0);
+                tr.setAttribute('data-notes', sch.notes || '');
 
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 row-schedule" data-bqid="${bq.id}" data-bobot="${bobot}">
-                        <td class="p-2.5 text-center font-bold">${idx + 1}</td>
-                        <td class="p-2.5"><div class="font-bold text-slate-900">${bq.sub}</div><span class="text-[10px] text-slate-400 font-mono">${bq.kategori}</span></td>
-                        <td class="p-2.5 text-center font-mono font-bold text-amber-700">${bobot.toFixed(2)}%</td>
-                        <td class="p-2.5 text-center"><input type="date" class="border rounded p-1 text-xs font-mono inp-start" value="${startDate}" onchange="sinkronDurasiDariTanggal(this)"></td>
-                        <td class="p-2.5 text-center"><input type="text" inputmode="numeric" class="excel-num w-14 border rounded p-1 text-xs font-mono text-center font-bold inp-durasi" value="${durasi}" onchange="sinkronTanggalDariDurasi(this)"></td>
-                        <td class="p-2.5 text-center"><input type="date" class="border rounded p-1 text-xs font-mono inp-finish" value="${finishDate}" onchange="sinkronDurasiDariTanggal(this)"></td>
-                        <td class="p-2.5 text-center"><input type="text" class="w-14 border rounded p-1 text-xs font-mono text-center font-bold inp-pred" value="${pred}" placeholder="- / 1 / 1,2" onchange="onPredecessorChanged()"></td>
-                        <td class="p-2.5 text-center font-mono font-bold text-blue-700">${prog}%</td>
-                        <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeColor}">${st}</span></td>
-                        <td class="p-2.5 text-center"><button onclick="bukaModalTrackingReal(${bq.id}, '${bq.sub.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg shadow transition">📝 Real</button></td>
-                    </tr>`;
+                tr.innerHTML = `
+                    <td class="p-2 text-center font-bold">${idx + 1}</td>
+                    <td class="p-2 font-medium text-slate-800">${bq.sub}</td>
+                    <td class="p-2 text-center font-mono text-amber-700 font-bold">${bobot}%</td>
+                    <td class="p-2 text-center"><input type="date" value="${startDate}" onchange="onScheduleRowChange()" class="sch-start border p-1 rounded font-mono text-[11px] bg-white"></td>
+                    <td class="p-2 text-center"><input type="text" inputmode="numeric" value="${dur}" placeholder="1 atau =3*2" onchange="onChangeScheduleDuration(this)" class="excel-num sch-dur w-14 border p-1 rounded text-center font-bold bg-white"></td>
+                    <td class="p-2 text-center"><input type="date" value="${finishDate}" onchange="onChangeScheduleFinish(this)" class="sch-finish border p-1 rounded font-mono text-[11px] bg-white"></td>
+                    <td class="p-2 text-center"><input type="text" value="${pred}" placeholder="-" onchange="onScheduleRowChange()" class="sch-pred w-12 border p-1 rounded text-center font-mono bg-white"></td>
+                    <td class="p-2 text-center font-mono font-bold text-blue-600 sch-actual-pct">${actualPct}%</td>
+                    <td class="p-2 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold sch-status ${status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : (status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600')}">${status}</span></td>
+                    <td class="p-2 text-center"><button onclick="bukaModalTrackingReal(${bq.id})" class="bg-slate-800 hover:bg-slate-900 text-white px-2.5 py-1 rounded text-[10px] font-bold">📝 Update</button></td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            renderGanttChart();
-            renderKurvaS();
+            terapkanCascadePredecessor();
+            renderGanttChartAndKurvaS();
         }
 
-        function sinkronTanggalDariDurasi(inpDur) {
-            const tr = inpDur.closest('.row-schedule');
-            const startStr = tr.querySelector('.inp-start').value;
-            const dur = Math.max(1, Math.round(getNumericValue(inpDur, 1)));
-            inpDur.value = dur;
-            tr.querySelector('.inp-finish').value = hitungFinishDateDariDurasi(startStr, dur);
-            renderGanttChart();
-            renderKurvaS();
+        function onChangeScheduleDuration(inputElem) {
+            const tr = inputElem.closest('tr');
+            const start = tr.querySelector('.sch-start').value;
+            const dur = Math.max(1, Math.round(getNumericValue(inputElem, 1)));
+            inputElem.value = String(dur);
+            tr.querySelector('.sch-finish').value = hitungFinishDateDariDurasi(start, dur);
+            onScheduleRowChange();
         }
 
-        function sinkronDurasiDariTanggal(inpDate) {
-            const tr = inpDate.closest('.row-schedule');
-            const startStr = tr.querySelector('.inp-start').value;
-            const finishStr = tr.querySelector('.inp-finish').value;
-            if (startStr && finishStr) {
-                const dur = hitungHariKerjaEfektif(startStr, finishStr);
-                if (dur > 0) {
-                    tr.querySelector('.inp-durasi').value = dur;
-                }
-            }
-            renderGanttChart();
-            renderKurvaS();
+        function onChangeScheduleFinish(inputElem) {
+            const tr = inputElem.closest('tr');
+            const start = tr.querySelector('.sch-start').value;
+            const finish = inputElem.value;
+            const dur = hitungHariKerjaEfektif(start, finish);
+            if(dur > 0) tr.querySelector('.sch-dur').value = dur;
+            onScheduleRowChange();
         }
 
-        function renderGanttChart() {
-            const container = document.getElementById('ganttChartContainer');
-            if (!container) return;
-            const orderedTasks = hitungJadwalTerurutPredecessor();
-            if (!orderedTasks.length) {
-                container.innerHTML = `<p class="text-center text-slate-400 italic py-4">Tidak ada item jadwal.</p>`;
-                return;
-            }
-
-            let minDate = null;
-            let maxDate = null;
-            orderedTasks.forEach(t => {
-                if (t.start && t.end && !isNaN(t.start.getTime()) && !isNaN(t.end.getTime())) {
-                    if (!minDate || t.start < minDate) minDate = new Date(t.start);
-                    if (!maxDate || t.end > maxDate) maxDate = new Date(t.end);
-                }
-            });
-
-            if (!minDate || !maxDate || minDate > maxDate) {
-                container.innerHTML = `<p class="text-center text-slate-400 italic py-4">Tanggal jadwal belum valid.</p>`;
-                return;
-            }
-
-            const totalDaysSpan = Math.max(1, Math.round((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1);
-            let html = `<div class="space-y-1.5">`;
-            orderedTasks.forEach((t, orderIdx) => {
-                let leftPct = 0;
-                let widthPct = 10;
-                if (t.start && t.end) {
-                    const offsetDays = Math.max(0, Math.round((t.start - minDate) / (1000 * 60 * 60 * 24)));
-                    const spanDays = Math.max(1, Math.round((t.end - t.start) / (1000 * 60 * 60 * 24)) + 1);
-                    leftPct = (offsetDays / totalDaysSpan) * 100;
-                    widthPct = Math.max(3, (spanDays / totalDaysSpan) * 100);
-                }
-                const predBadge = (t.predStr && t.predStr !== '-')
-                    ? `<span class="text-[9px] font-mono bg-amber-100 text-amber-800 px-1 rounded ml-1 shrink-0" title="Predecessor dari tabel pertama">Pred: ${t.predStr}</span>`
-                    : `<span class="text-[9px] font-mono bg-emerald-100 text-emerald-800 px-1 rounded ml-1 shrink-0">Start</span>`;
-                html += `
-                    <div class="grid grid-cols-12 items-center gap-2 py-1 border-b border-slate-100 last:border-b-0">
-                        <div class="col-span-4 flex items-center justify-between gap-1 pr-1 overflow-hidden">
-                            <span class="truncate font-bold text-slate-800 text-[11px]" title="[#${t.taskNo}] ${t.name}">${orderIdx + 1}. <span class="font-mono text-[10px] text-slate-400">[#${t.taskNo}]</span> ${t.name}</span>
-                            ${predBadge}
-                        </div>
-                        <div class="col-span-8 relative h-6 bg-slate-100 rounded-md overflow-hidden">
-                            <div style="left:${leftPct}%; width:${widthPct}%;" class="absolute top-1 bottom-1 bg-blue-500/85 rounded flex items-center overflow-hidden" title="${t.startStr} s/d ${t.finishStr} (${t.durasi} hari | Bobot ${t.bobot.toFixed(2)}%)">
-                                <div style="width:${t.prog}%;" class="h-full bg-amber-400"></div>
-                                <span class="relative z-10 text-[9px] font-mono font-bold text-slate-950 px-1.5 whitespace-nowrap">${t.prog}%</span>
-                            </div>
-                        </div>
-                    </div>`;
-            });
-            html += `</div>`;
-            container.innerHTML = html;
-        }
-
-        function hitungDistribusiNormalKurvaS(totalEffectiveDays, dayIndex) {
-            if (totalEffectiveDays <= 1) return 1;
-            const weights = [];
-            let sumW = 0;
-            const mu = (totalEffectiveDays - 1) / 2;
-            const sigma = Math.max(0.75, totalEffectiveDays / 3.2);
-            for (let i = 0; i < totalEffectiveDays; i++) {
-                const z = (i - mu) / sigma;
-                const w = Math.exp(-0.5 * z * z);
-                weights.push(w);
-                sumW += w;
-            }
-            return sumW > 0 ? (weights[dayIndex] / sumW) : (1 / totalEffectiveDays);
-        }
-
-        function renderKurvaS() {
-            const ctx = document.getElementById('kurvaSChart')?.getContext('2d');
-            if(!ctx) return;
-            if (kurvaSChartInstance) kurvaSChartInstance.destroy();
-
-            // Menggunakan urutan task yang sama dengan tabel Gantt Chart kedua (hasil urutan Predecessor)
-            const orderedTasks = hitungJadwalTerurutPredecessor();
-            if(!orderedTasks.length) return;
-
-            let minDate = null;
-            let maxDate = null;
-            const tasks = orderedTasks.map(t => {
-                if(t.start && t.end && !isNaN(t.start.getTime()) && !isNaN(t.end.getTime())) {
-                    if(!minDate || t.start < minDate) minDate = new Date(t.start);
-                    if(!maxDate || t.end > maxDate) maxDate = new Date(t.end);
-                }
-                const workDates = [];
-                if (t.start && t.end && t.start <= t.end) {
-                    let d = new Date(t.start.getFullYear(), t.start.getMonth(), t.start.getDate());
-                    while (d <= t.end) {
-                        if (!isHariLibur(d)) workDates.push(formatLocalDateISO(d));
-                        d.setDate(d.getDate() + 1);
+        function terapkanCascadePredecessor() {
+            const rows = Array.from(document.querySelectorAll('#tabelScheduleRows tr[data-bqid]'));
+            rows.forEach((tr, idx) => {
+                const predStr = tr.querySelector('.sch-pred').value.trim();
+                const predNum = parseInt(predStr);
+                if (!isNaN(predNum) && predNum >= 1 && predNum <= rows.length && predNum !== (idx + 1)) {
+                    const predRow = rows[predNum - 1];
+                    const predFinishStr = predRow.querySelector('.sch-finish').value;
+                    if (predFinishStr) {
+                        const parsedFinish = parseLocalDate(predFinishStr);
+                        if (parsedFinish) {
+                            const nextStartObj = dapatkanHariKerjaBerikutnya(parsedFinish);
+                            const nextStartStr = formatLocalDateISO(nextStartObj);
+                            tr.querySelector('.sch-start').value = nextStartStr;
+                            const dur = Math.max(1, Math.round(getNumericValue(tr.querySelector('.sch-dur'), 1)));
+                            tr.querySelector('.sch-finish').value = hitungFinishDateDariDurasi(nextStartStr, dur);
+                        }
                     }
                 }
-                return {
-                    ...t,
-                    workDates: workDates,
-                    effDays: Math.max(1, workDates.length)
-                };
             });
+        }
 
-            if(!minDate || !maxDate || minDate > maxDate) return;
-
-            let labels = [];
-            let planCum = [];
-            let realCum = [];
-            let cur = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
-            let planSum = 0;
-            const realSumTotal = tasks.reduce((sum, t) => sum + ((t.bobot * t.prog) / 100), 0);
-
-            while (cur <= maxDate) {
-                if(!isHariLibur(cur)) {
-                    const curIso = formatLocalDateISO(cur);
-                    labels.push(cur.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
-                    let dayPlan = 0;
-                    tasks.forEach(t => {
-                        const dayIdx = t.workDates.indexOf(curIso);
-                        if (dayIdx >= 0 && t.effDays > 0) {
-                            const normShare = hitungDistribusiNormalKurvaS(t.effDays, dayIdx);
-                            dayPlan += (t.bobot * normShare);
-                        }
-                    });
-                    planSum = Math.min(100, planSum + dayPlan);
-                    planCum.push(parseFloat(planSum.toFixed(2)));
-                    realCum.push(parseFloat(Math.min(100, realSumTotal).toFixed(2)));
-                }
-                cur.setDate(cur.getDate() + 1);
-            }
-
-            if (planCum.length > 0) {
-                const totalBobotAll = tasks.reduce((s, t) => s + t.bobot, 0);
-                if (totalBobotAll > 99.5) planCum[planCum.length - 1] = 100;
-            }
-
-            kurvaSChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Rencana Kumulatif (%)', data: planCum, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', borderWidth: 3, fill: true, tension: 0.4 },
-                        { label: 'Realisasi Lapangan (%)', data: realCum, borderColor: '#ea580c', backgroundColor: 'rgba(234, 88, 12, 0.1)', borderWidth: 3, borderDash: [5, 5], fill: false, tension: 0.4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
-            });
+        function onScheduleRowChange() {
+            terapkanCascadePredecessor();
+            renderGanttChartAndKurvaS();
         }
 
         async function simpanJadwalSemua() {
             if (!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
-            const rows = document.querySelectorAll('#tabelScheduleRows .row-schedule');
-            if (!rows.length) return showToast("Tidak ada item jadwal untuk disimpan.", "error");
+            const rows = Array.from(document.querySelectorAll('#tabelScheduleRows tr[data-bqid]'));
+            if (rows.length === 0) return showToast("Tidak ada item pekerjaan untuk dijadwalkan!", "error");
 
-            const projSchedules = listScheduleMaster.filter(s => String(s.id_proyek) === String(proyekAktif.id));
-            const payload = [];
-
-            rows.forEach(tr => {
-                const bqId = String(tr.dataset.bqid);
-                const startStr = tr.querySelector('.inp-start').value;
-                const finishStr = tr.querySelector('.inp-finish').value;
-                const predStr = tr.querySelector('.inp-pred').value.trim() || '-';
-                const existing = projSchedules.find(s => String(s.id_bq) === bqId) || {};
-
+            showToast("Menyimpan rencana jadwal...", "success", 3000);
+            const payload = rows.map(tr => {
+                const schIdAttr = tr.getAttribute('data-schid');
                 const rowObj = {
                     id_proyek: String(proyekAktif.id),
-                    id_bq: bqId,
-                    tgl_mulai: startStr,
-                    tgl_selesai: finishStr,
-                    predecessor: predStr,
-                    progress_persen: Number(existing.progress_persen) || 0,
-                    status: existing.status || 'Not Started',
-                    actual_start: existing.actual_start || null,
-                    actual_finish: existing.actual_finish || null,
-                    actual_duration: Number(existing.actual_duration) || 0,
-                    remaining_duration: Number(existing.remaining_duration) || 0,
-                    notes: existing.notes || ''
+                    id_bq: String(tr.getAttribute('data-bqid')),
+                    tgl_mulai: tr.querySelector('.sch-start').value,
+                    tgl_selesai: tr.querySelector('.sch-finish').value,
+                    predecessor: tr.querySelector('.sch-pred').value.trim() || '-',
+                    progress_persen: parseFloat(tr.querySelector('.sch-actual-pct').innerText) || 0,
+                    status: tr.querySelector('.sch-status').innerText || 'Not Started',
+                    actual_start: tr.getAttribute('data-actstart') || null,
+                    actual_finish: tr.getAttribute('data-actfinish') || null,
+                    actual_duration: parseFloat(tr.getAttribute('data-actdur')) || 0,
+                    remaining_duration: parseFloat(tr.getAttribute('data-remdur')) || 0,
+                    notes: tr.getAttribute('data-notes') || ''
                 };
-                if (existing.id !== undefined && existing.id !== null) rowObj.id = existing.id;
-                payload.push(rowObj);
+                if (schIdAttr && schIdAttr !== 'undefined' && schIdAttr !== 'null') {
+                    rowObj.id = isNaN(Number(schIdAttr)) ? schIdAttr : Number(schIdAttr);
+                }
+                return rowObj;
             });
 
-            showToast("Menyimpan jadwal rencana...", "success", 3500);
             let savedRows = [];
-
             const { data, error } = await supabaseClient
                 .from('03_schedule')
                 .upsert(payload, { onConflict: 'id_proyek,id_bq' })
@@ -4591,32 +5002,29 @@
             if (!error) {
                 savedRows = (data && data.length > 0) ? data : payload;
             } else {
-                console.warn("Upsert schedule fallback:", error.message);
+                console.warn("Upsert fallback triggered:", error.message);
                 for (const row of payload) {
-                    const existing = projSchedules.find(s => String(s.id_bq) === String(row.id_bq));
-                    if (existing && existing.id !== undefined && existing.id !== null) {
+                    if (row.id !== undefined) {
                         const { data: updData, error: updErr } = await supabaseClient
                             .from('03_schedule')
                             .update(row)
-                            .eq('id', existing.id)
+                            .eq('id', row.id)
                             .select();
                         if (updErr) {
                             showToast("Gagal menyimpan jadwal: " + updErr.message, "error");
                             return;
                         }
-                        savedRows.push((updData && updData[0]) || { ...row, id: existing.id });
+                        savedRows.push((updData && updData[0]) || row);
                     } else {
-                        const cleanInsert = { ...row };
-                        delete cleanInsert.id;
                         const { data: insData, error: insErr } = await supabaseClient
                             .from('03_schedule')
-                            .insert([cleanInsert])
+                            .insert([row])
                             .select();
                         if (insErr) {
                             showToast("Gagal menyimpan jadwal: " + insErr.message, "error");
                             return;
                         }
-                        savedRows.push((insData && insData[0]) || cleanInsert);
+                        savedRows.push((insData && insData[0]) || row);
                     }
                 }
             }
@@ -4630,523 +5038,520 @@
                 } else {
                     listScheduleMaster.push(savedItem);
                 }
+                const tr = document.querySelector(`#tabelScheduleRows tr[data-bqid="${savedItem.id_bq}"]`);
+                if (tr && savedItem.id !== undefined && savedItem.id !== null) {
+                    tr.setAttribute('data-schid', savedItem.id);
+                }
             });
 
-            showToast("Jadwal rencana berhasil disimpan!");
-            renderTabelPenjadwalan();
+            showToast("Rencana Jadwal berhasil disimpan permanen!");
         }
 
         function hitungProgressDariVolume() {
             const volTerpasang = Math.max(0, getNumericValue('trackVolTerpasang', 0));
             const volRencana = getNumericValue('trackVolRencana', 0);
-            let persen = 0;
+            const progInput = document.getElementById('trackProgress');
+            const statusSelect = document.getElementById('trackStatus');
+
+            let pct = 0;
             if (volRencana > 0) {
-                persen = Math.min(100, Math.max(0, (volTerpasang / volRencana) * 100));
+                pct = (volTerpasang / volRencana) * 100;
             }
-            const roundedPersen = Math.round(persen * 100) / 100;
-            const inpProg = document.getElementById('trackProgress');
-            if (inpProg) inpProg.value = roundedPersen;
+            pct = Math.max(0, Math.min(100, Number.isFinite(pct) ? pct : 0));
+            const formattedPct = Number(pct.toFixed(2));
+            if (progInput) progInput.value = String(formattedPct);
 
-            const selStatus = document.getElementById('trackStatus');
-            if (selStatus) {
-                if (roundedPersen >= 100) selStatus.value = 'Completed';
-                else if (roundedPersen > 0 && selStatus.value === 'Not Started') selStatus.value = 'In Progress';
-            }
-        }
-
-        function bukaModalTrackingReal(bqId, taskName) {
-            if (!proyekAktif) return;
-            const sch = listScheduleMaster.find(s => String(s.id_proyek) === String(proyekAktif.id) && String(s.id_bq) === String(bqId)) || {};
-            const bqItem = (proyekAktif.data_bq || []).find(i => String(i.id) === String(bqId)) || {};
-            const volRencana = parseFloat(bqItem.vol) || 1;
-            const progExisting = parseFloat(sch.progress_persen) || 0;
-            const volTerpasangEst = Math.round(((progExisting / 100) * volRencana) * 10000) / 10000;
-
-            document.getElementById('trackBqId').value = bqId;
-            document.getElementById('modalTrackingTaskName').innerText = taskName;
-            document.getElementById('trackSatuanLabel').innerText = `Satuan: ${bqItem.sat || '-'}`;
-            document.getElementById('trackVolRencana').value = volRencana;
-            document.getElementById('trackVolTerpasang').value = volTerpasangEst;
-            document.getElementById('trackActualStart').value = sch.actual_start || sch.tgl_mulai || '';
-            document.getElementById('trackActualFinish').value = sch.actual_finish || '';
-            document.getElementById('trackProgress').value = progExisting;
-            document.getElementById('trackStatus').value = sch.status || 'Not Started';
-            document.getElementById('trackActualDuration').value = sch.actual_duration || 0;
-            document.getElementById('trackRemainingDuration').value = sch.remaining_duration || 0;
-            document.getElementById('trackNotes').value = sch.notes || '';
-            document.getElementById('modalTrackingReal').classList.remove('hidden');
-        }
-
-        function tutupModalTrackingReal() {
-            document.getElementById('modalTrackingReal').classList.add('hidden');
-        }
-
-        async function simpanTrackingReal() {
-            if (!proyekAktif) return;
-            const bqId = String(document.getElementById('trackBqId').value);
-            const tr = document.querySelector(`#tabelScheduleRows .row-schedule[data-bqid="${bqId}"]`);
-            const existing = listScheduleMaster.find(s => String(s.id_proyek) === String(proyekAktif.id) && String(s.id_bq) === bqId) || {};
-
-            const now = new Date();
-            const todayLocal = formatLocalDateISO(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
-            const startStr = tr ? tr.querySelector('.inp-start').value : (existing.tgl_mulai || todayLocal);
-            const finishStr = tr ? tr.querySelector('.inp-finish').value : (existing.tgl_selesai || startStr);
-            const predStr = tr ? (tr.querySelector('.inp-pred').value.trim() || '-') : (existing.predecessor || '-');
-
-            const volTerpasang = Math.max(0, getNumericValue('trackVolTerpasang', 0));
-            const volRencana = getNumericValue('trackVolRencana', 0);
-            let prog = 0;
-            if (volRencana > 0) {
-                prog = Math.min(100, Math.max(0, (volTerpasang / volRencana) * 100));
-            } else {
-                prog = Math.min(100, Math.max(0, getNumericValue('trackProgress', 0)));
-            }
-            prog = Math.round(prog * 100) / 100;
-            const status = document.getElementById('trackStatus').value;
-            const actStart = document.getElementById('trackActualStart').value || null;
-            const actFinish = document.getElementById('trackActualFinish').value || null;
-            const actDur = Math.max(0, Math.round(getNumericValue('trackActualDuration', 0)));
-            const remDur = Math.max(0, Math.round(getNumericValue('trackRemainingDuration', 0)));
-            const notes = document.getElementById('trackNotes').value.trim();
-
-            const rowObj = {
-                id_proyek: String(proyekAktif.id),
-                id_bq: bqId,
-                tgl_mulai: startStr,
-                tgl_selesai: finishStr,
-                predecessor: predStr,
-                progress_persen: prog,
-                status: status,
-                actual_start: actStart,
-                actual_finish: actFinish,
-                actual_duration: actDur,
-                remaining_duration: remDur,
-                notes: notes
-            };
-            if (existing.id !== undefined && existing.id !== null) rowObj.id = existing.id;
-
-            let savedRecord = null;
-            const { data, error } = await supabaseClient
-                .from('03_schedule')
-                .upsert([rowObj], { onConflict: 'id_proyek,id_bq' })
-                .select();
-
-            if (!error) {
-                savedRecord = (data && data[0]) || rowObj;
-            } else {
-                console.warn("Upsert tracking fallback:", error.message);
-                if (existing.id !== undefined && existing.id !== null) {
-                    const { data: updData, error: updErr } = await supabaseClient
-                        .from('03_schedule')
-                        .update(rowObj)
-                        .eq('id', existing.id)
-                        .select();
-                    if (updErr) return showToast("Gagal menyimpan tracking real: " + updErr.message, "error");
-                    savedRecord = (updData && updData[0]) || { ...rowObj, id: existing.id };
-                } else {
-                    const cleanInsert = { ...rowObj };
-                    delete cleanInsert.id;
-                    const { data: insData, error: insErr } = await supabaseClient
-                        .from('03_schedule')
-                        .insert([cleanInsert])
-                        .select();
-                    if (insErr) return showToast("Gagal menyimpan tracking real: " + insErr.message, "error");
-                    savedRecord = (insData && insData[0]) || cleanInsert;
+            if (statusSelect) {
+                if (formattedPct >= 100) {
+                    statusSelect.value = 'Completed';
+                } else if (formattedPct > 0 && statusSelect.value === 'Not Started') {
+                    statusSelect.value = 'In Progress';
+                } else if (formattedPct === 0 && (statusSelect.value === 'Completed' || statusSelect.value === 'In Progress')) {
+                    statusSelect.value = 'Not Started';
                 }
             }
-
-            const idx = listScheduleMaster.findIndex(
-                s => String(s.id_proyek) === String(proyekAktif.id) && String(s.id_bq) === bqId
-            );
-            if (idx >= 0) {
-                listScheduleMaster[idx] = { ...listScheduleMaster[idx], ...savedRecord };
-            } else {
-                listScheduleMaster.push(savedRecord);
-            }
-
-            tutupModalTrackingReal();
-            showToast("Progress pelaksanaan real berhasil diperbarui!");
-            renderTabelPenjadwalan();
         }
 
-        // ==========================================
-        // EXPORT PDF & EXCEL
-        // ==========================================
-        function exportToPDFSummary() {
-            if (!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
-            const element = document.getElementById('exportArea');
-            element.classList.add('pdf-export-mode');
+        function bukaModalTrackingReal(bqId) {
+            if(!proyekAktif) return;
+            const bq = proyekAktif.data_bq.find(i => i.id == bqId);
+            const tr = document.querySelector(`#tabelScheduleRows tr[data-bqid="${bqId}"]`);
+            if(!bq || !tr) return;
 
-            const opt = {
-                margin: [8, 8, 8, 8],
-                filename: `RAB_${proyekAktif.nama_proyek.replace(/\s+/g, '_')}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+            const volRencana = Math.max(0, parseFloat(bq.vol) || 0);
+            const existingPct = Math.max(0, Math.min(100, parseFloat(tr.querySelector('.sch-actual-pct').innerText) || 0));
+            const derivedVolTerpasang = volRencana > 0 ? Number(((existingPct / 100) * volRencana).toFixed(4)) : 0;
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.classList.remove('pdf-export-mode');
-                showToast("PDF A4 Berhasil Diunduh!");
+            document.getElementById('trackBqId').value = bqId;
+            document.getElementById('modalTrackingTaskName').innerText = bq.sub;
+            document.getElementById('trackSatuanLabel').innerText = `Satuan: ${bq.sat || '-'}`;
+            document.getElementById('trackVolRencana').value = String(volRencana);
+            document.getElementById('trackVolTerpasang').value = String(derivedVolTerpasang);
+            document.getElementById('trackActualStart').value = tr.getAttribute('data-actstart') || tr.querySelector('.sch-start').value;
+            document.getElementById('trackActualFinish').value = tr.getAttribute('data-actfinish') || '';
+            document.getElementById('trackProgress').value = String(existingPct);
+            document.getElementById('trackStatus').value = tr.querySelector('.sch-status').innerText || 'Not Started';
+            document.getElementById('trackActualDuration').value = tr.getAttribute('data-actdur') || 0;
+            document.getElementById('trackRemainingDuration').value = tr.getAttribute('data-remdur') || 0;
+            document.getElementById('trackNotes').value = tr.getAttribute('data-notes') || '';
+
+            document.getElementById('modalTrackingReal').classList.remove('hidden');
+        }
+        function tutupModalTrackingReal() { document.getElementById('modalTrackingReal').classList.add('hidden'); }
+
+        async function simpanTrackingReal() {
+            const bqId = document.getElementById('trackBqId').value;
+            const tr = document.querySelector(`#tabelScheduleRows tr[data-bqid="${bqId}"]`);
+            if(!tr) return;
+
+            hitungProgressDariVolume();
+            const pct = Math.max(0, Math.min(100, getNumericValue('trackProgress', 0)));
+            const status = document.getElementById('trackStatus').value;
+            const actStart = document.getElementById('trackActualStart').value;
+            const actFinish = document.getElementById('trackActualFinish').value;
+            const actDur = Math.round(getNumericValue('trackActualDuration', 0));
+            const remDur = Math.round(getNumericValue('trackRemainingDuration', 0));
+            const notes = document.getElementById('trackNotes').value;
+
+            tr.querySelector('.sch-actual-pct').innerText = pct + '%';
+            const statusSpan = tr.querySelector('.sch-status');
+            statusSpan.innerText = status;
+            statusSpan.className = `px-2 py-0.5 rounded text-[10px] font-bold sch-status ${status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : (status === 'In Progress' ? 'bg-blue-100 text-blue-800' : (status === 'Delayed' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-600'))}`;
+            
+            tr.setAttribute('data-actstart', actStart);
+            tr.setAttribute('data-actfinish', actFinish);
+            tr.setAttribute('data-actdur', actDur);
+            tr.setAttribute('data-remdur', remDur);
+            tr.setAttribute('data-notes', notes);
+
+            tutupModalTrackingReal();
+            renderGanttChartAndKurvaS();
+            await simpanJadwalSemua();
+        }
+
+        function renderGanttChartAndKurvaS() {
+            const ganttContainer = document.getElementById('ganttChartContainer');
+            const rows = Array.from(document.querySelectorAll('#tabelScheduleRows tr[data-bqid]'));
+            if(!ganttContainer || rows.length === 0) return;
+
+            let minDate = null; let maxDate = null;
+            let tasks = rows.map((tr, idx) => {
+                const startStr = tr.querySelector('.sch-start').value;
+                const finishStr = tr.querySelector('.sch-finish').value;
+                const start = parseLocalDate(startStr) || new Date();
+                const finish = parseLocalDate(finishStr) || new Date(start);
+                const actualPct = parseFloat(tr.querySelector('.sch-actual-pct').innerText) || 0;
+                const bobot = parseFloat(tr.getAttribute('data-bobot')) || 0;
+                const name = tr.children[1].innerText;
+
+                if (!minDate || start < minDate) minDate = new Date(start);
+                if (!maxDate || finish > maxDate) maxDate = new Date(finish);
+
+                return { no: idx + 1, name, start, finish, startStr, finishStr, actualPct, bobot };
+            });
+
+            if (!minDate || !maxDate) return;
+
+            const totalSpanDays = Math.max(1, Math.round((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1);
+
+            let ganttHtml = `<div class="space-y-2">`;
+            ganttHtml += `<div class="flex justify-between text-[10px] font-mono text-slate-500 border-b pb-1">
+                <span>Mulai: <strong>${formatLocalDateISO(minDate)}</strong></span>
+                <span>Durasi Proyek: <strong>${totalSpanDays} Hari Kalender</strong></span>
+                <span>Selesai: <strong>${formatLocalDateISO(maxDate)}</strong></span>
+            </div>`;
+
+            tasks.forEach(t => {
+                const offsetDays = Math.max(0, Math.round((t.start - minDate) / (1000 * 60 * 60 * 24)));
+                const durationDays = Math.max(1, Math.round((t.finish - t.start) / (1000 * 60 * 60 * 24)) + 1);
+
+                const leftPct = (offsetDays / totalSpanDays) * 100;
+                const widthPct = Math.max(2, (durationDays / totalSpanDays) * 100);
+
+                ganttHtml += `
+                    <div class="grid grid-cols-12 items-center gap-2 py-1 border-b border-slate-100">
+                        <div class="col-span-4 truncate font-medium text-slate-800 text-[11px]" title="${t.name}">
+                            <span class="font-bold text-slate-500 mr-1">${t.no}.</span>${t.name}
+                        </div>
+                        <div class="col-span-8 bg-slate-100 h-5 rounded-md relative overflow-hidden">
+                            <div style="left: ${leftPct}%; width: ${widthPct}%;" class="absolute top-0 bottom-0 bg-blue-600/85 rounded-md flex items-center overflow-hidden shadow-sm" title="${t.name} (${t.startStr} s/d ${t.finishStr})">
+                                <div style="width: ${t.actualPct}%;" class="h-full bg-amber-400 transition-all duration-300"></div>
+                                <span class="relative z-10 text-[9px] font-bold text-white px-1.5 drop-shadow">${t.actualPct}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            ganttHtml += `</div>`;
+            ganttContainer.innerHTML = ganttHtml;
+
+            const ctx = document.getElementById('kurvaSChart')?.getContext('2d');
+            if(!ctx) return;
+            if (kurvaSChartInstance) kurvaSChartInstance.destroy();
+
+            let labels = [];
+            let planData = [];
+            let realData = [];
+            const maxPoints = Math.min(totalSpanDays, 60);
+            const step = Math.max(1, Math.ceil(totalSpanDays / maxPoints));
+
+            for(let d = 0; d < totalSpanDays; d += step) {
+                let curr = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate() + d);
+                labels.push(formatLocalDateISO(curr));
+
+                let cumPlan = 0;
+                let cumReal = 0;
+
+                tasks.forEach(t => {
+                    const tSpan = Math.max(1, Math.round((t.finish - t.start) / (1000 * 60 * 60 * 24)) + 1);
+                    if (curr >= t.finish) {
+                        cumPlan += t.bobot;
+                    } else if (curr >= t.start) {
+                        const elapsed = Math.round((curr - t.start) / (1000 * 60 * 60 * 24)) + 1;
+                        cumPlan += t.bobot * Math.min(1, elapsed / tSpan);
+                    }
+
+                    if (curr >= t.start) {
+                        const elapsed = Math.min(tSpan, Math.round((curr - t.start) / (1000 * 60 * 60 * 24)) + 1);
+                        const ratio = elapsed / tSpan;
+                        cumReal += (t.bobot * (t.actualPct / 100)) * ratio;
+                    }
+                });
+
+                planData.push(Math.min(100, parseFloat(cumPlan.toFixed(2))));
+                realData.push(Math.min(100, parseFloat(cumReal.toFixed(2))));
+            }
+
+            if (labels[labels.length - 1] !== formatLocalDateISO(maxDate)) {
+                labels.push(formatLocalDateISO(maxDate));
+                planData.push(100);
+                let totalRealEnd = tasks.reduce((s, t) => s + (t.bobot * (t.actualPct / 100)), 0);
+                realData.push(Math.min(100, parseFloat(totalRealEnd.toFixed(2))));
+            }
+
+            kurvaSChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Rencana Kumulatif (%)',
+                            data: planData,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.35
+                        },
+                        {
+                            label: 'Realisasi Lapangan (%)',
+                            data: realData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2.5,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.35
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: v => v + '%' }
+                        }
+                    }
+                }
             });
         }
 
         function exportToExcelSummary() {
             if (!proyekAktif || !proyekAktif.data_bq || proyekAktif.data_bq.length === 0) {
-                return showToast("Tidak ada data proyek untuk diexport!", "error");
+                return showToast("Pilih proyek yang memiliki item pekerjaan terlebih dahulu!", "error");
             }
-            let rows = [["NO", "DIVISI", "URAIAN PEKERJAAN", "VOLUME", "SATUAN", "HARGA SATUAN (RP)", "TOTAL BIAYA (RP)"]];
-            proyekAktif.data_bq.forEach((it, i) => {
-                rows.push([i + 1, it.kategori, it.sub, parseFloat(it.vol), it.sat, Math.round(it.hargaSatuan), Math.round(it.vol * it.hargaSatuan)]);
-            });
-            const ws = XLSX.utils.aoa_to_sheet(rows);
+
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "RAB_BQ");
-            XLSX.writeFile(wb, `RAB_${proyekAktif.nama_proyek.replace(/\s+/g, '_')}.xlsx`);
-            showToast("File Excel Berhasil Diunduh!");
-        }
+            const grandTotalDPA = proyekAktif.total_biaya || 0;
+            const ppn = grandTotalDPA * 0.11;
+            const grandTotalPlusPPN = grandTotalDPA + ppn;
+            const companyName = userProfile ? userProfile.name : "KAYUNA STUDIO";
+            const plannerName = userProfile ? userProfile.plannerName : "Tim Perencana";
+            const cityDate = document.getElementById('txtKotaTanggalTTD')?.innerText || `Bandung, ${formatTanggalIndoFormal(new Date())}`;
 
-        // ==========================================
-        // BUILDER MASTER AHSP & HSD
-        // ==========================================
-        function tambahBarisKomponenBuilder(containerId, data = {}) {
-            const container = document.getElementById(containerId);
-            const div = document.createElement('div');
-            div.className = "grid grid-cols-12 gap-1.5 items-center bg-white p-1.5 rounded-lg border border-slate-200 row-komponen-builder";
-            div.innerHTML = `
-                <select class="col-span-3 border p-1 rounded text-[11px] font-bold builder-tipe">
-                    <option value="Upah" ${data.tipe === 'Upah' ? 'selected' : ''}>A. Upah</option>
-                    <option value="Bahan" ${data.tipe === 'Bahan' ? 'selected' : ''}>B. Bahan</option>
-                    <option value="Alat" ${data.tipe === 'Alat' ? 'selected' : ''}>C. Alat</option>
-                </select>
-                <input type="text" placeholder="Uraian..." value="${data.uraian || ''}" oninput="filterHsdDropdownOptions(this)" onfocus="filterHsdDropdownOptions(this)" class="col-span-4 border p-1 rounded text-[11px] builder-uraian font-medium">
-                <input type="text" placeholder="Kode" value="${data.kode || ''}" class="col-span-2 border p-1 rounded text-[11px] font-mono text-center builder-kode">
-                <input type="text" placeholder="Sat" value="${data.satuan || ''}" class="col-span-1 border p-1 rounded text-[11px] text-center builder-satuan">
-                <input type="text" inputmode="decimal" placeholder="Koef" value="${data.koefisien || ''}" class="excel-num col-span-1 border p-1 rounded text-[11px] font-mono text-center builder-koef">
-                <button type="button" onclick="this.parentElement.remove()" class="col-span-1 text-rose-500 font-bold text-center">×</button>
-            `;
-            container.appendChild(div);
-        }
+            let kelompok = {};
+            proyekAktif.data_bq.forEach(item => {
+                if (!kelompok[item.kategori]) kelompok[item.kategori] = [];
+                kelompok[item.kategori].push(item);
+            });
 
-        async function simpanHSDBaru() {
-            const oldKode = document.getElementById('editHsdOldKode').value;
-            const payload = {
-                kode: document.getElementById('addHsdKode').value.trim() || "HSD-" + Date.now(),
-                nama_item: document.getElementById('addHsdNama').value.trim(),
-                satuan: document.getElementById('addHsdSatuan').value.trim(),
-                harga: getNumericValue('addHsdHarga', 0),
-                lokasi: document.getElementById('addHsdLokasi').value.trim() || "INDONESIA",
-                tahun: parseInt(document.getElementById('addHsdTahun').value) || 2026,
-                referensi: document.getElementById('addHsdReferensi').value.trim()
-            };
-            const { error } = oldKode 
-                ? await supabaseClient.from('02_hsd').update(payload).eq('kode', oldKode)
-                : await supabaseClient.from('02_hsd').insert([payload]);
-            if(!error) { resetFormHSD(); muatDataProyekSemua(); showToast("HSD Tersimpan!"); }
-            else showToast("Gagal: " + error.message, "error");
-        }
+            // SHEET 1: REKAPITULASI RAB
+            let rekapRows = [
+                [companyName],
+                [userProfile?.tagline || "Architecture & Construction Consultant"],
+                [],
+                ["REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)"],
+                ["Nama Proyek", proyekAktif.nama_proyek],
+                ["Lokasi", proyekAktif.lokasi],
+                ["Pemilik / Klien", proyekAktif.pemilik],
+                ["ID Proyek", proyekAktif.id],
+                ["Tanggal", proyekAktif.tanggal],
+                [],
+                ["NO", "DIVISI PEKERJAAN UTAMA", "JUMLAH HARGA (RP)", "% BOBOT"]
+            ];
 
-        function resetFormHSD() {
-            document.getElementById('editHsdOldKode').value = "";
-            document.getElementById('addHsdKode').value = "";
-            document.getElementById('addHsdNama').value = "";
-            document.getElementById('addHsdSatuan').value = "";
-            document.getElementById('addHsdHarga').value = "";
-            document.getElementById('addHsdLokasi').value = "";
-            document.getElementById('addHsdTahun').value = "2026";
-            document.getElementById('addHsdReferensi').value = "";
-            document.getElementById('btnSubmitHsd').innerHTML = "💾 Simpan Ke Database";
-            document.getElementById('btnBatalEditHsd').classList.add('hidden');
-        }
+            let divNo = 1;
+            for (const [kategori, items] of Object.entries(kelompok)) {
+                let divTotal = Math.round(items.reduce((s, i) => s + (i.subtotal || 0), 0));
+                let bobotDiv = grandTotalDPA > 0 ? Number(((divTotal / grandTotalDPA) * 100).toFixed(2)) : 0;
+                rekapRows.push([divNo++, kategori, divTotal, bobotDiv]);
+            }
 
-        async function simpanAHSPBaru() {
-            const oldKode = document.getElementById('editAhspOldKode').value;
-            let comps = [];
-            document.querySelectorAll('#containerKomponenBuilder .row-komponen-builder').forEach(r => {
-                let u = r.querySelector('.builder-uraian').value.trim();
-                let k = getNumericValue(r.querySelector('.builder-koef'), 0);
-                if(u && k > 0) {
-                    comps.push({
-                        tipe: r.querySelector('.builder-tipe').value,
-                        uraian: u,
-                        kode: r.querySelector('.builder-kode').value.trim(),
-                        satuan: r.querySelector('.builder-satuan').value.trim(),
-                        koefisien: k
-                    });
+            rekapRows.push([]);
+            rekapRows.push(["", "JUMLAH (DPA)", Math.round(grandTotalDPA), 100.00]);
+            rekapRows.push(["", "PPN 11%", Math.round(ppn), ""]);
+            rekapRows.push(["", "TOTAL BIAYA + PPN", Math.round(grandTotalPlusPPN), ""]);
+            rekapRows.push([]);
+            rekapRows.push(["TERBILANG:", terbilangRupiah(grandTotalPlusPPN)]);
+            rekapRows.push([]);
+            rekapRows.push(["", "", cityDate]);
+            rekapRows.push(["", "", "Perencana: " + companyName]);
+            rekapRows.push([]);
+            rekapRows.push(["", "", plannerName]);
+
+            const wsRekap = XLSX.utils.aoa_to_sheet(rekapRows);
+            wsRekap['!cols'] = [{ wch: 6 }, { wch: 48 }, { wch: 22 }, { wch: 14 }];
+            XLSX.utils.book_append_sheet(wb, wsRekap, "1_Rekapitulasi_RAB");
+
+            // SHEET 2: LAMPIRAN 1 - BQ PEKERJAAN
+            let bqRows = [
+                ["LAMPIRAN 1: RINCIAN BILL OF QUANTITIES (BQ) PEKERJAAN"],
+                ["Proyek: " + proyekAktif.nama_proyek],
+                [],
+                ["NO", "KODE AHSP", "DIVISI / URAIAN PEKERJAAN", "VOLUME", "SATUAN", "HARGA SATUAN (RP)", "TOTAL BIAYA (RP)"]
+            ];
+
+            for (const [kategori, items] of Object.entries(kelompok)) {
+                bqRows.push(["", "", kategori, "", "", "", ""]);
+                items.forEach((item, idx) => {
+                    bqRows.push([
+                        idx + 1,
+                        item.kode_ahsp || 'LUMPSUM',
+                        item.sub,
+                        Number(item.vol) || 0,
+                        item.sat,
+                        Math.round(item.harga_satuan || 0),
+                        Math.round(item.subtotal || 0)
+                    ]);
+                });
+                let subDiv = Math.round(items.reduce((s, i) => s + (i.subtotal || 0), 0));
+                bqRows.push(["", "", "Subtotal " + kategori, "", "", "", subDiv]);
+            }
+            bqRows.push([]);
+            bqRows.push(["", "", "TOTAL BIAYA PEKERJAAN (DPA)", "", "", "", Math.round(grandTotalDPA)]);
+
+            const wsBQ = XLSX.utils.aoa_to_sheet(bqRows);
+            wsBQ['!cols'] = [{ wch: 6 }, { wch: 16 }, { wch: 48 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 22 }];
+            XLSX.utils.book_append_sheet(wb, wsBQ, "2_Lampiran_BQ");
+
+            // SHEET 3: LAMPIRAN 2 - ANALISA AHSP TERPAKAI
+            let ahspRows = [
+                ["LAMPIRAN 2: DETAIL RINCIAN ANALISA AHSP TERPAKAI"],
+                ["Proyek: " + proyekAktif.nama_proyek + " | Lokasi HSD: " + proyekAktif.lokasi],
+                [],
+                ["KODE AHSP", "NAMA PEKERJAAN", "TIPE", "KODE KOMP.", "URAIAN KOMPONEN", "SATUAN", "KOEFISIEN", "HARGA SATUAN (RP)", "JUMLAH HARGA (RP)"]
+            ];
+
+            let seenAhsp = new Set();
+            let loc = (proyekAktif.lokasi || "").toLowerCase();
+            proyekAktif.data_bq.forEach(bq => {
+                if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM' && !seenAhsp.has(bq.kode_ahsp)) {
+                    seenAhsp.add(bq.kode_ahsp);
+                    const ahsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if (ahsp) {
+                        const thnAhsp = ahsp.tahun || 2026;
+                        const comp = safeJSONParse(ahsp.komponen_json, []);
+                        let base = 0;
+                        comp.forEach(c => {
+                            let hrg = cariHargaHSD(c, loc, true, thnAhsp);
+                            let sub = (parseFloat(c.koefisien) || 0) * hrg;
+                            base += sub;
+                            ahspRows.push([
+                                ahsp.kode_ahsp,
+                                ahsp.nama_pekerjaan,
+                                c.tipe || 'Bahan',
+                                c.kode || '-',
+                                c.uraian,
+                                c.satuan,
+                                Number(c.koefisien) || 0,
+                                Math.round(hrg),
+                                Math.round(sub)
+                            ]);
+                        });
+                        let ohPersen = parseFloat(ahsp.overhead_persen || 12);
+                        let ohNominal = base * (ohPersen / 100);
+                        ahspRows.push([ahsp.kode_ahsp, ahsp.nama_pekerjaan, "OVERHEAD", "", `Overhead & Profit (${ohPersen}%)`, "%", ohPersen, Math.round(base), Math.round(ohNominal)]);
+                        ahspRows.push([ahsp.kode_ahsp, ahsp.nama_pekerjaan, "TOTAL HSP", "", "Harga Satuan Pekerjaan (HSP)", ahsp.satuan, 1, "", Math.round(base + ohNominal)]);
+                        ahspRows.push([]);
+                    }
                 }
             });
-            const payload = {
-                kode_ahsp: document.getElementById('addAhspKode').value.trim() || "A." + Date.now(),
-                nama_pekerjaan: document.getElementById('addAhspNama').value.trim(),
-                kategori: document.getElementById('addAhspKategori').value.trim(),
-                satuan: document.getElementById('addAhspSatuan').value.trim(),
-                overhead_persen: getNumericValue('addAhspOverhead', 12),
-                tahun: parseInt(document.getElementById('addAhspTahun').value) || 2026,
-                komponen_json: comps
+
+            const wsAHSP = XLSX.utils.aoa_to_sheet(ahspRows);
+            wsAHSP['!cols'] = [{ wch: 15 }, { wch: 34 }, { wch: 12 }, { wch: 14 }, { wch: 36 }, { wch: 10 }, { wch: 12 }, { wch: 20 }, { wch: 22 }];
+            XLSX.utils.book_append_sheet(wb, wsAHSP, "3_Lampiran_AHSP");
+
+            // SHEET 4: LAMPIRAN 3 - HSD TERPAKAI PROYEK
+            let hsdRows = [
+                ["LAMPIRAN 3: DAFTAR HARGA SATUAN DASAR (HSD) TERPAKAI PROYEK"],
+                ["Proyek: " + proyekAktif.nama_proyek + " | Lokasi: " + proyekAktif.lokasi],
+                [],
+                ["NO", "TIPE", "KODE", "NAMA ITEM / BAHAN / UPAH / ALAT", "SATUAN", "HARGA SATUAN (RP)", "REFERENSI / LOKASI"]
+            ];
+
+            let mapHsd = {};
+            proyekAktif.data_bq.forEach(bq => {
+                if (bq.kode_ahsp && bq.kode_ahsp !== 'LUMPSUM') {
+                    const ahsp = listAHSPMaster.find(a => a.kode_ahsp === bq.kode_ahsp);
+                    if (ahsp) {
+                        const thnAhsp = ahsp.tahun || 2026;
+                        const comp = safeJSONParse(ahsp.komponen_json, []);
+                        comp.forEach(c => {
+                            let key = c.kode || c.uraian;
+                            if (!mapHsd[key]) {
+                                const hsdObj = cariHsdObjectLengkap(c, loc, true, thnAhsp);
+                                mapHsd[key] = {
+                                    tipe: c.tipe || 'Bahan',
+                                    kode: hsdObj ? (hsdObj.kode || c.kode || '-') : (c.kode || '-'),
+                                    nama: hsdObj ? (hsdObj.nama_item || hsdObj.uraian || c.uraian) : c.uraian,
+                                    satuan: hsdObj ? (hsdObj.satuan || c.satuan || '-') : (c.satuan || '-'),
+                                    harga: hsdObj ? (parseFloat(hsdObj.harga) || 0) : (parseFloat(c.harga) || 0),
+                                    lokasi: hsdObj ? `${hsdObj.lokasi || 'Nasional'} (${hsdObj.tahun || thnAhsp})` : 'Standar AHSP'
+                                };
+                            }
+                        });
+                    }
+                }
+            });
+
+            Object.values(mapHsd).forEach((h, idx) => {
+                hsdRows.push([
+                    idx + 1,
+                    h.tipe,
+                    h.kode,
+                    h.nama,
+                    h.satuan,
+                    Math.round(h.harga),
+                    h.lokasi
+                ]);
+            });
+
+            const wsHSD = XLSX.utils.aoa_to_sheet(hsdRows);
+            wsHSD['!cols'] = [{ wch: 6 }, { wch: 12 }, { wch: 15 }, { wch: 42 }, { wch: 10 }, { wch: 20 }, { wch: 24 }];
+            XLSX.utils.book_append_sheet(wb, wsHSD, "4_Lampiran_HSD");
+
+            const safeName = (proyekAktif.nama_proyek || 'RAB_Proyek').replace(/[^a-zA-Z0-9_-]/g, '_');
+            XLSX.writeFile(wb, `RAB_${safeName}.xlsx`);
+            showToast("Dokumen Excel RAB (.xlsx) berhasil diunduh!");
+        }
+
+        function exportToPDFSummary() {
+            if (!proyekAktif) return showToast("Pilih proyek terlebih dahulu!", "error");
+            perbaruiTanggalTtdEkspor();
+
+            const el = document.getElementById('exportArea');
+            if (!el) return;
+
+            const safeName = (proyekAktif.nama_proyek || 'RAB_Proyek').replace(/[^a-zA-Z0-9_-]/g, '_');
+            showToast("Menyiapkan dokumen PDF A4...", "success", 3500);
+
+            // Sync nilai teks cetak dari input Lampiran 3 sebelum render PDF
+            el.querySelectorAll('tr.row-hsd-lampiran').forEach(tr => {
+                const nameInp = tr.querySelector('td:nth-child(4) input');
+                const nameSpan = tr.querySelector('td:nth-child(4) .pdf-only-text');
+                if (nameInp && nameSpan) nameSpan.innerText = nameInp.value;
+
+                const priceInp = tr.querySelector('td:nth-child(6) input');
+                const priceSpan = tr.querySelector('td:nth-child(6) .pdf-only-text');
+                if (priceInp && priceSpan) {
+                    const numVal = getNumericValue(priceInp, 0);
+                    priceSpan.innerText = 'Rp ' + Math.round(numVal).toLocaleString('id-ID');
+                }
+            });
+
+            const hiddenPrintEls = [];
+            el.querySelectorAll('.no-print').forEach(node => {
+                hiddenPrintEls.push({ node, prevDisplay: node.style.display });
+                node.style.display = 'none';
+            });
+
+            const pdfOnlyEls = [];
+            el.querySelectorAll('.pdf-only-text').forEach(node => {
+                pdfOnlyEls.push({ node, prevDisplay: node.style.display });
+                node.style.display = 'inline';
+            });
+
+            el.classList.add('pdf-export-mode');
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `RAB_${safeName}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: 720
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: {
+                    mode: ['css', 'legacy'],
+                    before: '.page-break-before',
+                    avoid: '.page-break-inside-avoid'
+                }
             };
-            const { error } = oldKode 
-                ? await supabaseClient.from('01_ahsp').update(payload).eq('kode_ahsp', oldKode)
-                : await supabaseClient.from('01_ahsp').insert([payload]);
-            if(!error) { resetFormAHSP(); muatDataProyekSemua(); showToast("AHSP Tersimpan!"); }
-            else showToast("Gagal: " + error.message, "error");
+
+            html2pdf()
+                .set(opt)
+                .from(el)
+                .save()
+                .then(() => {
+                    el.classList.remove('pdf-export-mode');
+                    hiddenPrintEls.forEach(item => { item.node.style.display = item.prevDisplay; });
+                    pdfOnlyEls.forEach(item => { item.node.style.display = item.prevDisplay; });
+                    showToast("Dokumen PDF A4 berhasil diunduh!");
+                })
+                .catch(err => {
+                    el.classList.remove('pdf-export-mode');
+                    hiddenPrintEls.forEach(item => { item.node.style.display = item.prevDisplay; });
+                    pdfOnlyEls.forEach(item => { item.node.style.display = item.prevDisplay; });
+                    console.error("Gagal export PDF:", err);
+                    showToast("Gagal mengekspor PDF: " + (err?.message || err), "error");
+                });
         }
 
-        function resetFormAHSP() {
-            document.getElementById('editAhspOldKode').value = "";
-            document.getElementById('addAhspKode').value = "";
-            document.getElementById('addAhspNama').value = "";
-            document.getElementById('addAhspKategori').value = "";
-            document.getElementById('addAhspSatuan').value = "";
-            document.getElementById('addAhspOverhead').value = "12";
-            document.getElementById('addAhspTahun').value = "2026";
-            document.getElementById('containerKomponenBuilder').innerHTML = "";
-            tambahBarisKomponenBuilder('containerKomponenBuilder');
-            document.getElementById('btnSubmitAhsp').innerHTML = "💾 Simpan Ke Database";
-            document.getElementById('btnBatalEditAhsp').classList.add('hidden');
-        }
+        function bukaModalBuatProyek() { document.getElementById('modalProyek').classList.remove('hidden'); }
+        function tutupModalBuatProyek() { document.getElementById('modalProyek').classList.add('hidden'); }
 
-        function renderTabelMonitorHSD(page = 1) {
-            pageHsdCurrent = page;
-            const tbody = document.getElementById('tabelMasterHSDMasterRows');
-            if(!tbody) return;
-            const kw = (document.getElementById('searchHsdInput')?.value || "").toLowerCase();
-            const thn = document.getElementById('filterHsdTahunSelect')?.value || "";
-            const lok = document.getElementById('filterHsdLokasiSelect')?.value || "";
-
-            let filtered = listHSDMaster.filter(h => {
-                let mKw = (h.kode||'').toLowerCase().includes(kw) || (h.nama_item||'').toLowerCase().includes(kw);
-                let mTh = !thn || String(h.tahun || 2026) === thn;
-                let mLok = !lok || (h.lokasi || '').trim() === lok;
-                return mKw && mTh && mLok;
-            });
-
-            document.getElementById('badgeCountHsd').innerText = `${filtered.length} Item`;
-            const totalPages = Math.max(1, Math.ceil(filtered.length / pageHsdSize));
-            if(pageHsdCurrent > totalPages) pageHsdCurrent = totalPages;
-
-            document.getElementById('lblPageHsdInfo').innerText = `Halaman ${pageHsdCurrent} dari ${totalPages}`;
-            const start = (pageHsdCurrent - 1) * pageHsdSize;
-            const slice = filtered.slice(start, start + pageHsdSize);
-
-            tbody.innerHTML = "";
-            if(slice.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400 italic">Tidak ada data HSD ditemukan.</td></tr>`;
-                return;
-            }
-
-            slice.forEach(h => {
-                let isChecked = selectedHsdKodeSet.has(h.kode) ? "checked" : "";
-                let refHtml = h.referensi ? (h.referensi.startsWith('http') ? `<a href="${h.referensi}" target="_blank" class="text-blue-600 underline">🔗 Link</a>` : h.referensi) : '-';
-                tbody.innerHTML += `<tr class="border-b hover:bg-slate-50">
-                    <td class="p-2 text-center"><input type="checkbox" class="chk-hsd-item" value="${h.kode}" onchange="toggleSelectRowHSD(this)" ${isChecked}></td>
-                    <td class="p-2 text-center font-mono text-blue-700 font-bold">${h.tahun || 2026}</td>
-                    <td class="p-2 font-mono font-bold">${h.kode}</td>
-                    <td class="p-2">${h.nama_item || h.uraian}</td>
-                    <td class="p-2 text-center font-mono">${h.satuan}</td>
-                    <td class="p-2 text-right font-mono font-bold">Rp ${Math.round(h.harga).toLocaleString('id-ID')}</td>
-                    <td class="p-2 text-center text-[10px]">${h.lokasi || 'Nasional'}</td>
-                    <td class="p-2 text-center text-[10px] text-slate-500">${refHtml}</td>
-                    <td class="p-2 text-center">
-                        <button onclick="editItemHSD('${h.kode}')" class="text-blue-600 px-1" title="Edit">✏️</button>
-                        <button onclick="hapusItemHSD('${h.kode}')" class="text-rose-600 px-1" title="Hapus">🗑️</button>
-                    </td>
-                </tr>`;
-            });
-        }
-
-        function gantiHalamanHsd(delta) { renderTabelMonitorHSD(Math.max(1, pageHsdCurrent + delta)); }
-        function lompatHalamanHsd() { let p = parseInt(document.getElementById('inpHsdJumpPage').value) || 1; renderTabelMonitorHSD(Math.max(1, p)); }
-
-        function editItemHSD(kode) {
-            const h = listHSDMaster.find(i => i.kode === kode);
-            if(!h) return;
-            document.getElementById('editHsdOldKode').value = h.kode;
-            document.getElementById('addHsdKode').value = h.kode;
-            document.getElementById('addHsdNama').value = h.nama_item || h.uraian;
-            document.getElementById('addHsdSatuan').value = h.satuan;
-            document.getElementById('addHsdHarga').value = h.harga;
-            document.getElementById('addHsdLokasi').value = h.lokasi || "";
-            document.getElementById('addHsdTahun').value = h.tahun || 2026;
-            document.getElementById('addHsdReferensi').value = h.referensi || "";
-            document.getElementById('btnSubmitHsd').innerHTML = "💾 Update HSD";
-            document.getElementById('btnBatalEditHsd').classList.remove('hidden');
-        }
-
-        async function hapusItemHSD(kode) {
-            if(!confirm("Hapus item HSD ini?")) return;
-            const { error } = await supabaseClient.from('02_hsd').delete().eq('kode', kode);
-            if(!error) { muatDataProyekSemua(); showToast("HSD Dihapus!"); }
-        }
-
-        function renderTabelMonitorAHSP(page = 1) {
-            pageAhspCurrent = page;
-            const tbody = document.getElementById('tabelMasterAHSPMasterRows');
-            if(!tbody) return;
-            const kw = (document.getElementById('searchAhspInput')?.value || "").toLowerCase();
-            const thn = document.getElementById('filterAhspTahunSelect')?.value || "";
-
-            let filtered = listAHSPMaster.filter(a => {
-                let mKw = (a.kode_ahsp||'').toLowerCase().includes(kw) || (a.nama_pekerjaan||'').toLowerCase().includes(kw);
-                let mTh = !thn || String(a.tahun || 2026) === thn;
-                return mKw && mTh;
-            });
-
-            document.getElementById('badgeCountAhsp').innerText = `${filtered.length} Item`;
-            const totalPages = Math.max(1, Math.ceil(filtered.length / pageAhspSize));
-            if(pageAhspCurrent > totalPages) pageAhspCurrent = totalPages;
-
-            document.getElementById('lblPageAhspInfo').innerText = `Halaman ${pageAhspCurrent} dari ${totalPages}`;
-            const start = (pageAhspCurrent - 1) * pageAhspSize;
-            const slice = filtered.slice(start, start + pageAhspSize);
-
-            tbody.innerHTML = "";
-            if(slice.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Tidak ada data AHSP ditemukan.</td></tr>`;
-                return;
-            }
-
-            slice.forEach(a => {
-                tbody.innerHTML += `<tr class="border-b hover:bg-slate-50">
-                    <td class="p-2 text-center font-mono text-amber-700 font-bold">${a.tahun || 2026}</td>
-                    <td class="p-2 font-mono font-bold">${a.kode_ahsp}</td>
-                    <td class="p-2">${a.nama_pekerjaan}</td>
-                    <td class="p-2 text-center font-mono">${a.satuan}</td>
-                    <td class="p-2 text-center font-mono">${a.overhead_persen || 12}%</td>
-                    <td class="p-2 text-center">
-                        <button onclick="previewStrukturAHSP(listAHSPMaster.find(x => x.kode_ahsp === '${a.kode_ahsp}'))" class="text-emerald-600 px-1" title="Lihat">👁️</button>
-                        <button onclick="editItemAHSP('${a.kode_ahsp}')" class="text-blue-600 px-1" title="Edit">✏️</button>
-                        <button onclick="hapusItemAHSP('${a.kode_ahsp}')" class="text-rose-600 px-1" title="Hapus">🗑️</button>
-                    </td>
-                </tr>`;
-            });
-        }
-
-        function gantiHalamanAhsp(delta) { renderTabelMonitorAHSP(Math.max(1, pageAhspCurrent + delta)); }
-        function lompatHalamanAhsp() { let p = parseInt(document.getElementById('inpAhspJumpPage').value) || 1; renderTabelMonitorAHSP(Math.max(1, p)); }
-
-        function editItemAHSP(kode) {
-            const a = listAHSPMaster.find(i => i.kode_ahsp === kode);
-            if(!a) return;
-            document.getElementById('editAhspOldKode').value = a.kode_ahsp;
-            document.getElementById('addAhspKode').value = a.kode_ahsp;
-            document.getElementById('addAhspNama').value = a.nama_pekerjaan;
-            document.getElementById('addAhspKategori').value = a.kategori;
-            document.getElementById('addAhspSatuan').value = a.satuan;
-            document.getElementById('addAhspOverhead').value = a.overhead_persen || 12;
-            document.getElementById('addAhspTahun').value = a.tahun || 2026;
-            const cBuilder = document.getElementById('containerKomponenBuilder');
-            cBuilder.innerHTML = "";
-            let comps = safeJSONParse(a.komponen_json, []);
-            if(comps.length === 0) tambahBarisKomponenBuilder('containerKomponenBuilder');
-            else comps.forEach(c => tambahBarisKomponenBuilder('containerKomponenBuilder', c));
-            document.getElementById('btnSubmitAhsp').innerHTML = "💾 Update AHSP";
-            document.getElementById('btnBatalEditAhsp').classList.remove('hidden');
-        }
-
-        async function hapusItemAHSP(kode) {
-            if(!confirm("Hapus item AHSP ini?")) return;
-            const { error } = await supabaseClient.from('01_ahsp').delete().eq('kode_ahsp', kode);
-            if(!error) { muatDataProyekSemua(); showToast("AHSP Dihapus!"); }
-        }
-
-        function downloadTemplateImportHSD() {
-            const ws = XLSX.utils.aoa_to_sheet([["tahun", "kode", "nama_item", "satuan", "harga", "lokasi", "referensi"], [2026, "M.01", "Semen Portland 50kg", "zak", 68000, "Bandung", "https://contoh.com"]]);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Template_HSD"); XLSX.writeFile(wb, "Template_Import_HSD.xlsx");
-        }
-        function exportMasterHSD() {
-            const ws = XLSX.utils.json_to_sheet(listHSDMaster);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Master_HSD"); XLSX.writeFile(wb, "Export_Master_HSD.xlsx");
-        }
-        function downloadTemplateImportAHSP() {
-            const ws = XLSX.utils.aoa_to_sheet([["tahun", "kode_ahsp", "nama_pekerjaan", "kategori", "satuan", "overhead_persen", "komponen_json"], [2026, "A.1.1", "Pembersihan Lapangan", "I. PERSIAPAN", "m2", 12, '[{"tipe":"Upah","uraian":"Pekerja","kode":"L.01","satuan":"OH","koefisien":0.1}]']]);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Template_AHSP"); XLSX.writeFile(wb, "Template_Import_AHSP.xlsx");
-        }
-        function exportMasterAHSP() {
-            const ws = XLSX.utils.json_to_sheet(listAHSPMaster);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Master_AHSP"); XLSX.writeFile(wb, "Export_Master_AHSP.xlsx");
-        }
-
-        // ==========================================
-        // LAPORAN HARIAN LAPANGAN
-        // ==========================================
-        function handlePreviewFotoDaily(input) {
-            const container = document.getElementById('previewFotoDailyContainer');
-            dailyFotoBase64Array = []; container.innerHTML = "";
-            if(!input.files || input.files.length === 0) return;
-            Array.from(input.files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    dailyFotoBase64Array.push(e.target.result);
-                    container.innerHTML += `<img src="${e.target.result}" class="w-full h-16 object-cover rounded border">`;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function simpanLaporanHarian() {
-            if(!proyekAktif) return;
-            const payload = {
-                id_proyek: proyekAktif.id,
-                tanggal: document.getElementById('dailyTanggal').value,
-                hari_ke: Math.max(1, Math.round(getNumericValue('dailyHariKe', 1))),
-                cuaca: document.getElementById('dailyCuaca').value,
-                tenaga_kerja: document.getElementById('dailyTenaga').value,
-                material: document.getElementById('dailyMaterial').value,
-                kegiatan: document.getElementById('dailyKegiatan').value,
-                kendala: document.getElementById('dailyKendala').value,
-                foto_json: dailyFotoBase64Array
-            };
-            const { error } = await supabaseClient.from('04_daily_report').insert([payload]);
-            if(!error) { showToast("Laporan harian tersimpan!"); muatDataProyekSemua(); }
-            else showToast("Gagal: " + error.message, "error");
-        }
-
-        function renderTabelLaporanHarian() {
-            const tbody = document.getElementById('tabelDailyReportRows');
-            if(!tbody) return;
-            if(!proyekAktif) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Pilih proyek terlebih dahulu.</td></tr>`;
-                return;
-            }
-            const list = listDailyMaster.filter(d => d.id_proyek === proyekAktif.id);
-            tbody.innerHTML = "";
-            if(list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">Belum ada laporan harian untuk proyek ini.</td></tr>`;
-                return;
-            }
-            list.forEach((d, i) => {
-                let fotos = safeJSONParse(d.foto_json, []);
-                tbody.innerHTML += `<tr class="border-b hover:bg-slate-50">
-                    <td class="p-2 text-center">${i+1}</td>
-                    <td class="p-2 text-center font-mono">${d.tanggal}</td>
-                    <td class="p-2 text-center font-bold">Hari ${d.hari_ke}</td>
-                    <td class="p-2 text-center">${d.cuaca}</td>
-                    <td class="p-2">${d.kegiatan}</td>
-                    <td class="p-2 text-center font-mono">${fotos.length} Foto</td>
-                    <td class="p-2 text-center"><button onclick="bukaModalPrintDaily(${d.id})" class="bg-slate-800 text-white px-2 py-1 rounded text-[10px]">📄 Detail</button></td>
-                </tr>`;
-            });
-        }
-
-        function bukaModalPrintDaily(id) {
-            const d = listDailyMaster.find(x => x.id === id);
-            if(!d) return;
-            document.getElementById('viewDailyNamaProyek').innerText = proyekAktif ? proyekAktif.nama_proyek : '-';
-            document.getElementById('viewDailyTgl').innerText = d.tanggal;
-            document.getElementById('viewDailyHariKe').innerText = "Hari ke-" + d.hari_ke;
-            document.getElementById('viewDailyCuaca').innerText = d.cuaca;
-            document.getElementById('viewDailyTenaga').innerText = d.tenaga_kerja;
-            document.getElementById('viewDailyMaterial').innerText = d.material || '-';
-            document.getElementById('viewDailyKegiatan').innerText = d.kegiatan;
-            document.getElementById('viewDailyKendala').innerText = d.kendala || 'Tidak ada kendala.';
-            const gal = document.getElementById('viewDailyFotoGallery');
-            gal.innerHTML = "";
-            safeJSONParse(d.foto_json, []).forEach(src => { gal.innerHTML += `<img src="${src}" class="w-full h-24 object-cover rounded border">`; });
-            document.getElementById('modalPrintDaily').classList.remove('hidden');
-        }
-        function tutupModalPrintDaily() { document.getElementById('modalPrintDaily').classList.add('hidden'); }
-        function cetakDokumenDailyPDF() {
-            html2pdf().from(document.getElementById('areaCetakDaily')).save("Laporan_Harian.pdf");
+        async function eksekusiSimpanProyekBaru() {
+            const nama = document.getElementById('modalNamaProyek').value;
+            const pemilik = document.getElementById('modalPemilik').value;
+            const lokasi = document.getElementById('modalLokasi').value;
+            const newId = "PRJ-" + Math.floor(1000 + Math.random() * 9000);
+            const now = new Date();
+            const todayLocal = formatLocalDateISO(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+            const payload = { id: newId, user_id: currentUser.userId, nama_proyek: nama, pemilik: pemilik, lokasi: lokasi, tanggal: todayLocal, total_biaya: 0, status: 'active', data_bq: [], custom_hsd: {} };
+            const { error } = await supabaseClient.from('project').insert([payload]);
+            if(!error) { tutupModalBuatProyek(); showToast("Proyek baru dibuat!"); muatDataProyekSemua(); }
         }
     </script>
 </body>
